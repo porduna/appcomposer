@@ -1,6 +1,7 @@
 # Appcomposer
 config.py
 appcomposer.db
+
 *.swp # vim
 
 # Python .gitignore
