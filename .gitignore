@@ -1,3 +1,7 @@
+# Appcomposer
+config.py
+
+# Python .gitignore
 *.py[cod]
 
 # C extensions
