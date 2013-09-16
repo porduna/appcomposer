@@ -3,6 +3,7 @@ import optparse
 from flask import render_template
 
 from .application import app
+from .db import db_session
 
 @app.route("/")
 def index():

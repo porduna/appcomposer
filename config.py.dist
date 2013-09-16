@@ -1,1 +1,4 @@
 # Configuration example
+
+SQLALCHEMY_ENGINE_STR = 'sqlite:///appcomposer.db'
+USE_PYMYSQL = False
