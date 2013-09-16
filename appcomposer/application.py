@@ -2,6 +2,17 @@ from flask import Flask
 
 app = Flask(__name__)
 
+# Main components 
+
+from .user  import user_blueprint
+from .admin import admin_blueprint
+
+app.register_blueprint(user_blueprint, url_prefix = '/user')
+app.register_blueprint(admin_blueprint,     url_prefix = '/admin')
+
+
+# Composers
+
 from .composers.translate import translate_blueprint
 from .composers.adapt     import adapt_blueprint
 from .composers.expert    import expert_blueprint
