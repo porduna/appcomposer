@@ -1,6 +1,6 @@
 # Appcomposer
 config.py
-appcomposer.db
+database.db
 
 # vim
 *.swp
