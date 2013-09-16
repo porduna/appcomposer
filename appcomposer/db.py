@@ -1,3 +1,4 @@
+import os, sys
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
@@ -30,4 +31,37 @@ def init_db(drop = False):
     admin_user = User(u'admin', u'Administrator', password)
     db_session.add(admin_user)
     db_session.commit()
+
+
+from alembic.script import ScriptDirectory
+from alembic.config import Config
+from alembic.migration import MigrationContext
+from alembic import command
+
+class DbParticularUpgrader(object):
+
+    def __init__(self):
+        self.config = Config("alembic.ini")
+        self.config.set_main_option("script_location", os.path.abspath('alembic'))
+        self.config.set_main_option("url", SQLALCHEMY_ENGINE_STR)
+        self.config.set_main_option("sqlalchemy.url", SQLALCHEMY_ENGINE_STR)
+
+    @property
+    def head(self):
+        script = ScriptDirectory.from_config(self.config)
+        return script.get_current_head()
+
+    def check(self):
+        engine = create_engine(SQLALCHEMY_ENGINE_STR)
+
+        context = MigrationContext.configure(engine)
+        current_rev = context.get_current_revision()
+
+        return self.head == current_rev
+
+    def upgrade(self):
+        if not self.check():
+            command.upgrade(self.config, "head")
+
+upgrader = DbParticularUpgrader()
 
