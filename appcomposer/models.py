@@ -1,5 +1,4 @@
-from sqlalchemy import Column, Integer, Unicode, ForeignKey, UniqueConstraint, sql, Table, Boolean
-from sqlalchemy.orm import relation, backref, relationship
+from sqlalchemy import Column, Integer, Unicode, sql
 
 from flask.ext.login import UserMixin
 

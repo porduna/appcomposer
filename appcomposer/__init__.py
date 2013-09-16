@@ -5,6 +5,8 @@ from flask import render_template
 from .application import app
 from .db import db_session, upgrader
 
+assert db_session is not None # ignore pyflakes
+
 @app.route("/")
 def index():
     return render_template("index.html")
