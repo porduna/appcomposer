@@ -39,9 +39,10 @@ class App(Base):
 
     id = Column(Integer, primary_key = True)
 
-    unique_id = Column(Unicode(50), index = True, unique = True)
-    name = Column(Unicode(50), index = True)
-    owner_id = Column(Integer, ForeignKey("Users.id"), nullable = False, index = True)
+    unique_id         = Column(Unicode(50), index = True, unique = True)
+    name              = Column(Unicode(50), index = True)
+    owner_id          = Column(Integer, ForeignKey("Users.id"), nullable = False, index = True)
+    composer          = Column(Unicode(50), index = True, nullable = False, server_default = u'expert')
     creation_date     = Column(DateTime, nullable = False, index = True)
     modification_date = Column(DateTime, nullable = False, index = True)
     last_access_date  = Column(DateTime, nullable = False, index = True)
