@@ -1,5 +1,7 @@
 from flask import Blueprint, render_template
 
+from appcomposer.models import App
+
 expert_blueprint = Blueprint('expert', __name__)
 
 @expert_blueprint.route("/")

@@ -2,6 +2,12 @@ import os, sys
 import optparse
 from flask import render_template
 
+class ComposerRegister(object):
+    def __init__(self, url):
+        self.url = url
+
+registry = []
+
 from .application import app
 from .db import db_session, upgrader
 
@@ -10,7 +16,6 @@ assert db_session is not None # ignore pyflakes
 @app.route("/")
 def index():
     return render_template("index.html")
-
 
 def run():
     if not upgrader.check():
