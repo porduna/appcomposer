@@ -16,14 +16,23 @@ class User(Base, UserMixin):
     login    = Column(Unicode(50), unique = True )
     name     = Column(Unicode(50), nullable = False)
     password = Column(Unicode(50), nullable = False) # hash
+    email = Column(Unicode(254), nullable = False)
+    organization = Column(Unicode(50))
+    role = Column(Unicode(50))
+    creation_date     = Column(DateTime, nullable = False, index = True)
+    last_access_date  = Column(DateTime, nullable = False, index = True)
 
-    def __init__(self, login = None, name = None, password = None):
+    def __init__(self, login = None, name = None, password = None, email = None, role = None, creation_date = None, last_access_date = None):
         self.login    = login
         self.name     = name
         self.password = password
+        self.organization = organization
+        self.role = role
+        self.creation_date = creation_date
+        self.last_access_date = last_access_date
 
     def __repr__(self):
-        return "User(%r, %r, %r, %r)" % (self.login, self.name, self.password)
+        return "User(%r, %r, %r, %r, %r, %r, %r, %r, %r)" % (self.login, self.name, self.password, self.email, self.organization, self.role, self.creation_date, self.last_access_date)
 
     def __unicode__(self):
         return self.name
