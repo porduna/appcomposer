@@ -4,11 +4,20 @@ from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from flask.ext.wtf import TextField, Form, PasswordField, NumberRange
 from .fields import DisabledTextField
 
+from appcomposer import db
+from appcomposer import models
+
+from sqlalchemy.orm import scoped_session, sessionmaker
+
 
 class UserApplication(object):
     
     def __init__(self, flask_app):
         self.app = flask_app
+        
+        # Establish a db session
+        self.db_session = db.db_session
+        
         
         # Initialize the Admin
         # URL describes through which address we access the page.
@@ -16,8 +25,9 @@ class UserApplication(object):
         self.admin = Admin(self.app, index_view = HomeView(), name = "User Profile", url = "/user", endpoint = "user")
         
         self.admin.add_view(EditView(name='Edit'))
-        self.admin.add_view(ProfileEditView(None, name="Profile"))
+        self.admin.add_view(ProfileEditView(self.db_session, name="Profile"))
         
+
         
 class EditView(BaseView):
     @expose('/')
@@ -46,13 +56,32 @@ class ProfileEditView(BaseView):
 
     def __init__(self, db_session, *args, **kwargs):
         super(ProfileEditView, self).__init__(*args, **kwargs)
-
         self._session = db_session
 
     @expose(methods=['GET','POST'])
     def index(self):
-#         login = get_app_instance().get_user_information().login
-#         user = self._session.query(model.DbUser).filter_by(login = login).one()
+        login = "testuser"
+        user_list = self._session.query(models.User).filter_by(login = login).all()
+        user = None
+        
+        # TODO: Fix this. User testuser doesn't seem to be found correctly yet.
+        # TODO: Fix this. Format string in user might be wrong.
+        #print "List: " + user_list.__repr__()
+        
+        if len(user_list) == 0:
+            form = ProfileEditForm(csrf_enabled = False)
+            form.full_name.data = "no-user" # TODO: Change form item name
+            form.login.data = "test"
+            form.email.data = "mail@dotcom"
+            form.facebook.data = "facebook"
+        else:
+            user = user_list[0]
+            form = ProfileEditForm(csrf_enabled = False)
+            form.full_name.data = user.name
+            form.login.data = user.login
+            form.email.data = user.email
+            form.facebook.data = ""
+            
 #         
 #         facebook_id = ''
 # 
