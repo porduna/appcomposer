@@ -22,7 +22,7 @@ class User(Base, UserMixin):
     creation_date     = Column(DateTime, nullable = False, index = True)
     last_access_date  = Column(DateTime, nullable = False, index = True)
 
-    def __init__(self, login = None, name = None, password = None, email = None, role = None, creation_date = None, last_access_date = None):
+    def __init__(self, login = None, name = None, password = None, email = None, organization = None, role = None, creation_date = None, last_access_date = None):
         self.login    = login
         self.name     = name
         self.password = password
