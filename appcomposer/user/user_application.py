@@ -65,6 +65,16 @@ class ProfileEditView(BaseView):
 
     @expose(methods=['GET','POST'])
     def index(self):
+        """
+        index(self)
+        
+        This method will be invoked for the Profile Edit view. This view is used for both viewing and updating
+        the user profile. It exposes both GET and POST, for viewing and updating respectively.
+        """
+        
+        # At the moment of writing this login is not supported. For testing purposes, we force it to
+        # load a "testuser". If this user doesn't exist the code may not work as intended, though
+        # it will try to load test data.
         login = "testuser"
         
         user_list = self._session.query(models.User).filter_by(login = login).all()
@@ -86,7 +96,7 @@ class ProfileEditView(BaseView):
             form.creation_date.data = "2013-09-23 14:20:00"
             form.last_access_date.data = "2013-09-23 14:20:00"
         else:
-            print "READING"
+            # It was a GET request (just viewing). 
             form = ProfileEditForm(csrf_enabled = False)
             form.name.data = user.name
             form.login.data = user.login
@@ -100,81 +110,14 @@ class ProfileEditView(BaseView):
         # TODO: Make sure this is the proper way of handling that. The main purpose here
         # is to avoid carrying out a database commit if it isn't needed.
         if request.method == "POST" and form.validate_on_submit():
+            # It was a POST request, the data (which has been modified) will be contained in
+            # the request. For security reasons, we manually modify the user for these
+            # settings which should actually be modifiable.
             user.email = form.email.data
             user.organization = form.organization.data
             user.role = form.role.data
             self._session.add(user)
             self._session.commit()
-        
-            
-#         
-#         facebook_id = ''
-# 
-#         user_auths = {}
-#         change_password = True
-#         password_auth = None
-#         facebook_auth = None
-# 
-#         for user_auth in user.auths:
-#             if user_auth.auth.auth_type.name.lower() == 'facebook':
-#                 facebook_id = user_auth.configuration
-#                 facebook_auth = user_auth
-#             if 'ldap' in user_auth.auth.auth_type.name.lower():
-#                 change_password = False
-#             if user_auth.auth.auth_type.name.lower() == 'db':
-#                 password_auth = user_auth
-# 
-# 
-
-             
-#          if len(request.form):
-#              form = ProfileEditForm(request.form)
-#          else:
-#              form = ProfileEditForm()
-#              form.full_name.data = user.full_name
-#              form.login.data     = user.login
-#              form.email.data     = user.email
-#              form.facebook.data  = facebook_id
- 
-#         user_permissions = get_app_instance().get_permissions()
-#         
-#         change_profile = True
-#         for permission in user_permissions:
-#             if permission.name == permissions.CANT_CHANGE_PROFILE:
-#                 change_password = False
-#                 change_profile  = False
-# 
-#         if change_profile and form.validate_on_submit():
-# 
-#             errors = []
-# 
-#             if change_password and password_auth is not None and form.password.data:
-#                 if len(form.password.data) < 6:
-#                     errors.append("Error: too short password")
-#                 else:
-#                     password_auth.configuration = self._password2sha(form.password.data)
-# 
-#             user.email = form.email.data
-#             
-#             if form.facebook.data:
-#                 if facebook_auth is None:
-#                     auth = self._session.query(model.DbAuth).filter_by(name = 'FACEBOOK').one()
-#                     new_auth = model.DbUserAuth(user, auth, form.facebook.data)
-#                     self._session.add(new_auth)
-#                 else:
-#                     facebook_auth.configuration = form.facebook.data
-#             else:
-#                 if facebook_auth is not None:
-#                     self._session.delete(facebook_auth)
-# 
-#             self._session.commit()
-# 
-#             if errors:
-#                 for error in errors:
-#                     flash(error)
-#             else:
-#                 flash("Saved")
 
         return self.render("user/profile-edit.html", form=form)
-#        return self.render("profile-edit.html", form=form, change_password=change_password, change_profile=change_profile)
     
