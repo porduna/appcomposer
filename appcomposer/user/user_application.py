@@ -1,7 +1,7 @@
 
 from flask import Flask
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
-from flask.ext.wtf import TextField, Form, PasswordField, NumberRange
+from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
 from .fields import DisabledTextField
 
 from appcomposer import db
@@ -46,11 +46,15 @@ class HomeView(BaseView):
     
     
 class ProfileEditForm(Form):
-    full_name   = DisabledTextField(u"Full name:")
-    login       = DisabledTextField(u"Login:")
-    email       = TextField(u"E-mail:")
-    facebook    = TextField(u"Facebook id:", description="Facebook identifier (number).", validators = [NumberRange(min=1000) ])
-    password    = PasswordField(u"Password:", description="Password.")
+    name                = DisabledTextField(u"Name:")
+    login               = DisabledTextField(u"Login:")
+    email               = TextField(u"E-mail:")
+    #facebook    = TextField(u"Facebook id:", description="Facebook identifier (number).", validators = [NumberRange(min=1000) ])
+    password            = PasswordField(u"Password:", description="Password.")
+    organization        = TextField(u"Organization:")
+    role                = TextField(u"Role:")
+    creation_date       = DisabledTextField(u"Creation date:")
+    last_access_date    = DisabledTextField(u"Last access:")
 
 class ProfileEditView(BaseView):
 
@@ -71,17 +75,23 @@ class ProfileEditView(BaseView):
         
         if len(user_list) == 0:
             form = ProfileEditForm(csrf_enabled = False)
-            form.full_name.data = "no-user" # TODO: Change form item name
+            form.name.data = "no-user" # TODO: Change form item name
             form.login.data = "test"
             form.email.data = "mail@dotcom"
-            form.facebook.data = "facebook"
+            form.organization.data = "AppComposer"
+            form.role.data = "Developer"
+            form.creation_date.data = "2013-09-23 14:20:00"
+            form.last_access_date.data = "2013-09-23 14:20:00"
         else:
             user = user_list[0]
             form = ProfileEditForm(csrf_enabled = False)
-            form.full_name.data = user.name
+            form.name.data = user.name
             form.login.data = user.login
             form.email.data = user.email
-            form.facebook.data = ""
+            form.organization.data = user.organization
+            form.role.data = user.role
+            form.creation_date.data = user.creation_date
+            form.last_access_date.data = user.last_access_date
             
 #         
 #         facebook_id = ''

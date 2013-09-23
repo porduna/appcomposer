@@ -15,9 +15,12 @@
 
             <fieldset>
                 {{ render_field(form.login) }}
-                {{ render_field(form.full_name) }}
+                {{ render_field(form.name) }}
                 {{ render_field(form.email) }}
-                {{ render_field(form.facebook) }}
+                {{ render_field(form.organization) }}
+				{{ render_field(form.role) }}
+				{{ render_field(form.creation_date) }}
+				{{ render_field(form.last_access_date) }}
                 {% if change_password %}
                     {{ render_field(form.password) }}
                 {% endif %}
