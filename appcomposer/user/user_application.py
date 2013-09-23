@@ -1,5 +1,6 @@
 
 from flask import Flask
+from flask import redirect, request, flash
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
 from .fields import DisabledTextField
@@ -67,13 +68,15 @@ class ProfileEditView(BaseView):
         login = "testuser"
         
         user_list = self._session.query(models.User).filter_by(login = login).all()
-        user = None
+        if(len(user_list) > 0):
+            user = user_list[0]
         
-        # TODO: Fix this. User testuser doesn't seem to be found correctly yet.
-        # TODO: Fix this. Format string in user might be wrong.
-        #print "List: " + user_list.__repr__()
         
-        if len(user_list) == 0:
+        # If it is a POST request to edit the form, then request.form will not be None
+        # Otherwise we will simply load the form data from the DB
+        if len(request.form):
+            form = ProfileEditForm(request.form, csrf_enabled = False)
+        elif len(user_list) == 0:
             form = ProfileEditForm(csrf_enabled = False)
             form.name.data = "no-user" # TODO: Change form item name
             form.login.data = "test"
@@ -83,7 +86,7 @@ class ProfileEditView(BaseView):
             form.creation_date.data = "2013-09-23 14:20:00"
             form.last_access_date.data = "2013-09-23 14:20:00"
         else:
-            user = user_list[0]
+            print "READING"
             form = ProfileEditForm(csrf_enabled = False)
             form.name.data = user.name
             form.login.data = user.login
@@ -92,6 +95,17 @@ class ProfileEditView(BaseView):
             form.role.data = user.role
             form.creation_date.data = user.creation_date
             form.last_access_date.data = user.last_access_date
+            
+        # If the method is POST we assume that we want to update and not just view
+        # TODO: Make sure this is the proper way of handling that. The main purpose here
+        # is to avoid carrying out a database commit if it isn't needed.
+        if request.method == "POST" and form.validate_on_submit():
+            user.email = form.email.data
+            user.organization = form.organization.data
+            user.role = form.role.data
+            self._session.add(user)
+            self._session.commit()
+        
             
 #         
 #         facebook_id = ''
