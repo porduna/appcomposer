@@ -61,6 +61,7 @@ class ProfileEditView(BaseView):
     @expose(methods=['GET','POST'])
     def index(self):
         login = "testuser"
+        
         user_list = self._session.query(models.User).filter_by(login = login).all()
         user = None
         
@@ -101,13 +102,6 @@ class ProfileEditView(BaseView):
 # 
 # 
 
-        # TODO: Probably we shouldn't disable CSRF. At least, in the Weblab code which I'm using as example
-        # that is not done. Check how to handle the secret_key, and what it implies.
-        form = ProfileEditForm(csrf_enabled = False)
-        form.full_name.data = "Luis"
-        form.login.data = "lrg"
-        form.email.data = "mail@dotcom"
-        form.facebook.data = "facebook"
              
 #          if len(request.form):
 #              form = ProfileEditForm(request.form)
