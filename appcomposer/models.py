@@ -26,13 +26,14 @@ class User(Base, UserMixin):
         self.login    = login
         self.name     = name
         self.password = password
+        self.email = email
         self.organization = organization
         self.role = role
         self.creation_date = creation_date
         self.last_access_date = last_access_date
 
     def __repr__(self):
-        return "User(%r, %r, %r, %r, %r, %r, %r, %r, %r)" % (self.login, self.name, self.password, self.email, self.organization, self.role, self.creation_date, self.last_access_date)
+        return "User(%r, %r, %r, %r, %r, %r, %r, %r)" % (self.login, self.name, self.password, self.email, self.organization, self.role, self.creation_date, self.last_access_date)
 
     def __unicode__(self):
         return self.name
