@@ -25,7 +25,6 @@ class UserApplication(object):
         # Endpoint enables us to do url_for('userp') to yield the URL
         self.admin = Admin(self.app, index_view = HomeView(), name = "User Profile", url = "/user", endpoint = "user")
         
-        self.admin.add_view(EditView(name='Edit'))
         self.admin.add_view(ProfileEditView(self.db_session, name="Profile"))
         
 
@@ -56,6 +55,7 @@ class ProfileEditForm(Form):
     role                = TextField(u"Role:")
     creation_date       = DisabledTextField(u"Creation date:")
     last_access_date    = DisabledTextField(u"Last access:")
+    auth_system         = TextField(u"Auth system:")
 
 class ProfileEditView(BaseView):
 
@@ -77,6 +77,10 @@ class ProfileEditView(BaseView):
         # it will try to load test data.
         login = "testuser"
         
+        # This will be passed as a template parameter to let us change the password.
+        # (And display the appropriate form field).
+        change_password = True
+        
         user_list = self._session.query(models.User).filter_by(login = login).all()
         if(len(user_list) > 0):
             user = user_list[0]
@@ -95,6 +99,8 @@ class ProfileEditView(BaseView):
             form.role.data = "Developer"
             form.creation_date.data = "2013-09-23 14:20:00"
             form.last_access_date.data = "2013-09-23 14:20:00"
+            form.auth_system.data = "userpass"
+            form.password.data = "password"
         else:
             # It was a GET request (just viewing). 
             form = ProfileEditForm(csrf_enabled = True)
@@ -105,6 +111,8 @@ class ProfileEditView(BaseView):
             form.role.data = user.role
             form.creation_date.data = user.creation_date
             form.last_access_date.data = user.last_access_date
+            form.auth_system.data = user.auth_system
+            form.password.data = user.auth_data
             
         # If the method is POST we assume that we want to update and not just view
         # TODO: Make sure this is the proper way of handling that. The main purpose here
@@ -116,8 +124,10 @@ class ProfileEditView(BaseView):
             user.email = form.email.data
             user.organization = form.organization.data
             user.role = form.role.data
+            user.auth_type = form.auth_system # Probably in the release we shouldn't let users modify the auth this way
+            user.auth_data = form.password # For the userpass method, the auth_data should contain the password. Eventually, should add hashing.
             self._session.add(user)
             self._session.commit()
 
-        return self.render("user/profile-edit.html", form=form)
+        return self.render("user/profile-edit.html", form=form, change_password=change_password)
     

@@ -33,6 +33,8 @@ class User(Base, UserMixin):
         self.role = role
         self.creation_date = creation_date
         self.last_access_date = last_access_date
+        self.auth_system = auth_system
+        self.auth_data = auth_data
 
     def __repr__(self):
         return "User(%r, %r, %r, %r, %r, %r, %r, %r, %r, %r)" % (self.login, self.name, self.password, self.email, self.organization, self.role, self.creation_date, self.last_access_date, self.auth_system, self.auth_data)
