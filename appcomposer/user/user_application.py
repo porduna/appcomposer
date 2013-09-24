@@ -85,9 +85,9 @@ class ProfileEditView(BaseView):
         # If it is a POST request to edit the form, then request.form will not be None
         # Otherwise we will simply load the form data from the DB
         if len(request.form):
-            form = ProfileEditForm(request.form, csrf_enabled = False)
+            form = ProfileEditForm(request.form, csrf_enabled = True)
         elif len(user_list) == 0:
-            form = ProfileEditForm(csrf_enabled = False)
+            form = ProfileEditForm(csrf_enabled = True)
             form.name.data = "no-user" # TODO: Change form item name
             form.login.data = "test"
             form.email.data = "mail@dotcom"
@@ -97,7 +97,7 @@ class ProfileEditView(BaseView):
             form.last_access_date.data = "2013-09-23 14:20:00"
         else:
             # It was a GET request (just viewing). 
-            form = ProfileEditForm(csrf_enabled = False)
+            form = ProfileEditForm(csrf_enabled = True)
             form.name.data = user.name
             form.login.data = user.login
             form.email.data = user.email

@@ -1,6 +1,11 @@
 from flask import Flask
+import os
 
 app = Flask(__name__)
+
+# Configure flask app
+app.config["DEBUG"] = True
+app.config["SECRET_KEY"] = os.urandom(32)
 
 #####
 # Main components 
