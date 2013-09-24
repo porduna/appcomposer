@@ -13,16 +13,18 @@ class User(Base, UserMixin):
 
     id = Column(Integer, primary_key=True)
 
-    login    = Column(Unicode(50), unique = True )
-    name     = Column(Unicode(50), nullable = False)
-    password = Column(Unicode(50), nullable = False) # hash
-    email = Column(Unicode(254), nullable = False)
-    organization = Column(Unicode(50))
-    role = Column(Unicode(50))
-    creation_date     = Column(DateTime, nullable = False, index = True)
-    last_access_date  = Column(DateTime, nullable = False, index = True)
+    login               = Column(Unicode(50), unique = True )
+    name                = Column(Unicode(50), nullable = False)
+    password            = Column(Unicode(50), nullable = False) # hash
+    email               = Column(Unicode(254), nullable = False)
+    organization        = Column(Unicode(50))
+    role                = Column(Unicode(50))
+    creation_date       = Column(DateTime, nullable = False, index = True)
+    last_access_date    = Column(DateTime, nullable = False, index = True)
+    auth_system         = Column(Unicode(20), nullable = True)
+    auth_data           = Column(Unicode(255), nullable = True)
 
-    def __init__(self, login = None, name = None, password = None, email = None, organization = None, role = None, creation_date = None, last_access_date = None):
+    def __init__(self, login = None, name = None, password = None, email = None, organization = None, role = None, creation_date = None, last_access_date = None, auth_system = None, auth_data = None):
         self.login    = login
         self.name     = name
         self.password = password
@@ -33,7 +35,7 @@ class User(Base, UserMixin):
         self.last_access_date = last_access_date
 
     def __repr__(self):
-        return "User(%r, %r, %r, %r, %r, %r, %r, %r)" % (self.login, self.name, self.password, self.email, self.organization, self.role, self.creation_date, self.last_access_date)
+        return "User(%r, %r, %r, %r, %r, %r, %r, %r, %r, %r)" % (self.login, self.name, self.password, self.email, self.organization, self.role, self.creation_date, self.last_access_date, self.auth_system, self.auth_data)
 
     def __unicode__(self):
         return self.name
