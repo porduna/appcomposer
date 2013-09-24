@@ -55,7 +55,7 @@ def login():
     else:
         # We probably got here through a GET
         form = LoginForm()
-        form.login.data = "TestLogin"
+        form.login.data = ""
         form.password.password = "TestPassword"
         
     # This is an effective login request
@@ -66,7 +66,8 @@ def login():
         else:
             # Store the username in the session object.
             # The session is stored client-side but cryptographically signed.
-            session["username"] = form.login.data
+            session["logged_in"] = True
+            session["login"] = form.login.data
             return redirect("/user")
         
         

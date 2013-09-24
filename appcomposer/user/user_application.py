@@ -1,6 +1,6 @@
 
 from flask import Flask
-from flask import redirect, request, flash
+from flask import redirect, request, flash, session, render_template_string
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
 from .fields import DisabledTextField
@@ -72,10 +72,10 @@ class ProfileEditView(BaseView):
         the user profile. It exposes both GET and POST, for viewing and updating respectively.
         """
         
-        # At the moment of writing this login is not supported. For testing purposes, we force it to
-        # load a "testuser". If this user doesn't exist the code may not work as intended, though
-        # it will try to load test data.
-        login = "testuser"
+        if "logged_in" not in session or session["logged_in"] != True:
+            return render_template_string('You are not logged in. You may login <a href="../user">here</a>')
+        
+        login = session["login"]
         
         # This will be passed as a template parameter to let us change the password.
         # (And display the appropriate form field).
