@@ -1,0 +1,27 @@
+
+{% block body %}
+
+<div class="row">
+    <div class="span7 offset2">
+        <br/>
+        <h1>LOGIN</h1>
+        <br/>
+        <br/>
+
+        {% from "user/wl_form_helpers.html" import render_field %}
+        <form method="POST" action="{{ request.url }}" class="form-horizontal">
+            {{ form.hidden_tag() }}
+
+            <fieldset>
+                {{ render_field(form.login) }}
+                {{ render_field(form.password) }}
+                
+                <div class="form-actions">
+                        <button type="submit" class="btn btn-primary">Login</button>
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+{% endblock %}
