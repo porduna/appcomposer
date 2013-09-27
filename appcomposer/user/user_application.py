@@ -42,6 +42,9 @@ class HomeView(BaseView):
     
     @expose('/')
     def index(self):
+        if "logged_in" not in session or session["logged_in"] != True:
+            return render_template_string('You are not logged in. You may login <a href="../login">here</a>.')
+        
         return self.render('user/index.html')
     
     
@@ -73,7 +76,7 @@ class ProfileEditView(BaseView):
         """
         
         if "logged_in" not in session or session["logged_in"] != True:
-            return render_template_string('You are not logged in. You may login <a href="../user">here</a>')
+            return render_template_string('You are not logged in. You may login <a href="../login">here</a>.')
         
         login = session["login"]
         
