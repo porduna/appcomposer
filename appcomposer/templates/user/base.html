@@ -29,9 +29,15 @@
           <ul class="nav">
             {{ layout.menu() }}
           </ul>
-          <ul class="nav pull-right">
-            {{ layout.menu_links() }}
-          </ul>
+
+        <div class="navbar-inner pull-right">
+            <div class="brand" style="float:left"><i>{{ session.login }}</i></div>
+            <form class="navbar-form navbar-right" style="float:left;" action="../logout">
+                <button type="submit" class="btn btn-primary">Log out</button>
+            </form>
+        </div>
+
+
         </div>
       </div>
 

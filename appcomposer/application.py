@@ -73,5 +73,14 @@ def login():
         
     return render_template("login/login.html", form=form)
 
+@app.route('/logout', methods = ["GET", "POST"])
+def logout():
+    if "logged_in" in session and session["logged_in"] == True:
+        session["logged_in"] = False
+        session["login"] = ""
+        return redirect("/")
+    else:
+        return render_template_string("You are not logged in.")
+
 
 
