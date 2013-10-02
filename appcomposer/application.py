@@ -56,7 +56,7 @@ def login():
         # We probably got here through a GET
         form = LoginForm()
         form.login.data = ""
-        form.password.password = "TestPassword"
+        form.password.data = "TestPassword"
         
     # This is an effective login request
     if request.method == "POST":
