@@ -31,6 +31,22 @@ class User(Base, UserMixin):
     @classmethod
     def exists(self, login, word):
         return DBS.query(self).filter(sql.and_(self.login == login, self.password == word)).first()
+    
+class AppVersion(Base):
+    
+    __tablename__ = 'AppVersions'
+    
+    version_id = Column(Integer, primary_key = True)
+    app_id = Column(Integer, ForeignKey("Apps.id"), primary_key = True)
+    creation_date = Column(DateTime, nullable = False, index = True)
+    
+    app = relation("App", backref="app_versions")
+    
+    def __init__(self, version_id, app):
+        self.version_id = version_id
+        self.app = app
+        self.creation_date = datetime.datetime.now()
+    
 
 class App(Base):
 
