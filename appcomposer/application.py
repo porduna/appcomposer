@@ -1,6 +1,10 @@
 from flask import Flask
+<<<<<<< HEAD
 from flask import render_template, render_template_string
 import os
+=======
+from flask import escape
+>>>>>>> cc3c3a72b07738f16918c3c9b71a057c48857120
 
 app = Flask(__name__)
 
@@ -36,6 +40,7 @@ app.register_blueprint(expert_blueprint,    url_prefix = '/composers/expert')
 
 
 
+<<<<<<< HEAD
 # This should be moved somewhere else. Meanwhile, I place it here for testing/development purposes.
 from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
 from flask import request, redirect, url_for, session
@@ -84,3 +89,17 @@ def logout():
 
 
 
+=======
+
+# Mostly for debugging purposes, this snippet will print the site-map so that we can check
+# which methods we are routing.
+@app.route("/site-map")
+def site_map():
+    lines = []
+    for rule in app.url_map.iter_rules():
+        line = str(escape(repr(rule)))
+        lines.append(line)
+        
+    ret = "<br>".join(lines)
+    return ret
+>>>>>>> cc3c3a72b07738f16918c3c9b71a057c48857120
