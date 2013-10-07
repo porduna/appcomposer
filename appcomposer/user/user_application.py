@@ -5,28 +5,18 @@ from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
 from .fields import DisabledTextField
 
-from appcomposer import db
+from appcomposer.db import db_session
 from appcomposer import models
 
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 
-class UserApplication(object):
-    
-    def __init__(self, flask_app):
-        self.app = flask_app
-        
-        # Establish a db session
-        self.db_session = db.db_session
-        
-        
-        # Initialize the Admin
-        # URL describes through which address we access the page.
-        # Endpoint enables us to do url_for('userp') to yield the URL
-        self.admin = Admin(self.app, index_view = HomeView(), name = "User Profile", url = "/user", endpoint = "user")
-        
-        self.admin.add_view(ProfileEditView(self.db_session, name="Profile"))
-        
+def initialize_user_component(app):
+    # Initialize the Admin
+    # URL describes through which address we access the page.
+    # Endpoint enables us to do url_for('userp') to yield the URL
+    admin = Admin(app, index_view = HomeView(), name = "User Profile", url = "/user", endpoint = "user")
+    admin.add_view(ProfileEditView(name="Profile"))
 
         
 class EditView(BaseView):
@@ -62,9 +52,8 @@ class ProfileEditForm(Form):
 
 class ProfileEditView(BaseView):
 
-    def __init__(self, db_session, *args, **kwargs):
+    def __init__(self, *args, **kwargs):
         super(ProfileEditView, self).__init__(*args, **kwargs)
-        self._session = db_session
 
     @expose(methods=['GET','POST'])
     def index(self):
@@ -84,7 +73,7 @@ class ProfileEditView(BaseView):
         # (And display the appropriate form field).
         change_password = True
         
-        user_list = self._session.query(models.User).filter_by(login = login).all()
+        user_list = db_session.query(models.User).filter_by(login = login).all()
         if(len(user_list) > 0):
             user = user_list[0]
         
@@ -129,8 +118,8 @@ class ProfileEditView(BaseView):
             user.role = form.role.data
             user.auth_type = form.auth_system.data # Probably in the release we shouldn't let users modify the auth this way
             user.auth_data = form.password.data # For the userpass method, the auth_data should contain the password. Eventually, should add hashing.
-            self._session.add(user)
-            self._session.commit()
+            db_session.add(user)
+            db_session.commit()
 
         return self.render("user/profile-edit.html", form=form, change_password=change_password)
     

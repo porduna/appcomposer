@@ -3,20 +3,17 @@ from flask import render_template, render_template_string
 import os
 
 app = Flask(__name__)
-
-# Configure flask app
-app.config["DEBUG"] = True
 app.config["SECRET_KEY"] = os.urandom(32)
 
 #####
 # Main components 
 #####
 
-from .user.user_application import UserApplication
+from .user.user_application import initialize_user_component
 from .admin import admin_blueprint
 
 # User component
-userApp = UserApplication(app)
+initialize_user_component(app)
 
 app.register_blueprint(admin_blueprint,     url_prefix = '/admin')
 

@@ -39,6 +39,7 @@ def run():
         app.config['DEBUG'] = False
     else:
         app.config['DEBUG'] = True
+        app.config["SECRET_KEY"] = 'secret'
 
     port = int(os.environ.get('PORT', args.port))
     app.run(host='0.0.0.0', port=port, threaded = True)
