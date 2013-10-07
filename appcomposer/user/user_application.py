@@ -127,8 +127,8 @@ class ProfileEditView(BaseView):
             user.email = form.email.data
             user.organization = form.organization.data
             user.role = form.role.data
-            user.auth_type = form.auth_system # Probably in the release we shouldn't let users modify the auth this way
-            user.auth_data = form.password # For the userpass method, the auth_data should contain the password. Eventually, should add hashing.
+            user.auth_type = form.auth_system.data # Probably in the release we shouldn't let users modify the auth this way
+            user.auth_data = form.password.data # For the userpass method, the auth_data should contain the password. Eventually, should add hashing.
             self._session.add(user)
             self._session.commit()
 
