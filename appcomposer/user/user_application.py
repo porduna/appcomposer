@@ -15,8 +15,10 @@ def initialize_user_component(app):
     # Initialize the Admin
     # URL describes through which address we access the page.
     # Endpoint enables us to do url_for('userp') to yield the URL
-    admin = Admin(app, index_view = HomeView(), name = "User Profile", url = "/user", endpoint = "user")
-    admin.add_view(ProfileEditView(name="Profile"))
+    url = '/user'
+    admin = Admin(index_view = HomeView(url = url, endpoint = 'user'), name = "User Profile", url = url, endpoint = "home-user")
+    admin.add_view(ProfileEditView(name="Profile", url = 'profile', endpoint = 'user.profile'))
+    admin.init_app(app)
 
         
 class EditView(BaseView):
@@ -26,9 +28,6 @@ class EditView(BaseView):
     
     
 class HomeView(BaseView):
-    
-    def __init__(self):
-        super(HomeView, self).__init__(endpoint = "user", url = "/user", static_folder="static", static_url_path="/static")
     
     @expose('/')
     def index(self):
@@ -65,7 +64,7 @@ class ProfileEditView(BaseView):
         """
         
         if "logged_in" not in session or session["logged_in"] != True:
-            return render_template_string('You are not logged in. You may login <a href="../login">here</a>.')
+            return render_template_string('You are not logged in. You may login <a href="{{ url_for("index") }}">here</a>.')
         
         login = session["login"]
         

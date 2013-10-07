@@ -42,5 +42,6 @@ def run():
         app.config["SECRET_KEY"] = 'secret'
 
     port = int(os.environ.get('PORT', args.port))
+    print app.url_map
     app.run(host='0.0.0.0', port=port, threaded = True)
  
