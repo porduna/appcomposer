@@ -9,8 +9,9 @@ class ComposerRegister(object):
 registry = []
 
 from .application import app
+from .login import current_user
+assert current_user is not None # ignore pyflakes
 from .db import db_session, upgrader
-
 assert db_session is not None # ignore pyflakes
 
 @app.route("/")

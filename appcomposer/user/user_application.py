@@ -4,9 +4,9 @@ from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
 from .fields import DisabledTextField
 
-from appcomposer.db import db_session
 from appcomposer import models
 from appcomposer.login import current_user
+from appcomposer.db import db_session
 
 from sqlalchemy.orm import scoped_session, sessionmaker
 
