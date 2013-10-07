@@ -1,12 +1,12 @@
 
-from flask import Flask
-from flask import redirect, request, flash, session, render_template_string
+from flask import redirect, request, flash, session, render_template_string, url_for
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
 from .fields import DisabledTextField
 
 from appcomposer.db import db_session
 from appcomposer import models
+from appcomposer.login import current_user
 
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -20,14 +20,25 @@ def initialize_user_component(app):
     admin.add_view(ProfileEditView(name="Profile", url = 'profile', endpoint = 'user.profile'))
     admin.init_app(app)
 
+class UserBaseView(BaseView):
+
+    def is_accessible(self):
+        return current_user() is not None
+
+    def _handle_view(self, *args, **kwargs):
+        if not self.is_accessible():
+            return redirect(url_for('login', next=request.url))
+
+        return super(UserBaseView, self)._handle_view(*args, **kwargs)
+
         
-class EditView(BaseView):
+class EditView(UserBaseView):
     @expose('/')
     def index(self):
         return self.render("user/index.html")
     
     
-class HomeView(BaseView):
+class HomeView(UserBaseView):
     
     @expose('/')
     def index(self):
@@ -49,7 +60,7 @@ class ProfileEditForm(Form):
     last_access_date    = DisabledTextField(u"Last access:")
     auth_system         = TextField(u"Auth system:")
 
-class ProfileEditView(BaseView):
+class ProfileEditView(UserBaseView):
 
     def __init__(self, *args, **kwargs):
         super(ProfileEditView, self).__init__(*args, **kwargs)

@@ -45,6 +45,8 @@ class LoginForm(Form):
 
 @app.route('/login', methods = ["GET", "POST"])
 def login():
+
+    next_url = request.args.get('next', '')
     
     if len(request.form):
         # We probably got here from a POST
@@ -65,10 +67,10 @@ def login():
             # The session is stored client-side but cryptographically signed.
             session["logged_in"] = True
             session["login"] = form.login.data
-            return redirect("/user")
+            return redirect(next_url or "/user")
         
         
-    return render_template("login/login.html", form=form)
+    return render_template("login/login.html", form=form, next=next_url)
 
 @app.route('/logout', methods = ["GET", "POST"])
 def logout():
