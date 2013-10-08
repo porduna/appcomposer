@@ -9,8 +9,9 @@ class ComposerRegister(object):
 registry = []
 
 from .application import app
+from .login import current_user
+assert current_user is not None # ignore pyflakes
 from .db import db_session, upgrader
-
 assert db_session is not None # ignore pyflakes
 
 @app.route("/")
@@ -39,7 +40,9 @@ def run():
         app.config['DEBUG'] = False
     else:
         app.config['DEBUG'] = True
+        app.config["SECRET_KEY"] = 'secret'
 
     port = int(os.environ.get('PORT', args.port))
+    print app.url_map
     app.run(host='0.0.0.0', port=port, threaded = True)
  
