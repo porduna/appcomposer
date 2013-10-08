@@ -42,9 +42,6 @@ class HomeView(UserBaseView):
     
     @expose('/')
     def index(self):
-        if "logged_in" not in session or session["logged_in"] != True:
-            return render_template_string('You are not logged in. You may login <a href="../login">here</a>.')
-        
         return self.render('user/index.html')
     
     
@@ -74,35 +71,19 @@ class ProfileEditView(UserBaseView):
         the user profile. It exposes both GET and POST, for viewing and updating respectively.
         """
         
-        if "logged_in" not in session or session["logged_in"] != True:
-            return render_template_string('You are not logged in. You may login <a href="{{ url_for("index") }}">here</a>.')
-        
-        login = session["login"]
-        
         # This will be passed as a template parameter to let us change the password.
         # (And display the appropriate form field).
         change_password = True
         
-        user_list = db_session.query(models.User).filter_by(login = login).all()
-        if(len(user_list) > 0):
-            user = user_list[0]
+        user = current_user()
+        if user is None:
+            return (500, "User is None")
         
         
         # If it is a POST request to edit the form, then request.form will not be None
         # Otherwise we will simply load the form data from the DB
         if len(request.form):
             form = ProfileEditForm(request.form, csrf_enabled = True)
-        elif len(user_list) == 0:
-            form = ProfileEditForm(csrf_enabled = True)
-            form.name.data = "no-user" # TODO: Change form item name
-            form.login.data = "test"
-            form.email.data = "mail@dotcom"
-            form.organization.data = "AppComposer"
-            form.role.data = "Developer"
-            form.creation_date.data = "2013-09-23 14:20:00"
-            form.last_access_date.data = "2013-09-23 14:20:00"
-            form.auth_system.data = "userpass"
-            form.password.data = "password"
         else:
             # It was a GET request (just viewing). 
             form = ProfileEditForm(csrf_enabled = True)
