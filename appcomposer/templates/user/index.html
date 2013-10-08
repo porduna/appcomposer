@@ -2,35 +2,31 @@
 
 {% block body %}
 
-<h1>
-Welcome! 
-</h1>
-<h2>
-You are logged in as <a href="profileeditview">{{session.login}}</a>.
-</h1>
+    <div class="container">
+
+        <div class="hero-unit">
+            <h1>Welcome {{session.login}}!</h1>
+            <p>This is the main page of the App Composer. The App Composer lets you customize an application easily, in different ways. Choose the type of App Composer you want to use, and get started!</p>
+            <p><a href="#" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+        </div>
 
 
-<div class="container">
-    <div class="row">
-
-        {% for composer in composers %}
+        <div class="row">
+            {% for composer in composers %}
         <div class="span4">
-            <h2>
-                {{composer.name}}
+            <h2>{{composer.name}}
             </h2>
             <p>
                 {{composer.description}}
             </p>
             <p>
-                <a class="btn" href="{{url_for(composer.new_endpoint)}}">
-                    Start composing &raquo;
+                <a class="btn" href="{{url_for(composer.new_endpoint)}}">Start composing &raquo;
                 </a>
             </p>
         </div>
-        {% endfor %}
+            {% endfor %}
 
 
+        </div>
     </div>
-</div>
-
 {% endblock %}
