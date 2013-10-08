@@ -18,11 +18,11 @@
     {% block head_tail %}
     {% endblock %}
   </head>
-  <body>
+  <body style="padding-top: 60px">
     {% block page_body %}
-    <div class="container">
-      <div class="navbar">
+      <div class="navbar navbar-fixed-top">
         <div class="navbar-inner">
+        <div class="container">
           {% block brand %}
           <span class="brand">{{ admin_view.admin.name }}</span>
           {% endblock %}
@@ -36,11 +36,12 @@
                 <button type="submit" class="btn btn-primary">Log out</button>
             </form>
         </div>
-
+        </div>
 
         </div>
       </div>
 
+    <div class="container">
       {{ layout.messages() }}
 
       {% block body %}{% endblock %}
