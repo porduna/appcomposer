@@ -1,9 +1,21 @@
 from flask import Flask
-from flask import render_template, render_template_string
+from flask import render_template, render_template_string, escape
 import os
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(32)
+
+###
+# Composers info
+###
+
+from .composers.dummy     import info as dummy_info
+
+# So that we can have access to all the info from the Users component.
+# It is important that this is done early. Otherwise, it will be accessed by the
+# user component before it is ready.
+COMPOSERS = [dummy_info]
+
 
 #####
 # Main components 
@@ -31,12 +43,12 @@ from .composers.adapt     import adapt_blueprint
 from .composers.expert    import expert_blueprint
 from .composers.dummy     import dummy_blueprint
 
-from .composers.dummy     import info as dummy_info
 
 app.register_blueprint(translate_blueprint, url_prefix = '/composers/translate')
 app.register_blueprint(adapt_blueprint,     url_prefix = '/composers/adapt')
 app.register_blueprint(expert_blueprint,    url_prefix = '/composers/expert')
 app.register_blueprint(dummy_blueprint,     url_prefix = dummy_info["url"])
+
 
 
 # Mostly for debugging purposes, this snippet will print the site-map so that we can check

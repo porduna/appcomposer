@@ -12,20 +12,24 @@ You are logged in as <a href="profileeditview">{{session.login}}</a>.
 
 <div class="container">
     <div class="row">
+
+        {% for composer in composers %}
         <div class="span4">
             <h2>
-                Dummy Composer
+                {{composer.name}}
             </h2>
             <p>
-                Pretend that you are composing an app!
-                For testing purposes!
+                {{composer.description}}
             </p>
             <p>
-                <a class="btn" href="#">
+                <a class="btn" href="{{url_for(composer.new_endpoint)}}">
                     Start composing &raquo;
                 </a>
             </p>
         </div>
+        {% endfor %}
+
+
     </div>
 </div>
 

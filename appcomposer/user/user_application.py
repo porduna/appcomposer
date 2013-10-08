@@ -10,6 +10,9 @@ from appcomposer.db import db_session
 
 from sqlalchemy.orm import scoped_session, sessionmaker
 
+# List of all available composers
+from appcomposer.application import COMPOSERS
+
 
 def initialize_user_component(app):
     # Initialize the Admin
@@ -42,7 +45,7 @@ class HomeView(UserBaseView):
     
     @expose('/')
     def index(self):
-        return self.render('user/index.html')
+        return self.render('user/index.html', composers = COMPOSERS)
     
     
 class ProfileEditForm(Form):
