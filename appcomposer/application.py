@@ -31,10 +31,12 @@ from .composers.adapt     import adapt_blueprint
 from .composers.expert    import expert_blueprint
 from .composers.dummy     import dummy_blueprint
 
+from .composers.dummy     import info as dummy_info
+
 app.register_blueprint(translate_blueprint, url_prefix = '/composers/translate')
 app.register_blueprint(adapt_blueprint,     url_prefix = '/composers/adapt')
 app.register_blueprint(expert_blueprint,    url_prefix = '/composers/expert')
-app.register_blueprint(dummy_blueprint,     url_prefix = '/composers/dummy')
+app.register_blueprint(dummy_blueprint,     url_prefix = dummy_info["url"])
 
 
 # Mostly for debugging purposes, this snippet will print the site-map so that we can check
