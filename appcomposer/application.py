@@ -15,6 +15,10 @@ from .admin import admin_blueprint
 # User component
 initialize_user_component(app)
 
+# App Storage
+from .appstorage import appstorage
+
+
 app.register_blueprint(admin_blueprint,     url_prefix = '/admin')
 
 
