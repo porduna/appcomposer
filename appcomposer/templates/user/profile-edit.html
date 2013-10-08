@@ -1,0 +1,41 @@
+{% extends 'user/base.html' %}
+{% block body %}
+
+
+<div class="row">
+    <div class="span7 offset2">
+        <br/>
+        <h1>My profile ({{session.username}}) </h1>
+        <br/>
+        <br/>
+
+        {% from "user/wl_form_helpers.html" import render_field %}
+        <form method="POST" action="{{ request.url }}" class="form-horizontal">
+            {{ form.hidden_tag() }}
+
+            <fieldset>
+                {{ render_field(form.login) }}
+                {{ render_field(form.name) }}
+                {{ render_field(form.email) }}
+                {{ render_field(form.organization) }}
+				{{ render_field(form.role) }}
+				{{ render_field(form.creation_date) }}
+				{{ render_field(form.last_access_date) }}
+				{{ render_field(form.auth_system) }}
+                {% if change_password %}
+                    {{ render_field(form.password) }}
+                {% endif %}
+
+                <div class="form-actions">
+                    {% if change_profile %}
+                        <button type="submit" class="btn btn-primary">Save</button>
+                    {% else %}
+                        <button type="submit" class="btn btn-primary disabled">Save</button>
+                    {% endif %}
+                </div>
+            </fieldset>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

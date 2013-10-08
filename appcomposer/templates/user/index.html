@@ -1,5 +1,12 @@
-<html>
-<body>
-    Welcome, user
-</body>
-</html>
+{% extends 'user/master.html' %}
+
+{% block body %}
+
+<h1>
+Welcome! 
+</h1>
+<h2>
+You are logged in as <a href="profileeditview">{{session.login}}</a>.
+</h1>
+
+{% endblock %}
