@@ -1,7 +1,7 @@
-
 from flask import redirect, request, flash, session, render_template_string, url_for
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
+from appcomposer.models import App
 from .fields import DisabledTextField
 
 from appcomposer import models
@@ -19,14 +19,21 @@ def initialize_user_component(app):
     # URL describes through which address we access the page.
     # Endpoint enables us to do url_for('userp') to yield the URL
     url = '/user'
-    admin = Admin(index_view = HomeView(url = url, endpoint = 'user'), name = "User Profile", url = url, endpoint = "home-user")
-    admin.add_view(ProfileEditView(name="Profile", url = 'profile', endpoint = 'user.profile'))
+    admin = Admin(index_view=HomeView(url=url, endpoint='user'), name="User Profile", url=url, endpoint="home-user")
+    admin.add_view(ProfileEditView(name="Profile", url='profile', endpoint='user.profile'))
+    admin.add_view(AppsView(name="Apps", url="apps"))
     admin.init_app(app)
 
+
 class UserBaseView(BaseView):
+    """
+    View that will probably be used as base for all other User views.
+    It includes common functionality such as logged-in verification.
+    """
 
     def is_accessible(self):
-        return current_user() is not None
+        self._current_user = current_user()
+        return self._current_user is not None
 
     def _handle_view(self, *args, **kwargs):
         if not self.is_accessible():
@@ -34,38 +41,65 @@ class UserBaseView(BaseView):
 
         return super(UserBaseView, self)._handle_view(*args, **kwargs)
 
-        
+
 class EditView(UserBaseView):
+    """
+    Edit View. The view used to view and edit common user information such as
+    email, name, etc.
+    """
+
     @expose('/')
     def index(self):
         return self.render("user/index.html")
-    
-    
+
+
 class HomeView(UserBaseView):
-    
+    """
+    Home View. Standard entry view which lets us choose a composer with which to create a new app.
+    """
+
     @expose('/')
     def index(self):
-        return self.render('user/index.html', composers = COMPOSERS)
-    
-    
+        return self.render('user/index.html', composers=COMPOSERS)
+
+
 class ProfileEditForm(Form):
-    name                = DisabledTextField(u"Name:")
-    login               = DisabledTextField(u"Login:")
-    email               = TextField(u"E-mail:")
-    #facebook    = TextField(u"Facebook id:", description="Facebook identifier (number).", validators = [NumberRange(min=1000) ])
-    password            = PasswordField(u"Password:", description="Password.")
-    organization        = TextField(u"Organization:")
-    role                = TextField(u"Role:")
-    creation_date       = DisabledTextField(u"Creation date:")
-    last_access_date    = DisabledTextField(u"Last access:")
-    auth_system         = TextField(u"Auth system:")
+    """
+    The form used for the Profile Edit view.
+    """
+    name = DisabledTextField(u"Name:")
+    login = DisabledTextField(u"Login:")
+    email = TextField(u"E-mail:")
+    password = PasswordField(u"Password:", description="Password.")
+    organization = TextField(u"Organization:")
+    role = TextField(u"Role:")
+    creation_date = DisabledTextField(u"Creation date:")
+    last_access_date = DisabledTextField(u"Last access:")
+    auth_system = TextField(u"Auth system:")
+
+
+class AppsView(UserBaseView):
+    def __init__(self, *args, **kwargs):
+        super(UserBaseView, self).__init__(*args, **kwargs)
+
+    """
+    Apps View. Will list all the apps owned by someone. He will be able to edit and delete them,
+    and in the future will probably offer some additional options.
+    """
+
+    @expose('/')
+    def index(self):
+        # Retrieve the apps
+        apps = db_session.query(App).filter_by(owner_id=self._current_user.id).all()
+        return self.render('user/profile-apps.html', apps=apps)
+
 
 class ProfileEditView(UserBaseView):
-
+    # TODO: Make sure this method is necessary. Remove it otherwise, it's not very pretty.
     def __init__(self, *args, **kwargs):
         super(ProfileEditView, self).__init__(*args, **kwargs)
 
-    @expose(methods=['GET','POST'])
+    @expose(methods=['GET', 'POST'])
     def index(self):
         """
         index(self)
@@ -73,23 +107,23 @@ class ProfileEditView(UserBaseView):
         This method will be invoked for the Profile Edit view. This view is used for both viewing and updating
         the user profile. It exposes both GET and POST, for viewing and updating respectively.
         """
-        
+
         # This will be passed as a template parameter to let us change the password.
         # (And display the appropriate form field).
         change_password = True
-        
+
         user = current_user()
         if user is None:
             return (500, "User is None")
-        
-        
+
+
         # If it is a POST request to edit the form, then request.form will not be None
         # Otherwise we will simply load the form data from the DB
         if len(request.form):
-            form = ProfileEditForm(request.form, csrf_enabled = True)
+            form = ProfileEditForm(request.form, csrf_enabled=True)
         else:
             # It was a GET request (just viewing). 
-            form = ProfileEditForm(csrf_enabled = True)
+            form = ProfileEditForm(csrf_enabled=True)
             form.name.data = user.name
             form.login.data = user.login
             form.email.data = user.email
@@ -99,7 +133,7 @@ class ProfileEditView(UserBaseView):
             form.last_access_date.data = user.last_access_date
             form.auth_system.data = user.auth_system
             form.password.data = user.auth_data
-            
+
         # If the method is POST we assume that we want to update and not just view
         # TODO: Make sure this is the proper way of handling that. The main purpose here
         # is to avoid carrying out a database commit if it isn't needed.

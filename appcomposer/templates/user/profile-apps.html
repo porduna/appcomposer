@@ -1,0 +1,28 @@
+{# For the View that displays the list of apps that this user owns. #}
+
+{% extends 'user/base.html' %}
+{% block body %}
+
+
+<div class="row">
+
+    {% for app in apps %}
+        <div class="span3" style="background-color:#C2DFFF; padding: 10px; border: 1px solid #003580; border-radius: 3px;">
+            <h2>{{ app.name }}</h2>
+            <p>
+                <h4>Composer: {{ app.composer }}</h4><br>
+                Created: {{ app.creation_date }}<br>
+                Modified: {{ app.modification_date }}<br>
+                Accessed: {{ app.last_access_date }}<br>
+            </p>
+            <br/>
+            <p>
+                <a href="#" class="btn btn-primary" type="button">Open</a>
+                <a href="#" class="btn btn-danger" type="button">Delete</a>
+            </p>
+        </div>
+    {% endfor %}
+
+</div>
+
+{% endblock %}

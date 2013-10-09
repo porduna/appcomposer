@@ -1,5 +1,3 @@
-
-
 from flask import session, render_template, render_template_string
 
 from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
@@ -14,11 +12,13 @@ import random
 
 import json
 
-@app.route('/appstorage', methods = ["GET", "POST"])
+
+@app.route('/appstorage', methods=["GET", "POST"])
 def appstorage():
     return "Hello appstorage"
 
-@app.route('/appstorage/new', methods=["GET","POST"])
+
+@app.route('/appstorage/new', methods=["GET", "POST"])
 def new():
     name = request.args.get("name")
     if name is None:
@@ -26,6 +26,7 @@ def new():
     owner = current_user()
     result = create_app(name, owner, "dummy", "{'message':'Hello world'}")
     return "Application created"
+
 
 @app.route('/appstorage/list', methods=["GET", "POST"])
 def list():
@@ -38,11 +39,11 @@ def list():
 
     return ret
 
+
 @app.route('/appstorage/<appid>', methods=["GET", "POST"])
 def get(appid):
-    app = db_session.query(App).filter_by(unique_id = appid).first()
+    app = db_session.query(App).filter_by(unique_id=appid).first()
     return app.to_json()
-
 
 
 def create_app(name, owner, composer, data):
@@ -53,12 +54,8 @@ def create_app(name, owner, composer, data):
     @param composer Composer identifier.
     @param data JSON-able dictionary with the composer-specific data.
     """
-    
-    data = {
-            "version" : 1,
-            "composer" : composer,
-            "data" : data
-            }
+
+    data = dict(version=1, composer=composer, data=data)
 
     appv = App(name, owner)
     appv.data = json.dumps(data)
@@ -69,9 +66,11 @@ def create_app(name, owner, composer, data):
 
     return True
 
+
 def display_app(appv):
     return appv.name
 
+
 def get_app(unique_id):
-    appv = db_session.query(App).filter_by(unique_id = unique_id).first()
+    appv = db_session.query(App).filter_by(unique_id=unique_id).first()
     return appv
