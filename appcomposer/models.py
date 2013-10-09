@@ -8,6 +8,8 @@ from sqlalchemy.orm import relation, backref
 
 from appcomposer.db import Base, db_session as DBS
 
+import json
+
 
 class User(Base, UserMixin):
     __tablename__ = 'Users'
@@ -91,6 +93,30 @@ class App(Base):
         self.unique_id = str(uuid.uuid4())
         while App.find_by_unique_id(self.unique_id) is not None:
             self.unique_id = str(uuid.uuid4())
+
+
+    def to_dict(self):
+        """
+        Turns the app into a dictionary with just data (which is easy to serialize).
+        """
+        d = {
+            "unique_id": self.unique_id,
+            "name": self.name,
+            "owner_id": self.owner_id,
+            "composer": self.composer,
+            "data": self.data,
+            "creation_date": self.creation_date.__str__(),
+            "modification_date": self.modification_date.__str__(),
+            "last_access_date": self.last_access_date.__str__()
+        }
+        return d
+
+    def to_json(self):
+        """
+        Turns the App into a JSON string.
+        """
+        return json.dumps(self.to_dict())
+
 
     @classmethod
     def find_by_unique_id(cls, unique_id):

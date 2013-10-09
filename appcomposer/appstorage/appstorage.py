@@ -21,9 +21,27 @@ def appstorage():
 @app.route('/appstorage/new', methods=["GET","POST"])
 def new():
     name = request.args.get("name")
+    if name is None:
+        return "Missing parameter: name", 400
     owner = current_user()
     result = create_app(name, owner, "dummy", "{'message':'Hello world'}")
     return "Application created"
+
+@app.route('/appstorage/list', methods=["GET", "POST"])
+def list():
+    apps = db_session.query(App).all()
+
+    ret = ""
+
+    for app in apps:
+        ret += "[ name: %s; id: %s ]<br>" % (app.name, app.unique_id)
+
+    return ret
+
+@app.route('/appstorage/<appid>', methods=["GET", "POST"])
+def get(appid):
+    app = db_session.query(App).filter_by(unique_id = appid).first()
+    return app.to_json()
 
 
 
@@ -50,3 +68,10 @@ def create_app(name, owner, composer, data):
     db_session.commit()
 
     return True
+
+def display_app(appv):
+    return appv.name
+
+def get_app(unique_id):
+    appv = db_session.query(App).filter_by(unique_id = unique_id).first()
+    return appv
