@@ -49,8 +49,8 @@ class User(Base, UserMixin):
         return self.name
 
     @classmethod
-    def exists(self, login, word):
-        return DBS.query(self).filter(sql.and_(self.login == login, self.password == word)).first()
+    def exists(cls, login, word):
+        return DBS.query(cls).filter(sql.and_(cls.login == login, cls.password == word)).first()
 
 
 class AppVersion(Base):
@@ -94,7 +94,6 @@ class App(Base):
         while App.find_by_unique_id(self.unique_id) is not None:
             self.unique_id = str(uuid.uuid4())
 
-
     def to_dict(self):
         """
         Turns the app into a dictionary with just data (which is easy to serialize).
@@ -116,7 +115,6 @@ class App(Base):
         Turns the App into a JSON string.
         """
         return json.dumps(self.to_dict())
-
 
     @classmethod
     def find_by_unique_id(cls, unique_id):

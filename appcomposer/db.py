@@ -1,3 +1,9 @@
+"""
+The DB module deals with database connection issues and with Alembic.
+Note that we have chosen not to use flask-sqlalchemy extension to
+reduce the number of dependencies.
+"""
+
 import os
 import hashlib
 
@@ -8,6 +14,7 @@ from config import SQLALCHEMY_ENGINE_STR, USE_PYMYSQL
 
 if USE_PYMYSQL:
     import pymysql_sa
+
     pymysql_sa.make_default_mysql_dialect()
 
 engine = create_engine(SQLALCHEMY_ENGINE_STR, convert_unicode=True, pool_recycle=3600)
@@ -18,7 +25,8 @@ db_session = scoped_session(sessionmaker(autocommit=False,
 Base = declarative_base()
 Base.query = db_session.query_property()
 
-def init_db(drop = False):
+
+def init_db(drop=False):
     # import all modules here that might define models so that
     # they will be registered properly on the metadata.  Otherwise
     # you will have to import them first before calling init_db()
@@ -26,7 +34,7 @@ def init_db(drop = False):
     from .models import App
 
     if drop:
-        print "Droping Database"
+        print "Dropping Database"
         Base.metadata.drop_all(bind=engine)
     Base.metadata.create_all(bind=engine)
 
@@ -41,8 +49,8 @@ from alembic.config import Config
 from alembic.migration import MigrationContext
 from alembic import command
 
-class DbParticularUpgrader(object):
 
+class DbParticularUpgrader(object):
     def __init__(self):
         self.config = Config("alembic.ini")
         self.config.set_main_option("script_location", os.path.abspath('alembic'))
@@ -65,6 +73,7 @@ class DbParticularUpgrader(object):
     def upgrade(self):
         if not self.check():
             command.upgrade(self.config, "head")
+
 
 upgrader = DbParticularUpgrader()
 

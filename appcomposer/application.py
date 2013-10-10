@@ -9,7 +9,7 @@ app.config["SECRET_KEY"] = os.urandom(32)
 # Composers info
 ###
 
-from .composers.dummy     import info as dummy_info
+from .composers.dummy import info as dummy_info
 
 # So that we can have access to all the info from the Users component.
 # It is important that this is done early. Otherwise, it will be accessed by the
@@ -31,7 +31,7 @@ initialize_user_component(app)
 from .appstorage import appstorage
 
 
-app.register_blueprint(admin_blueprint,     url_prefix = '/admin')
+app.register_blueprint(admin_blueprint, url_prefix='/admin')
 
 
 #####
@@ -39,15 +39,15 @@ app.register_blueprint(admin_blueprint,     url_prefix = '/admin')
 #####
 
 from .composers.translate import translate_blueprint
-from .composers.adapt     import adapt_blueprint
-from .composers.expert    import expert_blueprint
-from .composers.dummy     import dummy_blueprint
+from .composers.adapt import adapt_blueprint
+from .composers.expert import expert_blueprint
+from .composers.dummy import dummy_blueprint
 
 
-app.register_blueprint(translate_blueprint, url_prefix = '/composers/translate')
-app.register_blueprint(adapt_blueprint,     url_prefix = '/composers/adapt')
-app.register_blueprint(expert_blueprint,    url_prefix = '/composers/expert')
-app.register_blueprint(dummy_blueprint,     url_prefix = dummy_info["url"])
+app.register_blueprint(translate_blueprint, url_prefix='/composers/translate')
+app.register_blueprint(adapt_blueprint, url_prefix='/composers/adapt')
+app.register_blueprint(expert_blueprint, url_prefix='/composers/expert')
+app.register_blueprint(dummy_blueprint, url_prefix=dummy_info["url"])
 
 
 
@@ -59,6 +59,6 @@ def site_map():
     for rule in app.url_map.iter_rules():
         line = str(escape(repr(rule)))
         lines.append(line)
-        
+
     ret = "<br>".join(lines)
     return ret
