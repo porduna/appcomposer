@@ -1,5 +1,112 @@
-<html>
-<body>
-    Welcome to translate!
-</body>
-</html>
+{% set title = "Translation tool" %}
+{% set current_link = "home" %}
+{% extends 'composers/translate/layout.html' %}
+{% block body_content %}
+        <div class="translateblock">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="page-header">
+                        <h1 id="apptitle">Translate</h1>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-6">
+                  <div class="well">
+                        <form class="form-horizontal" id="geturl" name="geturl" action="." method="POST">
+                        <fieldset>
+                            <legend>Step 1</legend>
+                            <div class="form-group">
+                                <label for="appurl" class="col-lg-2 control-label">URL</label>
+                                <div class="col-lg-10">
+                                    <input type="text" id="appurl" name="appurl" class="form-control" placeholder="URL of the app">
+                                    <span class="help-block">Enter the URL of the app you want to translate.</span>                      
+                                </div>
+                            </div>
+                            
+                            <div class="form-group">
+                                <div class="col-lg-10 col-lg-offset-2">                            
+                                    <label class="control-label" for="searchapp">Or you can search the app on the Go-Lab portal</label>
+                                    <div class="controls">
+                                        <a data-toggle="modal" href="#searchmodal" class="btn btn-primary" id="searchapp">Search app on portal</a>
+                                        <div class="modal fade" id="searchmodal" tabindex="-1" role="dialog" aria-labelledby="searchmodallabel" aria-hidden="true">
+                                            <div class="modal-dialog">
+                                                <div class="modal-content">
+                                                    <div class="modal-header">
+                                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
+                                                        <h4 class="modal-title">List of apps</h4>
+                                                    </div>
+                                                    
+                                                    <div class="modal-body">                                                    
+                                                        <div id="page-content-wrapper">
+                                                          <div class="content-header">
+                                                            <p>Select the app clicking over one of the thumbnails below.</p>
+                                                          </div>                                  
+                                                          <!-- App thumbnails -->
+                                                          <div class="page-content inset">
+                                                            <div class="row">
+                                                              <div class="col-md-4">
+                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>
+                                                              </div>
+                                                              <div class="col-md-4">
+                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>
+                                                              </div>
+                                                              <div class="col-md-4">
+                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>
+                                                              </div>
+                                                              <div class="col-md-4">
+                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>
+                                                              </div>
+                                                              <div class="col-md-4">
+                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>
+                                                              </div>
+                                                              <div class="col-md-4">
+                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>
+                                                              </div>                                                                                                                                                                                                                                        
+                                                            </div>
+                                                          </div>
+                                                        </div>
+                                                    </div>
+                                                    
+                                                    <div class="modal-footer">
+                                                        <button type="button" class="btn btn-warning" id="closemodal" data-dismiss="modal">Close</button>
+                                                        <button type="button" class="btn btn-success" id="addurl">Add App</button>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>                            
+                            </div>
+
+                            <hr>                        
+                            
+                            {% with messages = get_flashed_messages() %}
+                                {% if messages %}
+                                <div class="alert alert-error">
+                                {% for message in messages %}
+                                    <p>{{ message }}</p>
+                                {% endfor %}
+                                </div>
+                                {% endif %}
+                            {% endwith %}
+                                            
+                            <div class="form-group">
+                                <div class="col-lg-10 col-lg-offset-2">                            
+                                    <label class="control-label" for="selectlang"></label>
+                                    <div class="controls">
+                                        <!--
+                                        <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">Step 2 - Select language »</button>
+                                        -->
+                                        <a class="btn btn-success" id="sendurlbtn" href="{{ url_for('translate.translate_selectlang') }}">Step 2 - Select language »</a>                                   
+                                    </div>
+                                </div>                                 
+                            </div>
+                        </fieldset>
+                        </form>
+                    </div>
+                </div>
+            </div>            
+        
+{% endblock %}

@@ -1,0 +1,86 @@
+{% set title = "Translation tool :: Source and Target language" %}
+{% set current_link = "home" %}
+{% extends 'composers/translate/layout.html' %}
+{% block body_content %}
+        <div class="translateblock">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="page-header">
+                        <h1 id="apptitle">Translate</h1>
+                        <h2 id="appfullname">the Function plotter app</h1>                        
+                    </div>
+                </div>
+            </div>
+
+
+
+
+      <!-- Forms
+      ================================================== -->
+      <div class="well">
+
+        <div class="row">
+        <div class="col-lg-12">
+          <form class="form-horizontal" id="getlangs" name="getlangs" action="." method="POST">
+          <legend>Step 2: Select the source and target language</legend>
+                              
+          <div class="col-lg-6 col-md-6">
+
+                <div class="form-group">
+                    <label class="control-label" for="srclang">Select source language</label>
+                      <select id="srclang" multiple="" name="srclang" class="form-control">
+                        <option selected="selected">English</option>
+                        <option>French</option>
+                        <option>German</option>
+                      </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="targetlang">Select target language</label>
+                      <select id="targetlang"  multiple="" name="targetlang" class="form-control">
+                        <option>English</option>
+                        <option>French</option>
+                        <option selected="selected">German</option>
+                      </select>
+                </div>              
+          </div>
+          
+          <div class="col-lg-6 col-md-6">
+                <div class="form-group">
+                    <label class="control-label" for="srcgroup">Select source group</label>
+                      <select id="srcgroup" multiple="" name="srcgroup" class="form-control">
+                        <option selected="selected">General</option>
+                        <option>Preadolescence (age 10-13)</option>
+                        <option>Adolescence (age 14-18)</option>
+                      </select>
+                </div>
+                <div class="form-group">
+                    <label class="control-label" for="targetgroup">Select target group</label>
+                      <select id="targetgroup" multiple="" name="targetgroup" class="form-control">
+                        <option>General</option>
+                        <option selected="selected">Preadolescence (age 10-13)</option>
+                        <option>Adolescence (age 14-18)</option>
+                      </select>
+                </div>                
+                <div class="form-group">                 
+                  <div class="controls">
+                    <span class="help-block">You want to translate the app from General English into Elementary School German.</span>
+                    <a class="btn btn-default" id="backtoindexbtn" href="{{ url_for('translate.translate_index') }}">« Go Back to Step 1</a>                                   
+                    <!--
+                    <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">Step 2 - Select language »</button>
+                    -->          
+                    <a class="btn btn-success" id="sendlangsbtn" href="{{ url_for('translate.translate_edit') }}">Step 3 - Translate »</a>
+                  </div>
+                </div>                
+                
+              
+          </div>
+          </form>
+          
+        </div>
+        </div>
+      </div>
+
+
+                   
+            
+{% endblock %}
