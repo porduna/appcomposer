@@ -40,10 +40,15 @@ def list():
     return ret
 
 
-@app.route('/appstorage/<appid>', methods=["GET", "POST"])
+# TODO: Very important to secure this (check that the user has priviledges over the specified app).
+@app.route('/appstorage/<appid>', methods=["GET", "POST", "DELETE"])
 def get(appid):
     app = db_session.query(App).filter_by(unique_id=appid).first()
-    return app.to_json()
+    if request.method == "DELETE":
+        db_session.delete(app)
+        db_session.commit()
+    else:
+        return app.to_json()
 
 
 def create_app(name, owner, composer, data):
