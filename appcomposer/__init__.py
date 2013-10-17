@@ -13,6 +13,7 @@ assert current_user is not None # ignore pyflakes
 from .db import db_session, upgrader
 assert db_session is not None # ignore pyflakes
 
+
 @app.route("/")
 def index():
     return '<a href="/user/">Click here to go the Login</a>'
