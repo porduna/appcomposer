@@ -29,7 +29,7 @@ COMPOSERS = [dummy_info]
 from .user.user_application import initialize_user_component
 initialize_user_component(app)
 
-# App Storage
+# App storage
 from .appstorage import appstorage
 
 #Admin component
