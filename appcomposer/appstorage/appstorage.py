@@ -20,11 +20,16 @@ def appstorage():
 
 @app.route('/appstorage/new', methods=["GET", "POST"])
 def new():
+    next_url = request.args.get('next', '') or request.form.get('next', '')
     name = request.args.get("name")
     if name is None:
         return "Missing parameter: name", 400
     owner = current_user()
-    result = create_app(name, owner, "dummy", "{'message':'Hello world'}")
+    app = create_app(name, owner, "dummy", "{'message':'Hello world'}")
+
+
+    if next_url:
+        return redirect(url_for(next_url, id=app.id))
     return "Application created"
 
 
@@ -44,11 +49,36 @@ def list():
 @app.route('/appstorage/<appid>', methods=["GET", "POST", "DELETE"])
 def get(appid):
     app = db_session.query(App).filter_by(unique_id=appid).first()
+    if app is None:
+        return ("404: App doesn't exist", 404)
     if request.method == "DELETE":
         db_session.delete(app)
         db_session.commit()
     else:
         return app.to_json()
+
+
+@app.route('/appstorage/save', methods=["GET", "POST"])
+def save():
+    next_url = request.args.get('next')
+
+    appid = request.args.get('appid', '') or request.form.get('appid', '')
+    data = request.args.get('data', '') or request.form.get('data', '')
+
+    if not data:
+        return "400: Malformed Request. Data not present.", 400
+
+    # Locate the app
+    app = db_session.query(App).filter_by(unique_id=appid).first()
+    if app is None:
+        return "404: App doesn't exist. Can't save.", 404
+
+    app.data = data
+    app.commit()
+
+    if next_url:
+        redirect(next)
+    return "App saved"
 
 
 def create_app(name, owner, composer, data):
@@ -69,7 +99,7 @@ def create_app(name, owner, composer, data):
     db_session.add(appv)
     db_session.commit()
 
-    return True
+    return appv
 
 
 def display_app(appv):
