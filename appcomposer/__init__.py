@@ -1,6 +1,5 @@
 import os, sys
 import optparse
-from flask import render_template
 
 class ComposerRegister(object):
     def __init__(self, url):
@@ -16,7 +15,7 @@ assert db_session is not None # ignore pyflakes
 
 @app.route("/")
 def index():
-    return render_template("index.html")
+    return '<a href="/user/">Click here to go the Login</a>'
 
 def run():
     if not upgrader.check():
