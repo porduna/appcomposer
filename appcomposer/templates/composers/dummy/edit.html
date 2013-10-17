@@ -52,15 +52,15 @@
             <div style="margin:0 auto;float:none;text-align:center;">
                 <br/>
                 <h1>Welcome to the Dummy Composer! Please, set the text for your application.</h1>
-                Note: Your application is: {{ appid }}
+                Note: Your application is: {{ app.name }} {{ app.unique_id }}
                 <br/>
                 <br/>
             </div>
 
             <div class="span6">
-                <form class="form-inline" action="{{ url_for("new") }}">
-                    <textarea rows="6" name="name"/>
-                    <input type="hidden" name="next" value="{{ url_for("user.apps.index") }}"/>
+                <form class="form-inline" method="POST" action="">
+                    <textarea rows="6" name="text">{{ text }}</textarea>
+                    <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
                     <br><br>
                     <input type="submit" value="Save" class="btn btn-primary"/>
                 </form>

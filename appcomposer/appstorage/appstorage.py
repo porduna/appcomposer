@@ -5,7 +5,7 @@ from flask import request, redirect, url_for, session
 
 from appcomposer.login import current_user
 from appcomposer.db import db_session
-from appcomposer.application import app
+from appcomposer.application import app as flask_app
 from appcomposer.models import App
 
 import random
@@ -13,12 +13,15 @@ import random
 import json
 
 
-@app.route('/appstorage', methods=["GET", "POST"])
+# TODO: This whole module should be made secure, and cleaned up.
+
+
+@flask_app.route('/appstorage', methods=["GET", "POST"])
 def appstorage():
     return "Hello appstorage"
 
 
-@app.route('/appstorage/new', methods=["GET", "POST"])
+@flask_app.route('/appstorage/new', methods=["GET", "POST"])
 def new():
     next_url = request.args.get('next', '') or request.form.get('next', '')
     name = request.args.get("name")
@@ -26,14 +29,10 @@ def new():
         return "Missing parameter: name", 400
     owner = current_user()
     app = create_app(name, owner, "dummy", "{'message':'Hello world'}")
-
-
-    if next_url:
-        return redirect(url_for(next_url, id=app.id))
     return "Application created"
 
 
-@app.route('/appstorage/list', methods=["GET", "POST"])
+@flask_app.route('/appstorage/list', methods=["GET", "POST"])
 def list():
     apps = db_session.query(App).all()
 
@@ -46,7 +45,7 @@ def list():
 
 
 # TODO: Very important to secure this (check that the user has priviledges over the specified app).
-@app.route('/appstorage/<appid>', methods=["GET", "POST", "DELETE"])
+@flask_app.route('/appstorage/<appid>', methods=["GET", "POST", "DELETE"])
 def get(appid):
     app = db_session.query(App).filter_by(unique_id=appid).first()
     if app is None:
@@ -58,7 +57,7 @@ def get(appid):
         return app.to_json()
 
 
-@app.route('/appstorage/save', methods=["GET", "POST"])
+@flask_app.route('/appstorage/save', methods=["GET", "POST"])
 def save():
     next_url = request.args.get('next')
 
@@ -90,6 +89,8 @@ def create_app(name, owner, composer, data):
     @param data JSON-able dictionary with the composer-specific data.
     """
 
+    # TODO: This function is very wrong. Fix it.
+
     data = dict(version=1, composer=composer, data=data)
 
     appv = App(name, owner)
@@ -102,10 +103,38 @@ def create_app(name, owner, composer, data):
     return appv
 
 
-def display_app(appv):
-    return appv.name
-
-
 def get_app(unique_id):
-    appv = db_session.query(App).filter_by(unique_id=unique_id).first()
+    """
+    get_app(unique_id)
+    Gets an app by its unique_id.
+
+    @param unique_id: Unique global identifier of the app.
+    @return: The app if found, None otherwise.
+    """
+    app = db_session.query(App).filter_by(unique_id=unique_id).first()
+    return app
+
+
+def get_app_by_name(app_name):
+    """
+    get_app_by_name(app_name)
+    Retrieves the current user's app with the specified name.
+
+    @param app_name: Name of the application. Will be unique within the list of user's apps.
+    @return: The app if found, None otherwise.
+    """
+    user = current_user()
+    appv = db_session.query(App).filter_by(owner=user, name=app_name).first()
     return appv
+
+
+def save_app(composed_app):
+    """
+    save_app(app)
+    Saves the App object to the database. Useful when the object has been
+    modified.
+    @param app: App object
+    @return: None
+    """
+    db_session.add(composed_app)
+    db_session.commit()

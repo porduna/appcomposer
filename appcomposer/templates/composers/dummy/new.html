@@ -57,13 +57,11 @@
             </div>
 
             <div class="span6">
-                <form class="form-inline" action="{{ url_for("new") }}">
+                <form class="form-inline" method="POST" action="{{ url_for("dummy.new") }}">
                     <textarea rows="6" name="name"></textarea>
-                    <input type="hidden" name="next" value="{{ url_for("dummy.edit") }}"/>
                     <br><br>
                     <input type="submit" value="Save" class="btn btn-primary"/>
                 </form>
-
             </div>
         </div>
     </div>
