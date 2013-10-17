@@ -21,7 +21,6 @@ COMPOSERS = [dummy_info]
 # Main components 
 #####
 
-
 #
 # Initialize administration panels
 # 
