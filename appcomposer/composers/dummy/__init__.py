@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, url_for, redirect, json
 from appcomposer.login import current_user
-import appcomposer.appstorage.appstorage as appstorage
+import appcomposer.appstorage.api as appstorage
 from appcomposer.models import App
 
 
@@ -46,13 +46,8 @@ def edit():
         data = {
             "dummy_version": 1,
             "text": text}
-        datajson = json.dumps(data)
 
-        # Modify the app
-        app.data = datajson
-
-        # Save the app with the modifications we have done
-        appstorage.save_app(app)
+        appstorage.update_app_data(app, data)
 
         # TODO: Print a success message etc etc.
 
@@ -67,8 +62,7 @@ def new():
     # If we receive a post we have filled the page and are creating the app.
     elif request.method == "POST":
         name = request.form["name"]
-        user = current_user()
-        app = appstorage.create_app(name, user, "dummy", data="{}")
+        app = appstorage.create_app(name, "dummy", data="{}")
         # TODO: Improve error handling. Display a tidy bootstrap message etc etc.
         return redirect(url_for("dummy.edit", appid=app.unique_id))
 

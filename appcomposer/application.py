@@ -28,7 +28,7 @@ from .admin import admin_blueprint
 initialize_user_component(app)
 
 # App Storage
-from .appstorage import appstorage
+from .appstorage import api
 
 
 app.register_blueprint(admin_blueprint, url_prefix='/admin')

@@ -68,6 +68,10 @@ class AppVersion(Base):
         self.creation_date = datetime.datetime.now()
 
 
+# TODO: Changes to consider:
+# - Remove id column
+# - Make unique_id primary key
+# - Remove owner_id ( I think the "owner" relation covers this already? )
 class App(Base):
     __tablename__ = 'Apps'
     __table_args__ = (UniqueConstraint('name', 'owner_id'), )
@@ -85,9 +89,10 @@ class App(Base):
 
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
 
-    def __init__(self, name, owner):
+    def __init__(self, name, owner, composer):
         self.name = name
         self.owner = owner
+        self.composer = composer
         self.creation_date = self.modification_date = self.last_access_date = datetime.datetime.now()
 
         self.unique_id = str(uuid.uuid4())
