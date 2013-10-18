@@ -15,6 +15,9 @@ from .composers.dummy import info as dummy_info
 # It is important that this is done early. Otherwise, it will be accessed by the
 # user component before it is ready.
 COMPOSERS = [dummy_info]
+COMPOSERS_DICT = {info["blueprint"]: info for info in COMPOSERS}
+
+# TODO: The COMPOSERS_DICT thing is not very pretty. Find a work-around.
 
 
 #####

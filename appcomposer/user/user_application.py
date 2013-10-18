@@ -11,7 +11,7 @@ from appcomposer.db import db_session
 from sqlalchemy.orm import scoped_session, sessionmaker
 
 # List of all available composers
-from appcomposer.application import COMPOSERS
+from appcomposer.application import COMPOSERS, COMPOSERS_DICT
 
 
 def initialize_user_component(app):
@@ -91,7 +91,17 @@ class AppsView(UserBaseView):
     def index(self):
         # Retrieve the apps
         apps = db_session.query(App).filter_by(owner_id=self._current_user.id).all()
-        return self.render('user/profile-apps.html', apps=apps)
+
+        def build_edit_link(app):
+            endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]
+            return url_for(endpoint, appid=app.unique_id)
+
+        def build_delete_link(app):
+            endpoint = COMPOSERS_DICT[app.composer]["delete_endpoint"]
+            return url_for(endpoint, appid=app.unique_id)
+
+        return self.render('user/profile-apps.html', apps=apps, build_edit_link=build_edit_link,
+                           build_delete_link=build_delete_link)
 
 
 class ProfileEditView(UserBaseView):

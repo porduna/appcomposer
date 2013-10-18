@@ -1,13 +1,13 @@
-from flask import Blueprint, render_template, request, url_for, redirect, json
-from appcomposer.login import current_user
+from flask import Blueprint, render_template, request, url_for, redirect
 import appcomposer.appstorage.api as appstorage
-from appcomposer.models import App
 
 
 info = {
     'blueprint': 'dummy',
     'url': '/composers/dummy',
     'new_endpoint': 'dummy.new',
+    'edit_endpoint': 'dummy.edit',
+    'delete_endpoint': 'dummy.delete',
 
     'name': 'Dummy Composer',
     'description': 'Pretend that you are composing an app. For testing purposes.'
