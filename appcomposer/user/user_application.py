@@ -159,5 +159,5 @@ class ProfileEditView(UserBaseView):
             db_session.add(user)
             db_session.commit()
 
-        return self.render("user/profile-edit.html", form=form, change_password=change_password)
+        return self.render("user/profile-edit.html", user=user, form=form, change_password=change_password)
     

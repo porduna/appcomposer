@@ -12,32 +12,6 @@
         body {
             background-color: #eee;
         }
-
-      /* The white background content wrapper */
-      .container > .content {
-        background-color: #fff;
-        padding: 20px;
-        margin: 0 -20px;
-        -webkit-border-radius: 10px 10px 10px 10px;
-           -moz-border-radius: 10px 10px 10px 10px;
-                border-radius: 10px 10px 10px 10px;
-        -webkit-box-shadow: 0 1px 2px rgba(0,0,0,.15);
-           -moz-box-shadow: 0 1px 2px rgba(0,0,0,.15);
-                box-shadow: 0 1px 2px rgba(0,0,0,.15);
-      }
-
-      legend {
-        margin-right: -50px;
-        font-weight: bold;
-      }
-
-      .login-form {
-        margin-left: 65px;
-      }
-
-      .container {
-        width: 600px;
-      }
     </style>
 
 </head>
@@ -46,25 +20,29 @@
 
 {% from "user/wl_form_helpers.html" import render_field %}
 
-    <div class="container">
-    <div class="content">
-        <div class="row">
-            <div style="margin:0 auto;float:none;text-align:center;">
-                <br/>
-                <h1>Welcome to the Dummy Composer! Please, set the name for your application.</h1>
-                <br/>
-                <br/>
-            </div>
+    <div style="margin:0 auto;float:none;text-align:center;">
+        <br/>
+        <h1>Dummy Composer</h1>
+        <h2>Please, set your application's name.</h2>
+        <br/>
+        <br/>
+    </div>
 
-            <div class="span6">
+    <div class="container">
+        <div class="row">
+            <div class="span6 offset3 pagination-centered">
                 <form class="form-inline" method="POST" action="{{ url_for("dummy.new") }}">
-                    <textarea rows="6" name="name"></textarea>
-                    <br><br>
+                      <div class="control-group">
+                        <label class="control-label" for="name">Name</label>
+                        <div class="controls">
+                          <input type="text" name="name" placeholder="App name">
+                        </div>
+                      </div>
                     <input type="submit" value="Save" class="btn btn-primary"/>
                 </form>
             </div>
+
         </div>
-    </div>
     </div>
 
 	<script type="text/javascript" src="{{ url_for('static', filename='js/bootstrap.min.js') }}"></script>
