@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, url_for, redirect
+from flask import Blueprint, render_template, request, url_for, redirect, json, flash
 import appcomposer.appstorage.api as appstorage
 
 
@@ -31,8 +31,8 @@ def edit():
         if app is None:
             return "App not found", 500
 
-        # Load the dummy-specific data.
-        # TODO: This.
+        data = json.loads(app.data)
+        text = data["text"]
 
         return render_template("composers/dummy/edit.html", app=app, text="not yet implemented")
     elif request.method == "POST":
@@ -48,6 +48,8 @@ def edit():
             "text": text}
 
         appstorage.update_app_data(app, data)
+
+        flash("Saved successfully")
 
         # TODO: Print a success message etc etc.
 
