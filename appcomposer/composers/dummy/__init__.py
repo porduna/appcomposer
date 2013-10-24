@@ -34,7 +34,7 @@ def edit():
         data = json.loads(app.data)
         text = data["text"]
 
-        return render_template("composers/dummy/edit.html", app=app, text="not yet implemented")
+        return render_template("composers/dummy/edit.html", app=app, text=text)
     elif request.method == "POST":
         appid = request.form["appid"]
         text = request.form["text"]
