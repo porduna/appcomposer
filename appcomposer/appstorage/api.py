@@ -114,3 +114,22 @@ def update_app_data(composed_app, data):
 
     db_session.add(composed_app)
     db_session.commit()
+
+
+def delete_app(composed_app):
+    """
+    delete_app(composed_app)
+    @param composed_app: The app that we want to delete. It can either be the app object itself or an app-id.
+    @return: nothing.
+
+    @note: This function can only be used by logged-on users, and they must be the owners of
+    the app being saved.
+    """
+    if type(composed_app) is str or type(composed_app) is unicode:
+        composed_app = get_app(composed_app)
+
+    if composed_app.owner != current_user():
+        raise Exception("Not Authorized")
+
+    db_session.delete(composed_app)
+    db_session.commit()

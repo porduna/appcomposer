@@ -64,7 +64,7 @@
     <div style="margin:0 auto;float:none;text-align:center;">
         <br/>
         <h1>Dummy Composer</h1>
-        <h2>Please, set the text for your application.</h2>
+        <h2>Are you sure you want to delete this application?.</h2>
         Note: Your application is {{ app.name }} {{  app.unique_id }}
         <br/>
         <br/>
@@ -75,11 +75,9 @@
         <div class="row">
             <div class="span6 pagination-centered">
                 <form class="form-inline" method="POST" action="">
-                    <textarea rows="6" name="text">{{ text }}</textarea>
-                    <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
-                    <br><br>
-                    <input type="submit" value="Save" name="save" class="btn btn-primary"/>
-                    <input type="submit" value="Save & exit" name="saveexit" class="btn btn-warning"/>
+                    <input type="hidden" name="appid" value="{{ app.unique_id }}"></input>
+                    <input type="submit" name="delete" class="btn btn-danger" value="Delete"></input>
+                    <input type="submit" name="cancel" class="btn" value="Cancel"></input>
                 </form>
             </div>
         </div>

@@ -34,13 +34,25 @@
   {% endfor %}
 {% endmacro %}
 
+
+{# Macro for displaying messages in different categories within pretty Bootstrap boxes. They rely on jquery
+ for the dissmiss button. #}
 {% macro messages() %}
   {% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
       {% for category, m in messages %}
         {% if category == 'error' %}
         <div class="alert alert-error">
+        {% elif category == 'success' %}
+        <div class="alert alert-success">
+        {% elif category == 'info' %}
+        <div class="alert alert-info">
+        {% elif category == 'warning' %}
+        <div class="alert alert-warning">
+        {% elif category == 'danger' %}
+        <div class="alert alert-danger">
         {% else %}
+        <div class="alert alert-info">
         {% endif %}
           <a href="javascript:void(0)" class="close" data-dismiss="alert">x</a>
           {{ m }}
