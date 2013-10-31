@@ -24,17 +24,18 @@ COMPOSERS_DICT = {info["blueprint"]: info for info in COMPOSERS}
 # Main components 
 #####
 
-from .user.user_application import initialize_user_component
-from .admin import admin_blueprint
+#
+# Initialize administration panels
+# 
 
 # User component
+from .user.user_application import initialize_user_component
 initialize_user_component(app)
 
-# App Storage
-from .appstorage import api
 
-
-app.register_blueprint(admin_blueprint, url_prefix='/admin')
+# Admin component
+from .admin.admin_application import initialize_admin_component
+initialize_admin_component(app)
 
 
 #####
