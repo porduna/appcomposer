@@ -4,6 +4,12 @@ from sqlalchemy.orm import scoped_session, sessionmaker
 from forms import UrlForm, LangselectForm
 
 translate_blueprint = Blueprint('translate', __name__)
+
+
+import backend
+print "Importing backend"
+
+
 @translate_blueprint.route('/', methods=['GET', 'POST'])
 def translate_index():
     form = UrlForm(request.form)
