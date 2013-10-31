@@ -10,6 +10,16 @@ from appcomposer.models import App
 import json
 
 
+class AppExistsException(Exception):
+    def __init__(self, message=None):
+        self.message = message
+
+
+class NotAuthorizedException(Exception):
+    def __init__(self, message=None):
+        self.message = message
+
+
 def create_app(name, composer, data):
     """
     create_app(name, data)
@@ -29,6 +39,11 @@ def create_app(name, composer, data):
     # it is JSON'ed already.
     if type(data) is not str and type(data) is not unicode:
         data = json.dumps(data)
+
+    # Check if an app with that name and owner exists already.
+    existing_app = db_session.query(App).filter_by(owner=owner, name=name).first()
+    if existing_app is not None:
+        raise AppExistsException()
 
     # Create it
     new_app = App(name, owner, composer)
@@ -84,7 +99,7 @@ def save_app(composed_app):
     """
 
     if composed_app.owner != current_user():
-        raise Exception("Not Authorized")
+        raise NotAuthorizedException()
 
     db_session.add(composed_app)
     db_session.commit()
@@ -108,7 +123,7 @@ def update_app_data(composed_app, data):
         data = json.dumps(data)
 
     if composed_app.owner != current_user():
-        raise Exception("Not Authorized")
+        raise NotAuthorizedException()
 
     composed_app.data = data
 
@@ -129,7 +144,7 @@ def delete_app(composed_app):
         composed_app = get_app(composed_app)
 
     if composed_app.owner != current_user():
-        raise Exception("Not Authorized")
+        raise NotAuthorizedException()
 
     db_session.delete(composed_app)
     db_session.commit()
