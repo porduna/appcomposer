@@ -1,11 +1,12 @@
 import json
+from markupsafe import Markup
 from appcomposer.composers.translate import translate_blueprint
 from xml.dom import minidom
 import StringIO
 
 
 class Bundle(object):
-    def __init__(self, country, lang, group):
+    def __init__(self, country, lang, group=""):
         self.country = country
         self.lang = lang
         self.group = group
@@ -33,12 +34,12 @@ class Bundle(object):
         return bundle
 
     @staticmethod
-    def from_xml(xml_str, country, lang, group):
+    def from_xml(xml_str, country, lang, group=""):
         bundle = Bundle(country, lang, group)
         xmldoc = minidom.parseString(xml_str)
         itemlist = xmldoc.getElementsByTagName("msg")
         for elem in itemlist:
-            bundle.add_msg(elem.attributes["name"], elem.firstChild.nodeValue)
+            bundle.add_msg(elem.attributes["name"].nodeValue, elem.firstChild.nodeValue.strip())
         return bundle
 
     def to_xml(self):
@@ -52,4 +53,28 @@ class Bundle(object):
 
 @translate_blueprint.route('/backend', methods=['GET', 'POST'])
 def backend():
-    return "Backend"
+    testxml = """
+    <messagebundle>
+        <msg name="hello_world">
+            Hello World.
+        </msg>
+        <msg name="color">Color</msg>
+        <msg name="red">Red</msg>
+        <msg name="green">Green</msg>
+        <msg name="blue">Blue</msg>
+        <msg name="gray">Gray</msg>
+        <msg name="purple">Purple</msg>
+        <msg name="black">Black</msg>
+    </messagebundle>
+    """
+
+    bundle = Bundle.from_xml(testxml, "es", "ES")
+
+    jsonstr = bundle.to_json()
+
+    bundle = Bundle.from_json(jsonstr)
+
+    xmlstr = bundle.to_xml()
+
+    return Markup.escape(xmlstr)
+
