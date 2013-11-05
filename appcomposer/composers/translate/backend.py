@@ -11,11 +11,21 @@ class BundleManager(object):
         self._bundles = {}
 
     def _read_url(self, url):
+        """
+        Simply retrieves a specified URL (Synchronously).
+        @param url: URL to retrieve.
+        @return: Contents of the URL.
+        """
         handle = urllib.urlopen(url)
         contents = handle.read()
         return contents
 
     def load_spec(self, url):
+        """
+        Fully loads the specified gadget spec.
+        @param url: URL to the XML Gadget Spec.
+        @return: Nothing. The bundles are internally stored once parsed.
+        """
         xml_str = self._read_url(url)
         locales = self._extract_locales(xml_str)
         for loc in locales:
@@ -25,6 +35,9 @@ class BundleManager(object):
             self._bundles[name] = bundle
 
     def get_name(self, lang, country):
+        """
+        Gets a name in the form ca_ES.
+        """
         if lang is None or lang == "":
             lang = "ANY"
         if country is None or country == "":
@@ -32,6 +45,9 @@ class BundleManager(object):
         return "%s_%s" % (lang, country)
 
     def _extract_locales(self, xml_str):
+        """
+        Extracts the Locale nodes info from an xml_str (a gadget spec).
+        """
         locales = []
         xmldoc = minidom.parseString(xml_str)
         itemlist = xmldoc.getElementsByTagName("Locale")
@@ -50,6 +66,38 @@ class BundleManager(object):
 
             locales.append((lang, country, messages_file))
         return locales
+
+    # TODO: Consider whether non-specified lang and country should default to "all".
+    # TODO: Add error detection. XMLs may fail to load, they may not contain the expected tags, etc.
+    def update_bundles(self, xml_str):
+        """
+        update_bundles(xml_str)
+
+        Updates the bundles in a XML gadget spec using the Manager's bundles.
+        """
+        xmldoc = minidom.parseString(xml_str)
+
+        # Remove existing locales
+        locales = xmldoc.getElementsByTagName("Locale")
+        for loc in locales:
+            parent = loc.parentNode
+            parent.removeChild(loc)
+
+        # Add the locales to ModulePrefs
+        module_prefs = xmldoc.getElementsByTagName("ModulePrefs")[0]
+        for name, bundle in self._bundles.items():
+            locale = xmldoc.createElement("Locale")
+            if bundle.lang == "":
+                bundle.lang = "all"
+            if bundle.country == "":
+                bundle.lang = "all"
+            locale.setAttribute("lang", bundle.lang)
+            locale.setAttribute("country", bundle.country)
+            locale.appendChild(xmldoc.createTextNode(""))
+            module_prefs.appendChild(locale)
+
+
+        return xmldoc.toprettyxml()
 
 
 class Bundle(object):
@@ -132,8 +180,23 @@ def backendt():
     bm = BundleManager()
     bm.load_spec("https://dl.dropboxusercontent.com/u/6424137/i18n.xml")
 
-    bundles = "";
+    bundles = ""
     for bundle in bm._bundles.values():
         bundles += bundle.to_json()
     return Markup.escape(bundles)
+
+@translate_blueprint.route('/backend2', methods=['GET', 'POST'])
+def backendt():
+    bm = BundleManager()
+    url = "https://dl.dropboxusercontent.com/u/6424137/i18n.xml"
+    bm.load_spec(url)
+
+    bundles = "";
+    for bundle in bm._bundles.values():
+        bundles += bundle.to_json()
+
+    xml = bm._read_url(url)
+
+    result = bm.update_bundles(xml)
+    return Markup.escape(result)
 
