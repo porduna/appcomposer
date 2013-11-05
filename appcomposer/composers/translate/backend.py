@@ -7,8 +7,9 @@ import StringIO
 
 
 class BundleManager(object):
-    def __init__(self):
+    def __init__(self, base_publish_url=""):
         self._bundles = {}
+        self._base_publish_url = base_publish_url
 
     def _read_url(self, url):
         """
@@ -33,6 +34,18 @@ class BundleManager(object):
             bundle = Bundle.from_xml(bundle_xml, loc[0], loc[1])
             name = self.get_name(loc[0], loc[1])
             self._bundles[name] = bundle
+
+    def to_json(self):
+        """
+        Exports everything to JSON.
+        """
+        data = {
+            "bundles": {}
+        }
+        for name, bundle in self._bundles.items():
+            data["bundles"][name] = bundle.to_jsonable()
+        return json.dumps(data)
+
 
     def get_name(self, lang, country):
         """
@@ -91,11 +104,17 @@ class BundleManager(object):
                 bundle.lang = "all"
             if bundle.country == "":
                 bundle.lang = "all"
+
+            base_url = self._base_publish_url
+            filename = bundle.lang + "_" + bundle.country + ".xml"
+            full_filename = base_url + "/" + filename
+
+            locale.setAttribute("messages", full_filename)
             locale.setAttribute("lang", bundle.lang)
             locale.setAttribute("country", bundle.country)
+
             locale.appendChild(xmldoc.createTextNode(""))
             module_prefs.appendChild(locale)
-
 
         return xmldoc.toprettyxml()
 
@@ -184,6 +203,7 @@ def backendt():
     for bundle in bm._bundles.values():
         bundles += bundle.to_json()
     return Markup.escape(bundles)
+
 
 @translate_blueprint.route('/backend2', methods=['GET', 'POST'])
 def backendt():

@@ -1,9 +1,25 @@
 from flask import Blueprint, render_template, flash, redirect, session, url_for, request, g
+from appcomposer.appstorage.api import create_app
 from appcomposer.db import db_session
 from sqlalchemy.orm import scoped_session, sessionmaker
 from forms import UrlForm, LangselectForm
 
-translate_blueprint = Blueprint('translate', __name__)
+
+info = {
+    'blueprint': 'translate',
+    'url': '/composers/translate',
+
+    'new_endpoint': 'translate.translate_selectlang',
+    'edit_endpoint': 'translate.translate_selectlang',
+    'delete_endpoint': 'translate.translate_selectlang',
+
+    'name': 'Translate Composer',
+    'description': 'Translate an existing app.'
+}
+
+
+translate_blueprint = Blueprint(info['blueprint'], __name__)
+
 
 
 import backend
@@ -31,9 +47,26 @@ def translate_index():
 # other pages 
 #----------------------------------------
 
-@translate_blueprint.route("/selectlang")
+@translate_blueprint.route("/selectlang", methods=["GET", "POST"])
 def translate_selectlang():
-    """Source language & target anguage selection."""
+    """ Source language & target language selection."""
+
+    if request.method == "POST":
+        # URL to the XML spec of the gadget.
+        appurl = request.form["appurl"]
+
+        # Get all the existing bundles.
+        bm = backend.BundleManager()
+        bm.load_spec(appurl)
+
+        # Build JSON data
+        js = bm.to_json()
+
+        # Create a new App from the specified XML
+        app = create_app(appurl, "translate", js)
+
+        return render_template("composers/translate/selectlang.html")
+
     return render_template("composers/translate/selectlang.html")
 
 @translate_blueprint.route("/edit")
