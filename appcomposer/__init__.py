@@ -22,7 +22,7 @@ assert db_session is not None  # ignore pyflakes
 
 @app.route("/")
 def index():
-    return '<a href="/user/">Click here to go the Login</a>'
+    return '<a href="/user/">Click here to go the Login</a></br></br><a href="/admin/">Click here to go the Admin</a>'
 
 
 def run():
