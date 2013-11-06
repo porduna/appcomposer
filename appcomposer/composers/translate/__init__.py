@@ -1,3 +1,5 @@
+import os
+import random
 from flask import Blueprint, render_template, flash, redirect, session, url_for, request, g
 from appcomposer.appstorage.api import create_app
 from appcomposer.db import db_session
@@ -11,7 +13,7 @@ info = {
 
     'new_endpoint': 'translate.translate_selectlang',
     'edit_endpoint': 'translate.translate_selectlang',
-    'delete_endpoint': 'translate.translate_selectlang',
+    'delete_endpoint': 'dummy.delete',
 
     'name': 'Translate Composer',
     'description': 'Translate an existing app.'
@@ -62,8 +64,12 @@ def translate_selectlang():
         # Build JSON data
         js = bm.to_json()
 
+        # Generate a name for the app.
+        # TODO: Eventually, this name should probably be given explicitly by the user.
+        appname = os.path.basename(appurl) + "_%d" % random.randint(0, 9999)
+
         # Create a new App from the specified XML
-        app = create_app(appurl, "translate", js)
+        app = create_app(appname, "translate", js)
 
         return render_template("composers/translate/selectlang.html")
 
