@@ -103,8 +103,13 @@ def new():
     # If we receive a post we have filled the page and are creating the app.
     elif request.method == "POST":
         name = request.form["name"]
-        app = appstorage.create_app(name, "dummy", data='{"text":""}')
-        # TODO: Improve error handling. Display a tidy bootstrap message etc etc.
+
+        try:
+            app = appstorage.create_app(name, "dummy", data='{"text":""}')
+        except appstorage.AppExistsException:
+            flash("An App with that name exists already", "error")
+            return render_template("composers/dummy/new.html", name=name)
+
         return redirect(url_for("dummy.edit", appid=app.unique_id))
 
 
