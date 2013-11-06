@@ -1,6 +1,14 @@
-<html>
-<body>
-    Welcome to the app composer!
-    <a href="{{ url_for('login') }}">login</a>
-</body>
-</html>
+{% set link = 'home' %}
+{% extends 'master.html' %}
+
+{% block body %}
+    <div class="hero-unit text-center">
+        <h1>App Composer</h1>
+        <p>Build supercool apps for your students!</p>
+        <p>
+        <a class="btn btn-primary btn-large" href="{{ url_for('about') }}">
+        Learn more
+        </a>
+        </p>
+    </div>
+{% endblock %}
