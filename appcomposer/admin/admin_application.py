@@ -20,7 +20,7 @@ def initialize_admin_component(app):
     # URL describes through which address we access the page.
     # Endpoint enables us to do url_for('userp') to yield the URL
     url = '/admin'
-    admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name='Admin Profile', endpoint = "home-admin", base_template = 'user/base.html')
+    admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name='Admin Profile', endpoint = "home-admin")
     admin.add_view(UsersView(db_session, name='Users', url = 'users', endpoint = 'admin.users'))
     admin.add_view(ApplicationsView(name='Applications', url = 'applications', endpoint = 'admin.applications'))    
     admin.add_view(ProfileView(name='My Profile', url = 'profile', endpoint = 'admin.profile'))    
