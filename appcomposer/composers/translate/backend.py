@@ -10,8 +10,9 @@ from xml.dom import minidom
 import StringIO
 
 
+
 """
-NOTE:
+NOTE ABOUT THE GENERAL WORKFLOW DESIGN:
 The current design for the export system is the following. Included here for reference purposes.
 In the future it may be modified, as it has some issues / limitations.
 
@@ -32,7 +33,33 @@ SERVE_APP()
  - GET InternalJSONs
  - SERVE OriginalBaseTranslation
  - SERVE JSONInternalTranslation
+
+
+ NOTE ABOUT THE REQUIREMENTS ON THE APP TO BE TRANSLATED:
+ The App to be translated should be already internationalized and should contain at least a reference to one Bundle,
+ the Default language Bundle. This is a Locale node on the spec, with NO lang attribute and NO country attribute.
+ (If this entry does not exist the App can't be translated).
+
+
+ FILE NAMING CONVENTIONS:
+ The convention we will try to use here is the following:
+
+ Example: ca_ES.xml (for language files)
+
+ ca would be the language.
+ ES would be the country.
+
+ If any is not set, then it will be replaced with "all", in the right case. For instance,
+ if lang is not specified it will be all_ES. Or if the country isn't, es_ALL.
+
+ The default language is always all_ALL and should always be present.
+
+
+
  """
+
+# TODO: Ensure throughout this class that bundle.lang and bundle.country NEVER contain empty strings or None values.
+# If appropriate they should contain "all".
 
 
 class NoDefaultLanguageException(Exception):
@@ -40,14 +67,17 @@ class NoDefaultLanguageException(Exception):
     Exception to be thrown when an App specified to be translated does not have a default translation.
     (And hence it is probably not ready to be translated).
     """
+
     def __init__(self, message=None):
         self.message = message
+
 
 class ExternalFileRetrievalException(Exception):
     """
     Exception to be thrown when an operation failed because it was not possible to retrieve a file
     from an external host.
     """
+
     def __init__(self, message=None):
         self.message = message
 
@@ -79,7 +109,7 @@ class BundleManager(object):
         # Not yet fully implemented.
 
 
-    def _read_url(self, url):
+    def _retrieve_url(self, url):
         """
         Simply retrieves a specified URL (Synchronously).
         @param url: URL to retrieve.
@@ -99,11 +129,11 @@ class BundleManager(object):
         # Store the specified URL as the gadget spec.
         self.original_gadget_spec = url
 
-        xml_str = self._read_url(url)
+        xml_str = self._retrieve_url(url)
         self.original_xml = xml_str
         locales = self._extract_locales(xml_str)
         for loc in locales:
-            bundle_xml = self._read_url(loc[2])
+            bundle_xml = self._retrieve_url(loc[2])
             bundle = Bundle.from_xml(bundle_xml, loc[0], loc[1])
             name = self.get_name(loc[0], loc[1])
             self._bundles[name] = bundle
@@ -196,14 +226,52 @@ class BundleManager(object):
 
         # Remove existing locales. Make sure we don't remove the default one (all_ALL) if we don't have to.
         locales = xmldoc.getElementsByTagName("Locale")
+        default_locale_found = False
         for loc in locales:
             # Check whether it is the DEFAULT locale.
             if respect_default:
+                # This is indeed the default node. Go on to next iteration without removing the locale.
                 if "lang" not in loc.attributes.keys() and "country" not in loc.attributes.keys():
-                    raise
+                    default_locale_found = True
+                    continue
 
+            # Remove the node.
             parent = loc.parentNode
             parent.removeChild(loc)
+
+        # If we are supposed to respect the default, ensure that we actually found it.
+        if respect_default:
+            if not default_locale_found:
+                raise NoDefaultLanguageException("The Gadget Spec does not seem to have a link to a default Locale."
+                                                 "It is probably not ready to be translated.")
+
+        # We have now removed the Locale nodes. Inject the new ones to the ModulePrefs node.
+        module_prefs = xmldoc.getElementsByTagName("ModulePrefs")[0]
+        for name, bundle in self._bundles.items():
+
+            # Just in case we need to respect the default bundle.
+            if respect_default:
+                if name == "all_ALL":  # The default bundle MUST always be named thus.
+                    # This is the default Locale. We have left the original one on the ModulePrefs node, so
+                    # we don't need to append it. Go on to next Locale.
+                    continue
+
+            locale = xmldoc.createElement("Locale")
+
+            # Build our locales to inject. We modify the case to respect the standard. It shouldn't be necessary
+            # but we do it nonetheless just in case other classes fail to respect it.
+            filename = bundle.lang.lower() + "_" + bundle.country.upper() + ".xml"
+            full_filename = host_url + "/" + filename
+
+            locale.setAttribute("messages", full_filename)
+            locale.setAttribute("lang", bundle.lang)
+            locale.setAttribute("country", bundle.country)
+
+            # Inject the node we have just created.
+            locale.appendChild(xmldoc.createTextNode(""))
+            module_prefs.appendChild(locale)
+
+        return xmldoc.toprettyxml()
 
 
     # TODO: Consider whether non-specified lang and country should default to "all".
@@ -341,6 +409,18 @@ def app_xml(appid):
 
 @translate_blueprint.route('/app/<appid>/<langfile>.xml')
 def app_langfile(appid, langfile):
+    """
+    app_langfile(appid, langfile)
+
+    Provided to end-users. This is the function that provides hosting for the
+    langfiles for a specified App. The langfiles are actually dynamically
+    generated (the information is extracted from the Translate-specific information).
+
+    @param appid: Appid of the App whose langfile to generate.
+    @param langfile: Name of the langfile. Must follow the standard: ca_ES
+    @return: Google OpenSocial compatible XML.
+    """
+
     app = get_app(appid)
 
     # TODO: Figure out how to handle 404 errors here. (Check whether it could crash a gadget etc).
@@ -406,7 +486,7 @@ def backendt():
     for bundle in bm._bundles.values():
         bundles += bundle.to_json()
 
-    xml = bm._read_url(url)
+    xml = bm._retrieve_url(url)
 
     result = bm.update_bundles(xml)
     return Markup.escape(result)
