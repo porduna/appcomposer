@@ -3,13 +3,60 @@ import os
 import urllib
 from flask import make_response
 from markupsafe import Markup
+from sqlalchemy.util import deprecated
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
 from xml.dom import minidom
 import StringIO
 
 
+"""
+NOTE:
+The current design for the export system is the following. Included here for reference purposes.
+In the future it may be modified, as it has some issues / limitations.
+
+NEW_APP()
+ - GET OriginalSpec
+ - GET OriginalXMLs
+ - CREATE InternalJSONs
+
+EDIT_APP()
+ - GET OriginalSpec
+ - GET OriginalXMLs
+ - GET InternalJSONs
+ - EDIT InternalJSONs
+ - SAVE InternalJSONs
+
+SERVE_APP()
+ - GET OriginalSpec
+ - GET InternalJSONs
+ - SERVE OriginalBaseTranslation
+ - SERVE JSONInternalTranslation
+ """
+
+
+class NoDefaultLanguageException(Exception):
+    """
+    Exception to be thrown when an App specified to be translated does not have a default translation.
+    (And hence it is probably not ready to be translated).
+    """
+    def __init__(self, message=None):
+        self.message = message
+
+class ExternalFileRetrievalException(Exception):
+    """
+    Exception to be thrown when an operation failed because it was not possible to retrieve a file
+    from an external host.
+    """
+    def __init__(self, message=None):
+        self.message = message
+
+
 class BundleManager(object):
+    """
+    To manage the set of bundles for an App, and to provide common functionality.
+    """
+
     def __init__(self, original_gadget_spec=None):
         self._bundles = {}
 
@@ -42,7 +89,7 @@ class BundleManager(object):
         contents = handle.read()
         return contents
 
-    def load_spec(self, url):
+    def _load_spec(self, url):
         """
         Fully loads the specified gadget spec.
         @param url: URL to the XML Gadget Spec.
@@ -91,7 +138,6 @@ class BundleManager(object):
         raise Exception("Not yet implemented")
 
 
-
     def get_name(self, lang, country):
         """
         Gets a name in the form ca_ES.
@@ -124,6 +170,41 @@ class BundleManager(object):
 
             locales.append((lang, country, messages_file))
         return locales
+
+    def _inject_locales_into_spec(self, host_url, xml_str, respect_default=True):
+        """
+        _inject_locales_into_spec(host_url, xml_str)
+
+        Generates a new Gadget Spec from a provided Gadget Spec, replacing every original Locale with links
+        to custom Locales, hosted at host_url.
+
+        Optionally, it can avoid modifying the default translation.
+        This is done so that if the original author updates the translation, this takes immediate effect
+        into the translated versions of the App.
+
+        @param host_url: Base URL that will host the language bundles' XML files. Generally, it will be an URL
+        of the Composer itself, specific to the App, and dynamically generated.
+
+        @param xml_str: String containing the XML of the original Gadget Spec.
+
+        @param respect_default: If false, every Locale will be removed and replaced with custom links to the
+        language, using the host_url as base. If true, the same will be done to every Locale, EXCEPT the default
+        language locale. The default language locale will be kept as-is.
+        """
+
+        xmldoc = minidom.parseString(xml_str)
+
+        # Remove existing locales. Make sure we don't remove the default one (all_ALL) if we don't have to.
+        locales = xmldoc.getElementsByTagName("Locale")
+        for loc in locales:
+            # Check whether it is the DEFAULT locale.
+            if respect_default:
+                if "lang" not in loc.attributes.keys() and "country" not in loc.attributes.keys():
+                    raise
+
+            parent = loc.parentNode
+            parent.removeChild(loc)
+
 
     # TODO: Consider whether non-specified lang and country should default to "all".
     # TODO: Add error detection. XMLs may fail to load, they may not contain the expected tags, etc.
@@ -242,7 +323,6 @@ class Bundle(object):
         return out.getvalue()
 
 
-
 @translate_blueprint.route('/app/<appid>/app.xml')
 def app_xml(appid):
     app = get_app(appid)
@@ -251,7 +331,7 @@ def app_xml(appid):
     spec_file = data["spec"]
 
     bm = BundleManager(spec_file)
-    bm.load_spec(spec_file)
+    bm._load_spec(spec_file)
     output_xml = bm.update_bundles(bm.original_xml)
 
     response = make_response(output_xml)
@@ -259,33 +339,25 @@ def app_xml(appid):
     return response
 
 
-@translate_blueprint.route('/app/<appid>/<langfile>')
+@translate_blueprint.route('/app/<appid>/<langfile>.xml')
 def app_langfile(appid, langfile):
     app = get_app(appid)
 
-    data = json.loads(app.data)
-    name_only = os.path.splitext(langfile)[0]
-
     # TODO: Figure out how to handle 404 errors here. (Check whether it could crash a gadget etc).
     # Try to load the bundle with that lang.
-    bundles = data["bundles"]
-    if name_only not in bundles:
+    bundles = app.data["bundles"]
+    if langfile not in bundles:
         dbg_info = str(bundles.keys())
         return "Could not find such language. Available keys are: " + dbg_info, 404
 
     # TODO: Add from_jsonable
-    bundle = Bundle.from_json(json.dumps(bundles[name_only]))
+    bundle = Bundle.from_json(json.dumps(bundles[langfile]))
 
     output_xml = bundle.to_xml()
 
     response = make_response(output_xml)
     response.mimetype = "application/xml"
     return response
-
-
-
-
-
 
 
 @translate_blueprint.route('/backend', methods=['GET', 'POST'])
@@ -316,7 +388,7 @@ def backend():
 @translate_blueprint.route('/backendt', methods=['GET', 'POST'])
 def backendt():
     bm = BundleManager()
-    bm.load_spec("https://dl.dropboxusercontent.com/u/6424137/i18n.xml")
+    bm._load_spec("https://dl.dropboxusercontent.com/u/6424137/i18n.xml")
 
     bundles = ""
     for bundle in bm._bundles.values():
@@ -328,7 +400,7 @@ def backendt():
 def backendt():
     bm = BundleManager()
     url = "https://dl.dropboxusercontent.com/u/6424137/i18n.xml"
-    bm.load_spec(url)
+    bm._load_spec(url)
 
     bundles = "";
     for bundle in bm._bundles.values():

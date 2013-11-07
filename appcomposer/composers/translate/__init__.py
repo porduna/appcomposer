@@ -59,7 +59,7 @@ def translate_selectlang():
 
         # Get all the existing bundles.
         bm = backend.BundleManager()
-        bm.load_spec(appurl)
+        bm._load_spec(appurl)
 
         # Build JSON data
         js = bm.to_json()
