@@ -82,6 +82,16 @@ class ExternalFileRetrievalException(Exception):
         self.message = message
 
 
+class UnexpectedTranslateDataException(Exception):
+    """
+    Exception thrown when the format of the internally stored translate data does not seem
+    to be as expected.
+    """
+
+    def __init__(self, message=None):
+        self.message = message
+
+
 class BundleManager(object):
     """
     To manage the set of bundles for an App, and to provide common functionality.
@@ -420,15 +430,18 @@ def app_langfile(appid, langfile):
     @param langfile: Name of the langfile. Must follow the standard: ca_ES
     @return: Google OpenSocial compatible XML.
     """
-
     app = get_app(appid)
 
-    # TODO: Figure out how to handle 404 errors here. (Check whether it could crash a gadget etc).
-    # Try to load the bundle with that lang.
-    bundles = app.data["bundles"]
+    if app is None:
+        return "Error 404: App doesn't exist", 404
+
+    # Parse the appdata
+    appdata = json.loads(app.data)
+
+    bundles = appdata["bundles"]
     if langfile not in bundles:
         dbg_info = str(bundles.keys())
-        return "Could not find such language. Available keys are: " + dbg_info, 404
+        return "Error 404: Could not find such language for the specified app. Available keys are: " + dbg_info, 404
 
     # TODO: Add from_jsonable
     bundle = Bundle.from_json(json.dumps(bundles[langfile]))
