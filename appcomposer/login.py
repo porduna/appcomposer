@@ -51,5 +51,7 @@ def logout():
     else:
         return render_template_string("You are not logged in.")
 
-
+@app.route('/graasp-login')
+def graasp_login():
+    return "Working on it"
 
