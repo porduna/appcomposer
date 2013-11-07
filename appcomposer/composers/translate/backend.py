@@ -1,15 +1,36 @@
 import json
+import os
 import urllib
+from flask import make_response
 from markupsafe import Markup
+from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
 from xml.dom import minidom
 import StringIO
 
 
 class BundleManager(object):
-    def __init__(self, base_publish_url=""):
+    def __init__(self, original_gadget_spec=None):
         self._bundles = {}
-        self._base_publish_url = base_publish_url
+
+        # Points to the original gadget spec XML.
+        self.original_gadget_spec = original_gadget_spec
+
+        # TODO: Consider whether this should always be stored here.
+        self.original_xml = None
+
+        self._base_publish_url = "LOCALHOST"  # This is to be changed.
+
+    def load_app(self, app):
+        """
+        Loads an App object.
+        TODO: Not yet clear in which state the object should be before loading.
+        @param app: The App object to load
+        @return: None. App is internally loaded into de manager.
+        """
+        self.from_json(app.data)
+        # Not yet fully implemented.
+
 
     def _read_url(self, url):
         """
@@ -27,7 +48,12 @@ class BundleManager(object):
         @param url: URL to the XML Gadget Spec.
         @return: Nothing. The bundles are internally stored once parsed.
         """
+
+        # Store the specified URL as the gadget spec.
+        self.original_gadget_spec = url
+
         xml_str = self._read_url(url)
+        self.original_xml = xml_str
         locales = self._extract_locales(xml_str)
         for loc in locales:
             bundle_xml = self._read_url(loc[2])
@@ -40,11 +66,30 @@ class BundleManager(object):
         Exports everything to JSON.
         """
         data = {
+            "spec": self.original_gadget_spec,
             "bundles": {}
         }
         for name, bundle in self._bundles.items():
             data["bundles"][name] = bundle.to_jsonable()
         return json.dumps(data)
+
+    def from_json(self, json):
+        """
+        Loads the specified JSON into the BundleManager.
+        @param json: JSON string to load.
+        @return: Nothing
+        """
+        appdata = json.loads(json)
+        bundles = appdata["bundles"]
+        for name, bundledata in bundles.items():
+            # TODO: Kludgey and inefficient. Fix/refactor this.
+            bundlejs = json.dumps(bundledata)
+            if name in self._bundles:
+                bundle = self._bundles[name]
+            else:
+                pass
+        raise Exception("Not yet implemented")
+
 
 
     def get_name(self, lang, country):
@@ -120,6 +165,13 @@ class BundleManager(object):
 
 
 class Bundle(object):
+    """
+    Represents a Bundle. A bundle is a set of messages for a specific language, group and country.
+    The default language, group and country is ANY.
+    By convention, language is in lowercase while country is in uppercase.
+    Group is not yet defined.
+    """
+
     def __init__(self, country, lang, group=""):
         self.country = country
         self.lang = lang
@@ -130,22 +182,37 @@ class Bundle(object):
         }
 
     def add_msg(self, word, translation):
+        """
+        Adds a translation to the dictionary.
+        """
         self._msgs[word] = translation
 
     def remove_msg(self, word):
+        """
+        Removes a translation from the dictionary.
+        """
         del self._msgs[word]
 
     def to_jsonable(self):
+        """
+        Converts the Bundle to a JSON-able dictionary.
+        """
         bundle_data = {"country": self.country, "lang": self.lang, "group": self.group, "messages": self._msgs}
         return bundle_data
 
     def to_json(self):
+        """
+        Converts the Bundle to JSON.
+        """
         bundle_data = {"country": self.country, "lang": self.lang, "group": self.group, "messages": self._msgs}
         json_str = json.dumps(bundle_data)
         return json_str
 
     @staticmethod
     def from_json(json_str):
+        """
+        Builds a fully new Bundle from JSON.
+        """
         bundle_data = json.loads(json_str)
         bundle = Bundle(bundle_data["country"], bundle_data["lang"], bundle_data["group"])
         bundle._msgs = bundle_data["messages"]
@@ -153,6 +220,9 @@ class Bundle(object):
 
     @staticmethod
     def from_xml(xml_str, country, lang, group=""):
+        """
+        Creates a new Bundle from XML.
+        """
         bundle = Bundle(country, lang, group)
         xmldoc = minidom.parseString(xml_str)
         itemlist = xmldoc.getElementsByTagName("msg")
@@ -161,12 +231,61 @@ class Bundle(object):
         return bundle
 
     def to_xml(self):
+        """
+        Converts the Bundle to XML.
+        """
         out = StringIO.StringIO()
         out.write('<messagebundle>\n')
         for (name, msg) in self._msgs.items():
             out.write('    <msg name="%s">%s</msg>\n' % (name, msg))
         out.write('</messagebundle>\n')
         return out.getvalue()
+
+
+
+@translate_blueprint.route('/app/<appid>/app.xml')
+def app_xml(appid):
+    app = get_app(appid)
+    # TODO: Verify that the app is a "translate" app.
+    data = json.loads(app.data)
+    spec_file = data["spec"]
+
+    bm = BundleManager(spec_file)
+    bm.load_spec(spec_file)
+    output_xml = bm.update_bundles(bm.original_xml)
+
+    response = make_response(output_xml)
+    response.mimetype = "application/xml"
+    return response
+
+
+@translate_blueprint.route('/app/<appid>/<langfile>')
+def app_langfile(appid, langfile):
+    app = get_app(appid)
+
+    data = json.loads(app.data)
+    name_only = os.path.splitext(langfile)[0]
+
+    # TODO: Figure out how to handle 404 errors here. (Check whether it could crash a gadget etc).
+    # Try to load the bundle with that lang.
+    bundles = data["bundles"]
+    if name_only not in bundles:
+        dbg_info = str(bundles.keys())
+        return "Could not find such language. Available keys are: " + dbg_info, 404
+
+    # TODO: Add from_jsonable
+    bundle = Bundle.from_json(json.dumps(bundles[name_only]))
+
+    output_xml = bundle.to_xml()
+
+    response = make_response(output_xml)
+    response.mimetype = "application/xml"
+    return response
+
+
+
+
+
 
 
 @translate_blueprint.route('/backend', methods=['GET', 'POST'])

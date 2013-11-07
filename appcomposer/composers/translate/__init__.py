@@ -11,7 +11,7 @@ info = {
     'blueprint': 'translate',
     'url': '/composers/translate',
 
-    'new_endpoint': 'translate.translate_selectlang',
+    'new_endpoint': 'translate.translate_index',
     'edit_endpoint': 'translate.translate_selectlang',
     'delete_endpoint': 'dummy.delete',
 
@@ -71,7 +71,9 @@ def translate_selectlang():
         # Create a new App from the specified XML
         app = create_app(appname, "translate", js)
 
-        return render_template("composers/translate/selectlang.html")
+        flash("App spec successfully loaded", "success")
+
+        return render_template("composers/translate/selectlang.html", app=app)
 
     return render_template("composers/translate/selectlang.html")
 
