@@ -2,6 +2,17 @@
 {% extends 'master.html' %}
 
 {% block body %}
-    Welcome to the app composer!
-    <a href="{{ url_for('login') }}">login</a>
+    <div class="row">
+        <div class="span2 offset2">
+            <img src="{{ url_for('static', filename='golab.png') }}">
+        </div>
+        <div class="span8">
+           <h1>Contact</h1>
+           <p>For questions about the Go-Lab project, go to the <a href="http://www.go-lab-project.eu/contact">main website</a></p>
+           <p>You may access the code at <a href="https://github.com/porduna/appcomposer/">http://github.com/porduna/appcomposer</a>.</p>
+           <div class="alert">
+                <h1>Documentation is still not provided</h1>
+           </div>
+        </div>
+    </div>
 {% endblock %}
