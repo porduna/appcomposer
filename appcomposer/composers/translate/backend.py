@@ -149,28 +149,8 @@ class BundleManager(object):
 
         for lang, country, bundle_url in locales:
             bundle_xml = self._retrieve_url(bundle_url)
-            bundle = Bundle.from_xml(bundle_xml, country, lang)
-            name = self.generate_standard_name(country, lang)
-            self._bundles[name] = bundle
-
-
-    def _load_spec(self, url):
-        """
-        Fully loads the specified gadget spec.
-        @param url: URL to the XML Gadget Spec.
-        @return: Nothing. The bundles are internally stored once parsed.
-        """
-
-        # Store the specified URL as the gadget spec.
-        self.original_spec_file = url
-
-        xml_str = self._retrieve_url(url)
-        self.original_xml = xml_str
-        locales = self._extract_locales_from_xml(xml_str)
-        for loc in locales:
-            bundle_xml = self._retrieve_url(loc[2])
-            bundle = Bundle.from_xml(bundle_xml, loc[0], loc[1])
-            name = self.generate_standard_name(loc[0], loc[1])
+            bundle = Bundle.from_xml(bundle_xml, lang, country)
+            name = self.generate_standard_name(lang, country)
             self._bundles[name] = bundle
 
     def to_json(self):
@@ -300,8 +280,9 @@ class BundleManager(object):
 
             # Build our locales to inject. We modify the case to respect the standard. It shouldn't be necessary
             # but we do it nonetheless just in case other classes fail to respect it.
+            # TODO: Fix the issues with the host_url. It should probably be absolute.
             filename = bundle.lang.lower() + "_" + bundle.country.upper() + ".xml"
-            full_filename = os.path.join(host_url, filename)
+            full_filename = "../../../.." + os.path.join(host_url, filename)
 
             locale.setAttribute("messages", full_filename)
             if bundle.lang != "all":
@@ -410,7 +391,7 @@ class Bundle(object):
         return bundle
 
     @staticmethod
-    def from_xml(xml_str, country, lang, group=""):
+    def from_xml(xml_str, lang, country, group=""):
         """
         Creates a new Bundle from XML.
         """
@@ -471,7 +452,7 @@ def app_xml(appid):
     return response
 
 
-@translate_blueprint.route('/app/<appid>/i18n/<langfile>')
+@translate_blueprint.route('/app/<appid>/i18n/<langfile>.xml')
 def app_langfile(appid, langfile):
     """
     app_langfile(appid, langfile)
