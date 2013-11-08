@@ -101,7 +101,7 @@ class BundleManager(object):
         self._bundles = {}
 
         # Points to the original gadget spec XML.
-        self.original_gadget_spec = original_gadget_spec
+        self.original_spec_file = original_gadget_spec
 
         # TODO: Consider whether this should always be stored here.
         self.original_xml = None
@@ -129,6 +129,32 @@ class BundleManager(object):
         contents = handle.read()
         return contents
 
+    def load_full_spec(self, url):
+        """
+        Fully loads the specified Gadget Spec.
+        This is meant to be used when first loading a new App, so that all existing languages are taken into account.
+        @param url:  URL to the XML Gadget Spec.
+        @return: Nothing. The bundles are internally stored once parsed.
+        """
+        # Store the specified URL as the gadget spec.
+        self.original_spec_file = url
+
+        # Retrieve the original spec. This may take a while.
+        xml_str = self._retrieve_url(url)
+
+        self.original_xml = xml_str
+
+        # Extract the locales from the XML.
+        # TODO: Revise this method.
+        locales = self._extract_locales_from_xml(xml_str)
+
+        for lang, country, bundle_url in locales:
+            bundle_xml = self._retrieve_url(bundle_url)
+            bundle = Bundle.from_xml(bundle_xml, country, lang)
+            name = self.generate_standard_name(country, lang)
+            self._bundles[name] = bundle
+
+
     def _load_spec(self, url):
         """
         Fully loads the specified gadget spec.
@@ -137,15 +163,15 @@ class BundleManager(object):
         """
 
         # Store the specified URL as the gadget spec.
-        self.original_gadget_spec = url
+        self.original_spec_file = url
 
         xml_str = self._retrieve_url(url)
         self.original_xml = xml_str
-        locales = self._extract_locales(xml_str)
+        locales = self._extract_locales_from_xml(xml_str)
         for loc in locales:
             bundle_xml = self._retrieve_url(loc[2])
             bundle = Bundle.from_xml(bundle_xml, loc[0], loc[1])
-            name = self.get_name(loc[0], loc[1])
+            name = self.generate_standard_name(loc[0], loc[1])
             self._bundles[name] = bundle
 
     def to_json(self):
@@ -153,44 +179,49 @@ class BundleManager(object):
         Exports everything to JSON.
         """
         data = {
-            "spec": self.original_gadget_spec,
+            "spec": self.original_spec_file,
             "bundles": {}
         }
         for name, bundle in self._bundles.items():
             data["bundles"][name] = bundle.to_jsonable()
         return json.dumps(data)
 
-    def from_json(self, json):
+    def from_json(self, json_str):
         """
         Loads the specified JSON into the BundleManager.
         @param json: JSON string to load.
         @return: Nothing
         """
-        appdata = json.loads(json)
+        appdata = json.loads(json_str)
         bundles = appdata["bundles"]
         for name, bundledata in bundles.items():
             # TODO: Kludgey and inefficient. Fix/refactor this.
             bundlejs = json.dumps(bundledata)
-            if name in self._bundles:
-                bundle = self._bundles[name]
-            else:
-                pass
-        raise Exception("Not yet implemented")
+            bundle = Bundle.from_json(bundlejs)
+            self._bundles[name] = bundle
+        return
 
-
-    def get_name(self, lang, country):
+    def generate_standard_name(self, lang, country):
         """
-        Gets a name in the form ca_ES.
+        From the lang and country information, it generates a standard name for the file.
+        Standard names follow the convention: "ca_ES".
+        Case is important.
+        Also, if either of them is empty or None, then it will be replaced with "all" in the appropriate case.
+        The XML file termination is NOT appended.
         """
         if lang is None or lang == "":
-            lang = "ANY"
+            lang = "all"
         if country is None or country == "":
-            country = "ANY"
-        return "%s_%s" % (lang, country)
+            country = "ALL"
+        return "%s_%s" % (lang.lower(), country.upper())
 
-    def _extract_locales(self, xml_str):
+    def _extract_locales_from_xml(self, xml_str):
         """
+        _extract_locales_from_xml(xml_str)
         Extracts the Locale nodes info from an xml_str (a gadget spec).
+        @param xml_str: String containing the XML of a locale file.
+        @return: A list of tuples: (lang, country, message_file)
+        @note: If the lang or country don't exist, it replaces them with "all" or "ALL" respectively.
         """
         locales = []
         xmldoc = minidom.parseString(xml_str)
@@ -201,12 +232,12 @@ class BundleManager(object):
             try:
                 lang = elem.attributes["lang"].nodeValue
             except KeyError:
-                lang = ""
+                lang = "all"
 
             try:
                 country = elem.attributes["country"].nodeValue
             except KeyError:
-                country = ""
+                country = "ALL"
 
             locales.append((lang, country, messages_file))
         return locales
@@ -274,8 +305,10 @@ class BundleManager(object):
             full_filename = host_url + "/" + filename
 
             locale.setAttribute("messages", full_filename)
-            locale.setAttribute("lang", bundle.lang)
-            locale.setAttribute("country", bundle.country)
+            if bundle.lang != "all":
+                locale.setAttribute("lang", bundle.lang)
+            if bundle.country != "ALL":
+                locale.setAttribute("country", bundle.country)
 
             # Inject the node we have just created.
             locale.appendChild(xmldoc.createTextNode(""))
@@ -401,34 +434,56 @@ class Bundle(object):
         return out.getvalue()
 
 
+
 @translate_blueprint.route('/app/<appid>/app.xml')
 def app_xml(appid):
+    """
+    app_xml(appid)
+
+    Provided for end-users. This is the function that provides hosting for the
+    gadget specs for a specified App. The gadget specs are actually dynamically
+    generated, as every time a request is made the original XML is obtained and
+    modified.
+
+    @param appid: Identifier of the App.
+    @return: XML of the modified Gadget Spec with the Locales injected, or an HTTP error code
+    if an error occurs.
+    """
     app = get_app(appid)
+
+    if app is None:
+        return "Error 404: App doesn't exist", 404
+
     # TODO: Verify that the app is a "translate" app.
-    data = json.loads(app.data)
-    spec_file = data["spec"]
+
+    appdata = json.loads(app.data)
+    spec_file = appdata["spec"]
 
     bm = BundleManager(spec_file)
-    bm._load_spec(spec_file)
-    output_xml = bm.update_bundles(bm.original_xml)
+    bm.from_json(app.data)
+
+    xmlspec = bm._retrieve_url(spec_file)
+
+    output_xml = bm._inject_locales_into_spec("localhost", xmlspec, True)
 
     response = make_response(output_xml)
     response.mimetype = "application/xml"
     return response
 
 
-@translate_blueprint.route('/app/<appid>/<langfile>.xml')
+@translate_blueprint.route('/app/<appid>/i18n/<langfile>')
 def app_langfile(appid, langfile):
     """
     app_langfile(appid, langfile)
 
-    Provided to end-users. This is the function that provides hosting for the
+    Provided for end-users. This is the function that provides hosting for the
     langfiles for a specified App. The langfiles are actually dynamically
     generated (the information is extracted from the Translate-specific information).
 
     @param appid: Appid of the App whose langfile to generate.
     @param langfile: Name of the langfile. Must follow the standard: ca_ES
-    @return: Google OpenSocial compatible XML.
+    @return: Google OpenSocial compatible XML, or an HTTP error code
+    if an error occurs.
     """
     app = get_app(appid)
 
@@ -451,6 +506,7 @@ def app_langfile(appid, langfile):
     response = make_response(output_xml)
     response.mimetype = "application/xml"
     return response
+
 
 
 @translate_blueprint.route('/backend', methods=['GET', 'POST'])
