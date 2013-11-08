@@ -1,7 +1,7 @@
 import json
 import os
 import urllib
-from flask import make_response
+from flask import make_response, url_for
 from markupsafe import Markup
 from sqlalchemy.util import deprecated
 from appcomposer.appstorage.api import get_app
@@ -145,7 +145,6 @@ class BundleManager(object):
         self.original_xml = xml_str
 
         # Extract the locales from the XML.
-        # TODO: Revise this method.
         locales = self._extract_locales_from_xml(xml_str)
 
         for lang, country, bundle_url in locales:
@@ -302,7 +301,7 @@ class BundleManager(object):
             # Build our locales to inject. We modify the case to respect the standard. It shouldn't be necessary
             # but we do it nonetheless just in case other classes fail to respect it.
             filename = bundle.lang.lower() + "_" + bundle.country.upper() + ".xml"
-            full_filename = host_url + "/" + filename
+            full_filename = os.path.join(host_url, filename)
 
             locale.setAttribute("messages", full_filename)
             if bundle.lang != "all":
@@ -464,7 +463,8 @@ def app_xml(appid):
 
     xmlspec = bm._retrieve_url(spec_file)
 
-    output_xml = bm._inject_locales_into_spec("localhost", xmlspec, True)
+    lang_file_url = url_for("translate.app_langfile", appid=app.unique_id, langfile="")
+    output_xml = bm._inject_locales_into_spec(lang_file_url, xmlspec, True)
 
     response = make_response(output_xml)
     response.mimetype = "application/xml"
