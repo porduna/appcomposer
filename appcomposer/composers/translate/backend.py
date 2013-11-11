@@ -202,24 +202,22 @@ class BundleManager(object):
             locales.append((lang, country, messages_file))
         return locales
 
-    def _inject_locales_into_spec(self, host_url, xml_str, respect_default=True):
+    def _inject_locales_into_spec(self, appid, xml_str, respect_default=True):
         """
-        _inject_locales_into_spec(host_url, xml_str)
+        _inject_locales_into_spec(appid, xml_str)
 
         Generates a new Gadget Spec from a provided Gadget Spec, replacing every original Locale with links
-        to custom Locales, hosted at host_url.
+        to custom Locales, with application identifier appid.
 
         Optionally, it can avoid modifying the default translation.
         This is done so that if the original author updates the translation, this takes immediate effect
         into the translated versions of the App.
 
-        @param host_url: Base URL that will host the language bundles' XML files. Generally, it will be an URL
-        of the Composer itself, specific to the App, and dynamically generated.
-
+        @param appid: Application identifier of the current application. 
         @param xml_str: String containing the XML of the original Gadget Spec.
 
         @param respect_default: If false, every Locale will be removed and replaced with custom links to the
-        language, using the host_url as base. If true, the same will be done to every Locale, EXCEPT the default
+        language, using the appid as application identifier. If true, the same will be done to every Locale, EXCEPT the default
         language locale. The default language locale will be kept as-is.
         """
 
@@ -261,9 +259,7 @@ class BundleManager(object):
 
             # Build our locales to inject. We modify the case to respect the standard. It shouldn't be necessary
             # but we do it nonetheless just in case other classes fail to respect it.
-            # TODO: Fix the issues with the host_url. It should probably be absolute.
-            filename = bundle.lang.lower() + "_" + bundle.country.upper() + ".xml"
-            full_filename = "../../../.." + os.path.join(host_url, filename)
+            full_filename = url_for('.app_langfile', appid = appid, langfile = bundle.lang.lower() + "_" + bundle.country.upper(), age = '18-25', _external = True)
 
             locale.setAttribute("messages", full_filename)
             if bundle.lang != "all":
@@ -386,21 +382,17 @@ def app_xml(appid):
 
     xmlspec = bm._retrieve_url(spec_file)
 
-    lang_file_url = url_for("translate.app_langfile", appid=app.unique_id, langfile="")
-    # Remove the ".xml" from the URL.
-    lang_file_url = lang_file_url[0:-4]
-
-    output_xml = bm._inject_locales_into_spec(lang_file_url, xmlspec, True)
+    output_xml = bm._inject_locales_into_spec(appid, xmlspec, True)
 
     response = make_response(output_xml)
     response.mimetype = "application/xml"
     return response
 
 
-@translate_blueprint.route('/app/<appid>/i18n/<langfile>.xml')
-def app_langfile(appid, langfile):
+@translate_blueprint.route('/app/<appid>/i18n/<age>/<langfile>.xml')
+def app_langfile(appid, langfile, age):
     """
-    app_langfile(appid, langfile)
+    app_langfile(appid, langfile, age)
 
     Provided for end-users. This is the function that provides hosting for the
     langfiles for a specified App. The langfiles are actually dynamically
@@ -408,6 +400,7 @@ def app_langfile(appid, langfile):
 
     @param appid: Appid of the App whose langfile to generate.
     @param langfile: Name of the langfile. Must follow the standard: ca_ES
+    @param age: Target group (e.g., 12-18 years old)
     @return: Google OpenSocial compatible XML, or an HTTP error code
     if an error occurs.
     """
