@@ -3,7 +3,6 @@ import os
 import urllib
 from flask import make_response, url_for
 from markupsafe import Markup
-from sqlalchemy.util import deprecated
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
 from xml.dom import minidom
@@ -59,7 +58,7 @@ SERVE_APP()
  """
 
 # TODO: Ensure throughout this class that bundle.lang and bundle.country NEVER contain empty strings or None values.
-# If appropriate they should contain "all".
+# If appropriate they should contain "all". (Still, the XML should not contain these attrs if they are default).
 
 
 class NoDefaultLanguageException(Exception):
@@ -103,22 +102,6 @@ class BundleManager(object):
         # Points to the original gadget spec XML.
         self.original_spec_file = original_gadget_spec
 
-        # TODO: Consider whether this should always be stored here.
-        self.original_xml = None
-
-        self._base_publish_url = "LOCALHOST"  # This is to be changed.
-
-    def load_app(self, app):
-        """
-        Loads an App object.
-        TODO: Not yet clear in which state the object should be before loading.
-        @param app: The App object to load
-        @return: None. App is internally loaded into de manager.
-        """
-        self.from_json(app.data)
-        # Not yet fully implemented.
-
-
     def _retrieve_url(self, url):
         """
         Simply retrieves a specified URL (Synchronously).
@@ -142,8 +125,6 @@ class BundleManager(object):
         # Retrieve the original spec. This may take a while.
         xml_str = self._retrieve_url(url)
 
-        self.original_xml = xml_str
-
         # Extract the locales from the XML.
         locales = self._extract_locales_from_xml(xml_str)
 
@@ -165,7 +146,7 @@ class BundleManager(object):
             data["bundles"][name] = bundle.to_jsonable()
         return json.dumps(data)
 
-    def from_json(self, json_str):
+    def load_from_json(self, json_str):
         """
         Loads the specified JSON into the BundleManager.
         @param json: JSON string to load.
@@ -297,45 +278,6 @@ class BundleManager(object):
         return xmldoc.toprettyxml()
 
 
-    # TODO: Consider whether non-specified lang and country should default to "all".
-    # TODO: Add error detection. XMLs may fail to load, they may not contain the expected tags, etc.
-    def update_bundles(self, xml_str):
-        """
-        update_bundles(xml_str)
-
-        Updates the bundles in a XML gadget spec using the Manager's bundles.
-        """
-        xmldoc = minidom.parseString(xml_str)
-
-        # Remove existing locales
-        locales = xmldoc.getElementsByTagName("Locale")
-        for loc in locales:
-            parent = loc.parentNode
-            parent.removeChild(loc)
-
-        # Add the locales to ModulePrefs
-        module_prefs = xmldoc.getElementsByTagName("ModulePrefs")[0]
-        for name, bundle in self._bundles.items():
-            locale = xmldoc.createElement("Locale")
-            if bundle.lang == "":
-                bundle.lang = "all"
-            if bundle.country == "":
-                bundle.lang = "all"
-
-            base_url = self._base_publish_url
-            filename = bundle.lang + "_" + bundle.country + ".xml"
-            full_filename = base_url + "/" + filename
-
-            locale.setAttribute("messages", full_filename)
-            locale.setAttribute("lang", bundle.lang)
-            locale.setAttribute("country", bundle.country)
-
-            locale.appendChild(xmldoc.createTextNode(""))
-            module_prefs.appendChild(locale)
-
-        return xmldoc.toprettyxml()
-
-
 class Bundle(object):
     """
     Represents a Bundle. A bundle is a set of messages for a specific language, group and country.
@@ -440,11 +382,14 @@ def app_xml(appid):
     spec_file = appdata["spec"]
 
     bm = BundleManager(spec_file)
-    bm.from_json(app.data)
+    bm.load_from_json(app.data)
 
     xmlspec = bm._retrieve_url(spec_file)
 
     lang_file_url = url_for("translate.app_langfile", appid=app.unique_id, langfile="")
+    # Remove the ".xml" from the URL.
+    lang_file_url = lang_file_url[0:-4]
+
     output_xml = bm._inject_locales_into_spec(lang_file_url, xmlspec, True)
 
     response = make_response(output_xml)
@@ -513,31 +458,3 @@ def backend():
     xmlstr = bundle.to_xml()
 
     return Markup.escape(xmlstr)
-
-
-@translate_blueprint.route('/backendt', methods=['GET', 'POST'])
-def backendt():
-    bm = BundleManager()
-    bm._load_spec("https://dl.dropboxusercontent.com/u/6424137/i18n.xml")
-
-    bundles = ""
-    for bundle in bm._bundles.values():
-        bundles += bundle.to_json()
-    return Markup.escape(bundles)
-
-
-@translate_blueprint.route('/backend2', methods=['GET', 'POST'])
-def backendt():
-    bm = BundleManager()
-    url = "https://dl.dropboxusercontent.com/u/6424137/i18n.xml"
-    bm._load_spec(url)
-
-    bundles = "";
-    for bundle in bm._bundles.values():
-        bundles += bundle.to_json()
-
-    xml = bm._retrieve_url(url)
-
-    result = bm.update_bundles(xml)
-    return Markup.escape(result)
-
