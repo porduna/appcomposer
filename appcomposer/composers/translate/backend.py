@@ -9,7 +9,6 @@ from xml.dom import minidom
 import StringIO
 
 
-
 """
 NOTE ABOUT THE GENERAL WORKFLOW DESIGN:
 The current design for the export system is the following. Included here for reference purposes.
@@ -101,6 +100,19 @@ class BundleManager(object):
 
         # Points to the original gadget spec XML.
         self.original_spec_file = original_gadget_spec
+
+    def get_locales_list(self):
+        """
+        get_locales_list()
+        Retrieves a list containing dictionaries of the locales that are currently loaded in the manager.
+        @return: List of dictionaries with the following information: {locale_name, lang, country}
+        """
+        locales = []
+        for key in self._bundles.keys():
+            lang, country = key.split("_")
+            loc = {"locale_name": key, "lang" : lang, "country" : country }
+            locales.append(loc)
+        return locales
 
     def _retrieve_url(self, url):
         """
@@ -259,7 +271,9 @@ class BundleManager(object):
 
             # Build our locales to inject. We modify the case to respect the standard. It shouldn't be necessary
             # but we do it nonetheless just in case other classes fail to respect it.
-            full_filename = url_for('.app_langfile', appid = appid, langfile = bundle.lang.lower() + "_" + bundle.country.upper(), age = '18-25', _external = True)
+            full_filename = url_for('.app_langfile', appid=appid,
+                                    langfile=bundle.lang.lower() + "_" + bundle.country.upper(), group='18-25',
+                                    _external=True)
 
             locale.setAttribute("messages", full_filename)
             if bundle.lang != "all":
@@ -352,7 +366,6 @@ class Bundle(object):
         return out.getvalue()
 
 
-
 @translate_blueprint.route('/app/<appid>/app.xml')
 def app_xml(appid):
     """
@@ -389,8 +402,8 @@ def app_xml(appid):
     return response
 
 
-@translate_blueprint.route('/app/<appid>/i18n/<age>/<langfile>.xml')
-def app_langfile(appid, langfile, age):
+@translate_blueprint.route('/app/<appid>/i18n/<group>/<langfile>.xml')
+def app_langfile(appid, langfile, group):
     """
     app_langfile(appid, langfile, age)
 
@@ -400,7 +413,7 @@ def app_langfile(appid, langfile, age):
 
     @param appid: Appid of the App whose langfile to generate.
     @param langfile: Name of the langfile. Must follow the standard: ca_ES
-    @param age: Target group (e.g., 12-18 years old)
+    @param group: Target group (e.g., 12-18 years old)
     @return: Google OpenSocial compatible XML, or an HTTP error code
     if an error occurs.
     """
@@ -425,7 +438,6 @@ def app_langfile(appid, langfile, age):
     response = make_response(output_xml)
     response.mimetype = "application/xml"
     return response
-
 
 
 @translate_blueprint.route('/backend', methods=['GET', 'POST'])

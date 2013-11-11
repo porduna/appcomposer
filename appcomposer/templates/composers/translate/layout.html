@@ -1,10 +1,11 @@
+{% import 'user/layout.html' as layout with context -%}
 <!DOCTYPE html>
 <!--[if lt IE 7]>      <html class="no-js lt-ie9 lt-ie8 lt-ie7"> <![endif]-->
 <!--[if IE 7]>         <html class="no-js lt-ie9 lt-ie8"> <![endif]-->
 <!--[if IE 8]>         <html class="no-js lt-ie9"> <![endif]-->
 <!--[if gt IE 8]><!--> <html class="no-js"> <!--<![endif]-->
-<html xmlns="http://www.w3.org/1999/html">    
-  <head>      
+<html xmlns="http://www.w3.org/1999/html">
+  <head>
     <title>App Composer ::  {{ title }}</title>    
     {% block meta %}
         <meta charset="utf-8">
@@ -64,7 +65,11 @@
         </div>
       </div>        
     </div>
-    <div class="container">      
+    <div class="container">
+
+    {# Display pending messages here. TODO: Make sure that it's actually an appropriate place for this. #}
+    {{ layout.messages() }}
+
     {% block body_content %}{% endblock %}      
     </div>  
     <hr>    
