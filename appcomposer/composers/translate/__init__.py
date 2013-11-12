@@ -51,7 +51,9 @@ def translate_selectlang():
     """ Source language & target language selection."""
 
     # TODO: This approach has many flaws, should be changed eventually.
-    langs_list = ["es", "eu", "ca", "en", "de", "fr", "pt"]
+    targetlangs_codes = ["es_ALL", "eu_ALL", "ca_ALL", "en_ALL", "de_ALL", "fr_ALL", "pt_ALL"]
+    targetlangs_list = [{"code": code, "repr": backend.BundleManager._get_locale_repr(
+        *backend.BundleManager._get_locale_lang_country(code))} for code in targetlangs_codes]
     groups_list = [("gen", "General"), ("10-13", "Preadolescence (age 10-13)"), ("14-18", "Adolescence (age 14-18)")]
 
     # As of now (may change in the future) if it is a POST we are creating the app for the first time.
@@ -79,12 +81,12 @@ def translate_selectlang():
         # Find out which locales does the app provide (for now).
         locales = bm.get_locales_list()
 
-        return render_template("composers/translate/selectlang.html", langs=langs_list, groups=groups_list, app=app,
+        return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list, groups=groups_list,
+                               app=app,
                                Locale=Locale, locales=locales)
 
     # This was a GET, the app should exist already somehow, we will try to retrieve it.
     if "appid" in request.args:
-
         appid = request.args["appid"]
         app = get_app(appid)
 
@@ -96,11 +98,12 @@ def translate_selectlang():
 
         locales = bm.get_locales_list()
 
-        return render_template("composers/translate/selectlang.html", langs=langs_list,
+        return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list,
                                groups=groups_list, app=app,
                                Locale=Locale, locales=locales)
 
-    return render_template("composers/translate/selectlang.html", langs=langs_list,
+    # TODO: We should probably never reach this.
+    return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list,
                            groups=groups_list, Locale=Locale)
 
 
@@ -126,6 +129,14 @@ def translate_edit():
         # Retrieve the bundles for our lang.
         srcbundle = bm.get_bundle(srclang)
         targetbundle = bm.get_bundle(targetlang)
+
+        if srcbundle is None:
+            flash("Source Bundle is None", "error")
+
+        # The target bundle doesn't exist yet. We need to create it ourselves.
+        if targetbundle is None:
+            lang, country = targetlang.split("_")
+            targetbundle = backend.Bundle(lang, country, targetgroup)
 
         flash("Bundles retrieved", "success")
 

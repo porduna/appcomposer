@@ -104,7 +104,23 @@ class BundleManager(object):
         self.original_spec_file = original_gadget_spec
 
     @staticmethod
+    def _get_locale_lang_country(code):
+        """
+        Retrieves the lang and country from a locale code such as ca_ES.
+        @param code: Locale code (ex: es_ES)
+        @return: (lang, country)
+        """
+        lang, country = code.split("_")
+        return lang, country
+
+    @staticmethod
     def _get_locale_repr(lang, country):
+        """
+        Retrieves a string representation of a Locale.
+        @param lang: Lang code.
+        @param country: Country code.
+        @return: String representation for the locale.
+        """
         try:
             if country.upper() == 'ALL':
                 country = ""
@@ -326,6 +342,20 @@ class Bundle(object):
         self._msgs = {
             # identifier : translation
         }
+
+    def get_msgs(self):
+        """
+        Retrieves the whole dictionary of translations for the Bundle.
+        @return: Dictionary containing the translation. WARNING: Do not modify the dictionary.
+        """
+        return self._msgs
+
+    def get_msg(self, identifier):
+        """
+        Retrieves the translation of a specific message.
+        @param identifier: Identifier of the message to retrieve.
+        @return: Message linked to the identifier, or None if it doesn't exist.
+        """
 
     def add_msg(self, word, translation):
         """
