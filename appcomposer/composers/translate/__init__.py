@@ -4,7 +4,7 @@ import random
 from flask import Blueprint, render_template, flash, redirect, url_for, request, json
 from babel import Locale, UnknownLocaleError
 
-from appcomposer.appstorage.api import create_app, get_app
+from appcomposer.appstorage.api import create_app, get_app, update_app_data
 from forms import UrlForm, LangselectForm
 
 
@@ -111,12 +111,15 @@ def translate_selectlang():
 def translate_edit():
     """ Text editor for the selected language. """
 
+    # No matter if we are handling a GET or POST, we require these parameters.
+    appid = request.values["appid"]
+    srclang = request.values["srclang"]
+    targetlang = request.values["targetlang"]
+    srcgroup = request.values["srcgroup"]
+    targetgroup = request.values["targetgroup"]
+
+    # This is a GET request. We are essentially viewing-only.
     if request.method == "GET":
-        appid = request.args["appid"]
-        srclang = request.args["srclang"]
-        targetlang = request.args["targetlang"]
-        srcgroup = request.args["srcgroup"]
-        targetgroup = request.args["targetgroup"]
 
         # Retrieve the application we want to view.
         app = get_app(appid)
@@ -142,9 +145,45 @@ def translate_edit():
 
         return render_template("composers/translate/edit.html", app=app, srcbundle=srcbundle, targetbundle=targetbundle)
 
+    # This is a POST request. We need to save the entries.
     else:
 
-        return render_template("composers/translate/edit.html")
+        # Retrieve the application we want to view.
+        # TODO: This is kinda the same for GET and POST. Consider refactoring this somehow.
+        app = get_app(appid)
+
+        flash("App successfully loaded", "success")
+
+        bm = backend.BundleManager(json.loads(app.data)["spec"])
+        bm.load_from_json(app.data)
+
+        # Retrieve the bundles for our lang.
+        srcbundle = bm.get_bundle(srclang)
+        targetbundle = bm.get_bundle(targetlang)
+
+        if srcbundle is None:
+            flash("Source Bundle is None", "error")
+
+        # The target bundle doesn't exist yet. We need to create it ourselves.
+        if targetbundle is None:
+            lang, country = targetlang.split("_")
+            targetbundle = backend.Bundle(lang, country, targetgroup)
+
+        flash("Bundles retrieved", "success")
+
+        # Retrieve a list of all the key-values to save. That is, the parameters which start with _message_.
+        messages = [(k[len("_message_"):], v) for (k, v) in request.values.items() if k.startswith("_message_")]
+
+        # Save all the messages we retrieved from the POST or GET params into the Bundle.
+        for identifier, msg in messages:
+            targetbundle.add_msg(identifier, msg)
+
+        # Now we need to save the changes into the database.
+        json_str = bm.to_json()
+        # TODO: VERIFY THAT TO_JSON DOES A PROPER JOB OF ADDING THE "SPEC" AND EXTRA PARAMETERS.
+        update_app_data(app, json_str)
+
+        return render_template("composers/translate/edit.html", app=app, srcbundle=srcbundle, targetbundle=targetbundle)
 
 
 @translate_blueprint.route("/about")
