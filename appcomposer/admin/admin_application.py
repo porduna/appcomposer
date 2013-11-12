@@ -10,6 +10,7 @@ from appcomposer import models
 from appcomposer.login import current_user
 from appcomposer.db import db_session
 
+from appcomposer.application import COMPOSERS_DICT
 
 ##########################################################
 #
@@ -23,8 +24,8 @@ def initialize_admin_component(app):
     url = '/admin'
     admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name='Admin Profile', endpoint = "home-admin")
     admin.add_view(UsersView(db_session, name='Users', url = 'users', endpoint = 'admin.users'))
-    admin.add_view(ListAppsView(db_session, name='List', url = 'listapps', endpoint = 'admin.listapps', category='Applications'))    
-    admin.add_view(ManageAppsView(name='Manage', url = 'manangeapps', endpoint = 'admin.manageapps', category='Applications'))   
+    admin.add_view(BasicAdminAppsView(db_session, name='Basic Management', url = 'basic-apps-admin', endpoint = 'admin.basic-admin-apps', category='Applications'))    
+    admin.add_view(AdvancedAdminAppsView(name='Advanced Management', url = 'advanced-apps-admin', endpoint = 'admin.advanced-admin-apps', category='Applications'))   
     admin.add_view(ProfileView(name='My Profile', url = 'profile', endpoint = 'admin.profile'))
     admin.add_view(BackView(name='Back', url = 'back', endpoint = 'admin.back'))     
     admin.init_app(app)
@@ -135,23 +136,42 @@ class UsersView(AdminModelView):
         super(UsersView, self).__init__(models.User, session, **kwargs)
 
 
-class ListAppsView(AdminModelView):
+class BasicAdminAppsView(AdminModelView):
     """
-    List Apps View. Entry view which lets us list the applications in the system.
+    Basic Admin Apps View. Basic entry view which lets us manage the applications located at the system.
+    We will be able to create, edit, and delete apps.
     """
+
+    column_list = ('owner', 'name', 'composer', 'data', 'creation_date', 'modification_date', 'last_access_date')
+    column_labels = dict(owner = 'Owner', name = 'Name', composer = 'Composer', data = 'Data', creation_date = 'Creation Date', modification_date = 'Modification Date', last_access_date = 'Last Access Date')
+    column_sortable_list = ('owner', 'name', 'composer')
+    column_searchable_list = ('name', 'composer')
     
     def __init__(self, session, **kwargs):
-        super(ListAppsView, self).__init__(models.App, session, **kwargs)
+        super(BasicAdminAppsView, self).__init__(models.App, session, **kwargs)
 
 
-class ManageAppsView(AdminBaseView):
+class AdvancedAdminAppsView(AdminBaseView):
     """
-    Manage Apps View. Entry view which lets us manage the applications in the system.
+    Advanced Admin Apps View. Advanced entry view which lets us manage the applications located at the system. 
+    We will be able to create, edit, and delete apps.
     """
-    
+
     @expose('/')
-    def index(self):       
-        return self.render('admin/applications.html')
+    def index(self):
+        # Retrieve the apps
+        apps = db_session.query(models.App).all()
+        
+        def build_edit_link(app):
+            endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]
+            return url_for(endpoint, appid=app.unique_id)
+
+        def build_delete_link(app):
+            endpoint = COMPOSERS_DICT[app.composer]["delete_endpoint"]
+            return url_for(endpoint, appid=app.unique_id)
+
+        return self.render('admin/advanced-admin-apps.html', apps=apps, build_edit_link=build_edit_link,
+                           build_delete_link=build_delete_link)
 
 
 class ProfileView(AdminBaseView):
@@ -166,7 +186,7 @@ class ProfileView(AdminBaseView):
 
 class BackView(AdminBaseView):
     """
-    Profile View. Entry view which lets us edit our profile.
+    Back View.Entry view which lets us come back to the initial page.
     """
     
     @expose('/')

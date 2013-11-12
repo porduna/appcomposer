@@ -22,6 +22,7 @@ def initialize_user_component(app):
     admin = Admin(index_view=HomeView(url=url, endpoint='user'), name="User Profile", url=url, endpoint="home-user")
     admin.add_view(ProfileEditView(name="Profile", url='profile', endpoint='user.profile'))
     admin.add_view(AppsView(name="Apps", url="apps", endpoint='user.apps'))
+    admin.add_view(BackView(name='Back', url = 'back', endpoint = 'user.back')) 
     admin.init_app(app)
 
 
@@ -161,3 +162,12 @@ class ProfileEditView(UserBaseView):
 
         return self.render("user/profile-edit.html", user=user, form=form, change_password=change_password)
     
+
+class BackView(UserBaseView):
+    """
+    Back View. Entry view which lets us come back to the initial page.
+    """
+    
+    @expose('/')
+    def index(self):       
+        return self.render('index.html')
