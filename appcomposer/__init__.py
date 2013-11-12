@@ -18,12 +18,20 @@ from .db import db_session, upgrader
 
 assert db_session is not None  # ignore pyflakes
 
+from flask import render_template
 
 
 @app.route("/")
 def index():
-    return '<a href="/user/">Click here to go the Login</a></br></br><a href="/admin/">Click here to go the Admin</a>'
+    return render_template('index.html')
 
+@app.route("/about")
+def about():
+    return render_template('about.html')
+
+@app.route("/contact")
+def contact():
+    return render_template('contact.html')
 
 def run():
     if not upgrader.check():
