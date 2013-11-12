@@ -57,7 +57,7 @@
                 <div class="form-group">
                     <label class="control-label" for="targetlang">Select target language</label>
                         <select id="targetlang"  multiple="" name="targetlang" class="form-control">
-                            <option value="default" selected="selected">DEFAULT</option>
+                            <option value="all_ALL" selected="selected">DEFAULT</option>
                             {% for lang in target_langs %}
                             <option value="{{ lang["code"] }}">{{ lang["repr"] }}</option>
                             {% endfor %}
