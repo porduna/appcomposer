@@ -1,6 +1,7 @@
 import json
 import os
 import urllib
+from babel import Locale, UnknownLocaleError
 from flask import make_response, url_for
 from markupsafe import Markup
 from appcomposer.appstorage.api import get_app
@@ -95,11 +96,21 @@ class BundleManager(object):
     To manage the set of bundles for an App, and to provide common functionality.
     """
 
+    # TODO: Consider removing the original_gadget_spec, or adding different contructors for each use-case.
     def __init__(self, original_gadget_spec=None):
         self._bundles = {}
 
         # Points to the original gadget spec XML.
         self.original_spec_file = original_gadget_spec
+
+    @staticmethod
+    def _get_locale_repr(lang, country):
+        try:
+            if country.upper() == 'ALL':
+                country = ""
+            return Locale(lang, country).english_name
+        except UnknownLocaleError:
+            return None
 
     def get_locales_list(self):
         """
@@ -110,7 +121,8 @@ class BundleManager(object):
         locales = []
         for key in self._bundles.keys():
             lang, country = key.split("_")
-            loc = {"locale_name": key, "lang" : lang, "country" : country }
+            loc = {"code": key, "lang": lang, "country": country,
+                   "repr": BundleManager._get_locale_repr(lang, country)}
             locales.append(loc)
         return locales
 
@@ -160,7 +172,8 @@ class BundleManager(object):
 
     def load_from_json(self, json_str):
         """
-        Loads the specified JSON into the BundleManager.
+        Loads the specified JSON into the BundleManager. It just loads from the JSON.
+        It doesn't carry out any external request. Existing entries in the manager's bundles may be replaced.
         @param json: JSON string to load.
         @return: Nothing
         """
@@ -286,6 +299,15 @@ class BundleManager(object):
             module_prefs.appendChild(locale)
 
         return xmldoc.toprettyxml()
+
+    def get_bundle(self, bundle_code):
+        """
+        get_bundle(bundle_code)
+        Retrieves a bundle by its code.
+        @param bundle_code: Name for the bundle. Example: ca_ES or all_ALL.
+        @return: The bundle for the given name. None if the Bundle doesn't exist in the manager.
+        """
+        return self._bundles.get(bundle_code)
 
 
 class Bundle(object):

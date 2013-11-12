@@ -1,8 +1,8 @@
 import os
 import random
 
-from flask import Blueprint, render_template, flash, redirect, url_for, request
-from babel import Locale
+from flask import Blueprint, render_template, flash, redirect, url_for, request, json
+from babel import Locale, UnknownLocaleError
 
 from appcomposer.appstorage.api import create_app, get_app
 from forms import UrlForm, LangselectForm
@@ -45,6 +45,7 @@ def translate_index():
 # other pages 
 #----------------------------------------
 
+
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])
 def translate_selectlang():
     """ Source language & target language selection."""
@@ -82,26 +83,57 @@ def translate_selectlang():
                                Locale=Locale, locales=locales)
 
     # This was a GET, the app should exist already somehow, we will try to retrieve it.
-    if "appid" in request.data:
+    if "appid" in request.args:
 
-        appid = request.data["appid"]
+        appid = request.args["appid"]
         app = get_app(appid)
+
         flash("App successfully loaded from DB", "success")
 
-        raise NotImplementedError()
+        # TODO: Tidy up the appdata[spec] thing.
+        bm = backend.BundleManager(json.loads(app.data)["spec"])
+        bm.load_from_json(app.data)
 
         locales = bm.get_locales_list()
 
-        return render_template("composers/translate/selectlang.html", langs=langs_list, groups=groups_list, app=app,
+        return render_template("composers/translate/selectlang.html", langs=langs_list,
+                               groups=groups_list, app=app,
                                Locale=Locale, locales=locales)
 
-    return render_template("composers/translate/selectlang.html", langs=langs_list, groups=groups_list, Locale=Locale)
+    return render_template("composers/translate/selectlang.html", langs=langs_list,
+                           groups=groups_list, Locale=Locale)
 
 
-@translate_blueprint.route("/edit")
+@translate_blueprint.route("/edit", methods=["GET", "POST"])
 def translate_edit():
-    """Text editor for the selected language."""
-    return render_template("composers/translate/edit.html")
+    """ Text editor for the selected language. """
+
+    if request.method == "GET":
+        appid = request.args["appid"]
+        srclang = request.args["srclang"]
+        targetlang = request.args["targetlang"]
+        srcgroup = request.args["srcgroup"]
+        targetgroup = request.args["targetgroup"]
+
+        # Retrieve the application we want to view.
+        app = get_app(appid)
+
+        flash("App successfully loaded", "success")
+
+        bm = backend.BundleManager(json.loads(app.data)["spec"])
+        bm.load_from_json(app.data)
+
+        # Retrieve the bundles for our lang.
+        srcbundle = bm.get_bundle(srclang)
+        targetbundle = bm.get_bundle(targetlang)
+
+        flash("Bundles retrieved", "success")
+
+        return render_template("composers/translate/edit.html", app=app, srcbundle=srcbundle, targetbundle=targetbundle)
+
+    else:
+
+        return render_template("composers/translate/edit.html")
 
 
 @translate_blueprint.route("/about")

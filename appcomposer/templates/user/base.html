@@ -1,4 +1,4 @@
-{% import 'user/layout.html' as layout with context -%}
+{% import 'user/layout.html' as layout with context %}
 <!DOCTYPE html>
 <html>
   <head>
@@ -42,9 +42,6 @@
       </div>
 
     <div class="container">
-
-        {{ layout.messages() }}
-
       {% block body %}{% endblock %}
     </div>
 
