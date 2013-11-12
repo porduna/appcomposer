@@ -23,8 +23,10 @@ def initialize_admin_component(app):
     url = '/admin'
     admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name='Admin Profile', endpoint = "home-admin")
     admin.add_view(UsersView(db_session, name='Users', url = 'users', endpoint = 'admin.users'))
-    admin.add_view(ApplicationsView(name='Applications', url = 'applications', endpoint = 'admin.applications'))    
-    admin.add_view(ProfileView(name='My Profile', url = 'profile', endpoint = 'admin.profile'))    
+    admin.add_view(ListAppsView(db_session, name='List', url = 'listapps', endpoint = 'admin.listapps', category='Applications'))    
+    admin.add_view(ManageAppsView(name='Manage', url = 'manangeapps', endpoint = 'admin.manageapps', category='Applications'))   
+    admin.add_view(ProfileView(name='My Profile', url = 'profile', endpoint = 'admin.profile'))
+    admin.add_view(BackView(name='Back', url = 'back', endpoint = 'admin.back'))     
     admin.init_app(app)
 
 # Regular expression to validate the "login" field
@@ -133,9 +135,18 @@ class UsersView(AdminModelView):
         super(UsersView, self).__init__(models.User, session, **kwargs)
 
 
-class ApplicationsView(AdminBaseView):
+class ListAppsView(AdminModelView):
     """
-    Applications View. Entry view which lets us manage the applications in the system.
+    List Apps View. Entry view which lets us list the applications in the system.
+    """
+    
+    def __init__(self, session, **kwargs):
+        super(ListAppsView, self).__init__(models.App, session, **kwargs)
+
+
+class ManageAppsView(AdminBaseView):
+    """
+    Manage Apps View. Entry view which lets us manage the applications in the system.
     """
     
     @expose('/')
@@ -150,7 +161,15 @@ class ProfileView(AdminBaseView):
     
     @expose('/')
     def index(self):       
-        return self.render('admin/profile.html')
+        return self.render('admin/profile-edit.html')
 
 
+class BackView(AdminBaseView):
+    """
+    Profile View. Entry view which lets us edit our profile.
+    """
+    
+    @expose('/')
+    def index(self):       
+        return self.render('index.html')
 
