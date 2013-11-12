@@ -4,6 +4,7 @@ from flask.ext.admin.contrib.sqlamodel import ModelView
 
 from flask.ext import wtf
 from wtforms.fields import PasswordField
+from wtforms.validators import Email, Regexp
 
 from appcomposer import models
 from appcomposer.login import current_user
@@ -26,6 +27,8 @@ def initialize_admin_component(app):
     admin.add_view(ProfileView(name='My Profile', url = 'profile', endpoint = 'admin.profile'))    
     admin.init_app(app)
 
+# Regular expression to validate the "login" field
+LOGIN_REGEX = '^[A-Za-z0-9\._-][A-Za-z0-9\._-][A-Za-z0-9\._-][A-Za-z0-9\._-]*$'
 
 #####################################################################
 #
@@ -110,6 +113,8 @@ class UsersView(AdminModelView):
     column_labels = dict(login = 'Login', name = 'Full Name', email = 'E-mail', organization = 'Organization', role = 'Role')
     column_filters = ('login', 'name', 'email', 'organization', 'role')
 
+    form_args = dict(email=dict(validators=[Email()]), login=dict(validators=[Regexp(LOGIN_REGEX)]))
+
     column_descriptions = dict(login='Username (all letters, dots and numbers)',
                                name='First and Last name',
                                email='Valid e-mail address')
@@ -122,8 +127,8 @@ class UsersView(AdminModelView):
  
     # Fields used for the creations of new users    
     form_columns = ('login', 'name', 'email', 'organization', 'role', 'password', 'creation_date', 'last_access_date')
-    form_overrides = dict(access_level=wtf.SelectField, password=PasswordField)
-
+    form_overrides = dict(access_level=wtf.SelectField, password=PasswordField)    
+    
     def __init__(self, session, **kwargs):
         super(UsersView, self).__init__(models.User, session, **kwargs)
 
