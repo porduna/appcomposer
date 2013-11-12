@@ -10,7 +10,8 @@ from appcomposer import models
 from appcomposer.login import current_user
 from appcomposer.db import db_session
 
-from appcomposer.application import COMPOSERS_DICT
+# List of all available composers
+from appcomposer.application import COMPOSERS, COMPOSERS_DICT
 
 ##########################################################
 #
@@ -170,7 +171,7 @@ class AdvancedAdminAppsView(AdminBaseView):
             endpoint = COMPOSERS_DICT[app.composer]["delete_endpoint"]
             return url_for(endpoint, appid=app.unique_id)
 
-        return self.render('admin/advanced-admin-apps.html', apps=apps, build_edit_link=build_edit_link,
+        return self.render('admin/advanced-admin-apps.html', composers=COMPOSERS, apps=apps, build_edit_link=build_edit_link,
                            build_delete_link=build_delete_link)
 
 
