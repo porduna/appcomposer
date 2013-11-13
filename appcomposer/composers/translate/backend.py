@@ -176,7 +176,8 @@ class BundleManager(object):
 
     def to_json(self):
         """
-        Exports everything to JSON.
+        Exports everything to JSON. It includes both the JSON for the bundles, and a spec attribute, which
+        links to the original XML file (it will be requested everytime).
         """
         data = {
             "spec": self.original_spec_file,
@@ -356,6 +357,7 @@ class Bundle(object):
         @param identifier: Identifier of the message to retrieve.
         @return: Message linked to the identifier, or None if it doesn't exist.
         """
+        return self._msgs.get(identifier)
 
     def add_msg(self, word, translation):
         """

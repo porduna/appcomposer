@@ -81,7 +81,12 @@ def translate_selectlang():
         # Find out which locales does the app provide (for now).
         locales = bm.get_locales_list()
 
-        return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list, groups=groups_list,
+
+        # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
+        # because those will be added to the targetlangs by default.
+        targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["code"] not in targetlangs_codes]
+
+        return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered, groups=groups_list,
                                app=app,
                                Locale=Locale, locales=locales)
 
@@ -98,7 +103,11 @@ def translate_selectlang():
 
         locales = bm.get_locales_list()
 
-        return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list,
+        # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
+        # because those will be added to the targetlangs by default.
+        targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["code"] not in targetlangs_codes]
+
+        return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered,
                                groups=groups_list, app=app,
                                Locale=Locale, locales=locales)
 
@@ -180,10 +189,16 @@ def translate_edit():
 
         # Now we need to save the changes into the database.
         json_str = bm.to_json()
-        # TODO: VERIFY THAT TO_JSON DOES A PROPER JOB OF ADDING THE "SPEC" AND EXTRA PARAMETERS.
         update_app_data(app, json_str)
 
+        flash("SUCCESSFULLY SAVED CHANGES", "success")
+
+        # Check whether the user wants to exit or to continue editing.
+        if "save_exit" in request.values:
+            return redirect(url_for("user.apps.index"))
+
         return render_template("composers/translate/edit.html", app=app, srcbundle=srcbundle, targetbundle=targetbundle)
+
 
 
 @translate_blueprint.route("/about")

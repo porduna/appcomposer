@@ -47,7 +47,7 @@
                                 <label for="field_{{ loop.index }}" class="col-lg-2 control-label">[{{ src_name }}] {{ src_text }}</label>
                                 <div class="col-lg-10">
                                     {# TODO: Find a better way to submit them. This is particularly ugly. #}
-                                    <input type="text" class="form-control" id="field_{{ loop.index }}" name="_ythmessage_{{ src_name }}" placeholder="{{ src_text }}" value="{{ targetbundle.get_msg(src_name) or '' }}">
+                                    <input type="text" class="form-control" id="field_{{ loop.index }}" name="_message_{{ src_name }}" placeholder="{{ src_text }}" value="{{ targetbundle.get_msg(src_name) or '' }}">
                                 </div>
                             </div>
                             {% endfor %}
@@ -57,7 +57,8 @@
                             <div class="col-lg-10 col-lg-offset-2">
                               <a class="btn btn-default" id="backtoindexbtn" href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">« Go Back to Step 2</a>
 
-                              <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">Step 2 - Select language »</button>
+                              <button type="submit" id="sendurlbtn" name="save" class="btn btn-success">Save</button>
+                              <button type="submit" id="sendurlbtn" name="save_exit" class="btn btn-warning">Save & Exit</button>
 
                               <!--
                               <a class="btn btn-success" id="sendlangsbtn" href="#end">Save</a>
