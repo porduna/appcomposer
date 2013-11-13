@@ -56,7 +56,7 @@ def translate_selectlang():
     targetlangs_codes = ["es_ALL", "eu_ALL", "ca_ALL", "en_ALL", "de_ALL", "fr_ALL", "pt_ALL"]
     targetlangs_list = [{"pcode": code, "repr": backend.BundleManager.get_locale_english_name(
         *backend.BundleManager.get_locale_info_from_code(code))} for code in targetlangs_codes]
-    groups_list = [("gen", "General"), ("10-13", "Preadolescence (age 10-13)"), ("14-18", "Adolescence (age 14-18)")]
+    groups_list = [("ALL", "ALL"), ("10-13", "Preadolescence (age 10-13)"), ("14-18", "Adolescence (age 14-18)")]
 
     # As of now (may change in the future) if it is a POST we are creating the app for the first time.
     # Hence, we will need to carry out a full spec retrieval.
