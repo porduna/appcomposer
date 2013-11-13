@@ -50,7 +50,7 @@
                       <select id="srclang" multiple="" name="srclang" class="form-control">
                           <option selected="selected" value="all_ALL">DEFAULT</option>
                           {% for loc in locales if not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}
-                          <option value="{{ loc['code'] }}">{{ loc['repr'] or loc['code'] }}</option>
+                          <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
                           {% endfor %}
                       </select>
                 </div>
@@ -65,12 +65,12 @@
 
                             {# Now add the messages that are already translated. #}
                             {% for loc in locales if not (loc["lang"] == "all" and loc["country"] == "ALL") %}
-                            <option value="{{ loc['code'] }}">{{ loc['repr'] or loc['code'] }}</option>
+                            <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
                             {% endfor %}
 
                             {# Now add the messages that are suggested by the system. #}
                             {% for lang in target_langs %}
-                            <option value="{{ lang["code"] }}">{{ lang["repr"] }}</option>
+                            <option value="{{ lang["pcode"] }}">{{ lang["repr"] }}</option>
                             {% endfor %}
                         </select>
                 </div>              

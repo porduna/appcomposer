@@ -41,19 +41,24 @@ SERVE_APP()
 
 
  FILE NAMING CONVENTIONS:
+
  The convention we will try to use here is the following:
 
- Example: ca_ES.xml (for language files)
+ Example: ca_ES_ALL.xml (for language files)
 
  ca would be the language.
  ES would be the country.
+ ANY would be the group (the default).
 
  If any is not set, then it will be replaced with "all", in the right case. For instance,
  if lang is not specified it will be all_ES. Or if the country isn't, es_ALL.
 
- The default language is always all_ALL and should always be present.
+ The default language is always all_ALL_ALL and should always be present.
 
 
+ OTHER CONVENTIONS / GLOSSARY:
+
+ "Bundle code" or "locale code" refers generally to the "es_ALL_ALL"-like string.
 
  """
 
@@ -87,6 +92,16 @@ class UnexpectedTranslateDataException(Exception):
     def __init__(self, message=None):
         self.message = message
 
+class UnrecognizedLocaleCodeException(Exception):
+    """
+    Exception thrown when the format of a locale code does not seem to be
+    as expected.
+    """
+
+    def __init__(self, message=None):
+        self.message = message
+
+
 
 class BundleManager(object):
     """
@@ -101,17 +116,32 @@ class BundleManager(object):
         self.original_spec_file = original_gadget_spec
 
     @staticmethod
-    def _get_locale_lang_country(code):
+    def get_locale_info_from_code(code):
         """
-        Retrieves the lang and country from a locale code such as ca_ES.
-        @param code: Locale code (ex: es_ES)
-        @return: (lang, country)
+        Retrieves the lang, country and group from a locale code such as ca_ES_ALL.
+        @param code: Locale code (ex: es_ES_ALL)
+        @return: (lang, country, group)
         """
-        lang, country = code.split("_")
-        return lang, country
+        splits = code.split("_")
+
+        # If our code is only "ca_ES" style (doesn't include group).
+        if len(splits) == 2:
+            lang, country = splits
+            return lang, country
+
+        # If we have 3 splits then it is probably "ca_ES_ALL" style (includes group).
+        elif len(splits) == 3:
+            lang, country, group = splits
+            return lang, country, group
+
+        # Unknown number of splits. Throw an exception, it is not a recognized code.
+        else:
+            raise UnrecognizedLocaleCodeException("The locale code can't be recognized: " + code)
+
+
 
     @staticmethod
-    def _get_locale_repr(lang, country):
+    def get_locale_english_name(lang, country):
         """
         Retrieves a string representation of a Locale.
         @param lang: Lang code.
@@ -125,17 +155,27 @@ class BundleManager(object):
         except UnknownLocaleError:
             return None
 
+    @staticmethod
+    def fullcode_to_partialcode(code):
+        """
+        Converts a full_code to a partial_code (with no group). That is, a code such as ca_ES_ALL to ca_ES.
+        @param code: Fully fledged code, such as ca_ES_ALL.
+        @return: Partial code, such as ca_ES.
+        """
+        lang, country, group = BundleManager.get_locale_info_from_code(code)
+        return "%s_%s" % (lang.lower(), country.upper())
+
     def get_locales_list(self):
         """
         get_locales_list()
         Retrieves a list containing dictionaries of the locales that are currently loaded in the manager.
-        @return: List of dictionaries with the following information: {locale_name, lang, country}
+        @return: List of dictionaries with the following information: {code, lang, country, group}
         """
         locales = []
         for key in self._bundles.keys():
-            lang, country = key.split("_")
-            loc = {"code": key, "lang": lang, "country": country,
-                   "repr": BundleManager._get_locale_repr(lang, country)}
+            lang, country, group = key.split("_")
+            loc = {"code": key, "pcode": BundleManager.fullcode_to_partialcode(key), "lang": lang, "country": country, "group": group,
+                   "repr": BundleManager.get_locale_english_name(lang, country)}
             locales.append(loc)
         return locales
 
@@ -154,6 +194,8 @@ class BundleManager(object):
         """
         Fully loads the specified Gadget Spec.
         This is meant to be used when first loading a new App, so that all existing languages are taken into account.
+        Google default i18n mechanism doesn't support groups. Hence, all "imported" bundles will be created for the
+        group "ALL", which is the default one for us.
         @param url:  URL to the XML Gadget Spec.
         @return: Nothing. The bundles are internally stored once parsed.
         """
@@ -168,8 +210,8 @@ class BundleManager(object):
 
         for lang, country, bundle_url in locales:
             bundle_xml = self._retrieve_url(bundle_url)
-            bundle = Bundle.from_xml(bundle_xml, lang, country)
-            name = self.generate_standard_name(lang, country)
+            bundle = Bundle.from_xml(bundle_xml, lang, country, "ALL")
+            name = self.get_standard_code_string(lang, country, "ALL")
             self._bundles[name] = bundle
 
     def to_json(self):
@@ -202,10 +244,10 @@ class BundleManager(object):
         return
 
     @staticmethod
-    def generate_standard_name(lang, country):
+    def get_standard_code_string(lang, country, group):
         """
-        From the lang and country information, it generates a standard name for the file.
-        Standard names follow the convention: "ca_ES".
+        From the lang, country and group information, it generates a standard name for the file.
+        Standard names follow the convention: "ca_ES_ALL".
         Case is important.
         Also, if either of them is empty or None, then it will be replaced with "all" in the appropriate case.
         The XML file termination is NOT appended.
@@ -214,7 +256,9 @@ class BundleManager(object):
             lang = "all"
         if country is None or country == "":
             country = "ALL"
-        return "%s_%s" % (lang.lower(), country.upper())
+        if group is None or group == "":
+            group = "ALL"
+        return "%s_%s_%s" % (lang.lower(), country.upper(), group.upper())
 
     @staticmethod
     def _extract_locales_from_xml(xml_str):
@@ -224,6 +268,7 @@ class BundleManager(object):
         @param xml_str: String containing the XML of a locale file.
         @return: A list of tuples: (lang, country, message_file)
         @note: If the lang or country don't exist, it replaces them with "all" or "ALL" respectively.
+        @note: The XML format is specified by Google and does not support the concept of "groups".
         """
         locales = []
         xmldoc = minidom.parseString(xml_str)
@@ -292,18 +337,20 @@ class BundleManager(object):
 
             # Just in case we need to respect the default bundle.
             if respect_default:
-                if name == "all_ALL":  # The default bundle MUST always be named thus.
+                if name == "all_ALL_ALL":  # The default bundle MUST always be named thus.
                     # This is the default Locale. We have left the original one on the ModulePrefs node, so
                     # we don't need to append it. Go on to next Locale.
                     continue
 
             locale = xmldoc.createElement("Locale")
 
+            # TODO: Refactor build_standard_code_string and put it into Bundle. Probably.
+
             # Build our locales to inject. We modify the case to respect the standard. It shouldn't be necessary
             # but we do it nonetheless just in case other classes fail to respect it.
             full_filename = url_for('.app_langfile', appid=appid,
-                                    langfile=bundle.lang.lower() + "_" + bundle.country.upper(), group='18-25',
-                                    _external=True)
+                                    langfile=BundleManager.get_standard_code_string(bundle.lang, bundle.country,
+                                                                                      bundle.group), _external=True)
 
             locale.setAttribute("messages", full_filename)
             if bundle.lang != "all":
@@ -320,8 +367,10 @@ class BundleManager(object):
     def get_bundle(self, bundle_code):
         """
         get_bundle(bundle_code)
+
         Retrieves a bundle by its code.
-        @param bundle_code: Name for the bundle. Example: ca_ES or all_ALL.
+
+        @param bundle_code: Name for the bundle. Example: ca_ES_ALL or all_ALL_ALL.
         @return: The bundle for the given name. None if the Bundle doesn't exist in the manager.
         """
         return self._bundles.get(bundle_code)
@@ -332,10 +381,10 @@ class Bundle(object):
     Represents a Bundle. A bundle is a set of messages for a specific language, group and country.
     The default language, group and country is ANY.
     By convention, language is in lowercase while country is in uppercase.
-    Group is not yet defined.
+    Group is uppercase too.
     """
 
-    def __init__(self, country, lang, group=""):
+    def __init__(self, country, lang, group="ALL"):
         self.country = country
         self.lang = lang
         self.group = group
@@ -397,7 +446,7 @@ class Bundle(object):
         return bundle
 
     @staticmethod
-    def from_xml(xml_str, lang, country, group=""):
+    def from_xml(xml_str, lang, country, group="ALL"):
         """
         Creates a new Bundle from XML.
         """
@@ -456,8 +505,8 @@ def app_xml(appid):
     return response
 
 
-@translate_blueprint.route('/app/<appid>/i18n/<group>/<langfile>.xml')
-def app_langfile(appid, langfile, group):
+@translate_blueprint.route('/app/<appid>/i18n/<langfile>.xml')
+def app_langfile(appid, langfile):
     """
     app_langfile(appid, langfile, age)
 
@@ -466,8 +515,7 @@ def app_langfile(appid, langfile, group):
     generated (the information is extracted from the Translate-specific information).
 
     @param appid: Appid of the App whose langfile to generate.
-    @param langfile: Name of the langfile. Must follow the standard: ca_ES
-    @param group: Target group (e.g., 12-18 years old)
+    @param langfile: Name of the langfile. Must follow the standard: ca_ES_ALL
     @return: Google OpenSocial compatible XML, or an HTTP error code
     if an error occurs.
     """

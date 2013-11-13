@@ -51,9 +51,11 @@ def translate_selectlang():
     """ Source language & target language selection."""
 
     # TODO: This approach has many flaws, should be changed eventually.
+    # Note: The name pcode refers to the fact that the codes we deal with here are partial (do not include
+    # the group).
     targetlangs_codes = ["es_ALL", "eu_ALL", "ca_ALL", "en_ALL", "de_ALL", "fr_ALL", "pt_ALL"]
-    targetlangs_list = [{"code": code, "repr": backend.BundleManager._get_locale_repr(
-        *backend.BundleManager._get_locale_lang_country(code))} for code in targetlangs_codes]
+    targetlangs_list = [{"pcode": code, "repr": backend.BundleManager.get_locale_english_name(
+        *backend.BundleManager.get_locale_info_from_code(code))} for code in targetlangs_codes]
     groups_list = [("gen", "General"), ("10-13", "Preadolescence (age 10-13)"), ("14-18", "Adolescence (age 14-18)")]
 
     # As of now (may change in the future) if it is a POST we are creating the app for the first time.
@@ -84,7 +86,7 @@ def translate_selectlang():
 
         # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
         # because those will be added to the targetlangs by default.
-        targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["code"] not in targetlangs_codes]
+        targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["pcode"] not in targetlangs_codes]
 
         return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered, groups=groups_list,
                                app=app,
@@ -92,7 +94,11 @@ def translate_selectlang():
 
     # This was a GET, the app should exist already somehow, we will try to retrieve it.
 
-    appid = request.args["appid"]
+    appid = request.args.get("appid")
+    if appid is None:
+        # An appid is required.
+        return redirect(url_for("user.apps.index"))
+
     app = get_app(appid)
 
     flash("App successfully loaded from DB", "success")
@@ -105,7 +111,7 @@ def translate_selectlang():
 
     # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
     # because those will be added to the targetlangs by default.
-    targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["code"] not in targetlangs_codes]
+    targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["pcode"] not in targetlangs_codes]
 
     return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered,
                            groups=groups_list, app=app,
