@@ -57,9 +57,6 @@ SERVE_APP()
 
  """
 
-# TODO: Ensure throughout this class that bundle.lang and bundle.country NEVER contain empty strings or None values.
-# If appropriate they should contain "all". (Still, the XML should not contain these attrs if they are default).
-
 
 class NoDefaultLanguageException(Exception):
     """
@@ -96,7 +93,7 @@ class BundleManager(object):
     To manage the set of bundles for an App, and to provide common functionality.
     """
 
-    # TODO: Consider removing the original_gadget_spec, or adding different contructors for each use-case.
+    # TODO: Consider removing the original_gadget_spec, or adding different constructors for each use-case.
     def __init__(self, original_gadget_spec=None):
         self._bundles = {}
 
@@ -142,7 +139,8 @@ class BundleManager(object):
             locales.append(loc)
         return locales
 
-    def _retrieve_url(self, url):
+    @staticmethod
+    def _retrieve_url(url):
         """
         Simply retrieves a specified URL (Synchronously).
         @param url: URL to retrieve.
@@ -203,7 +201,8 @@ class BundleManager(object):
             self._bundles[name] = bundle
         return
 
-    def generate_standard_name(self, lang, country):
+    @staticmethod
+    def generate_standard_name(lang, country):
         """
         From the lang and country information, it generates a standard name for the file.
         Standard names follow the convention: "ca_ES".
@@ -217,7 +216,8 @@ class BundleManager(object):
             country = "ALL"
         return "%s_%s" % (lang.lower(), country.upper())
 
-    def _extract_locales_from_xml(self, xml_str):
+    @staticmethod
+    def _extract_locales_from_xml(xml_str):
         """
         _extract_locales_from_xml(xml_str)
         Extracts the Locale nodes info from an xml_str (a gadget spec).

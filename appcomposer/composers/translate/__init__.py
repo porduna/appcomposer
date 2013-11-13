@@ -91,29 +91,26 @@ def translate_selectlang():
                                Locale=Locale, locales=locales)
 
     # This was a GET, the app should exist already somehow, we will try to retrieve it.
-    if "appid" in request.args:
-        appid = request.args["appid"]
-        app = get_app(appid)
 
-        flash("App successfully loaded from DB", "success")
+    appid = request.args["appid"]
+    app = get_app(appid)
 
-        # TODO: Tidy up the appdata[spec] thing.
-        bm = backend.BundleManager(json.loads(app.data)["spec"])
-        bm.load_from_json(app.data)
+    flash("App successfully loaded from DB", "success")
 
-        locales = bm.get_locales_list()
+    # TODO: Tidy up the appdata[spec] thing.
+    bm = backend.BundleManager(json.loads(app.data)["spec"])
+    bm.load_from_json(app.data)
 
-        # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
-        # because those will be added to the targetlangs by default.
-        targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["code"] not in targetlangs_codes]
+    locales = bm.get_locales_list()
 
-        return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered,
-                               groups=groups_list, app=app,
-                               Locale=Locale, locales=locales)
+    # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
+    # because those will be added to the targetlangs by default.
+    targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["code"] not in targetlangs_codes]
 
-    # TODO: We should probably never reach this.
-    return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list,
-                           groups=groups_list, Locale=Locale)
+    return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered,
+                           groups=groups_list, app=app,
+                           Locale=Locale, locales=locales)
+
 
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
@@ -127,58 +124,30 @@ def translate_edit():
     srcgroup = request.values["srcgroup"]
     targetgroup = request.values["targetgroup"]
 
+    # Retrieve the application we want to view.
+    # TODO: This is kinda the same for GET and POST. Consider refactoring this somehow.
+    app = get_app(appid)
+
+    bm = backend.BundleManager(json.loads(app.data)["spec"])
+    bm.load_from_json(app.data)
+
+    # Retrieve the bundles for our lang.
+    srcbundle = bm.get_bundle(srclang)
+    targetbundle = bm.get_bundle(targetlang)
+
+    # The target bundle doesn't exist yet. We need to create it ourselves.
+    if targetbundle is None:
+        lang, country = targetlang.split("_")
+        targetbundle = backend.Bundle(lang, country, targetgroup)
+
+
     # This is a GET request. We are essentially viewing-only.
     if request.method == "GET":
-
-        # Retrieve the application we want to view.
-        app = get_app(appid)
-
-        flash("App successfully loaded", "success")
-
-        bm = backend.BundleManager(json.loads(app.data)["spec"])
-        bm.load_from_json(app.data)
-
-        # Retrieve the bundles for our lang.
-        srcbundle = bm.get_bundle(srclang)
-        targetbundle = bm.get_bundle(targetlang)
-
-        if srcbundle is None:
-            flash("Source Bundle is None", "error")
-
-        # The target bundle doesn't exist yet. We need to create it ourselves.
-        if targetbundle is None:
-            lang, country = targetlang.split("_")
-            targetbundle = backend.Bundle(lang, country, targetgroup)
-
-        flash("Bundles retrieved", "success")
 
         return render_template("composers/translate/edit.html", app=app, srcbundle=srcbundle, targetbundle=targetbundle)
 
     # This is a POST request. We need to save the entries.
     else:
-
-        # Retrieve the application we want to view.
-        # TODO: This is kinda the same for GET and POST. Consider refactoring this somehow.
-        app = get_app(appid)
-
-        flash("App successfully loaded", "success")
-
-        bm = backend.BundleManager(json.loads(app.data)["spec"])
-        bm.load_from_json(app.data)
-
-        # Retrieve the bundles for our lang.
-        srcbundle = bm.get_bundle(srclang)
-        targetbundle = bm.get_bundle(targetlang)
-
-        if srcbundle is None:
-            flash("Source Bundle is None", "error")
-
-        # The target bundle doesn't exist yet. We need to create it ourselves.
-        if targetbundle is None:
-            lang, country = targetlang.split("_")
-            targetbundle = backend.Bundle(lang, country, targetgroup)
-
-        flash("Bundles retrieved", "success")
 
         # Retrieve a list of all the key-values to save. That is, the parameters which start with _message_.
         messages = [(k[len("_message_"):], v) for (k, v) in request.values.items() if k.startswith("_message_")]
@@ -191,7 +160,7 @@ def translate_edit():
         json_str = bm.to_json()
         update_app_data(app, json_str)
 
-        flash("SUCCESSFULLY SAVED CHANGES", "success")
+        flash("Changes have been saved", "success")
 
         # Check whether the user wants to exit or to continue editing.
         if "save_exit" in request.values:
