@@ -2,114 +2,155 @@
 {% set current_link = "home" %}
 {% extends 'composers/translate/layout.html' %}
 
-{# We use this macro for the forms that let the user choose a group. Groups global var must be passed
- to the template for this to work. #}
-{%  macro render_options_for_groups(groups) -%}
-    {% for group in groups %}
-        <option {% if loop.index0 == 0 %}selected="selected"{% endif %} value="{{ group[0] }}">{{ group[1] }}</option>
-    {% endfor %}
-{%- endmacro %}
-
 
 {% block body_content %}
-        <div class="translateblock">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="page-header">
-                        <h1 id="apptitle">Translate</h1>
+    <div class="translateblock">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="page-header">
+                <h1 id="apptitle">Translate</h1>
 
-                        {% if app %}
-                            <h2 id="appfullname">{{ app.name }}</h2>
-                        {% else %}
-                            <h2 id="appfullname">[App name not available]</h2>
-                        {% endif %}
-                    </div>
-                </div>
+                {% if app %}
+                    <h2 id="appfullname">{{ app.name }}</h2>
+                {% else %}
+                    <h2 id="appfullname">[App name not available]</h2>
+                {% endif %}
             </div>
+        </div>
+    </div>
 
 
 
+    <!-- JavaScript source code -->
+    <script type="text/javascript">
 
-      <!-- Forms
-      ================================================== -->
-      <div class="well">
+        // Event received then the user selects a new source language.
+        // We will refill the source groups for that one language.
+        function onSrcLangChanged() {
+
+            // Retrieve the full list of groups, which links the group codes to the
+            // display names.
+            var fullGroups = {{ full_groups_json|safe }};
+
+            var select = document.getElementById("srclang");
+            var selectedOption = select.options[select.selectedIndex];
+
+            var srcGroup = $("#srcgroup");
+            srcGroup.empty();
+
+            var sourceGroups = {{ source_groups_json|safe }};
+            var groupsForSelectedLang = sourceGroups[selectedOption.value];
+
+
+
+            $.each(groupsForSelectedLang, function( index, value )
+            {
+                var groupCode = value;
+                var groupName = value; // We will try to change this.
+
+                // Find a name for the group. If not found use the code.
+                for(var i = 0; i < fullGroups.length; i++)
+                {
+                    var code = fullGroups[0];
+                    var name = fullGroups[1];
+                    if(code == groupCode)
+                        groupName = name;
+                }
+               $(srcGroup).append($("<option />", {value: value, text: groupName}));
+            });
+        }
+    </script>
+
+
+
+    <!-- Forms
+    ================================================== -->
+    <div class="well">
 
         <div class="row">
-        <div class="col-lg-12">
-          <form class="form-horizontal" id="getlangs" name="getlangs" action="{{ url_for('translate.translate_edit') }}" method="GET">
+            <div class="col-lg-12">
+                <form class="form-horizontal" id="getlangs" name="getlangs"
+                      action="{{ url_for('translate.translate_edit') }}" method="GET">
 
-          {# This is necessary so that the next page knows which App to load. #}
-          <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
+                    {# This is necessary so that the next page knows which App to load. #}
+                    <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
 
-          <legend>Step 2: Select the source and target language</legend>
-                              
-          <div class="col-lg-6 col-md-6">
+                    <legend>Step 2: Select the source and target language</legend>
 
-                <div class="form-group">
-                    <label class="control-label" for="srclang">Select source language</label>
-                      <select id="srclang" multiple="" name="srclang" class="form-control">
-                          <option selected="selected" value="all_ALL">DEFAULT</option>
-                          {% for loc in locales if not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}
-                          <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
-                          {% endfor %}
-                      </select>
-                </div>
-                <div class="form-group">
-                    <label class="control-label" for="targetlang">Select target language</label>
-                        <select id="targetlang"  multiple="" name="targetlang" class="form-control">
+                    <div class="col-lg-6 col-md-6">
 
-                            {# Add the DEFAULT first. #}
-                            <option value="all_ALL" selected="selected">DEFAULT</option>
+                        <div class="form-group">
+                            <label class="control-label" for="srclang">Select source language</label>
+                            <select id="srclang" multiple="" name="srclang" class="form-control"
+                                    onchange="onSrcLangChanged()">
+                                <option selected="selected" value="all_ALL">DEFAULT</option>
+                                {% for loc in locales if not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}
+                                    <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="targetlang">Select target language</label>
+                            <select id="targetlang" multiple="" name="targetlang" class="form-control">
 
-                            {# TODO: Clean this up. The design probably needs some changes as well. #}
+                                {# Add the DEFAULT first. #}
+                                <option value="all_ALL" selected="selected">DEFAULT</option>
 
-                            {# Now add the messages that are already translated. #}
-                            {% for loc in locales if not (loc["lang"] == "all" and loc["country"] == "ALL") %}
-                            <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
-                            {% endfor %}
+                                {# TODO: Clean this up. The design probably needs some changes as well. #}
 
-                            {# Now add the messages that are suggested by the system. #}
-                            {% for lang in target_langs %}
-                            <option value="{{ lang["pcode"] }}">{{ lang["repr"] }}</option>
-                            {% endfor %}
-                        </select>
-                </div>              
-          </div>
-          
-          <div class="col-lg-6 col-md-6">
-                <div class="form-group">
-                    <label class="control-label" for="srcgroup">Select source group</label>
-                      <select id="srcgroup" multiple="" name="srcgroup" class="form-control">
-                        {{ render_options_for_groups(source_groups) }}
-                      </select>
-                </div>
-                <div class="form-group">
-                    <label class="control-label" for="targetgroup">Select target group</label>
-                      <select id="targetgroup" multiple="" name="targetgroup" class="form-control">
-                          {{ render_options_for_groups(target_groups) }}
-                      </select>
-                </div>                
-                <div class="form-group">                 
-                  <div class="controls">
-                    <span class="help-block">You want to translate the app from General English into Elementary School German.</span>
-                    <a class="btn btn-default" id="backtoindexbtn" href="{{ url_for('translate.translate_index') }}">« Go Back to Step 1</a>                                   
+                                {# Now add the messages that are already translated. #}
+                                {% for loc in locales if not (loc["lang"] == "all" and loc["country"] == "ALL") %}
+                                    <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
+                                {% endfor %}
 
-                    <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">Step 2 - Select language »</button>
-                    <!--
+                                {# Now add the messages that are suggested by the system. #}
+                                {% for lang in target_langs %}
+                                    <option value="{{ lang["pcode"] }}">{{ lang["repr"] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="col-lg-6 col-md-6">
+                        <div class="form-group">
+                            <label class="control-label" for="srcgroup">Select source group</label>
+                            <select id="srcgroup" multiple="" name="srcgroup" class="form-control">
+
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="targetgroup">Select target group</label>
+                            <select id="targetgroup" multiple="" name="targetgroup" class="form-control">
+                                {% for group in target_groups %}
+                                    <option {% if loop.index0 == 0 %}selected="selected"{% endif %}
+                                            value="{{ group[0] }}">{{ group[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <div class="controls">
+                                <span class="help-block">You want to translate the app from General English into Elementary School German.</span>
+                                <a class="btn btn-default" id="backtoindexbtn"
+                                   href="{{ url_for('translate.translate_index') }}">« Go Back to Step 1</a>
+
+                                <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">Step 2 -
+                                    Select language »
+                                </button>
+                                <!--
                     <a class="btn btn-success" id="sendlangsbtn" href="{{ url_for('translate.translate_edit') }}">Step 3 - Translate »</a>
                     -->
-                  </div>
-                </div>                
-                
-              
-          </div>
-          </form>
-          
-        </div>
-        </div>
-      </div>
+                            </div>
+                        </div>
 
 
-                   
-            
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
 {% endblock %}

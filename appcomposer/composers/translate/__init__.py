@@ -1,3 +1,4 @@
+from collections import defaultdict
 import os
 import random
 
@@ -63,8 +64,6 @@ def translate_selectlang():
     # source language you choose.
     # TODO: For now we will solve the above by only showing the DEFAULT in the source groups list.
 
-    src_groups_list = [("ALL", "ALL")]
-
 
     # As of now (may change in the future) if it is a POST we are creating the app for the first time.
     # Hence, we will need to carry out a full spec retrieval.
@@ -91,40 +90,39 @@ def translate_selectlang():
         # Find out which locales does the app provide (for now).
         locales = bm.get_locales_list()
 
-
-        # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
-        # because those will be added to the targetlangs by default.
-        targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["pcode"] not in targetlangs_codes]
-
-        return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered,
-                               source_groups=src_groups_list,
-                               target_groups=full_groups_list,
-                               app=app,
-                               Locale=Locale, locales=locales)
-
     # This was a GET, the app should exist already somehow, we will try to retrieve it.
+    elif request.method == "GET":
 
-    appid = request.args.get("appid")
-    if appid is None:
-        # An appid is required.
-        return redirect(url_for("user.apps.index"))
+        appid = request.args.get("appid")
+        if appid is None:
+            # An appid is required.
+            return redirect(url_for("user.apps.index"))
 
-    app = get_app(appid)
+        app = get_app(appid)
 
-    flash("App successfully loaded from DB", "success")
+        flash("App successfully loaded from DB", "success")
 
-    # TODO: Tidy up the appdata[spec] thing.
-    bm = backend.BundleManager(json.loads(app.data)["spec"])
-    bm.load_from_json(app.data)
+        # TODO: Tidy up the appdata[spec] thing.
+        bm = backend.BundleManager(json.loads(app.data)["spec"])
+        bm.load_from_json(app.data)
 
-    locales = bm.get_locales_list()
+        locales = bm.get_locales_list()
+
+
+    # The following is again common for both GET (view) and POST (edit).
+
+    # Build a dictionary. For each source lang, a list of source groups.
+    src_groups_dict = defaultdict(list)
+    for loc in locales:
+        src_groups_dict[loc["pcode"]].append(loc["group"])
 
     # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
     # because those will be added to the targetlangs by default.
     targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["pcode"] not in targetlangs_codes]
 
     return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered,
-                           source_groups=src_groups_list, app=app,
+                           source_groups_json=json.dumps(src_groups_dict), app=app,
+                           full_groups_json=json.dumps(full_groups_list),
                            target_groups=full_groups_list,
                            Locale=Locale, locales=locales)
 
