@@ -92,6 +92,7 @@ class UnexpectedTranslateDataException(Exception):
     def __init__(self, message=None):
         self.message = message
 
+
 class UnrecognizedLocaleCodeException(Exception):
     """
     Exception thrown when the format of a locale code does not seem to be
@@ -101,6 +102,15 @@ class UnrecognizedLocaleCodeException(Exception):
     def __init__(self, message=None):
         self.message = message
 
+
+class BundleExistsAlreadyException(Exception):
+    """
+    Exception thrown when an attempt to add a bundle to the manager exists but
+    a bundle with that code exists already.
+    """
+
+    def __init__(self, message=None):
+        self.message = message
 
 
 class BundleManager(object):
@@ -118,9 +128,9 @@ class BundleManager(object):
     @staticmethod
     def get_locale_info_from_code(code):
         """
-        Retrieves the lang, country and group from a locale code such as ca_ES_ALL.
-        @param code: Locale code (ex: es_ES_ALL)
-        @return: (lang, country, group)
+        Retrieves the lang, country and group from a full or partial locale code.
+        @param code: Locale code. It can be a full code (ca_ES_ALL) or partial code (ca_ES).
+        @return: (lang, country, group) or (lang, country), depending if it's full or partial.
         """
         splits = code.split("_")
 
@@ -137,7 +147,6 @@ class BundleManager(object):
         # Unknown number of splits. Throw an exception, it is not a recognized code.
         else:
             raise UnrecognizedLocaleCodeException("The locale code can't be recognized: " + code)
-
 
 
     @staticmethod
@@ -165,6 +174,17 @@ class BundleManager(object):
         lang, country, group = BundleManager.get_locale_info_from_code(code)
         return "%s_%s" % (lang.lower(), country.upper())
 
+    @staticmethod
+    def partialcode_to_fullcode(code, group):
+        """
+        Converts a partial_code to a full_code, adding group information. That is, a code such as ca_ES becomes
+        a code such as ca_ES_ALL.
+        @param code: Full code, such as ca_ES_ALL
+        @return: Partial code, such as ca_ES.
+        """
+        lang, country = BundleManager.get_locale_info_from_code(code)
+        return "%s_%s_%s" % (lang.lower(), country.upper(), group.upper())
+
     def get_locales_list(self):
         """
         get_locales_list()
@@ -174,7 +194,8 @@ class BundleManager(object):
         locales = []
         for key in self._bundles.keys():
             lang, country, group = key.split("_")
-            loc = {"code": key, "pcode": BundleManager.fullcode_to_partialcode(key), "lang": lang, "country": country, "group": group,
+            loc = {"code": key, "pcode": BundleManager.fullcode_to_partialcode(key), "lang": lang, "country": country,
+                   "group": group,
                    "repr": BundleManager.get_locale_english_name(lang, country)}
             locales.append(loc)
         return locales
@@ -350,7 +371,7 @@ class BundleManager(object):
             # but we do it nonetheless just in case other classes fail to respect it.
             full_filename = url_for('.app_langfile', appid=appid,
                                     langfile=BundleManager.get_standard_code_string(bundle.lang, bundle.country,
-                                                                                      bundle.group), _external=True)
+                                                                                    bundle.group), _external=True)
 
             locale.setAttribute("messages", full_filename)
             if bundle.lang != "all":
@@ -374,6 +395,18 @@ class BundleManager(object):
         @return: The bundle for the given name. None if the Bundle doesn't exist in the manager.
         """
         return self._bundles.get(bundle_code)
+
+    def add_bundle(self, full_code, bundle):
+        """
+        Adds the specified Bundle to the BundleManager.
+        @param full_code: Full code of the bundle, in ca_ES_ALL format (must include lang, country and group).
+        @param bundle: The Bundle to add.
+        @return: Nothing
+        """
+        if full_code in self._bundles:
+            raise BundleExistsAlreadyException()
+        self._bundles[full_code] = bundle
+
 
 
 class Bundle(object):

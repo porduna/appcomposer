@@ -137,14 +137,18 @@ def translate_edit():
     bm = backend.BundleManager(json.loads(app.data)["spec"])
     bm.load_from_json(app.data)
 
-    # Retrieve the bundles for our lang.
-    srcbundle = bm.get_bundle(srclang)
-    targetbundle = bm.get_bundle(targetlang)
+    # Retrieve the bundles for our lang. For this, we build the code from the info we have.
+    srcbundle_code = backend.BundleManager.partialcode_to_fullcode(srclang, srcgroup)
+    targetbundle_code = backend.BundleManager.partialcode_to_fullcode(targetlang, targetgroup)
+
+    srcbundle = bm.get_bundle(srcbundle_code)
+    targetbundle = bm.get_bundle(targetbundle_code)
 
     # The target bundle doesn't exist yet. We need to create it ourselves.
     if targetbundle is None:
         lang, country = targetlang.split("_")
         targetbundle = backend.Bundle(lang, country, targetgroup)
+        bm.add_bundle(targetbundle_code, targetbundle)
 
 
     # This is a GET request. We are essentially viewing-only.
@@ -167,6 +171,7 @@ def translate_edit():
         update_app_data(app, json_str)
 
         flash("Changes have been saved", "success")
+        print json_str
 
         # Check whether the user wants to exit or to continue editing.
         if "save_exit" in request.values:
