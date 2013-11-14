@@ -56,7 +56,15 @@ def translate_selectlang():
     targetlangs_codes = ["es_ALL", "eu_ALL", "ca_ALL", "en_ALL", "de_ALL", "fr_ALL", "pt_ALL"]
     targetlangs_list = [{"pcode": code, "repr": backend.BundleManager.get_locale_english_name(
         *backend.BundleManager.get_locale_info_from_code(code))} for code in targetlangs_codes]
-    groups_list = [("ALL", "ALL"), ("10-13", "Preadolescence (age 10-13)"), ("14-18", "Adolescence (age 14-18)")]
+    full_groups_list = [("ALL", "ALL"), ("10-13", "Preadolescence (age 10-13)"), ("14-18", "Adolescence (age 14-18)")]
+    # TODO: Possible issue: What happens if the original XML contains group info? Do we take it into account?
+    # TODO: Design issue, related to the above. The user should only see a limited list of source groups. However,
+    # that list depends on the selected language. This means that it needs to vary dynamically depending on which
+    # source language you choose.
+    # TODO: For now we will solve the above by only showing the DEFAULT in the source groups list.
+
+    src_groups_list = [("ALL", "ALL")]
+
 
     # As of now (may change in the future) if it is a POST we are creating the app for the first time.
     # Hence, we will need to carry out a full spec retrieval.
@@ -88,7 +96,9 @@ def translate_selectlang():
         # because those will be added to the targetlangs by default.
         targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["pcode"] not in targetlangs_codes]
 
-        return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered, groups=groups_list,
+        return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered,
+                               source_groups=src_groups_list,
+                               target_groups=full_groups_list,
                                app=app,
                                Locale=Locale, locales=locales)
 
@@ -114,9 +124,9 @@ def translate_selectlang():
     targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["pcode"] not in targetlangs_codes]
 
     return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered,
-                           groups=groups_list, app=app,
+                           source_groups=src_groups_list, app=app,
+                           target_groups=full_groups_list,
                            Locale=Locale, locales=locales)
-
 
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
@@ -130,8 +140,7 @@ def translate_edit():
     srcgroup = request.values["srcgroup"]
     targetgroup = request.values["targetgroup"]
 
-    # Retrieve the application we want to view.
-    # TODO: This is kinda the same for GET and POST. Consider refactoring this somehow.
+    # Retrieve the application we want to view or edit.
     app = get_app(appid)
 
     bm = backend.BundleManager(json.loads(app.data)["spec"])
@@ -178,7 +187,6 @@ def translate_edit():
             return redirect(url_for("user.apps.index"))
 
         return render_template("composers/translate/edit.html", app=app, srcbundle=srcbundle, targetbundle=targetbundle)
-
 
 
 @translate_blueprint.route("/about")

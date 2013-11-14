@@ -4,7 +4,7 @@
 
 {# We use this macro for the forms that let the user choose a group. Groups global var must be passed
  to the template for this to work. #}
-{%  macro render_options_for_groups() -%}
+{%  macro render_options_for_groups(groups) -%}
     {% for group in groups %}
         <option {% if loop.index0 == 0 %}selected="selected"{% endif %} value="{{ group[0] }}">{{ group[1] }}</option>
     {% endfor %}
@@ -80,13 +80,13 @@
                 <div class="form-group">
                     <label class="control-label" for="srcgroup">Select source group</label>
                       <select id="srcgroup" multiple="" name="srcgroup" class="form-control">
-                        {{ render_options_for_groups() }}
+                        {{ render_options_for_groups(source_groups) }}
                       </select>
                 </div>
                 <div class="form-group">
                     <label class="control-label" for="targetgroup">Select target group</label>
                       <select id="targetgroup" multiple="" name="targetgroup" class="form-control">
-                          {{ render_options_for_groups() }}
+                          {{ render_options_for_groups(target_groups) }}
                       </select>
                 </div>                
                 <div class="form-group">                 
