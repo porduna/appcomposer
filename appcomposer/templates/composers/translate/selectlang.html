@@ -24,9 +24,22 @@
     <!-- JavaScript source code -->
     <script type="text/javascript">
 
-        // Event received then the user selects a new source language.
-        // We will refill the source groups for that one language.
+
+        //! Load and initialize what we must.
+        $( document ).ready(function() {
+            loadSourceGroups();
+        });
+
+
+        //! Event received then the user selects a new source language.
+        //! We will refill the source groups for that one language.
         function onSrcLangChanged() {
+            loadSourceGroups()
+        }
+
+        //! Loads the right source groups on the source groups selection control, depending on which
+        //! source language is selected.
+        function loadSourceGroups() {
 
             // Retrieve the full list of groups, which links the group codes to the
             // display names.
@@ -40,8 +53,6 @@
 
             var sourceGroups = {{ source_groups_json|safe }};
             var groupsForSelectedLang = sourceGroups[selectedOption.value];
-
-
 
             $.each(groupsForSelectedLang, function( index, value )
             {
@@ -79,12 +90,17 @@
 
                     <div class="col-lg-6 col-md-6">
 
+
                         <div class="form-group">
                             <label class="control-label" for="srclang">Select source language</label>
                             <select id="srclang" multiple="" name="srclang" class="form-control"
                                     onchange="onSrcLangChanged()">
                                 <option selected="selected" value="all_ALL">DEFAULT</option>
-                                {% for loc in locales if not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}
+
+                                {# When displaying the languages note that we only show those with GROUP=ALL. This is because otherwise some languages
+                                 would appear more than once. Though somewhat kludgey, this approach should always work because a language must always
+                                 have a default (ALL) translation. #}
+                                {% for loc in locales if loc["group"] == "ALL" and not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}
                                     <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
                                 {% endfor %}
                             </select>
@@ -99,7 +115,7 @@
                                 {# TODO: Clean this up. The design probably needs some changes as well. #}
 
                                 {# Now add the messages that are already translated. #}
-                                {% for loc in locales if not (loc["lang"] == "all" and loc["country"] == "ALL") %}
+                                {% for loc in locales if loc["group"] == "ALL" and not (loc["lang"] == "all" and loc["country"] == "ALL") %}
                                     <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
                                 {% endfor %}
 
