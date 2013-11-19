@@ -120,10 +120,34 @@ class BundleManager(object):
 
     # TODO: Consider removing the original_gadget_spec, or adding different constructors for each use-case.
     def __init__(self, original_gadget_spec=None):
+        """
+        Builds the BundleManager.
+        Note that there are additional CTORs available for specific use-cases, which start with create_*.
+        @param original_gadget_spec: URL of the original XML of the App.
+        """
         self._bundles = {}
 
         # Points to the original gadget spec XML.
         self.original_spec_file = original_gadget_spec
+
+    @staticmethod
+    def create_from_existing_app(app_data):
+        """
+        Acts as a CTOR. Creates a BundleManager for managing an App that exists already.
+
+        @param app_data: JSON string, or JSON-able dictionary containing the Translate App's data.
+        @return: The new BundleManager, with the specified App's data loaded.
+        """
+        if type(app_data) is str or type(app_data) is unicode:
+            app_data = json.loads(app_data)
+
+        spec_file = app_data["spec"]
+        bm = BundleManager(spec_file)
+
+        # TODO: Consider adding a load_from_jsonable.
+        bm.load_from_json(json.dumps(app_data))
+
+        return bm
 
     @staticmethod
     def get_locale_info_from_code(code):
@@ -147,7 +171,6 @@ class BundleManager(object):
         # Unknown number of splits. Throw an exception, it is not a recognized code.
         else:
             raise UnrecognizedLocaleCodeException("The locale code can't be recognized: " + code)
-
 
     @staticmethod
     def get_locale_english_name(lang, country):
@@ -232,7 +255,7 @@ class BundleManager(object):
         for lang, country, bundle_url in locales:
             bundle_xml = self._retrieve_url(bundle_url)
             bundle = Bundle.from_xml(bundle_xml, lang, country, "ALL")
-            name = self.get_standard_code_string(lang, country, "ALL")
+            name = Bundle.get_standard_code_string(lang, country, "ALL")
             self._bundles[name] = bundle
 
     def to_json(self):
@@ -258,28 +281,12 @@ class BundleManager(object):
         appdata = json.loads(json_str)
         bundles = appdata["bundles"]
         for name, bundledata in bundles.items():
-            # TODO: Kludgey and inefficient. Fix/refactor this.
+            # TODO: Inefficient. Consider refactoring this and providing the right methods so that it is not needed.
+            # to constantly serialize/deserialize.
             bundlejs = json.dumps(bundledata)
             bundle = Bundle.from_json(bundlejs)
             self._bundles[name] = bundle
         return
-
-    @staticmethod
-    def get_standard_code_string(lang, country, group):
-        """
-        From the lang, country and group information, it generates a standard name for the file.
-        Standard names follow the convention: "ca_ES_ALL".
-        Case is important.
-        Also, if either of them is empty or None, then it will be replaced with "all" in the appropriate case.
-        The XML file termination is NOT appended.
-        """
-        if lang is None or lang == "":
-            lang = "all"
-        if country is None or country == "":
-            country = "ALL"
-        if group is None or group == "":
-            group = "ALL"
-        return "%s_%s_%s" % (lang.lower(), country.upper(), group.upper())
 
     @staticmethod
     def _extract_locales_from_xml(xml_str):
@@ -325,8 +332,8 @@ class BundleManager(object):
         @param xml_str: String containing the XML of the original Gadget Spec.
 
         @param respect_default: If false, every Locale will be removed and replaced with custom links to the
-        language, using the appid as application identifier. If true, the same will be done to every Locale, EXCEPT the default
-        language locale. The default language locale will be kept as-is.
+        language, using the appid as application identifier. If true, the same will be done to every Locale, EXCEPT the
+        default language locale. The default language locale will be kept as-is.
         """
 
         xmldoc = minidom.parseString(xml_str)
@@ -365,13 +372,11 @@ class BundleManager(object):
 
             locale = xmldoc.createElement("Locale")
 
-            # TODO: Refactor build_standard_code_string and put it into Bundle. Probably.
-
             # Build our locales to inject. We modify the case to respect the standard. It shouldn't be necessary
             # but we do it nonetheless just in case other classes fail to respect it.
             full_filename = url_for('.app_langfile', appid=appid,
-                                    langfile=BundleManager.get_standard_code_string(bundle.lang, bundle.country,
-                                                                                    bundle.group), _external=True)
+                                    langfile=Bundle.get_standard_code_string(bundle.lang, bundle.country,
+                                                                             bundle.group), _external=True)
 
             locale.setAttribute("messages", full_filename)
             if bundle.lang != "all":
@@ -407,6 +412,18 @@ class BundleManager(object):
             raise BundleExistsAlreadyException()
         self._bundles[full_code] = bundle
 
+    def do_render_app_xml(self, appid):
+        """
+        Renders the Gadget Spec XML for the specified App.
+        This method assumes that the BundleManager has already been loaded properly
+        with the App's translations, and that the spec file is pointed to the right place.
+
+        @param appid String with the unique ID of the application whose Bundles to generate. This is
+        required because some URLs included in the generated XML include it.
+        """
+        xmlspec = self._retrieve_url(self.original_spec_file)
+        output_xml = self._inject_locales_into_spec(appid, xmlspec, True)
+        return output_xml
 
 
 class Bundle(object):
@@ -425,6 +442,23 @@ class Bundle(object):
         self._msgs = {
             # identifier : translation
         }
+
+    @staticmethod
+    def get_standard_code_string(lang, country, group):
+        """
+        From the lang, country and group information, it generates a standard name for the file.
+        Standard names follow the convention: "ca_ES_ALL".
+        Case is important.
+        Also, if either of them is empty or None, then it will be replaced with "all" in the appropriate case.
+        The XML file termination is NOT appended.
+        """
+        if lang is None or lang == "":
+            lang = "all"
+        if country is None or country == "":
+            country = "ALL"
+        if group is None or group == "":
+            group = "ALL"
+        return "%s_%s_%s" % (lang.lower(), country.upper(), group.upper())
 
     def get_msgs(self):
         """
@@ -469,14 +503,21 @@ class Bundle(object):
         return json_str
 
     @staticmethod
+    def from_jsonable(bundle_data):
+        """
+        Builds a fully new Bundle from JSONable data. That is, a dictionary containing no references etc.
+        """
+        bundle = Bundle(bundle_data["country"], bundle_data["lang"], bundle_data["group"])
+        bundle._msgs = bundle_data["messages"]
+        return bundle
+
+    @staticmethod
     def from_json(json_str):
         """
         Builds a fully new Bundle from JSON.
         """
         bundle_data = json.loads(json_str)
-        bundle = Bundle(bundle_data["country"], bundle_data["lang"], bundle_data["group"])
-        bundle._msgs = bundle_data["messages"]
-        return bundle
+        return Bundle.from_jsonable(bundle_data)
 
     @staticmethod
     def from_xml(xml_str, lang, country, group="ALL"):
@@ -521,17 +562,12 @@ def app_xml(appid):
     if app is None:
         return "Error 404: App doesn't exist", 404
 
-    # TODO: Verify that the app is a "translate" app.
+    # The composer MUST be 'translate'
+    if app.composer != "translate":
+        return "Error 500: The composer for the specified App is not Translate", 500
 
-    appdata = json.loads(app.data)
-    spec_file = appdata["spec"]
-
-    bm = BundleManager(spec_file)
-    bm.load_from_json(app.data)
-
-    xmlspec = bm._retrieve_url(spec_file)
-
-    output_xml = bm._inject_locales_into_spec(appid, xmlspec, True)
+    bm = BundleManager.create_from_existing_app(app.data)
+    output_xml = bm.do_render_app_xml(appid)
 
     response = make_response(output_xml)
     response.mimetype = "application/xml"
@@ -557,6 +593,10 @@ def app_langfile(appid, langfile):
     if app is None:
         return "Error 404: App doesn't exist", 404
 
+    # The composer MUST be 'translate'
+    if app.composer != "translate":
+        return "Error 500: The composer for the specified App is not Translate", 500
+
     # Parse the appdata
     appdata = json.loads(app.data)
 
@@ -565,36 +605,10 @@ def app_langfile(appid, langfile):
         dbg_info = str(bundles.keys())
         return "Error 404: Could not find such language for the specified app. Available keys are: " + dbg_info, 404
 
-    # TODO: Add from_jsonable
-    bundle = Bundle.from_json(json.dumps(bundles[langfile]))
+    bundle = Bundle.from_jsonable(bundles[langfile])
 
     output_xml = bundle.to_xml()
 
     response = make_response(output_xml)
     response.mimetype = "application/xml"
     return response
-
-
-@translate_blueprint.route('/backend', methods=['GET', 'POST'])
-def backend():
-    testxml = """
-    <messagebundle>
-        <msg name="hello_world">
-            Hello World.
-        </msg>
-        <msg name="color">Color</msg>
-        <msg name="red">Red</msg>
-        <msg name="green">Green</msg>
-        <msg name="blue">Blue</msg>
-        <msg name="gray">Gray</msg>
-        <msg name="purple">Purple</msg>
-        <msg name="black">Black</msg>
-    </messagebundle>
-    """
-
-    bundle = Bundle.from_xml(testxml, "es", "ES")
-    jsonstr = bundle.to_json()
-    bundle = Bundle.from_json(jsonstr)
-    xmlstr = bundle.to_xml()
-
-    return Markup.escape(xmlstr)
