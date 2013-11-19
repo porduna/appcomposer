@@ -67,8 +67,12 @@
                     if(code == groupCode)
                         groupName = name;
                 }
-               $(srcGroup).append($("<option />", {value: value, text: groupName}));
+
+                var selected = (index == select.selectedIndex ? "selected" : "");
+                $(srcGroup).append($("<option />", {value: value, text: groupName, selected:selected}));
             });
+
+
         }
     </script>
 
