@@ -164,8 +164,8 @@ function start_lab() {
     console = {};
     console.log = function () {};
   }
-  edt.start({ domain: golab.domain.buoyancy,
-              experiment: golab.experiment.Archimedes,
+  edt.start({ domain: golab.domain.{{ domain_name }} ,
+              experiment: golab.experiment.{{ experiment_name }} ,
 	      confirm_flags: false
 	   });
 }
