@@ -68,10 +68,12 @@
                         groupName = name;
                 }
 
-                var selected = (index == select.selectedIndex ? "selected" : "");
-                $(srcGroup).append($("<option />", {value: value, text: groupName, selected:selected}));
+                $(srcGroup).append($("<option />", {value: value, text: groupName}));
             });
 
+            // Initialize the selection.
+            var srcGroupSelect = srcGroup[0].options[0];
+            srcGroupSelect.setAttribute("selected", "selected");
 
         }
     </script>
