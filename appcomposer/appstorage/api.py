@@ -5,7 +5,7 @@ other modules.
 
 from appcomposer.login import current_user
 from appcomposer.db import db_session
-from appcomposer.models import App
+from appcomposer.models import App, AppVar
 
 import json
 
@@ -175,4 +175,19 @@ def delete_app(composed_app):
 
     db_session.delete(composed_app)
     db_session.commit()
+
+
+def add_var(app, name, value):
+    """
+    Adds a new variable to an application.
+
+    As of now, several variables with the same name can be added.
+
+    @param app: App to which to add the variable (unique_id or App object).
+    @param name: Name of the variable.
+    @param value: Value for the variable.
+    """
+    app = _get_app_obj(app)
+    var = AppVar(name, value)
+    var.app = app
 

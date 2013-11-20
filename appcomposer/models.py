@@ -144,6 +144,10 @@ class AppVar(Base):
         self.value = value
         self.name = name
 
+    def __repr__(self):
+        return "AppVar(%r, %r, %r)" % (
+            self.app.unique_id, self.name, self.value)
+
     @classmethod
     def find_by_var_id(cls, var_id):
         return DBS.query(cls).filter_by(var_id=var_id).first()
