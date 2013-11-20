@@ -1,0 +1,302 @@
+/*  $Id$	-*- mode: css -*-
+ *  
+ *  File	edt.less
+ *  Part of	Go-Lab Experimental Design Tool
+ *  Author	Anjo Anjewierden, a.a.anjewierden@utwente.nl
+ *  Purpose	Cascading style sheet
+ *  Works with	Less, CSS
+ *  
+ *  Notice	Copyright (c) 2013  University of Twente
+ *  
+ *  History	21/03/13  (Created)
+ *  		29/05/13  (Last modified)
+ */@charset "utf-8";
+body,
+td,
+th,
+select,
+input,
+textarea {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 15px;
+  color: #565656;
+}
+h1 {
+  font-weight: normal;
+}
+.workAreaContainer {
+  background: #f5f5f5;
+  border: 2px solid #faa519;
+  border-radius: 3px;
+}
+.toolAreaContainer {
+  background: #f5f5f5;
+  border: 2px solid #faa519;
+  border-radius: 3px;
+}
+.toolArea {
+  padding: 5px;
+}
+.areaLabel {
+  width: 100%;
+  background: #00bacc;
+  color: #ffffff;
+  font-size: 16px;
+  text-align: center;
+  height: 25px;
+}
+.activeButton {
+  border: 1px solid #939597;
+  border-radius: 2px;
+  background: #92d6e3;
+  background-size: contain;
+}
+.activeButton:hover {
+  background: #00bacc;
+  background-size: contain;
+}
+.activeButton:active {
+  background: #faa519;
+  background-size: contain;
+}
+.pressedButton,
+.pressedButton:active,
+.pressedButton:hover {
+  background: #faa519;
+  background-size: contain;
+}
+.pressedButton:hover {
+  background: #faa519;
+  background-size: contain;
+}
+.pressedButton:active {
+  background: #faa519;
+}
+.dropObjectOutSideDropArea {
+  opacity: 0.35;
+}
+.unselectable {
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.textSelectable {
+  -moz-user-select: -moz-text;
+  -khtml-user-select: text;
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  -o-user-select: text;
+  user-select: text;
+}
+/* this works on iOS, not on android */
+.preventLongPress {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/*------------------------------------------------------------
+ *  General
+ *------------------------------------------------------------*/
+/*  No text cursor */
+body {
+  cursor: default;
+}
+.tool_term {
+  font-weight: bold;
+}
+.domain_term {
+  font-weight: bold;
+}
+/*------------------------------------------------------------
+ *  Dialogs
+ *------------------------------------------------------------*/
+.no-close .ui-dialog-titlebar-close {
+  display: none;
+}
+.edt_td_variable_list {
+  border: 2px solid #939597;
+  vertical-align: middle;
+}
+.edt_td_variable_inactive {
+  border: 2px solid #939597;
+  background-color: #f5f5f5;
+  vertical-align: middle;
+}
+.edt_td_empty_variable_list {
+  border: 2px dotted #939597;
+}
+.edt_td_name_object_list {
+  border: 2px solid #939597;
+}
+/*------------------------------------------------------------
+ *  Experimental design table
+ *------------------------------------------------------------*/
+.edt_table_experiment_specification {
+  text-align: center;
+}
+.edt_table_experiment_specification tbody tr:nth-child(odd) {
+  background-color: #c3dcb6;
+}
+.edt_table_experiment_specification tr:nth-child(even) {
+  background-color: #e4f0df;
+}
+.edt_edit_me {
+  color: #00bacc;
+}
+.edt_th_experiment_variable,
+.edt_th_experiment_nth {
+  background-color: #f5f5f5;
+  padding: 2px;
+  min-width: 100px;
+  max-width: 200px;
+}
+/*------------------------------------------------------------
+ *  Overall layout
+ *------------------------------------------------------------*/
+#edt_tabs {
+  border: none;
+}
+#edt_container_instructions,
+#edt_container_design,
+#edt_container_experiment,
+#edt_container_hypothesis,
+#edt_container_heuristics,
+#edt_container_lab {
+  background: #f5f5f5;
+  border: 2px solid #faa519;
+  border-radius: 3px;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+  margin-bottom: 4px;
+}
+#edt_content_instructions,
+#edt_content_hypothesis,
+#edt_content_design,
+#edt_content_heuristics,
+#edt_content_lab {
+  padding: 8px;
+  padding-top: 0px;
+  padding-bottom: 0px;
+}
+#edt_content_heuristics ul {
+  padding-left: 20px;
+}
+.edt_div_main {
+  padding: 2px;
+}
+.edt_div_sub {
+  border: 0px solid #939597;
+}
+.edt_table_variable_list {
+  border: 1px solid grey;
+  background-color: white;
+  text-align: center;
+}
+.edt_th_variable_list {
+  min-width: 150px;
+  background-color: #00bacc;
+  color: white;
+}
+#vbl_form_container,
+#vbl_aquarium_container,
+#vbl_graph_container {
+  background: #f5f5f5;
+  border: 2px solid #faa519;
+  border-radius: 3px;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+#vbl_form {
+  padding: 5px;
+}
+#vbl_aquarium {
+  padding: 5px;
+  width: 50%;
+}
+#vbl_graph {
+  padding: 5px;
+  width: 50%;
+}
+/*------------------------------------------------------------
+ *  Buttons
+ *------------------------------------------------------------*/
+#edt_table {
+  width: 100%;
+  /*  height: 700px; */
+
+  padding: 5px;
+  border-collapse: collapse;
+  /*  text-align: cemter; */
+
+}
+#edt_table:hover {
+  cursor: move;
+}
+.edt_table_header {
+  background-color: #00bacc;
+  color: white;
+  min-width: 200px;
+}
+#edt_header {
+  border: 1px solid black;
+  width: 100%;
+}
+#edt_instruction_space {
+  border: 1px solid black;
+  width: 50%;
+}
+#edt_experiment_space {
+  border: 1px solid black;
+  border-spacing: 3px;
+  /*  width: 67%;
+    height: 67%; */
+
+  padding: 5px;
+}
+#edt_selection_space {
+  border: 1px solid black;
+}
+#edt_experiment_space > td {
+  padding-top: 3px;
+}
+#edt_selection_space > td {
+  padding-top: 3px;
+}
+#edt_instruction_space > td {
+  padding-top: 3px;
+}
+#edt_hint_space {
+  border: 1px solid black;
+  width: 50%;
+}
+#edt_experimental_setup {
+  background-color: #E8E8E9;
+  color: white;
+}
+#edt_all_fluids {
+  background-color: #E8E8E9;
+  color: white;
+}
+#edt_all_instruments {
+  background-color: #E8E8E9;
+  color: white;
+}
+#edt_all_object_properties {
+  background-color: #15B8CE;
+  color: white;
+}
+#edt_all_object_measures {
+  background-color: #FAA61B;
+  color: white;
+}
