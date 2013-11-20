@@ -20,6 +20,11 @@ class NotAuthorizedException(Exception):
         self.message = message
 
 
+class InvalidParameterException(Exception):
+    def __init__(self, message=None):
+        self.message = message
+
+
 def create_app(name, composer, data):
     """
     create_app(name, data)
@@ -71,6 +76,27 @@ def get_app(unique_id):
     return app
 
 
+def _get_app_obj(app):
+    """
+    Internal method to retrieve an App object. If it is passed a string it
+    will assume it is a unique_id. If, however, it is already an App object,
+    the object itself will be returned.
+
+    Thus, this can be used to ensure that an App parameter that was passed
+    to a function points to the object and not to the ID, with the function
+    actually accepting both.
+
+    @param app: Unique identifier of the app as a string, or the app object itself.
+    @return: The app object.
+    """
+    if type(app) is str or type(app) is unicode:
+        return get_app(app)
+    if type(app) is App:
+        return app
+    else:
+        raise InvalidParameterException("app parameter was not a string, nor an App object")
+
+
 def get_app_by_name(app_name):
     """
     get_app_by_name(app_name)
@@ -116,8 +142,9 @@ def update_app_data(composed_app, data):
     @note: This function can only be used by logged-on users, and they must be the
     owners of the app being saved.
     """
-    if type(composed_app) is str or type(composed_app) is unicode:
-        composed_app = get_app(composed_app)
+
+    # Convert ID to App if not done already (otherwise it's NOP).
+    composed_app = _get_app_obj(composed_app)
 
     if type(data) is not str and type(data) is not unicode:
         data = json.dumps(data)
@@ -140,11 +167,12 @@ def delete_app(composed_app):
     @note: This function can only be used by logged-on users, and they must be the owners of
     the app being saved.
     """
-    if type(composed_app) is str or type(composed_app) is unicode:
-        composed_app = get_app(composed_app)
+
+    composed_app = _get_app_obj(composed_app)
 
     if composed_app.owner != current_user():
         raise NotAuthorizedException()
 
     db_session.delete(composed_app)
     db_session.commit()
+
