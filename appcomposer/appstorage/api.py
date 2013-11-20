@@ -25,6 +25,15 @@ class InvalidParameterException(Exception):
         self.message = message
 
 
+class NonUniqueVarException(Exception):
+    """
+    Exception to be thrown when an operation did not expect more than one Var with the same name to exist.
+    """
+
+    def __init__(self, message=None):
+        self.message = message
+
+
 def create_app(name, composer, data):
     """
     create_app(name, data)
@@ -190,4 +199,64 @@ def add_var(app, name, value):
     app = _get_app_obj(app)
     var = AppVar(name, value)
     var.app = app
+    db_session.add(var)
+    db_session.commit()
 
+
+def get_all_vars(app):
+    """
+    Gets every AppVars for an App.
+
+    @param app: App's unique_id or object.
+    @return: List of every appvar.
+    """
+    app = _get_app_obj(app)
+    vars = db_session.query(AppVar).filter_by(app=app).all()
+    return vars
+
+
+def set_var(app, name, value):
+    """
+    Sets a var's value. If the Var doesn't exist, it is added.
+    If there is more than one Var with the specified value a
+    NonUniqueVarException will be thrown.
+    @param app: App's unique id or object.
+    @param name: Name of the variable.
+    @param value: Value of the variable.
+    """
+    app = _get_app_obj(app)
+    vars = db_session.query(AppVar).filter_by(app=app, name=name).all()
+    if len(vars) == 0:
+        add_var(app, name, value)
+        return
+    elif len(vars) == 1:
+        var = vars[0]
+        var.value = value
+        db_session.add(var)
+        db_session.commit()
+    else:
+        raise NonUniqueVarException("Cannot set value: App has more than one variable with the specified name.")
+
+
+def update_var(appvar):
+    """
+    Reflects the changes done to an AppVar object to the DB.
+    This method should rarely be called, because most methods in this API
+    update it automatically.
+
+    @param appvar: AppVar object to update.
+    """
+    db_session.add(appvar)
+    db_session.commit()
+
+
+def remove_var(appvar):
+    """
+    Removes an AppVar from the Database.
+    @param appvar: AppVar object to remove.
+    """
+    if type(appvar) is not AppVar:
+        raise ValueError("Cannot remove var: Invalid Parameter. It's not an AppVar object.")
+
+    db_session.delete(appvar)
+    db_session.commit()
