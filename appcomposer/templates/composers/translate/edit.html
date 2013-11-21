@@ -1,13 +1,15 @@
 {% set title = "Translation tool" %}
 {% set current_link = "home" %}
 {% extends 'composers/translate/layout.html' %}
+
+
 {% block body_content %}
         <div class="translateblock">
             <div class="row">
                 <div class="col-lg-12">
                     <div class="page-header">
                         <h1 id="apptitle">Translate</h1>
-                        <h2 id="appfullname">the Function plotter app</h1>                        
+                        <h2 id="appfullname">{{ app.name }}</h2>
                     </div>
                 </div>
             </div>
@@ -28,56 +30,39 @@
                 <div class="tab-pane fade active in" id="edit">
 
                   <div class="col-lg-12">
-                      <form class="bs-example form-horizontal">
+                      <form class="bs-example form-horizontal" method="POST" target="#">
+
+                        <input type="hidden" name="appid" value="{{ request.values["appid"] }}"/>
+                        <input type="hidden" name="srclang" value="{{ request.values["srclang"] }}"/>
+                        <input type="hidden" name="targetlang" value="{{ request.values["targetlang"] }}"/>
+                        <input type="hidden" name="srcgroup" value="{{ request.values["srcgroup"] }}"/>
+                        <input type="hidden" name="targetgroup" value="{{ request.values["targetgroup"] }}"/>
+
                         <fieldset>
                           <!-- <legend  class="col-lg-12">Step 3: Validate the proposed translations by pressing "Save" or provide your own translation</legend> -->
-                          <div class="form-group">
-                            <label for="field-1" class="col-lg-2 control-label">plot</label>
-                            <div class="col-lg-10">
-                              <input type="text" class="form-control" id="field-1" placeholder="Plot">
-                            </div>
-                          </div>
-                          <div class="form-group">
-                            <label for="field-2" class="col-lg-2 control-label">clear</label>
-                            <div class="col-lg-10">
-                              <input type="text" class="form-control" id="field-2" placeholder="löschen">
-                            </div>
-                          </div>
-                          <div class="form-group">
-                            <label for="field-3" class="col-lg-2 control-label">tangent</label>
-                            <div class="col-lg-10">
-                              <input type="text" class="form-control" id="field-3" placeholder="Tangens">
-                            </div>
-                          </div> 
 
-                          <div class="form-group">
-                            <label for="field-4" class="col-lg-2 control-label">derivative</label>
-                            <div class="col-lg-10">
-                              <input type="text" class="form-control" id="field-4" placeholder="Ableitung">
+
+                            {% for src_name, src_text in srcbundle.get_msgs().items() %}
+                            <div class="form-group">
+                                <label for="field_{{ loop.index }}" class="col-lg-2 control-label">[{{ src_name }}] {{ src_text }}</label>
+                                <div class="col-lg-10">
+                                    {# TODO: Find a better way to submit them. This is particularly ugly. #}
+                                    <input type="text" class="form-control" id="field_{{ loop.index }}" name="_message_{{ src_name }}" placeholder="{{ src_text }}" value="{{ targetbundle.get_msg(src_name) or '' }}">
+                                </div>
                             </div>
-                          </div>
-                                                  
-                          <div class="form-group">
-                            <label for="field-5" class="col-lg-2 control-label">adds a derivative of the last added plot</label>
-                            <div class="col-lg-10">
-                              <textarea class="form-control" rows="3" id="field-5" placeholder="fügt eine Ableitung der zuletzt hinzugefügten Grundstück"></textarea>
-                            </div>
-                          </div>
-                          
-                          <div class="form-group">
-                            <label for="field-6" class="col-lg-2 control-label">adds a tangent to the last added plot</label>
-                            <div class="col-lg-10">
-                              <textarea class="form-control" rows="3" id="field-6" placeholder="fügt eine Tangente an die zuletzt hinzugefügten Grundstück"></textarea>
-                            </div>
-                          </div>
+                            {% endfor %}
+
                           
                           <div class="form-group">
                             <div class="col-lg-10 col-lg-offset-2">
-                              <a class="btn btn-default" id="backtoindexbtn" href="{{ url_for('translate.translate_selectlang') }}">« Go Back to Step 2</a>                                   
+                              <a class="btn btn-default" id="backtoindexbtn" href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">« Go Back to Step 2</a>
+
+                              <button type="submit" id="sendurlbtn" name="save" class="btn btn-success">Save</button>
+                              <button type="submit" id="sendurlbtn" name="save_exit" class="btn btn-warning">Save & Exit</button>
+
                               <!--
-                              <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">Step 2 - Select language »</button>
-                              -->          
                               <a class="btn btn-success" id="sendlangsbtn" href="#end">Save</a>
+                              -->
                             </div>
                           </div>
                         </fieldset>
