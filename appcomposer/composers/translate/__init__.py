@@ -230,7 +230,8 @@ def translate_edit():
 
         # Save all the messages we retrieved from the POST or GET params into the Bundle.
         for identifier, msg in messages:
-            targetbundle.add_msg(identifier, msg)
+            if len(msg) > 0:  # Avoid adding empty messages.
+                targetbundle.add_msg(identifier, msg)
 
         # Now we need to save the changes into the database.
         json_str = bm.to_json()
