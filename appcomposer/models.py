@@ -138,7 +138,7 @@ class AppVar(Base):
     value = Column(Unicode)
 
     app_id = Column(Integer, ForeignKey("Apps.id"), nullable=False)
-    app = relation("App", backref=backref("appvars"))
+    app = relation("App", backref=backref("appvars"), cascade="all,delete")
 
     def __init__(self, name, value):
         self.value = value
