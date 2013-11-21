@@ -5,7 +5,8 @@ import random
 from flask import Blueprint, render_template, flash, redirect, url_for, request, json
 from babel import Locale, UnknownLocaleError
 
-from appcomposer.appstorage.api import create_app, get_app, update_app_data
+from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, db_session
+from appcomposer.models import App, AppVar
 from forms import UrlForm, LangselectForm
 
 
@@ -24,6 +25,33 @@ info = {
 translate_blueprint = Blueprint(info['blueprint'], __name__)
 
 import backend
+
+
+@translate_blueprint.route("/merge_existing", methods=["GET", "POST"])
+def translate_merge_existing():
+
+    appid = request.args.get("appid")
+    if appid is None:
+        # An appid is required.
+        return redirect(url_for("user.apps.index"))
+    app = get_app(appid)
+
+    # If we are just viewing, we haven't chosen yet.
+    if request.method == "GET":
+
+        # Find out which is the XML of our app.
+        data = json.loads(app.data)
+        spec = data["spec"]
+
+        # TODO: Improve this query to select only translator apps. And remove the check in the loop that follows.
+        # Find the Apps in the DB that match our criteria. We will need direct access to the DB, at least for now.
+        appvars = db_session.query(AppVar).filter_by(app=app, name="spec", value=spec).all()
+        apps_list = [var.app for var in appvars if var.app.composer == "translate"]
+
+        return render_template('composers/translate/merge_existing.html', app=app, apps_list=apps_list)
+
+    elif request.method == "POST":
+        return render_template('composers/translate/merge_existing.html', app=app)
 
 
 @translate_blueprint.route('/', methods=['GET', 'POST'])
@@ -84,6 +112,10 @@ def translate_selectlang():
 
         # Create a new App from the specified XML
         app = create_app(appname, "translate", js)
+
+        # Register our appurl as the "spec" in an app-specific variable in the DB. This will let us search later, for
+        # certain advanced features.
+        set_var(app, "spec", appurl)
 
         flash("App spec successfully loaded", "success")
 

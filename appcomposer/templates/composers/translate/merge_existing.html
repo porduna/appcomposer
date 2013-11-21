@@ -1,0 +1,81 @@
+{% set title = "Translation tool :: Source and Target language" %}
+{% set current_link = "home" %}
+{% extends 'composers/translate/layout.html' %}
+
+
+{% block body_content %}
+    <div class="translateblock">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="page-header">
+                <h1 id="apptitle">Merge Existing Language</h1>
+
+                {% if app %}
+                    <h2 id="appfullname">{{ app.name }}</h2>
+                {% else %}
+                    <h2 id="appfullname">[App name not available]</h2>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+
+
+
+
+
+    <!-- Forms
+    ================================================== -->
+    <div class="well">
+
+        <div class="row">
+            <div class="col-lg-12">
+                <form class="form-horizontal" id="getlangs" name="getlangs"
+                      action="{{ url_for('translate.translate_merge_existing') }}" method="POST">
+
+                    {# This is necessary so that the next page knows which App to load. #}
+                    <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
+
+                    <legend>Select the App's translation that you want to merge into this one</legend>
+
+                    <div class="col-lg-6 col-md-6">
+
+
+                        <div class="form-group">
+                            <label class="control-label" for="srclang">Select the App</label>
+                            <select id="srcapp" multiple="" name="srcapp" class="form-control">
+
+                                {% for targetapp in apps_list %}
+                                <option value="{{ targetapp.unique_id }}">{{ targetapp.owner.name }}'s {{ targetapp.name }} </option>
+                                {% endfor %}
+
+                            </select>
+                        </div>
+
+
+                        <div class="form-group">
+                            <div class="controls">
+                                <span class="help-block">You want to translate the app from General English into Elementary School German.</span>
+                                <a class="btn btn-default" id="backtoindexbtn"
+                                   href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">« Go Back</a>
+
+                                <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">
+                                    Merge it »
+                                </button>
+                                <!--
+                    <a class="btn btn-success" id="sendlangsbtn" href="{{ url_for('translate.translate_edit') }}">Step 3 - Translate »</a>
+                    -->
+                            </div>
+                        </div>
+
+
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
+{% endblock %}

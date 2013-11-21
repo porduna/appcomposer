@@ -1,13 +1,13 @@
 import json
-import os
 import urllib
-from babel import Locale, UnknownLocaleError
-from flask import make_response, url_for
-from markupsafe import Markup
-from appcomposer.appstorage.api import get_app
-from appcomposer.composers.translate import translate_blueprint
 from xml.dom import minidom
 import StringIO
+
+from babel import Locale, UnknownLocaleError
+from flask import make_response, url_for
+
+from appcomposer.appstorage.api import get_app
+from appcomposer.composers.translate import translate_blueprint
 
 
 """
@@ -275,7 +275,7 @@ class BundleManager(object):
         """
         Loads the specified JSON into the BundleManager. It just loads from the JSON.
         It doesn't carry out any external request. Existing entries in the manager's bundles may be replaced.
-        @param json: JSON string to load.
+        @param json_str: JSON string to load.
         @return: Nothing
         """
         appdata = json.loads(json_str)

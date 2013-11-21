@@ -26,7 +26,7 @@
 
 
         //! Load and initialize what we must.
-        $( document ).ready(function() {
+        $(document).ready(function () {
             loadSourceGroups();
         });
 
@@ -54,17 +54,15 @@
             var sourceGroups = {{ source_groups_json|safe }};
             var groupsForSelectedLang = sourceGroups[selectedOption.value];
 
-            $.each(groupsForSelectedLang, function( index, value )
-            {
+            $.each(groupsForSelectedLang, function (index, value) {
                 var groupCode = value;
                 var groupName = value; // We will try to change this.
 
                 // Find a name for the group. If not found use the code.
-                for(var i = 0; i < fullGroups.length; i++)
-                {
+                for (var i = 0; i < fullGroups.length; i++) {
                     var code = fullGroups[0];
                     var name = fullGroups[1];
-                    if(code == groupCode)
+                    if (code == groupCode)
                         groupName = name;
                 }
 
@@ -131,6 +129,15 @@
                                 {% endfor %}
                             </select>
                         </div>
+
+                        <div class="form-group">
+                            <div class="controls">
+                                <span class="help-block">You want to merge an existing translation into this translation.</span>
+                                <a class="btn btn-default" id="merge_existing"
+                                   href="{{ url_for('translate.translate_merge_existing', appid=app.unique_id) }}">Merge existing translation</a>
+                            </div>
+                        </div>
+
                     </div>
 
                     <div class="col-lg-6 col-md-6">
@@ -149,6 +156,8 @@
                                 {% endfor %}
                             </select>
                         </div>
+
+
                         <div class="form-group">
                             <div class="controls">
                                 <span class="help-block">You want to translate the app from General English into Elementary School German.</span>
