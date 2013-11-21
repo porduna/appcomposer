@@ -30,7 +30,7 @@ import backend
 @translate_blueprint.route("/merge_existing", methods=["GET", "POST"])
 def translate_merge_existing():
 
-    appid = request.args.get("appid")
+    appid = request.values.get("appid")
     if appid is None:
         # An appid is required.
         return redirect(url_for("user.apps.index"))
@@ -43,15 +43,39 @@ def translate_merge_existing():
         data = json.loads(app.data)
         spec = data["spec"]
 
-        # TODO: Improve this query to select only translator apps. And remove the check in the loop that follows.
         # Find the Apps in the DB that match our criteria. We will need direct access to the DB, at least for now.
-        appvars = db_session.query(AppVar).filter_by(app=app, name="spec", value=spec).all()
+        appvars = db_session.query(AppVar).filter_by(name="spec", value=spec).all()
         apps_list = [var.app for var in appvars if var.app.composer == "translate"]
 
         return render_template('composers/translate/merge_existing.html', app=app, apps_list=apps_list)
 
+    # It is a POST. The user has just chosen an app to merge, and we should hence carry out that merge.
     elif request.method == "POST":
-        return render_template('composers/translate/merge_existing.html', app=app)
+
+        # Get the App to merge from the DB
+        srcapp_id = request.values.get("srcapp")
+        if srcapp_id is None:
+            # The srcapp is required.
+            return redirect(url_for("user.apps.index"))
+        srcapp = get_app(srcapp_id)
+
+
+        # Load our own App
+        bm = backend.BundleManager.create_from_existing_app(app.data)
+
+        # TODO: Better define what this load_from_json method does, and rename it to a more explicit MERGE name
+        # or something similar.
+        bm.load_from_json(srcapp.data)
+
+        # Update the App's data.
+        update_app_data(app, bm.to_json())
+
+        flash("Translations merged.", "success")
+
+        # TODO: [Offtopic]: Disable merge-to-self.
+
+        # Redirect so that the App is reloaded with our changes applied.
+        return redirect(url_for("translate.translate_selectlang", appid=appid))
 
 
 @translate_blueprint.route('/', methods=['GET', 'POST'])
@@ -127,6 +151,9 @@ def translate_selectlang():
 
         appid = request.args.get("appid")
         if appid is None:
+
+            flash("appid not received", "error")
+
             # An appid is required.
             return redirect(url_for("user.apps.index"))
 
