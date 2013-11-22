@@ -143,13 +143,23 @@ class BasicAdminAppsView(AdminModelView):
     We will be able to create, edit, and delete apps.
     """
 
-    column_list = ('owner', 'name', 'composer', 'data', 'creation_date', 'modification_date', 'last_access_date')
-    column_labels = dict(owner = 'Owner', name = 'Name', composer = 'Composer', data = 'Data', creation_date = 'Creation Date', modification_date = 'Modification Date', last_access_date = 'Last Access Date')
-    column_sortable_list = ('owner', 'name', 'composer')
-    column_searchable_list = ('name', 'composer')
-    
+    column_list = ('owner', 'unique_id', 'name', 'composer', 'creation_date', 'modification_date', 'last_access_date')
+    column_labels = dict(owner = 'Owner', unique_id = 'ID', name = 'Name', composer = 'Composer', creation_date = 'Creation Date', modification_date = 'Modification Date', last_access_date = 'Last Access Date')
+    column_sortable_list = ('unique_id', 'name', 'composer')
+    column_searchable_list = ('unique_id', 'name', 'composer')
+   
+    # Information needed when creating a new composer
+    form_columns = ('owner', 'name', 'composer') 
+    sel_choices = [(level, level.title()) for level in ('translate', 'adapt','dummy')] # TODO: find where this is registered
+    form_overrides = dict(composer=wtf.SelectField)
+    form_args = dict(composer=dict(choices=sel_choices))   
+   
     def __init__(self, session, **kwargs):
         super(BasicAdminAppsView, self).__init__(models.App, session, **kwargs)
+
+    # This function is used when creating a new empty composer    
+#    def on_model_change(self, form, model):
+#            model.data = "{}"
 
 
 class AdvancedAdminAppsView(AdminBaseView):

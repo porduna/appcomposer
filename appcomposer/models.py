@@ -89,7 +89,7 @@ class App(Base):
 
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
 
-    def __init__(self, name, owner, composer):
+    def __init__(self, name=None, owner=None, composer=None):
         self.name = name
         self.owner = owner
         self.composer = composer
