@@ -82,15 +82,9 @@ def translate_merge_existing():
 def translate_index():
     form = UrlForm(request.form)
 
-    # If it is a POST request (steps 2 & step 3), then request.form['appvar'] will not be None
-    # Otherwise we will simply load the index
-    if form.validate_on_submit():
-        appurl = form.get_appurl()
-        flash("App loaded successfully.")
-        #return redirect(request.args.get("next") or url_for("translate.translate_index"))
-        return redirect(url_for("adapt.adapt_index"))
-
-    # It was a GET request (just viewing).
+    # As of now this should be a just-viewing GET request. POSTs are done
+    # directly to selectlang and should actually not be received by this
+    # method.
     return render_template('composers/translate/index.html', form=form)
 
 
@@ -121,7 +115,10 @@ def translate_selectlang():
     # Hence, we will need to carry out a full spec retrieval.
     if request.method == "POST":
         # URL to the XML spec of the gadget.
-        appurl = request.form["appurl"]
+        appurl = request.form.get("appurl")
+        if appurl is None or len(appurl) == 0:
+            flash("An application URL is required", "error")
+            return redirect(url_for("translate.translate_index"))
 
         # Get all the existing bundles.
         bm = backend.BundleManager()

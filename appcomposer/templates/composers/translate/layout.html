@@ -52,7 +52,6 @@
 
             <ul class="nav navbar-nav">
 
-
                 <li {% if current_link == 'home' %}    class="active" {% endif %}><a
                         href="{{ url_for('translate.translate_index') }}">Home</a></li>
                 <li {% if current_link == 'apps' %}    class="active" {% endif %}><a
@@ -68,6 +67,7 @@
                     </ul>
                 </li>
             </ul>
+            <!--
             <form class="navbar-form navbar-right">
                 <div class="form-group">
                     <input type="text" placeholder="Email" class="form-control">
@@ -77,6 +77,7 @@
                 </div>
                 <button type="submit" class="btn btn-success">Sign in</button>
             </form>
+            -->
         </div>
     </div>
 </div>
@@ -86,6 +87,7 @@
     {{ layout.messages() }}
 
     {% block body_content %}{% endblock %}
+
 </div>
 <hr>
 <footer>

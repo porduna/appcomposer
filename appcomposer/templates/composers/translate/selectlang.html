@@ -30,6 +30,11 @@
             loadSourceGroups();
         });
 
+        
+        function onLanguageChange() {
+
+        }
+
 
         //! Event received then the user selects a new source language.
         //! We will refill the source groups for that one language.
@@ -167,6 +172,9 @@
                                 <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">Step 2 -
                                     Localise »
                                 </button>
+
+                                <p id="same-langs" class="text-danger" style="visibility:hidden">Target and source languages may not be the same</p>
+
                                 <!--
                     <a class="btn btn-success" id="sendlangsbtn" href="{{ url_for('translate.translate_edit') }}">Step 3 - Translate »</a>
                     -->
