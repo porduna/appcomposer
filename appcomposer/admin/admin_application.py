@@ -1,3 +1,5 @@
+import datetime
+
 from flask import redirect, request, flash, session, render_template_string, url_for
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from flask.ext.admin.contrib.sqlamodel import ModelView
@@ -117,8 +119,6 @@ class UsersView(AdminModelView):
     column_labels = dict(login = 'Login', name = 'Full Name', email = 'E-mail', organization = 'Organization', role = 'Role')
     column_filters = ('login', 'name', 'email', 'organization', 'role')
 
-    form_args = dict(email=dict(validators=[Email()]), login=dict(validators=[Regexp(LOGIN_REGEX)]))
-
     column_descriptions = dict(login='Username (all letters, dots and numbers)',
                                name='First and Last name',
                                email='Valid e-mail address')
@@ -130,12 +130,23 @@ class UsersView(AdminModelView):
     column_searchable_list = ('login', 'name', 'email', 'organization', 'role')
  
     # Fields used for the creations of new users    
-    form_columns = ('login', 'name', 'email', 'organization', 'role', 'password', 'creation_date', 'last_access_date')
-    form_overrides = dict(access_level=wtf.SelectField, password=PasswordField)    
+    form_columns = ('login', 'name', 'email', 'organization', 'role', 'password')
+    sel_choices = [(level, level.title()) for level in ('administrator', 'teacher')] # TODO: establish different permisions in the system   
+    
+    form_overrides = dict(access_level=wtf.SelectField, password=PasswordField, role=wtf.SelectField)        
+    form_args = dict(email=dict(validators=[Email()]), login=dict(validators=[Regexp(LOGIN_REGEX)]), role=dict(choices=sel_choices))
     
     def __init__(self, session, **kwargs):
         super(UsersView, self).__init__(models.User, session, **kwargs)
 
+    # This function is used when creating a new empty composer    
+    def on_model_change(self, form, model):        
+        # TODO: Include more sophisticated authentications        
+        model.auth_system = 'userpass'
+        model.auth_data = model.password
+        model.creation_date = datetime.datetime.now()
+        model.last_access_date = datetime.datetime.now()
+        
 
 class BasicAdminAppsView(AdminModelView):
     """
