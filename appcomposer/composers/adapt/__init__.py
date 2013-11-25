@@ -1,11 +1,66 @@
-from flask import Blueprint, render_template
-import appcomposer.appstorage.api as appstorage
+from flask import Blueprint, flash, json, redirect, render_template, request, session, url_for
 
-adapt_blueprint = Blueprint('adapt', __name__)
+import appcomposer.appstorage.api as appstorage
+#from appcomposer.appstorage.api import create_app, get_app, update_app_data
+
+from forms import AdaptappCreateForm
+
+# Required imports for a customized app view for the adapt tool (a possible block to be refactored?)
+from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
+from appcomposer.application import COMPOSERS, COMPOSERS_DICT
+from appcomposer.models import App
+from appcomposer.db import db_session
+
+info = {
+    'blueprint': 'adapt',
+    'url': '/composers/adapt',
+
+    'index_endpoint': 'adapt.adapt_index',
+    'create_endpoint': 'adapt.adapt_create',    
+    'edit_endpoint': 'adapt.adapt_edit',
+    'open_endpoint': 'adapt.adapt_open',    
+
+    'name': 'Adaptor Composer',
+    'description': 'Adapt an existing app.'
+}
+
+adapt_blueprint = Blueprint(info['blueprint'], __name__)
+
 
 @adapt_blueprint.route("/")
-def adapt_index():
-    return render_template("composers/adapt/index.html")
+def adapt_index():    
+    #ONLY for testing purposes: the session must be retrieved from the main page 
+    if not session.get("logged_in", False):
+        session["logged_in"] = True
+        session["login"] = "testuser"
+        return redirect(url_for('adapt.adapt_index'))
+    return render_template("composers/adapt/index.html")        
+
+
+@adapt_blueprint.route("/create", methods=["GET", "POST"])
+def adapt_create():
+
+    # If we receive a get we just show the new app form and the list of adapt apps    
+    if request.method == "GET":               
+        apps = db_session.query(App).filter_by(owner_id=1).all()
+
+        def build_edit_link(app):
+            endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]
+            return url_for(endpoint, appid=app.unique_id)
+
+        return render_template('composers/adapt/create.html', apps=apps, build_edit_link=build_edit_link) 
+
+    # If we receive a post we are creating an experiment .
+    elif request.method == "POST":
+        name = request.form["appname"]
+
+        try:
+            app = appstorage.create_app(name, "dummy", data='{"text":""}')
+        except appstorage.AppExistsException:
+            flash("An App with that name already exists", "error")
+            return render_template("composers/adapt/create.html", name=name)
+
+        return redirect(url_for("adapt.adapt_edit", appid=app.unique_id))        
 
 @adapt_blueprint.route("/export/<app_id>/edt/edt.html")
 def edt_index(app_id):
@@ -15,6 +70,7 @@ def edt_index(app_id):
     domain_name = 'buoyancy'
     experiment_name = 'Archimedes'
     return render_template("composers/adapt/edt/edt.html", app_id = app_id, domain_name = domain_name, experiment_name = experiment_name)
+
 
 @adapt_blueprint.route("/export/<app_id>/edt/domain.js")
 def edt_domain(app_id):
@@ -62,4 +118,89 @@ def edt_domain(app_id):
         ]
     }
     
-    return render_template("composers/adapt/edt/domain.js", domain = domain, experiment = experiment)
+    return render_template("composers/adapt/edt/domain.js", domain = json.dumps(domain, indent = 4), experiment = json.dumps(experiment, indent = 4))
+
+
+@adapt_blueprint.route("/edit", methods = ['GET', 'POST'])
+def adapt_edit():
+    # Author an adapt app with appid = appid    
+    # If we receive a get we just want to show the page.
+    if request.method == "GET":
+        appid = request.args.get("appid")
+        if not appid:
+            return "appid not provided", 400
+        app = appstorage.get_app(appid)
+        if app is None:
+            return "App not found", 500
+
+        data = json.loads(app.data)
+        text = data["text"]
+
+        return render_template("composers/adapt/edit.html", app=app, text=text)
+    elif request.method == "POST":
+        appid = request.form["appid"]
+        text = request.form["domain_name"]
+
+        # Retrieve the app we're editing by its id.
+        app = appstorage.get_app(appid)
+
+        # Build our dummy composer JSON.
+        data = {
+            "dummy_version": 1,
+            "text": text}
+
+        appstorage.update_app_data(app, data)
+
+        flash("Saved successfully", "success")
+
+        # TODO: Print a success message etc etc.
+
+        # If the user clicks on "Save & exit", then we redirect him to the app page,
+        # otherwise we stay here.
+        '''
+        if "saveexit" in request.form:
+            return redirect(url_for("user.apps.index"))
+        '''
+        return render_template("composers/adapt/edit.html", app=app, text=text)
+
+
+@adapt_blueprint.route("/open", methods=["GET", "POST"])
+def adapt_open():
+    # Edit an existing adapt app with appid = appid
+    # TODO: This method is a variant of "new" with the appid
+    if request.method == "GET":
+        appid = request.args.get("appid")
+        if not appid:
+            return "appid not provided", 400
+        app = appstorage.get_app(appid)
+        if app is None:
+            return "App not found", 500
+
+        data = json.loads(app.data)
+        text = data["text"]
+
+        return render_template("composers/adapt/edit.html", app=app, text=text)
+    elif request.method == "POST":
+        appid = request.form["appid"]
+        text = request.form["domain_name"]
+
+        # Retrieve the app we're editing by its id.
+        app = appstorage.get_app(appid)
+
+        # Build our dummy composer JSON.
+        data = {
+            "dummy_version": 1,
+            "text": text}
+
+        appstorage.update_app_data(app, data)
+
+        flash("Saved successfully", "success")
+
+        # TODO: Print a success message etc etc.
+
+        # If the user clicked on saveexit we redirect to appview, otherwise
+        # we stay here.
+        if "saveexit" in request.form:
+            return redirect(url_for("user.apps.index"))
+
+        return render_template("composers/dummy/edit.html", app=app, text=text)
