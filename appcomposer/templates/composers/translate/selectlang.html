@@ -28,11 +28,79 @@
         //! Load and initialize what we must.
         $(document).ready(function () {
             loadSourceGroups();
+
+            // Add handlers to every Select element.
+            $("select").on("change", function(event) {
+                        onLanguageChange(event)
+                    });
+
+            // For initialization
+            onLanguageChange(null);
+
+            // Initialize popovers & tooltips.
+            initializeTooltips();
         });
 
-        
-        function onLanguageChange() {
+        //! Initializes the tooltips and popovers.
+        function initializeTooltips()
+        {
+            $("#merge_existing").popover(
+                    {
+                        placement: "top",
+                        title: "Merge existing translations",
+                        html: "true",
+                        content : "This option will let you merge someone else's translations into this one. <br>Note, however, that you need to be careful, because after you select the app to merge with, the merge is automatic, and some translations may get overrided.",
+                        trigger: "hover"
 
+                    }
+            );
+
+            // We place it on its own div because otherwise it won't fire when disabled.
+            $("#localisebtndiv").popover(
+                    {
+                        placement: "top",
+                        title: "Localise",
+                        html: "true",
+                        content : "", // to be set dynamically
+                        trigger: "hover"
+                    }
+            );
+        }
+
+
+        //! Function to be invoked when the target or source language changes.
+        function onLanguageChange(event) {
+
+            var submits = $("#localisebtn")
+
+            // The same source and target combination was chosen. User should not be allowed
+            // to try to translate that, as it makes no sense.
+            if( getChosenSource() == getChosenTarget() )
+            {
+                $("#same-lang").show();
+                submits.attr("disabled", "disabled");
+                submits.prop('disabled', true);
+
+                $("#localisebtndiv").popover().setContent("May not");
+            }
+            else
+            {
+                $("#same-lang").hide();
+                submits.removeAttr("disabled");
+                submits.prop("disabled", false);
+            }
+        }
+
+        //! Gets the chosen source's code.
+        function getChosenSource() {
+            var chosenSource = $("#srclang").val() + "_" + $("#srcgroup").val();
+            return chosenSource;
+        }
+
+        //! Gets the chosen target's code.
+        function getChosenTarget() {
+            var targetSource = $("#targetlang").val() + "_" + $("#targetgroup").val();
+            return targetSource;
         }
 
 
@@ -166,14 +234,20 @@
                         <div class="form-group">
                             <div class="controls">
                                 <span class="help-block">You want to translate the app from General English into Elementary School German.</span>
-                                <a class="btn btn-default" id="backtoindexbtn"
-                                   href="{{ url_for('translate.translate_index') }}">« Go Back to Step 1</a>
 
-                                <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">Step 2 -
-                                    Localise »
-                                </button>
+                                <div style="float:left">
+                                    <a class="btn btn-default" id="backtoindexbtn"
+                                       href="{{ url_for('translate.translate_index') }}">« Go Back to Step 1</a>
+                                </div>
 
-                                <p id="same-langs" class="text-danger" style="visibility:hidden">Target and source languages may not be the same</p>
+                                <!-- The wrapping div is for the tooltips -->
+                                <div id="localisebtndiv" style="">
+                                    <button type="submit" id="localisebtn" name="sendurl" class="btn btn-success">Step 2 -
+                                        Localise »
+                                    </button>
+                                </div>
+
+                                <p id="same-lang" class="text-danger">Target and source languages may not be the same</p>
 
                                 <!--
                     <a class="btn btn-success" id="sendlangsbtn" href="{{ url_for('translate.translate_edit') }}">Step 3 - Translate »</a>
