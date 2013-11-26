@@ -18,7 +18,7 @@ class User(Base, UserMixin):
 
     login = Column(Unicode(50), unique=True)
     name = Column(Unicode(50), nullable=False)
-    password = Column(Unicode(50), nullable=False) # hash
+    password = Column(Unicode(50), nullable=False)  # hash
     email = Column(Unicode(254), nullable=False)
     organization = Column(Unicode(50))
     role = Column(Unicode(50))

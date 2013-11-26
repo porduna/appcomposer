@@ -24,7 +24,6 @@
     <!-- JavaScript source code -->
     <script type="text/javascript">
 
-
         //! Load and initialize what we must.
         $(document).ready(function () {
             loadSourceGroups();
@@ -39,6 +38,9 @@
 
             // Initialize popovers & tooltips.
             initializeTooltips();
+
+            // Define the size for each of the four select-boxes there are.
+            $("select").attr("size", 8);
         });
 
         //! Initializes the tooltips and popovers.
@@ -51,7 +53,6 @@
                         html: "true",
                         content : "This option will let you merge someone else's translations into this one. <br>Note, however, that you need to be careful, because after you select the app to merge with, the merge is automatic, and some translations may get overrided.",
                         trigger: "hover"
-
                     }
             );
 
@@ -81,14 +82,37 @@
                 submits.attr("disabled", "disabled");
                 submits.prop('disabled', true);
 
-                //$("#localisebtndiv").popover().setContent("May not");
+                $('#localisebtndiv').attr("data-content", "In order to start localising the App, the chosen source language-group and target language-group combinations must be different");
             }
             else
             {
                 $("#same-lang").hide();
                 submits.removeAttr("disabled");
                 submits.prop("disabled", false);
+
+                $('#localisebtndiv').attr("data-content", "Click this button to start localising the App. You will be shown the entries in the <b>source</b> language so that you can translate them into the <b>target</b> language.");
             }
+
+
+            // We will also update the info text here.
+            var sourceLang = $("#srclang").find(":selected").text();
+            var sourceGroup = $("#srcgroup").find(":selected").text();
+            var targetLang = $("#targetlang").find(":selected").text();
+            var targetGroup = $("#targetgroup").find(":selected").text();
+
+            if(sourceGroup == "ALL")
+                sourceGroup = "anyone";
+            if(targetGroup == "ALL")
+                targetGroup = "anyone";
+
+            if(sourceLang == "DEFAULT")
+                sourceLang = "the default language";
+            if(targetLang == "DEFAULT")
+                targetLang = "the default language";
+
+            var translateMsg = "You want to translate the app from " + sourceLang + " (for " + sourceGroup + ") into " +
+                    targetLang + " (for " + targetGroup +").";
+            $("#help-msg").html(translateMsg);
         }
 
         //! Gets the chosen source's code.
@@ -233,7 +257,7 @@
 
                         <div class="form-group">
                             <div class="controls">
-                                <span class="help-block">You want to translate the app from General English into Elementary School German.</span>
+                                <span id="help-msg" class="help-block"><!--Contents to be updated dynamically through JS--></span>
 
                                 <div style="float:left">
                                     <a class="btn btn-default" id="backtoindexbtn"
