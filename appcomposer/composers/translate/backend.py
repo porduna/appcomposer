@@ -317,7 +317,7 @@ class BundleManager(object):
             locales.append((lang, country, messages_file))
         return locales
 
-    def _inject_locales_into_spec(self, appid, xml_str, respect_default=True):
+    def _inject_locales_into_spec(self, appid, xml_str, respect_default=True, group=None):
         """
         _inject_locales_into_spec(appid, xml_str)
 
@@ -328,12 +328,15 @@ class BundleManager(object):
         This is done so that if the original author updates the translation, this takes immediate effect
         into the translated versions of the App.
 
-        @param appid: Application identifier of the current application. 
+        @param appid: Application identifier of the current application.
+
         @param xml_str: String containing the XML of the original Gadget Spec.
 
         @param respect_default: If false, every Locale will be removed and replaced with custom links to the
         language, using the appid as application identifier. If true, the same will be done to every Locale, EXCEPT the
         default language locale. The default language locale will be kept as-is.
+
+        @param group: If set, then the locales will be filtered by group.
         """
 
         xmldoc = minidom.parseString(xml_str)
@@ -369,6 +372,12 @@ class BundleManager(object):
                     # This is the default Locale. We have left the original one on the ModulePrefs node, so
                     # we don't need to append it. Go on to next Locale.
                     continue
+
+            # If we need to filter by group, then we will do so.
+            if group is not None:
+                if bundle.group != group:
+                    continue
+
 
             locale = xmldoc.createElement("Locale")
 
@@ -412,7 +421,7 @@ class BundleManager(object):
             raise BundleExistsAlreadyException()
         self._bundles[full_code] = bundle
 
-    def do_render_app_xml(self, appid):
+    def do_render_app_xml(self, appid, group=None):
         """
         Renders the Gadget Spec XML for the specified App.
         This method assumes that the BundleManager has already been loaded properly
@@ -420,9 +429,10 @@ class BundleManager(object):
 
         @param appid String with the unique ID of the application whose Bundles to generate. This is
         required because some URLs included in the generated XML include it.
+        @param group Optional. If set, the bundles to print will be filtered by group.
         """
         xmlspec = self._retrieve_url(self.original_spec_file)
-        output_xml = self._inject_locales_into_spec(appid, xmlspec, True)
+        output_xml = self._inject_locales_into_spec(appid, xmlspec, True, group)
         return output_xml
 
 
@@ -568,6 +578,38 @@ def app_xml(appid):
 
     bm = BundleManager.create_from_existing_app(app.data)
     output_xml = bm.do_render_app_xml(appid)
+
+    response = make_response(output_xml)
+    response.mimetype = "application/xml"
+    return response
+
+@translate_blueprint.route('/app/<appid>/<group>/app.xml')
+def app_xml(appid, group):
+    """
+    app_xml(appid, group)
+
+    Provided for end-users. This is the function that provides hosting for the
+    gadget specs for a specified App. The gadget specs are actually dynamically
+    generated, as every time a request is made the original XML is obtained and
+    modified.
+
+    @param appid: Identifier of the App.
+    @param group: Group that will act as a filter. If, for instance, it is set to 14-18, then only
+    Bundles that belong to that group will be shown.
+    @return: XML of the modified Gadget Spec with the Locales injected, or an HTTP error code
+    if an error occurs.
+    """
+    app = get_app(appid)
+
+    if app is None:
+        return "Error 404: App doesn't exist", 404
+
+    # The composer MUST be 'translate'
+    if app.composer != "translate":
+        return "Error 500: The composer for the specified App is not Translate", 500
+
+    bm = BundleManager.create_from_existing_app(app.data)
+    output_xml = bm.do_render_app_xml(appid, group)
 
     response = make_response(output_xml)
     response.mimetype = "application/xml"
