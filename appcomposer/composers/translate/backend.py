@@ -434,7 +434,7 @@ class Bundle(object):
     Group is uppercase too.
     """
 
-    def __init__(self, country, lang, group="ALL"):
+    def __init__(self, lang, country, group="ALL"):
         self.country = country
         self.lang = lang
         self.group = group
@@ -507,7 +507,7 @@ class Bundle(object):
         """
         Builds a fully new Bundle from JSONable data. That is, a dictionary containing no references etc.
         """
-        bundle = Bundle(bundle_data["country"], bundle_data["lang"], bundle_data["group"])
+        bundle = Bundle(bundle_data["lang"], bundle_data["country"], bundle_data["group"])
         bundle._msgs = bundle_data["messages"]
         return bundle
 
@@ -524,7 +524,7 @@ class Bundle(object):
         """
         Creates a new Bundle from XML.
         """
-        bundle = Bundle(country, lang, group)
+        bundle = Bundle(lang, country, group)
         xmldoc = minidom.parseString(xml_str)
         itemlist = xmldoc.getElementsByTagName("msg")
         for elem in itemlist:
