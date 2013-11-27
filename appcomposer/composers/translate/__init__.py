@@ -3,10 +3,10 @@ import os
 import random
 
 from flask import Blueprint, render_template, flash, redirect, url_for, request, json
-from babel import Locale, UnknownLocaleError
+from babel import Locale
 
 from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, db_session
-from appcomposer.models import App, AppVar
+from appcomposer.models import AppVar, App
 from forms import UrlForm, LangselectForm
 
 
@@ -29,7 +29,6 @@ import backend
 
 @translate_blueprint.route("/merge_existing", methods=["GET", "POST"])
 def translate_merge_existing():
-
     appid = request.values.get("appid")
     if appid is None:
         # An appid is required.
@@ -88,6 +87,8 @@ def translate_index():
     return render_template('composers/translate/index.html', form=form)
 
 
+
+
 #----------------------------------------
 # other pages 
 #----------------------------------------
@@ -138,6 +139,14 @@ def translate_selectlang():
         # certain advanced features.
         set_var(app, "spec", appurl)
 
+        # Locate the owner of the App
+        #specApps = db_session.query(AppVar).filter_by(name="spec", value=appurl).subquery()
+
+
+
+        # Declare ourselves as the owner of the App.
+        set_var(app, "ownership", "")
+
         flash("App spec successfully loaded", "success")
 
         # Find out which locales does the app provide (for now).
@@ -148,7 +157,6 @@ def translate_selectlang():
 
         appid = request.args.get("appid")
         if appid is None:
-
             flash("appid not received", "error")
 
             # An appid is required.
@@ -253,4 +261,14 @@ def translate_about():
 @translate_blueprint.route('/wip', methods=['GET', 'POST'])
 def translate_wip():
     """Work in progress..."""
-    return render_template("composers/translate/index_test.html")        
+
+    relatedAppsIds = db_session.query(AppVar.app_id).filter_by(name="spec",
+                                                         value="https://raw.github.com/ORNGatUCSF/Gadgets/master/test-opensocial-0.8.xml").subquery()
+
+    ownerAppId = db_session.query(AppVar.app_id).filter(AppVar.name == "ownership", AppVar.app_id.in_(relatedAppsIds)).first()
+
+    ownerApp = db_session.query(App).filter_by(id=ownerAppId[0]).first()
+
+
+    return "OWN " + str(ownerApp)
+

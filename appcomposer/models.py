@@ -89,6 +89,9 @@ class App(Base):
 
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
 
+    def __repr__(self):
+        return self.to_json()
+
     def __init__(self, name, owner, composer):
         self.name = name
         self.owner = owner
