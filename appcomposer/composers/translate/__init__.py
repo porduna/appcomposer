@@ -87,6 +87,31 @@ def translate_index():
     return render_template('composers/translate/index.html', form=form)
 
 
+def _db_get_owner_app(spec):
+    """
+    Gets from the database the App that is considered the Owner for a given spec.
+    @param spec: String to the App's original XML.
+    @return: The owner for the App. None if no owner is found.
+    """
+    relatedAppsIds = db_session.query(AppVar.app_id).filter_by(name="spec",
+                                                               value=spec).subquery()
+    ownerAppId = db_session.query(AppVar.app_id).filter(AppVar.name == "ownership",
+                                                        AppVar.app_id.in_(relatedAppsIds)).first()
+
+    if ownerAppId is None:
+        return None
+
+    ownerApp = db_session.query(App).filter_by(id=ownerAppId[0]).first()
+    return ownerApp
+
+
+def __db_get_children_apps(spec):
+    """
+    Gets from the database the Apps that are NOT the owner.
+    @param spec: String to the app's original XML.
+    @return: The children for the App. None if no children are found.
+    """
+    raise NotImplemented
 
 
 #----------------------------------------
@@ -140,12 +165,12 @@ def translate_selectlang():
         set_var(app, "spec", appurl)
 
         # Locate the owner of the App
-        #specApps = db_session.query(AppVar).filter_by(name="spec", value=appurl).subquery()
+        ownerApp = _db_get_owner_app(appurl)
 
-
-
-        # Declare ourselves as the owner of the App.
-        set_var(app, "ownership", "")
+        # If there isn't already an owner, declare ourselves as the owner.
+        if ownerApp is None:
+            flash("You are the owner of the App", "success")
+            set_var(app, "ownership", "")
 
         flash("App spec successfully loaded", "success")
 
@@ -164,10 +189,15 @@ def translate_selectlang():
 
         app = get_app(appid)
 
+        # TODO: Tidy up the appdata[spec] thing.
+        spec = json.loads(app.data)["spec"]
+
+        # Locate the ownerApp.
+        ownerApp = _db_get_owner_app(spec)
+
         flash("App successfully loaded from DB", "success")
 
-        # TODO: Tidy up the appdata[spec] thing.
-        bm = backend.BundleManager(json.loads(app.data)["spec"])
+        bm = backend.BundleManager(spec)
         bm.load_from_json(app.data)
 
         locales = bm.get_locales_list()
@@ -263,12 +293,12 @@ def translate_wip():
     """Work in progress..."""
 
     relatedAppsIds = db_session.query(AppVar.app_id).filter_by(name="spec",
-                                                         value="https://raw.github.com/ORNGatUCSF/Gadgets/master/test-opensocial-0.8.xml").subquery()
+                                                               value="https://raw.github.com/ORNGatUCSF/Gadgets/master/test-opensocial-0.8.xml").subquery()
 
-    ownerAppId = db_session.query(AppVar.app_id).filter(AppVar.name == "ownership", AppVar.app_id.in_(relatedAppsIds)).first()
+    ownerAppId = db_session.query(AppVar.app_id).filter(AppVar.name == "ownership",
+                                                        AppVar.app_id.in_(relatedAppsIds)).first()
 
     ownerApp = db_session.query(App).filter_by(id=ownerAppId[0]).first()
-
 
     return "OWN " + str(ownerApp)
 
