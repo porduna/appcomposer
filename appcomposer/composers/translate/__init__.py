@@ -4,9 +4,10 @@ import random
 
 from flask import Blueprint, render_template, flash, redirect, url_for, request, json
 from babel import Locale
+from appcomposer.login import current_user
 
 from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, db_session
-from appcomposer.models import AppVar, App
+from appcomposer.models import AppVar, App, User
 from forms import UrlForm, LangselectForm
 
 
@@ -137,11 +138,16 @@ def translate_selectlang():
     # TODO: For now we will solve the above by only showing the DEFAULT in the source groups list.
 
 
+    # Store ownership information
+    is_owner = None  # Whether the current user is the owner of the app.
+    owner = None  # The owner of the app.
+
     # As of now (may change in the future) if it is a POST we are creating the app for the first time.
     # Hence, we will need to carry out a full spec retrieval.
     if request.method == "POST":
         # URL to the XML spec of the gadget.
         appurl = request.form.get("appurl")
+        spec = appurl
         if appurl is None or len(appurl) == 0:
             flash("An application URL is required", "error")
             return redirect(url_for("translate.translate_index"))
@@ -192,9 +198,6 @@ def translate_selectlang():
         # TODO: Tidy up the appdata[spec] thing.
         spec = json.loads(app.data)["spec"]
 
-        # Locate the ownerApp.
-        ownerApp = _db_get_owner_app(spec)
-
         flash("App successfully loaded from DB", "success")
 
         bm = backend.BundleManager(spec)
@@ -204,6 +207,18 @@ def translate_selectlang():
 
 
     # The following is again common for both GET (view) and POST (edit).
+
+    # Check ownership.
+    ownerApp = _db_get_owner_app(spec)
+    if ownerApp == app:
+        is_owner = True
+    else:
+        is_owner = False
+
+    owner = ownerApp.owner
+
+    if not is_owner and owner is None:
+        flash("Error: Owner is None", "error")
 
     # Build a dictionary. For each source lang, a list of source groups.
     src_groups_dict = defaultdict(list)
@@ -218,7 +233,7 @@ def translate_selectlang():
                            source_groups_json=json.dumps(src_groups_dict), app=app,
                            full_groups_json=json.dumps(full_groups_list),
                            target_groups=full_groups_list,
-                           Locale=Locale, locales=locales)
+                           Locale=Locale, locales=locales, is_owner=is_owner, owner=owner)
 
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])

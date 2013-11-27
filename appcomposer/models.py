@@ -52,6 +52,10 @@ class User(Base, UserMixin):
     def exists(cls, login, word):
         return DBS.query(cls).filter(sql.and_(cls.login == login, cls.password == word)).first()
 
+    @classmethod
+    def find_by_id(cls, id):
+        return DBS.query(cls).filter_by(id=id).first()
+
 
 class AppVersion(Base):
     __tablename__ = 'AppVersions'
@@ -87,6 +91,7 @@ class App(Base):
     modification_date = Column(DateTime, nullable=False, index=True)
     last_access_date = Column(DateTime, nullable=False, index=True)
 
+    # TODO: Find out why this relationships seems to not work sometimes.
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
 
     def __repr__(self):

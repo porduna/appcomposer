@@ -8,12 +8,19 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="page-header">
+
                 <h1 id="apptitle">Translate</h1>
 
                 {% if app %}
                     <h2 id="appfullname">{{ app.name }}</h2>
                 {% else %}
                     <h2 id="appfullname">[App name not available]</h2>
+                {% endif %}
+
+                {% if is_owner %}
+                    <h5>You are the owner of this app.</h5>
+                {% else %}
+                    <h5>This app belongs to {{ owner.name }} ({{ owner.login }}).</h5>
                 {% endif %}
 
 
