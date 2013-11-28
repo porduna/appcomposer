@@ -4,9 +4,10 @@ import random
 
 from flask import Blueprint, render_template, flash, redirect, url_for, request, json
 from babel import Locale
+import time
 from appcomposer.login import current_user
 
-from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, db_session
+from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, db_session, add_var
 from appcomposer.models import AppVar, App, User
 from forms import UrlForm, LangselectForm
 
@@ -254,7 +255,8 @@ def translate_edit():
     # Retrieve the application we want to view or edit.
     app = get_app(appid)
 
-    bm = backend.BundleManager(json.loads(app.data)["spec"])
+    spec = json.loads(app.data)["spec"]
+    bm = backend.BundleManager(spec)
     bm.load_from_json(app.data)
 
     # Retrieve the bundles for our lang. For this, we build the code from the info we have.
@@ -279,6 +281,7 @@ def translate_edit():
     # This is a POST request. We need to save the entries.
     else:
 
+
         # Retrieve a list of all the key-values to save. That is, the parameters which start with _message_.
         messages = [(k[len("_message_"):], v) for (k, v) in request.values.items() if k.startswith("_message_")]
 
@@ -292,7 +295,25 @@ def translate_edit():
         update_app_data(app, json_str)
 
         flash("Changes have been saved", "success")
-        print json_str
+
+        # Get the owner app.
+        owner_app = _db_get_owner_app(spec)
+
+        propose_to_owner = request.values.get("proposeToOwner")
+        if propose_to_owner is not None and owner_app != app:
+            # We need to propose this Bundle to the owner.
+            # Note: May be confusing: app.owner.login refers to the generic owner of the App, and not the owner
+            # we are talking about in the specific Translate composer.
+            proposalData = {"from": app.owner.login, "timestamp": time.time(), "bundle_code": targetbundle_code,
+                            "bundle_contents": targetbundle.to_jsonable()}
+            proposalJson = json.dumps(proposalData)
+
+            # Link the proposal with the Owner app.
+            add_var(owner_app, "proposal", proposalJson)
+
+            flash("Changes have been proposed to the owner")
+
+
 
         # Check whether the user wants to exit or to continue editing.
         if "save_exit" in request.values:
