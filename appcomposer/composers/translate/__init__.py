@@ -177,6 +177,10 @@ def translate_selectlang():
         if ownerApp is None:
             flash("You are the owner of the App", "success")
             set_var(app, "ownership", "")
+        else:
+            bm.load_from_json(ownerApp.data)
+            update_app_data(app, bm.to_json())
+            flash("You are not the owner of this App, so the owner's translations have been merged", "success")
 
         flash("App spec successfully loaded", "success")
 
