@@ -65,9 +65,12 @@
 
                               <button type="submit" id="sendurlbtn" name="save" class="btn btn-success">Save</button>
                               <button type="submit" id="sendurlbtn" name="save_exit" class="btn btn-warning">Save & Exit</button>
+
+                              {% if not is_owner %}
                               <label class="checkbox" style="float:right">
                                 <input name="proposeToOwner" value="true" type="checkbox" style="width: 1em; height: 1em;">Propose translation to owner
                               </label>
+                              {% endif %}
 
                               <!--
                               <a class="btn btn-success" id="sendlangsbtn" href="#end">Save</a>

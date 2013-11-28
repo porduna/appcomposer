@@ -273,10 +273,16 @@ def translate_edit():
         bm.add_bundle(targetbundle_code, targetbundle)
 
 
+    # Get the owner app.
+    owner_app = _db_get_owner_app(spec)
+    is_owner = owner_app == app
+
+
     # This is a GET request. We are essentially viewing-only.
     if request.method == "GET":
 
-        return render_template("composers/translate/edit.html", app=app, srcbundle=srcbundle, targetbundle=targetbundle)
+        return render_template("composers/translate/edit.html", is_owner=is_owner, app=app, srcbundle=srcbundle,
+                               targetbundle=targetbundle)
 
     # This is a POST request. We need to save the entries.
     else:
@@ -296,9 +302,6 @@ def translate_edit():
 
         flash("Changes have been saved", "success")
 
-        # Get the owner app.
-        owner_app = _db_get_owner_app(spec)
-
         propose_to_owner = request.values.get("proposeToOwner")
         if propose_to_owner is not None and owner_app != app:
             # We need to propose this Bundle to the owner.
@@ -313,13 +316,12 @@ def translate_edit():
 
             flash("Changes have been proposed to the owner")
 
-
-
         # Check whether the user wants to exit or to continue editing.
         if "save_exit" in request.values:
             return redirect(url_for("user.apps.index"))
 
-        return render_template("composers/translate/edit.html", app=app, srcbundle=srcbundle, targetbundle=targetbundle)
+        return render_template("composers/translate/edit.html", is_owner=is_owner, app=app, srcbundle=srcbundle,
+                               targetbundle=targetbundle)
 
 
 @translate_blueprint.route("/about")
