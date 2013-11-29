@@ -335,7 +335,19 @@ def translate_proposed_list():
     """
     Displays the list of proposed translations.
     """
-    return render_template("composers/translate/proposed_list.html")
+
+    # No matter if we are handling a GET or POST, we require these parameters.
+    appid = request.values["appid"]
+    app = get_app(appid)
+
+    # Get the list of proposed translations.
+    vars = db_session.query(AppVar).filter_by(name="proposal", app=app).all()
+    props = []
+    for prop in vars:
+        propdata = json.loads(prop.value)
+        props.append(propdata)
+
+    return render_template("composers/translate/proposed_list.html", app=app, proposals=props)
 
 
 @translate_blueprint.route('/wip', methods=['GET', 'POST'])

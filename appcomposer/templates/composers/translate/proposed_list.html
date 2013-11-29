@@ -8,13 +8,14 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="page-header">
-                <h1 id="apptitle">Merge Existing Language</h1>
+                <h1 id="apptitle">Proposals for this App</h1>
 
                 {% if app %}
                     <h2 id="appfullname">{{ app.name }}</h2>
                 {% else %}
                     <h2 id="appfullname">[App name not available]</h2>
                 {% endif %}
+
             </div>
         </div>
     </div>
@@ -35,17 +36,18 @@
                     {# This is necessary so that the next page knows which App to load. #}
                     <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
 
-                    <legend>Select the App's translation that you want to merge into this one</legend>
+                    <legend>Select a translation to decide what to do</legend>
 
                     <div class="col-lg-6 col-md-6">
 
 
                         <div class="form-group">
-                            <label class="control-label" for="srclang">Select the App</label>
-                            <select id="srcapp" multiple="" name="srcapp" class="form-control">
+                            <label class="control-label" for="proposals">Select the translation ({{ proposals|length }})</label>
 
-                                {% for srcapp in apps_list %}
-                                <option value="{{ srcapp.unique_id }}">{{ srcapp.owner.name }}'s {{ srcapp.name }} </option>
+                            <select id="" multiple="" name="proposals" class="form-control">
+
+                                {% for proposal in proposals %}
+                                <option value="{{ proposal["from"] + ";" + proposal["bundle_code"] }}">{{ proposal["from"] }}'s {{ proposal["bundle_code"] }} </option>
                                 {% endfor %}
 
                             </select>
@@ -59,7 +61,10 @@
                                    href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">« Go Back</a>
 
                                 <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">
-                                    Merge it »
+                                    Accept it
+                                </button>
+                                <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-warning">
+                                    Deny it
                                 </button>
                                 <!--
                     <a class="btn btn-success" id="sendlangsbtn" href="{{ url_for('translate.translate_edit') }}">Step 3 - Translate »</a>
