@@ -5,7 +5,9 @@
 
 {% block body_content %}
     <div class="translateblock">
+
     <div class="row">
+
         <div class="col-lg-12">
             <div class="page-header">
 
@@ -22,6 +24,13 @@
                 {% else %}
                     <h5>This app belongs to {{ owner.name }} ({{ owner.login }}).</h5>
                 {% endif %}
+
+
+                <div style="float: right">
+                    <a href="{{ url_for(".translate_proposed_list", appid=app.unique_id) }}">
+                        <button class="btn btn-warning">View Proposed Translations</button>
+                    </a>
+                </div>
 
 
                 <a href="{{ url_for('.app_xml', appid=app.unique_id, group="ALL", _external=True) }}">

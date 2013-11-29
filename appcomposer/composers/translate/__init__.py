@@ -330,6 +330,14 @@ def translate_about():
     return render_template("composers/translate/about.html")
 
 
+@translate_blueprint.route("/proposed_list")
+def translate_proposed_list():
+    """
+    Displays the list of proposed translations.
+    """
+    return render_template("composers/translate/proposed_list.html")
+
+
 @translate_blueprint.route('/wip', methods=['GET', 'POST'])
 def translate_wip():
     """Work in progress..."""
