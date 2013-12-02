@@ -1,0 +1,62 @@
+{% set title = "Create/edit an app" %}
+{% set current_link = "home" %}
+{% extends 'composers/adapt/layout.html' %}
+{% import 'user/layout.html' as layout with context -%}
+
+{% block body_content %}
+
+        <h4>Create a new app...</h4>
+        <hr>
+        
+        <div class="row">            
+            <div class="col-lg-4">
+                <div class="panel panel-success">
+                    <div class="panel-heading">
+                        <h5 class="panel-title">Details of the app</h5>
+                    </div>
+                    <div class="panel-body">
+                        <form class="form-horizontal" method="POST" action={{ url_for('adapt.adapt_create') }}>
+                            
+                            <div class="form-group">
+                                <label for="appname" class="col-lg-4 control-label">Name: </label>
+                                <div class="col-lg-8">
+                                    <input type="text" name="appname" class="form-control" placeholder="App name">                                                    
+                                </div>
+                            </div>                                                                                                                                                                                     
+
+                            <a class="btn btn-default" id="returnbtn" href="{{ url_for('adapt.adapt_index') }}">« Go Back</a>
+                            <input type="submit"  class="btn btn-success" value="Build it »">
+                            <!-- <input type="submit" value="Continue »" class="btn btn-success"> -->                                                                                                
+                                                                            
+                        </form>                        
+                                            
+                    </div>                                                        
+                </div>
+            </div>
+        </div>
+
+        <h4>...or edit an existing one from the following list:</h4>
+        <hr>
+
+        <div class="row">
+
+        <!-- The list of apps should be retrieved only once, and only query the database if there has been an update.-->
+        
+            {% for app in apps %}
+            <div class="col-lg-4">
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h5 class="panel-title">{{ app.name }}</h5>
+                    </div>
+                    <div class="panel-body">
+                        <h6 class="text-danger">Type: {{ app.composer }}</h6>
+                        <p><small>Created: {{ app.creation_date }}</small></p>
+                        <p><small>Modified: {{ app.modification_date }}</small></p>
+                        <p><small>Accessed: {{ app.last_access_date }}</small></p>
+                        <p><a href="{{ build_edit_link(app) }}" class="btn btn-primary" type="button">Edit »</a></p>                        
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+
+{% endblock %}   
