@@ -7,7 +7,7 @@ from babel import Locale
 import time
 from appcomposer.login import current_user
 
-from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, db_session, add_var
+from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, db_session, add_var, remove_var
 from appcomposer.models import AppVar, App, User
 from forms import UrlForm, LangselectForm
 
@@ -355,11 +355,29 @@ def translate_proposed_list():
             return "Proposal not selected", 500
 
         # TODO: Consider creating API for this.
+        # TODO: Optimize this. We already have the vars.
         proposal = db_session.query(AppVar).filter_by(var_id=proposal_id).first()
         if proposal is None:
             return "Proposal not found", 500
 
         flash("Proposal loaded: " + proposal.value)
+        data = json.loads(proposal.value)
+        bundle = backend.Bundle.from_jsonable(data["bundle_contents"])
+        bm = backend.BundleManager.create_from_existing_app(app.data)
+
+        # Replace the bundle.
+        # TODO: Improve the merge logic.
+        bm._bundles[data["bundle_code"]] = bundle
+
+        update_app_data(app, bm.to_json())
+
+        flash("Merge done.", "success")
+
+        # Remove the proposal from the DB.
+        remove_var(proposal)
+
+        # Remove it from our current proposal list as well, so that it isn't displayed anymore.
+        props = [prop for prop in props if prop["id"] != proposal_id]
 
 
     return render_template("composers/translate/proposed_list.html", app=app, proposals=props)

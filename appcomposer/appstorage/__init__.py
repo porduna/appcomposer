@@ -41,7 +41,7 @@ def list():
 def get(appid):
     app = db_session.query(App).filter_by(unique_id=appid).first()
     if app is None:
-        return ("404: App doesn't exist", 404)
+        return "404: App doesn't exist", 404
     if request.method == "DELETE":
         db_session.delete(app)
         db_session.commit()
