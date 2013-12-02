@@ -330,7 +330,7 @@ def translate_about():
     return render_template("composers/translate/about.html")
 
 
-@translate_blueprint.route("/proposed_list")
+@translate_blueprint.route("/proposed_list", methods=["POST", "GET"])
 def translate_proposed_list():
     """
     Displays the list of proposed translations.
@@ -345,7 +345,22 @@ def translate_proposed_list():
     props = []
     for prop in vars:
         propdata = json.loads(prop.value)
+        propdata["id"] = prop.var_id
         props.append(propdata)
+
+
+    if request.method == "POST":
+        proposal_id = request.values.get("proposals")
+        if proposal_id is None:
+            return "Proposal not selected", 500
+
+        # TODO: Consider creating API for this.
+        proposal = db_session.query(AppVar).filter_by(var_id=proposal_id).first()
+        if proposal is None:
+            return "Proposal not found", 500
+
+        flash("Proposal loaded: " + proposal.value)
+
 
     return render_template("composers/translate/proposed_list.html", app=app, proposals=props)
 
