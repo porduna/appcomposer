@@ -1,0 +1,72 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
+<html lang="en">
+<head>
+    <title>Go-Lab - Concept Mapper 0.6</title>
+
+    <link rel="stylesheet" type="text/css" href="css/conceptmap.css" />
+    <link type="text/css" rel="stylesheet" href="../../../../../libs/fonts/titilliumWeb400.css" media="all"/>
+    <link rel="stylesheet" type="text/css" href="../../../../../commons/css/golabTiptip.css"/>
+
+    <script type="text/javascript" charset="utf-8" src="../../../../../commons/js/jsChecker.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../../../../commons/js/utils.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../../../../libs/js/jquery-min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../../../../libs/js/jquery-ui.custom.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../../../../libs/js/jquery.ui.touch-punch.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../../../../libs/js/jquery.autogrow-textarea.js"></script>
+    <!--<script type="text/javascript" charset="utf-8" src="../../../../../libs/js/jquery.jsPlumb-1.3.16-all-fixed.js"></script>-->
+    <script type="text/javascript" charset="utf-8" src="../../../../../libs/js/jquery.jsPlumb-1.4.1-all-fixed.js"></script>
+    <!--<script type="text/javascript" charset="utf-8" src="../../../../../libs/js/jquery.jsPlumb-1.5.0-fixed.js"></script>-->
+    <script type="text/javascript" charset="utf-8" src="../../../../../libs/js/apprise-v2.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../../../../libs/js/jquery.tipTip.minified.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="../../../../../commons/js/ActionLogger.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../../../../commons/js/PersistencyUtils.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../../../../commons/js/MetadataUtils.js"></script>
+
+    <script type="text/javascript" charset="utf-8" src="coffee/ConceptMapper0.6.js"></script>
+
+    <script type="text/javascript">
+        function init() {
+            var actionLogger = new ut.commons.actionlogging.ActionLogger();
+            // actionLogger.setLoggingTarget(dufftownLogging);
+            // actionLogger.setLoggingTarget(actionLogger.consoleLogging);
+            //actionLogger.setLoggingTarget(actionLogger.dufftownLogging);
+            var concepts = ["mass", "fluid", "density", "volume", "weight", "immersed object", "pressure", "force", "gravity", "acceleration", "Archimedes' principle", "displacement", "equilibrium"];
+            new window.ut.tools.conceptmapper.ConceptMapper(actionLogger, concepts);
+        }
+    </script>
+</head>
+
+<body onload="init()">
+    <table id="ut_tools_conceptmapper_root">
+        <tr>
+            <td valign="top" id="ut_tools_conceptmapper_toolbar_container">
+                <div class="areaLabel">Toolbar</div>
+                <div id="ut_tools_conceptmapper_toolbar">
+                    <ul id="ut_tools_conceptmapper_toolbar_list">
+                        <!--<li><div id="ut_tools_conceptmapper_linkButton" class="ut_tools_conceptmapper_button ut_tools_conceptmapper_highlightOnHover"></div></li>-->
+                        <li><img alt="Activate to create/delete relations." title="Activate to create/delete relations. Delete a relation by creating it again." src="../../../../../commons/images/arrow.png" id="ut_tools_conceptmapper_linkButton" class="tiptip activeButton ut_tools_conceptmapper_button"/></li>
+                        <li><img alt="Drag a concept to delete or click to delete all." title="Drag a concept to delete or click to delete all." src="../../../../../commons/images/trash.png" id="ut_tools_conceptmapper_trashcan" class="tiptip activeButton ut_tools_conceptmapper_button"/></li>
+                        <!--<li><div id="ut_tools_conceptmapper_linkDeleteButton" class="ut_tools_conceptmapper_button ut_tools_conceptmapper_highlightOnHover"></div></li>-->
+                        <li><div title="Drag me to the concept map." class="tiptip ut_tools_conceptmapper_concept ut_tools_conceptmapper_conceptTextarea ut_tools_conceptmapper_template"><p>concept</p></div></li>
+                        <li><div title="Drag me to the concept map." class="tiptip ut_tools_conceptmapper_concept ut_tools_conceptmapper_conceptSelector ut_tools_conceptmapper_template"><p>select or type</p></div></li>
+                        <li>
+                            <img alt="Load concept map." title="Load concept map." id="ut_tools_conceptmapper_retrieve" class="tiptip activeButton ut_tools_conceptmapper_button" src="../../../../../commons/images/load.png" />
+                            <img alt="Save concept map." title="Save concept map." id="ut_tools_conceptmapper_store" class="tiptip activeButton ut_tools_conceptmapper_button" src="../../../../../commons/images/save.png" />
+                        </li>
+                    </ul>
+                    <div id="ut_tools_conceptmapper_logoContainer">
+                        <img alt="go-lab logo" src='../../../../../commons/images/golabLogo100_89.png'/>
+                    </div>
+                </div>
+            </td>
+            <!--<td id="ut_tools_conceptmapper_map"></td>-->
+            <td valign="top" id="ut_tools_conceptmapper_map">
+                <div class="areaLabel">Concept Map</div>
+                <!--<div id="ut_tools_conceptmapper_map"></div>-->
+            </td>
+        </tr>
+    </table>
+    <div id="ut_tools_conceptmapper_dialog"></div>
+</body>
+</html>
