@@ -62,7 +62,7 @@
                         <div class="form-group">
                             <label class="control-label" for="proposals">Select the translation ({{ proposals|length }})</label>
 
-                            <select id="" multiple="" name="proposals" class="form-control">
+                            <select id="proposals" multiple="" name="proposals" class="form-control">
 
                                 {% for proposal in proposals %}
                                 <option value="{{ proposal["id"] }}">{{ proposal["from"] }}'s {{ proposal["bundle_code"] }} </option>

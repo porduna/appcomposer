@@ -340,23 +340,31 @@ def translate_proposed_list():
     appid = request.values["appid"]
     app = get_app(appid)
 
+    appdata = json.loads(app.data)
+
+    # Ensure that only the app owner can carry out these operations.
+    owner_app = _db_get_owner_app(appdata["spec"])
+    if app != owner_app:
+        return "Not Authorized: You don't seem to be the owner of this app", 401
+
+
     # Get the list of proposed translations.
     vars = db_session.query(AppVar).filter_by(name="proposal", app=app).all()
     props = []
     for prop in vars:
         propdata = json.loads(prop.value)
-        propdata["id"] = prop.var_id
+        propdata["id"] = str(prop.var_id)
         props.append(propdata)
 
 
-    if request.method == "POST":
+    if request.method == "POST" and request.values.get("acceptButton") is not None:
         proposal_id = request.values.get("proposals")
         if proposal_id is None:
             return "Proposal not selected", 500
 
         # TODO: Consider creating API for this.
         # TODO: Optimize this. We already have the vars.
-        proposal = db_session.query(AppVar).filter_by(var_id=proposal_id).first()
+        proposal = db_session.query(AppVar).filter_by(app=app, var_id=proposal_id).first()
         if proposal is None:
             return "Proposal not found", 500
 
@@ -378,6 +386,22 @@ def translate_proposed_list():
 
         # Remove it from our current proposal list as well, so that it isn't displayed anymore.
         props = [prop for prop in props if prop["id"] != proposal_id]
+
+    elif request.method == "POST" and request.values.get("denyButton") is not None:
+        proposal_id = request.values.get("proposals")
+        if proposal_id is None:
+            return "Proposal not selected", 500
+
+        proposal = db_session.query(AppVar).filter_by(app=app, var_id=proposal_id).first()
+        if proposal is None:
+            return "Proposal not found", 500
+
+        remove_var(proposal)
+
+        # Remove it from our current proposal list as well, so that it isn't displayed anymore.
+        props = [prop for prop in props if prop["id"] != proposal_id]
+
+
 
 
     return render_template("composers/translate/proposed_list.html", app=app, proposals=props)
