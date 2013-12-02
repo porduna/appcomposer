@@ -225,6 +225,11 @@ def translate_selectlang():
     if not is_owner and owner is None:
         flash("Error: Owner is None", "error")
 
+    proposal_num = 0
+    if is_owner:
+        # Just for the count of proposals
+        proposal_num = len(_db_get_proposals(app))
+
     # Build a dictionary. For each source lang, a list of source groups.
     src_groups_dict = defaultdict(list)
     for loc in locales:
@@ -238,7 +243,8 @@ def translate_selectlang():
                            source_groups_json=json.dumps(src_groups_dict), app=app,
                            full_groups_json=json.dumps(full_groups_list),
                            target_groups=full_groups_list,
-                           Locale=Locale, locales=locales, is_owner=is_owner, owner=owner)
+                           Locale=Locale, locales=locales, is_owner=is_owner, owner=owner,
+                           proposal_num=proposal_num)
 
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
@@ -330,6 +336,9 @@ def translate_about():
     return render_template("composers/translate/about.html")
 
 
+def _db_get_proposals(app):
+    return db_session.query(AppVar).filter_by(name="proposal", app=app).all()
+
 @translate_blueprint.route("/proposed_list", methods=["POST", "GET"])
 def translate_proposed_list():
     """
@@ -349,7 +358,7 @@ def translate_proposed_list():
 
 
     # Get the list of proposed translations.
-    vars = db_session.query(AppVar).filter_by(name="proposal", app=app).all()
+    vars = _db_get_proposals(app)
     props = []
     for prop in vars:
         propdata = json.loads(prop.value)

@@ -29,7 +29,9 @@
                 {% if is_owner %}
                 <div style="float: right">
                     <a href="{{ url_for(".translate_proposed_list", appid=app.unique_id) }}">
-                        <button class="btn btn-warning">View Proposed Translations</button>
+                        <button class="btn btn-warning">View Proposed Translations
+                            <span class="badge" style="{{ "" if proposal_num == 0 else "background-color:#EE2222" }}">{{ proposal_num }}</span>
+                        </button>
                     </a>
                 </div>
                 {% endif %}
