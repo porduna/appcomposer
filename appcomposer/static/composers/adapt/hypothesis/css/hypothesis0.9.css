@@ -1,0 +1,173 @@
+@charset "utf-8";
+@font-face {
+  
+}
+body,
+td,
+th,
+select,
+input,
+textarea {
+  font-family: arial, sans-serif;
+  font-size: 15px;
+  color: #565656;
+}
+h1 {
+  font-weight: normal;
+}
+.workAreaContainer {
+  background: #f5f5f5;
+  border: 2px solid #faa519;
+  border-radius: 3px;
+}
+.toolAreaContainer {
+  background: #f5f5f5;
+  border: 2px solid #faa519;
+  border-radius: 3px;
+}
+.toolArea {
+  padding: 5px;
+}
+.areaLabel {
+  width: 100%;
+  background: #00bacc;
+  color: #ffffff;
+  font-size: 16px;
+  text-align: center;
+  height: 25px;
+}
+.activeButton {
+  border: 1px solid #939597;
+  border-radius: 2px;
+  background-color: #92d6e3;
+  background-size: contain;
+}
+.activeButton:hover {
+  background-color: #00bacc;
+  background-size: contain;
+}
+.activeButton:active {
+  background-color: #faa519;
+  background-size: contain;
+}
+.pressedButton,
+.pressedButton:active,
+.pressedButton:hover {
+  background-color: #faa519;
+  background-size: contain;
+}
+.pressedButton:hover {
+  background-color: #faa519;
+  background-size: contain;
+}
+.pressedButton:active {
+  background-color: #faa519;
+}
+.dropObjectOutSideDropArea {
+  opacity: 0.35;
+}
+.unselectable {
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.textSelectable {
+  -moz-user-select: -moz-text;
+  -khtml-user-select: text;
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  -o-user-select: text;
+  user-select: text;
+}
+/* this works on iOS, not on android */
+.preventLongPress {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+body {
+  overflow: hidden;
+}
+#ut_tools_questioning_container {
+  background: #f5f5f5;
+  border: 2px solid #faa519;
+  border-radius: 3px;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.ut_tools_hypothesis_hypothesis_table {
+  margin: 5px;
+}
+.ut_tools_hypothesis_hypothesis {
+  margin: 5px 0px 0px 0px;
+  padding: 0px;
+  outline: none;
+  border-color: #fdbe63 !important;
+  box-shadow: 0 0 10px #faa519 !important;
+}
+.ut_tools_questioning_question_highlight {
+  outline: none;
+  border-color: #fdbe63 !important;
+  box-shadow: 0 0 10px #faa519 !important;
+}
+.ut_tools_hypothesis_element {
+  float: left;
+  align: center;
+  margin: 5px;
+  padding: 5px;
+  border: 2px solid red;
+}
+.ut_tools_hypothesis_template {
+  float: left;
+  align: center;
+  margin: 8px;
+  padding: 5px;
+  box-shadow: 2px 2px 10px #939597;
+}
+.ut_tools_hypothesis_conditional {
+  border: 2px solid #faa519;
+  background: #fdbe63;
+}
+.ut_tools_hypothesis_input {
+  border: 2px solid #00bacc;
+  background: #92d6e3;
+}
+.ut_tools_hypothesis_output {
+  border: 2px solid #00bacc;
+  background: #92d6e3;
+}
+.ut_tools_hypothesis_free {
+  border: 2px solid #939597;
+  background: #f5f5f5;
+}
+.ut_tools_questioning_toolbar {
+  padding: 0px;
+  margin: 0px;
+}
+#test {
+  border: 2px solid green;
+}
+.ut_tools_questioning_button {
+  width: 40px;
+  height: 40px;
+}
+.ut_tools_hypothesis_bin {
+  padding: 0 0 0 10px;
+  position: relative;
+  top: -7px;
+}
+.ut_tools_hypothesis_hint {
+  text-align: center;
+  vertical-align: middle;
+  line-height: 44px;
+}
+.ut_tools_hypothesis_icon {
+  padding: 7px 7px 7px 7px;
+}
