@@ -4,6 +4,24 @@
 
 
 {% block body_content %}
+
+
+    <script type="text/javascript">
+
+    $(document).ready( function() {
+        var numProposals = $("#proposals").find("option").length;
+
+        if (numProposals == 0)
+        {
+            var submits = $("button[type=submit]");
+            submits.attr("disabled", "disabled");
+            submits.prop("disabled", true);
+        }
+    });
+
+    </script>
+
+
     <div class="translateblock">
     <div class="row">
         <div class="col-lg-12">
@@ -60,10 +78,11 @@
                                 <a class="btn btn-default" id="backtoindexbtn"
                                    href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">« Go Back</a>
 
-                                <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">
+                                <button type="submit" id="acceptButton" name="acceptButton" class="btn btn-success">
                                     Accept it
                                 </button>
-                                <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-warning">
+
+                                <button type="submit" id="denyButton" name="denyButton" class="btn btn-warning">
                                     Deny it
                                 </button>
                                 <!--
