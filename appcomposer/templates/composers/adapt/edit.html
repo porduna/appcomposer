@@ -1,0 +1,92 @@
+{% set title = "Edit the app content" %}
+{% set current_link = "home" %}
+{% extends 'composers/adapt/layout.html' %}
+{% import 'user/layout.html' as layout with context -%}
+
+{% block body_content %}
+        <div id="adaptblock">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="page-header">
+                        <h1 id="apptitle">Adapt a guidance app</h1>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-lg-12">                
+                {% from "user/wl_form_helpers.html" import render_field %}
+
+                {% with messages = get_flashed_messages() %}
+                    {% for message in messages %}
+                        <div class="alert alert-success">
+                            <button type="button" class="close" data-dismiss="alert">×</button>
+                            {{ message }}
+                        </div>
+                    {% endfor %}
+                {% endwith %}
+                </div>                
+            </div>            
+
+            <div class="well">
+                <div class="row">
+                    <div class="col-lg-12">            
+
+                        <div class="wrap">
+                            <ul class="nav nav-tabs" style="margin-bottom: 15px;">
+                                <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
+                                <li><a href="#preview" data-toggle="tab">Preview</a></li>
+                            </ul>              
+                            
+                            <div id="tabtrans" class="tab-content">                  
+                                <div class="tab-pane fade active in" id="edit">
+                                    <div class="col-lg-12">
+                                        <form class="form-horizontal" method="POST" action={{ url_for('adapt.adapt_edit') }}>
+                                            
+                                            <div class="form-group">
+                                                <label for="domain_name" class="col-lg-2 control-label">Domain name</label>
+                                                <div class="col-lg-10">
+                                                    <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
+                                                    <input type="text" name="domain_name" class="form-control" placeholder="Domain name">                                                    
+                                                </div>
+                                            </div>                                            
+                                            
+                                            <div class="form-group">
+                                                <label for="experiment_name" class="col-lg-2 control-label">Experiment name</label>
+                                                <div class="col-lg-10">
+                                                    <input type="text" name="experiment_name" class="form-control" placeholder="Experiment name">                                                    
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="domain_content" class="col-lg-2 control-label">Domain content</label>
+                                                <div class="col-lg-10">
+                                                    <textarea class="form-control" rows="3" id="domain_content">{{ domaincontent }}</textarea>
+                                                </div>
+                                            </div>
+                                            
+                                            <div class="form-group">
+                                                <label for="exp_content" class="col-lg-2 control-label">Experiment content</label>
+                                                <div class="col-lg-10">
+                                                    <textarea class="form-control" rows="3" id="exp_content">{{ expcontent }}</textarea>
+                                                </div>
+                                            </div>                                                                                        
+                                            
+                                            <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_create') }}">« Go back to list</a>                            
+                                            <input type="submit" value="Save" class="btn btn-success">
+                                        </form>
+                                    </div>
+                                </div>
+                        
+                                <div class="tab-pane fade" id="preview">
+                                  <iframe src="http://localhost:5000/" width="750" height="550" frameborder="1px solid gray"></iframe>
+                                </div>                        
+                            </div>                                          
+                        </div>
+                                
+                    </div>                    
+                </div>
+            </div>
+
+        
+{% endblock %}
