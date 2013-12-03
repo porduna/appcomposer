@@ -15,7 +15,7 @@
         <meta name="author" content="">
     {% endblock meta %}
     {% block styles %}
-        <link rel="shortcut icon" href="{{ url_for('static', filename='initializr/favicon.ico') }}">  
+        <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">  
         <link rel="stylesheet" href="{{ url_for('static', filename='initializr/css/font-awesome.min.css') }}">         
         <link rel="stylesheet" href="{{ url_for('static', filename='initializr/css/bootstrap.min.css') }}">                  
         <!-- <link rel="stylesheet" href="{{ url_for('static', filename='initializr/css/bootstrap-theme.min.css') }}"> -->
@@ -48,7 +48,7 @@
               <a href="#" class="dropdown-toggle" data-toggle="dropdown">Tools <b class="caret"></b></a>
               <ul class="dropdown-menu">
                 <li><a href="{{ url_for('adapt.adapt_index') }}">Adapter</a></li>
-                <li><a href="{{ url_for('expert.expert_index') }}">Expert</a></li>
+                <li><a href="{{ url_for('translate.translate_index') }}">Translator</a></li>
                 <li class="divider"></li>
                 <li class="dropdown-header">Nav header</li>
                 <li><a href="#">Tutorial</a></li>
@@ -63,7 +63,14 @@
     </div>  
     <hr>    
     <footer>
-        <p>&copy; (...) 2013</p>
+        <div class="block-content content">
+            <p>
+                <img  style="float: left; margin-left: 10px; margin-right: 10px; margin-top: 3px; margin-bottom: 3px;" 
+                            src="{{ url_for('static', filename='img/eu-flag.png') }}" alt="Visit us:" width="40" height="27">
+                            Go-Lab Project - Global Online Science Labs for Inquiry Learning at School<br>Co-founded by EU (7th Framework Programme)
+            </p>
+            &copy; golabz.eu 2013 - apps: http://www.golabz.eu/apps
+        </div>        
     </footer>
 
     {% block scripts %}
