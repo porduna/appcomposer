@@ -118,7 +118,6 @@ class BundleManager(object):
     To manage the set of bundles for an App, and to provide common functionality.
     """
 
-    # TODO: Consider removing the original_gadget_spec, or adding different constructors for each use-case.
     def __init__(self, original_gadget_spec=None):
         """
         Builds the BundleManager.
@@ -144,8 +143,7 @@ class BundleManager(object):
         spec_file = app_data["spec"]
         bm = BundleManager(spec_file)
 
-        # TODO: Consider adding a load_from_jsonable.
-        bm.load_from_json(json.dumps(app_data))
+        bm.merge_json(app_data)
 
         return bm
 
@@ -274,19 +272,39 @@ class BundleManager(object):
     def load_from_json(self, json_str):
         """
         Loads the specified JSON into the BundleManager. It just loads from the JSON.
-        It doesn't carry out any external request. Existing entries in the manager's bundles may be replaced.
+        It doesn't carry out any external request. Whole bundles may be replaced. If you don't want
+        bundles to be fully replaced, use merge_json instead.
         @param json_str: JSON string to load.
         @return: Nothing
         """
         appdata = json.loads(json_str)
         bundles = appdata["bundles"]
         for name, bundledata in bundles.items():
-            # TODO: Inefficient. Consider refactoring this and providing the right methods so that it is not needed.
-            # to constantly serialize/deserialize.
-            bundlejs = json.dumps(bundledata)
-            bundle = Bundle.from_json(bundlejs)
+            bundle = Bundle.from_jsonable(bundledata)
             self._bundles[name] = bundle
         return
+
+    def merge_json(self, json_data):
+        """
+        Merges the specified json into the BundleManager. It will simply load from the JSON,
+        replacing existing entries in bundles as needed.
+        @param json_data: JSON string to load, or JSON-able data structure.
+        @return: Nothing.
+        """
+        if type(json_data) == str or type(json_data) == unicode:
+            appdata = json.loads(json_data)
+        else:
+            appdata = json_data
+        bundles = appdata["bundles"]
+        for name, bundledata in bundles.items():
+            bundle = Bundle.from_jsonable(bundledata)
+            # If the bundle doesn't exist we just store it.
+            # If it does exist we need to do a real merge.
+            if name in self._bundles:
+                basebundle = self._bundles[name]
+                self._bundles[name] = Bundle.merge(basebundle, bundle)
+            else:
+                self._bundles[name] = bundle
 
     @staticmethod
     def _extract_locales_from_xml(xml_str):
@@ -452,6 +470,29 @@ class Bundle(object):
         self._msgs = {
             # identifier : translation
         }
+
+    @staticmethod
+    def merge(base_bundle, merging_bundle, ignore_empty=True):
+        """
+        Merges the merging_bundle into tbe base_bundle. The resulting bundle will contain the elements from both
+        bundles. Those elements in the base_bundle which have been changed in the merging_bundle will be replaced
+        by those in the merging_bundle. The (lang, country, group) of the resulting bundle will be the same as
+        the base's.
+
+        @param base_bundle: The base bundle. Elements which are different in the merging_bundle will be replaced
+        in the resulting bundle.
+        @param merging_bundle: The bundle to merge into the base_bundle. The resulting bundle will contain every
+        element in the merging_bundle as it is.
+        @param ignore_empty: If ignore_empty is set to True (the default) then if the merging_bundle contains
+        an element that is None or empty, that element will be ignored, and that element won't be replaced
+        in the base_bundle.
+        @return: A resulting bundle which is the merge of the merging_bundle into the base_bundle.
+        """
+        rb = Bundle(base_bundle.lang, base_bundle.country, base_bundle.group)
+        for ident, msg in merging_bundle._msgs.items():
+            if not ignore_empty or (msg is not None and len(msg) > 0):
+                base_bundle._msgs[ident] = msg
+        return rb
 
     @staticmethod
     def get_standard_code_string(lang, country, group):

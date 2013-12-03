@@ -61,12 +61,11 @@ def translate_merge_existing():
         srcapp = get_app(srcapp_id)
 
 
-        # Load our own App
+        # Load our own app
         bm = backend.BundleManager.create_from_existing_app(app.data)
 
-        # TODO: Better define what this load_from_json method does, and rename it to a more explicit MERGE name
-        # or something similar.
-        bm.load_from_json(srcapp.data)
+        # Merge the srcapp into our's.
+        bm.merge_json(srcapp.data)
 
         # Update the App's data.
         update_app_data(app, bm.to_json())
@@ -179,7 +178,7 @@ def translate_selectlang():
             flash("You are the owner of the App", "success")
             set_var(app, "ownership", "")
         else:
-            bm.load_from_json(ownerApp.data)
+            bm.merge_json(ownerApp.data)
             update_app_data(app, bm.to_json())
             flash("You are not the owner of this App, so the owner's translations have been merged", "success")
 
