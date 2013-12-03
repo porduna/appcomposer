@@ -9,13 +9,18 @@
     <script type="text/javascript">
 
     $(document).ready( function() {
-        var numProposals = $("#proposals").find("option").length;
+        var options = $("#proposals").find("option");
+        var numProposals = options.length;
 
         if (numProposals == 0)
         {
             var submits = $("button[type=submit]");
             submits.attr("disabled", "disabled");
             submits.prop("disabled", true);
+        }
+        else
+        {
+            $(options[0]).attr("selected", "selected");
         }
     });
 
@@ -96,6 +101,11 @@
                 </form>
 
             </div>
+
+
+
+        
+
         </div>
     </div>
 
