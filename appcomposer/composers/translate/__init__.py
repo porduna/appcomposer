@@ -1,15 +1,16 @@
 from collections import defaultdict
 import os
 import random
+import time
 
 from flask import Blueprint, render_template, flash, redirect, url_for, request, json
 from babel import Locale
-import time
-from appcomposer.login import current_user
 
 from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, db_session, add_var, remove_var
-from appcomposer.models import AppVar, App, User
+from appcomposer.models import AppVar, App
 from forms import UrlForm, LangselectForm
+
+import backend
 
 
 info = {
@@ -25,8 +26,6 @@ info = {
 }
 
 translate_blueprint = Blueprint(info['blueprint'], __name__)
-
-import backend
 
 
 @translate_blueprint.route("/merge_existing", methods=["GET", "POST"])
@@ -70,9 +69,7 @@ def translate_merge_existing():
         # Update the App's data.
         update_app_data(app, bm.to_json())
 
-        flash("Translations merged.", "success")
-
-        # TODO: [Offtopic]: Disable merge-to-self.
+        flash("Translations merged", "success")
 
         # Redirect so that the App is reloaded with our changes applied.
         return redirect(url_for("translate.translate_selectlang", appid=appid))
@@ -131,16 +128,7 @@ def translate_selectlang():
     targetlangs_list = [{"pcode": code, "repr": backend.BundleManager.get_locale_english_name(
         *backend.BundleManager.get_locale_info_from_code(code))} for code in targetlangs_codes]
     full_groups_list = [("ALL", "ALL"), ("10-13", "Preadolescence (age 10-13)"), ("14-18", "Adolescence (age 14-18)")]
-    # TODO: Possible issue: What happens if the original XML contains group info? Do we take it into account?
-    # TODO: Design issue, related to the above. The user should only see a limited list of source groups. However,
-    # that list depends on the selected language. This means that it needs to vary dynamically depending on which
-    # source language you choose.
     # TODO: For now we will solve the above by only showing the DEFAULT in the source groups list.
-
-
-    # Store ownership information
-    is_owner = None  # Whether the current user is the owner of the app.
-    owner = None  # The owner of the app.
 
     # As of now (may change in the future) if it is a POST we are creating the app for the first time.
     # Hence, we will need to carry out a full spec retrieval.
@@ -155,6 +143,7 @@ def translate_selectlang():
         # Get all the existing bundles.
         bm = backend.BundleManager()
         bm.load_full_spec(appurl)
+        spec = bm.get_gadget_spec()  # For later
 
         # Build JSON data
         js = bm.to_json()
@@ -175,14 +164,11 @@ def translate_selectlang():
 
         # If there isn't already an owner, declare ourselves as the owner.
         if ownerApp is None:
-            flash("You are the owner of the App", "success")
             set_var(app, "ownership", "")
         else:
             bm.merge_json(ownerApp.data)
             update_app_data(app, bm.to_json())
             flash("You are not the owner of this App, so the owner's translations have been merged", "success")
-
-        flash("App spec successfully loaded", "success")
 
         # Find out which locales does the app provide (for now).
         locales = bm.get_locales_list()
@@ -199,13 +185,10 @@ def translate_selectlang():
 
         app = get_app(appid)
 
-        # TODO: Tidy up the appdata[spec] thing.
-        spec = json.loads(app.data)["spec"]
+        # Load a BundleManager from the app data.
+        bm = backend.BundleManager.create_from_existing_app(app.data)
 
-        flash("App successfully loaded from DB", "success")
-
-        bm = backend.BundleManager(spec)
-        bm.load_from_json(app.data)
+        spec = bm.get_gadget_spec()
 
         locales = bm.get_locales_list()
 
@@ -248,7 +231,7 @@ def translate_selectlang():
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
 def translate_edit():
-    """ Text editor for the selected language. """
+    """ Translation editor for the selected language. """
 
     # No matter if we are handling a GET or POST, we require these parameters.
     appid = request.values["appid"]
@@ -260,9 +243,8 @@ def translate_edit():
     # Retrieve the application we want to view or edit.
     app = get_app(appid)
 
-    spec = json.loads(app.data)["spec"]
-    bm = backend.BundleManager(spec)
-    bm.load_from_json(app.data)
+    bm = backend.BundleManager.create_from_existing_app(app.data)
+    spec = bm.get_gadget_spec()
 
     # Retrieve the bundles for our lang. For this, we build the code from the info we have.
     srcbundle_code = backend.BundleManager.partialcode_to_fullcode(srclang, srcgroup)
@@ -282,17 +264,13 @@ def translate_edit():
     owner_app = _db_get_owner_app(spec)
     is_owner = owner_app == app
 
-
     # This is a GET request. We are essentially viewing-only.
     if request.method == "GET":
-
         return render_template("composers/translate/edit.html", is_owner=is_owner, app=app, srcbundle=srcbundle,
                                targetbundle=targetbundle)
 
     # This is a POST request. We need to save the entries.
     else:
-
-
         # Retrieve a list of all the key-values to save. That is, the parameters which start with _message_.
         messages = [(k[len("_message_"):], v) for (k, v) in request.values.items() if k.startswith("_message_")]
 
@@ -338,6 +316,7 @@ def translate_about():
 def _db_get_proposals(app):
     return db_session.query(AppVar).filter_by(name="proposal", app=app).all()
 
+
 @translate_blueprint.route("/proposed_list", methods=["POST", "GET"])
 def translate_proposed_list():
     """
@@ -363,7 +342,6 @@ def translate_proposed_list():
         propdata = json.loads(prop.value)
         propdata["id"] = str(prop.var_id)
         props.append(propdata)
-
 
     if request.method == "POST" and request.values.get("acceptButton") is not None:
         proposal_id = request.values.get("proposals")
@@ -408,9 +386,6 @@ def translate_proposed_list():
 
         # Remove it from our current proposal list as well, so that it isn't displayed anymore.
         props = [prop for prop in props if prop["id"] != proposal_id]
-
-
-
 
     return render_template("composers/translate/proposed_list.html", app=app, proposals=props)
 

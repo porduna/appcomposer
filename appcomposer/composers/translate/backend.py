@@ -129,6 +129,14 @@ class BundleManager(object):
         # Points to the original gadget spec XML.
         self.original_spec_file = original_gadget_spec
 
+    def get_gadget_spec(self):
+        """
+        Gets the path to the XML file that originally describes the app.
+        That is, the app Spec file.
+        @return:
+        """
+        return self.original_spec_file
+
     @staticmethod
     def create_from_existing_app(app_data):
         """
