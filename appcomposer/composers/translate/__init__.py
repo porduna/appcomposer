@@ -10,7 +10,6 @@ from appcomposer.appstorage.api import create_app, get_app, update_app_data, set
 from appcomposer.models import AppVar, App
 from forms import UrlForm, LangselectForm
 
-import backend
 
 
 info = {
@@ -26,6 +25,12 @@ info = {
 }
 
 translate_blueprint = Blueprint(info['blueprint'], __name__)
+
+
+# This import NEEDS to be after the translate_blueprint assignment due to
+# importing and cyclic dependencies issues.
+import backend
+
 
 
 @translate_blueprint.route("/merge_existing", methods=["GET", "POST"])
@@ -356,12 +361,19 @@ def translate_proposed_list():
 
         flash("Proposal loaded: " + proposal.value)
         data = json.loads(proposal.value)
-        bundle = backend.Bundle.from_jsonable(data["bundle_contents"])
-        bm = backend.BundleManager.create_from_existing_app(app.data)
+        proposed_bundle = backend.Bundle.from_jsonable(data["bundle_contents"])
+        bundle_code = data["bundle_code"]
 
-        # Replace the bundle.
-        # TODO: Improve the merge logic.
-        bm._bundles[data["bundle_code"]] = bundle
+        # TODO: Improve this code.
+        bm = backend.BundleManager.create_from_existing_app(app.data)
+        base_bundle = bm.get_bundle(bundle_code)
+        if base_bundle is None:
+            # The bundle doesn't exist, so no actual merge is needed.
+            bm._bundles[bundle_code] = proposed_bundle
+        else:
+            # Merge the proposed Bundle with our Bundle.
+            merged_bundle = backend.Bundle.merge(base_bundle, proposed_bundle)
+            bm._bundles[bundle_code] = merged_bundle
 
         update_app_data(app, bm.to_json())
 
