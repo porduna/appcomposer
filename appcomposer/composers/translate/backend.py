@@ -214,6 +214,11 @@ class BundleManager(object):
         lang, country = BundleManager.get_locale_info_from_code(code)
         return "%s_%s_%s" % (lang.lower(), country.upper(), group.upper())
 
+
+    # TODO: Add support for non-standard xml specs. For instance, if the lang contains "es_ES" we should probably try
+    # to fail gracefully. (Or actually to ignore the pack).
+    # TODO: Careful when it fails so that no partially-created App remains.
+
     def get_locales_list(self):
         """
         get_locales_list()
