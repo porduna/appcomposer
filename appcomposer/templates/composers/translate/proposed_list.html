@@ -40,13 +40,11 @@
 
     function loadPreview(translationCode)
     {
-        console.log("Loading Preview: " + translationCode);
-
+        // console.log("Loading Preview: " + translationCode);
         var requestURL = "{{ url_for(".get_proposal", _external=True) }}";
         $.getJSON( requestURL+"?proposal_id="+translationCode, function(data){
             var text = "";
             var messages = data["proposal"]["bundle_contents"]["messages"];
-            console.log(messages);
             $.each(messages, function(k, v){
                 text += k + ": " + v + "\n";
             });
