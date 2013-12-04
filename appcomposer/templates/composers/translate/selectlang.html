@@ -1,86 +1,300 @@
 {% set title = "Translation tool :: Source and Target language" %}
 {% set current_link = "home" %}
 {% extends 'composers/translate/layout.html' %}
+
+
 {% block body_content %}
-        <div class="translateblock">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="page-header">
-                        <h1 id="apptitle">Translate</h1>
-                        <h2 id="appfullname">the Function plotter app</h1>                        
-                    </div>
-                </div>
+    <div class="translateblock">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="page-header">
+                <h1 id="apptitle">Translate</h1>
+
+                {% if app %}
+                    <h2 id="appfullname">{{ app.name }}</h2>
+                {% else %}
+                    <h2 id="appfullname">[App name not available]</h2>
+                {% endif %}
+
+
+                <a href="{{ url_for('.app_xml', appid=app.unique_id, group="ALL", _external=True) }}">
+                app.xml
+                </a>
+
+
             </div>
+        </div>
+    </div>
 
 
 
+    <!-- JavaScript source code -->
+    <script type="text/javascript">
 
-      <!-- Forms
-      ================================================== -->
-      <div class="well">
+        //! Load and initialize what we must.
+        $(document).ready(function () {
+            loadSourceGroups();
+
+            // Add handlers to every Select element.
+            $("select").on("change", function(event) {
+                        onLanguageChange(event)
+                    });
+
+            // For initialization
+            onLanguageChange(null);
+
+            // Initialize popovers & tooltips.
+            initializeTooltips();
+
+            // Define the size for each of the four select-boxes there are.
+            $("select").attr("size", 8);
+        });
+
+        //! Initializes the tooltips and popovers.
+        function initializeTooltips()
+        {
+            $("#merge_existing").popover(
+                    {
+                        placement: "top",
+                        title: "Merge existing translations",
+                        html: "true",
+                        content : "This option will let you merge someone else's translations into this one. <br>Note, however, that you need to be careful, because after you select the app to merge with, the merge is automatic, and some translations may get overrided.",
+                        trigger: "hover"
+                    }
+            );
+
+            // We place it on its own div because otherwise it won't fire when disabled.
+            $("#localisebtndiv").popover(
+                    {
+                        placement: "top",
+                        title: "Localise",
+                        html: "true",
+                        content : "", // to be set dynamically
+                        trigger: "hover"
+                    }
+            );
+        }
+
+
+        //! Function to be invoked when the target or source language changes.
+        function onLanguageChange(event) {
+
+            var submits = $("#localisebtn")
+
+            // The same source and target combination was chosen. User should not be allowed
+            // to try to translate that, as it makes no sense.
+            if( getChosenSource() == getChosenTarget() )
+            {
+                $("#same-lang").show();
+                submits.attr("disabled", "disabled");
+                submits.prop('disabled', true);
+
+                $('#localisebtndiv').attr("data-content", "In order to start localising the App, the chosen source language-group and target language-group combinations must be different");
+            }
+            else
+            {
+                $("#same-lang").hide();
+                submits.removeAttr("disabled");
+                submits.prop("disabled", false);
+
+                $('#localisebtndiv').attr("data-content", "Click this button to start localising the App. You will be shown the entries in the <b>source</b> language so that you can translate them into the <b>target</b> language.");
+            }
+
+
+            // We will also update the info text here.
+            var sourceLang = $("#srclang").find(":selected").text();
+            var sourceGroup = $("#srcgroup").find(":selected").text();
+            var targetLang = $("#targetlang").find(":selected").text();
+            var targetGroup = $("#targetgroup").find(":selected").text();
+
+            if(sourceGroup == "ALL")
+                sourceGroup = "anyone";
+            if(targetGroup == "ALL")
+                targetGroup = "anyone";
+
+            if(sourceLang == "DEFAULT")
+                sourceLang = "the default language";
+            if(targetLang == "DEFAULT")
+                targetLang = "the default language";
+
+            var translateMsg = "You want to translate the app from " + sourceLang + " (for " + sourceGroup + ") into " +
+                    targetLang + " (for " + targetGroup +").";
+            $("#help-msg").html(translateMsg);
+        }
+
+        //! Gets the chosen source's code.
+        function getChosenSource() {
+            var chosenSource = $("#srclang").val() + "_" + $("#srcgroup").val();
+            return chosenSource;
+        }
+
+        //! Gets the chosen target's code.
+        function getChosenTarget() {
+            var targetSource = $("#targetlang").val() + "_" + $("#targetgroup").val();
+            return targetSource;
+        }
+
+
+        //! Event received then the user selects a new source language.
+        //! We will refill the source groups for that one language.
+        function onSrcLangChanged() {
+            loadSourceGroups()
+        }
+
+        //! Loads the right source groups on the source groups selection control, depending on which
+        //! source language is selected.
+        function loadSourceGroups() {
+
+            // Retrieve the full list of groups, which links the group codes to the
+            // display names.
+            var fullGroups = {{ full_groups_json|safe }};
+
+            var select = document.getElementById("srclang");
+            var selectedOption = select.options[select.selectedIndex];
+
+            var srcGroup = $("#srcgroup");
+            srcGroup.empty();
+
+            var sourceGroups = {{ source_groups_json|safe }};
+            var groupsForSelectedLang = sourceGroups[selectedOption.value];
+
+            $.each(groupsForSelectedLang, function (index, value) {
+                var groupCode = value;
+                var groupName = value; // We will try to change this.
+
+                // Find a name for the group. If not found use the code.
+                for (var i = 0; i < fullGroups.length; i++) {
+                    var code = fullGroups[0];
+                    var name = fullGroups[1];
+                    if (code == groupCode)
+                        groupName = name;
+                }
+
+                $(srcGroup).append($("<option />", {value: value, text: groupName}));
+            });
+
+            // Initialize the selection.
+            var srcGroupSelect = srcGroup[0].options[0];
+            srcGroupSelect.setAttribute("selected", "selected");
+
+        }
+    </script>
+
+
+
+    <!-- Forms
+    ================================================== -->
+    <div class="well">
 
         <div class="row">
-        <div class="col-lg-12">
-          <form class="form-horizontal" id="getlangs" name="getlangs" action="." method="POST">
-          <legend>Step 2: Select the source and target language</legend>
-                              
-          <div class="col-lg-6 col-md-6">
+            <div class="col-lg-12">
+                <form class="form-horizontal" id="getlangs" name="getlangs"
+                      action="{{ url_for('translate.translate_edit') }}" method="GET">
 
-                <div class="form-group">
-                    <label class="control-label" for="srclang">Select source language</label>
-                      <select id="srclang" multiple="" name="srclang" class="form-control">
-                        <option selected="selected">English</option>
-                        <option>French</option>
-                        <option>German</option>
-                      </select>
-                </div>
-                <div class="form-group">
-                    <label class="control-label" for="targetlang">Select target language</label>
-                      <select id="targetlang"  multiple="" name="targetlang" class="form-control">
-                        <option>English</option>
-                        <option>French</option>
-                        <option selected="selected">German</option>
-                      </select>
-                </div>              
-          </div>
-          
-          <div class="col-lg-6 col-md-6">
-                <div class="form-group">
-                    <label class="control-label" for="srcgroup">Select source group</label>
-                      <select id="srcgroup" multiple="" name="srcgroup" class="form-control">
-                        <option selected="selected">General</option>
-                        <option>Preadolescence (age 10-13)</option>
-                        <option>Adolescence (age 14-18)</option>
-                      </select>
-                </div>
-                <div class="form-group">
-                    <label class="control-label" for="targetgroup">Select target group</label>
-                      <select id="targetgroup" multiple="" name="targetgroup" class="form-control">
-                        <option>General</option>
-                        <option selected="selected">Preadolescence (age 10-13)</option>
-                        <option>Adolescence (age 14-18)</option>
-                      </select>
-                </div>                
-                <div class="form-group">                 
-                  <div class="controls">
-                    <span class="help-block">You want to translate the app from General English into Elementary School German.</span>
-                    <a class="btn btn-default" id="backtoindexbtn" href="{{ url_for('translate.translate_index') }}">« Go Back to Step 1</a>                                   
-                    <!--
-                    <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">Step 2 - Select language »</button>
-                    -->          
+                    {# This is necessary so that the next page knows which App to load. #}
+                    <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
+
+                    <legend>Step 2: Select the source and target language</legend>
+
+                    <div class="col-lg-6 col-md-6">
+
+
+                        <div class="form-group">
+                            <label class="control-label" for="srclang">Select source language</label>
+                            <select id="srclang" multiple="" name="srclang" class="form-control"
+                                    onchange="onSrcLangChanged()">
+                                <option selected="selected" value="all_ALL">DEFAULT</option>
+
+                                {# When displaying the languages note that we only show those with GROUP=ALL. This is because otherwise some languages
+                                 would appear more than once. Though somewhat kludgey, this approach should always work because a language must always
+                                 have a default (ALL) translation. #}
+                                {% for loc in locales if loc["group"] == "ALL" and not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}
+                                    <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="targetlang">Select target language</label>
+                            <select id="targetlang" multiple="" name="targetlang" class="form-control">
+
+                                {# Add the DEFAULT first. #}
+                                <option value="all_ALL" selected="selected">DEFAULT</option>
+
+                                {# TODO: Clean this up. The design probably needs some changes as well. #}
+
+                                {# Now add the messages that are already translated. #}
+                                {% for loc in locales if loc["group"] == "ALL" and not (loc["lang"] == "all" and loc["country"] == "ALL") %}
+                                    <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
+                                {% endfor %}
+
+                                {# Now add the messages that are suggested by the system. #}
+                                {% for lang in target_langs %}
+                                    <option value="{{ lang["pcode"] }}">{{ lang["repr"] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <div class="controls">
+                                <span class="help-block">You want to merge an existing translation into this translation.</span>
+                                <a class="btn btn-default" id="merge_existing"
+                                   href="{{ url_for('translate.translate_merge_existing', appid=app.unique_id) }}">Merge existing translation</a>
+                            </div>
+                        </div>
+
+                    </div>
+
+                    <div class="col-lg-6 col-md-6">
+                        <div class="form-group">
+                            <label class="control-label" for="srcgroup">Select source group</label>
+                            <select id="srcgroup" multiple="" name="srcgroup" class="form-control">
+
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="control-label" for="targetgroup">Select target group</label>
+                            <select id="targetgroup" multiple="" name="targetgroup" class="form-control">
+                                {% for group in target_groups %}
+                                    <option {% if loop.index0 == 0 %}selected="selected"{% endif %}
+                                            value="{{ group[0] }}">{{ group[1] }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+
+                        <div class="form-group">
+                            <div class="controls">
+                                <span id="help-msg" class="help-block"><!--Contents to be updated dynamically through JS--></span>
+
+                                <div style="float:left">
+                                    <a class="btn btn-default" id="backtoindexbtn"
+                                       href="{{ url_for('translate.translate_index') }}">« Go Back to Step 1</a>
+                                </div>
+
+                                <!-- The wrapping div is for the tooltips -->
+                                <div id="localisebtndiv" style="">
+                                    <button type="submit" id="localisebtn" name="sendurl" class="btn btn-success">Step 2 -
+                                        Localise »
+                                    </button>
+                                </div>
+
+                                <p id="same-lang" class="text-danger">Target and source languages may not be the same</p>
+
+                                <!--
                     <a class="btn btn-success" id="sendlangsbtn" href="{{ url_for('translate.translate_edit') }}">Step 3 - Translate »</a>
-                  </div>
-                </div>                
-                
-              
-          </div>
-          </form>
-          
-        </div>
-        </div>
-      </div>
+                    -->
+                            </div>
+                        </div>
 
 
-                   
-            
+                    </div>
+                </form>
+
+            </div>
+        </div>
+    </div>
+
+
+
+
 {% endblock %}

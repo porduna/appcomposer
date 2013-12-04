@@ -10,11 +10,12 @@ app.config["SECRET_KEY"] = os.urandom(32)
 ###
 
 from .composers.dummy import info as dummy_info
+from .composers.translate import info as translate_info
 
 # So that we can have access to all the info from the Users component.
 # It is important that this is done early. Otherwise, it will be accessed by the
 # user component before it is ready.
-COMPOSERS = [dummy_info]
+COMPOSERS = [dummy_info, translate_info]
 COMPOSERS_DICT = {info["blueprint"]: info for info in COMPOSERS}
 
 # TODO: The COMPOSERS_DICT thing is not very pretty. Find a work-around.

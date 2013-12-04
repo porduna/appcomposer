@@ -1,17 +1,14 @@
-from flask import session, render_template, render_template_string
 
-from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
-from flask import request, redirect, url_for, session
+from flask import request, redirect
+from appcomposer.appstorage.api import create_app
 from appcomposer.appstorage.api import add_var, get_all_vars, set_var, remove_var, create_app
+
+
 
 from appcomposer.login import current_user
 from appcomposer.db import db_session
 from appcomposer.application import app as flask_app
 from appcomposer.models import App
-
-import random
-
-import json
 
 
 @flask_app.route('/appstorage', methods=["GET", "POST"])

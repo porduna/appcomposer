@@ -182,6 +182,11 @@ def delete_app(composed_app):
     if composed_app.owner != current_user():
         raise NotAuthorizedException()
 
+    # Delete every AppVar for that App. Otherwise, as of now, deletion doesn't work because
+    # the delete cascade on the relationship has some problem.
+    # TODO: Fix me.
+    db_session.query(AppVar).filter_by(app=composed_app).delete()
+
     db_session.delete(composed_app)
     db_session.commit()
 
