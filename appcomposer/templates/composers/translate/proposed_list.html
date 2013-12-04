@@ -42,6 +42,9 @@
     {
         // console.log("Loading Preview: " + translationCode);
         var requestURL = "{{ url_for(".get_proposal", _external=True) }}";
+
+        $("#preview").text("Loading...");
+
         $.getJSON( requestURL+"?proposal_id="+translationCode, function(data){
             var text = "";
             var messages = data["proposal"]["bundle_contents"]["messages"];
@@ -118,9 +121,7 @@
                                 <button type="submit" id="denyButton" name="denyButton" class="btn btn-warning">
                                     Deny it
                                 </button>
-                                <!--
-                    <a class="btn btn-success" id="sendlangsbtn" href="{{ url_for('translate.translate_edit') }}">Step 3 - Translate »</a>
-                    -->
+
                             </div>
                         </div>
 
