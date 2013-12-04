@@ -26,7 +26,7 @@
             $(options[0]).attr("selected", "selected");
 
             // Initialize the preview.
-            loadPreview(options.find(":selected").val);
+            loadPreview($(options[0]).val());
         }
 
         // Listen for selection events.
@@ -44,7 +44,13 @@
 
         var requestURL = "{{ url_for(".get_proposal", _external=True) }}";
         $.getJSON( requestURL+"?proposal_id="+translationCode, function(data){
-            $("#preview").text(JSON.stringify(data));
+            var text = "";
+            var messages = data["proposal"]["bundle_contents"]["messages"];
+            console.log(messages);
+            $.each(messages, function(k, v){
+                text += k + ": " + v + "\n";
+            });
+            $("#preview").text(text);
         } );
     }
 
