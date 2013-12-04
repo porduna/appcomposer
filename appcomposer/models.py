@@ -125,3 +125,31 @@ class App(Base):
     def find_by_unique_id(cls, unique_id):
         return DBS.query(cls).filter_by(unique_id=unique_id).first()
 
+
+class AppVar(Base):
+    """
+    Stores a variable. A variable is a key:value pair linked to a specific App.
+    """
+
+    __tablename__ = 'AppVars'
+
+    var_id = Column(Integer, primary_key=True)
+    name = Column(Unicode(50))
+    value = Column(Unicode)
+
+    app_id = Column(Integer, ForeignKey("Apps.id"), nullable=False)
+    app = relation("App", backref=backref("appvars"), cascade="all,delete")
+
+    def __init__(self, name, value):
+        self.value = value
+        self.name = name
+
+    def __repr__(self):
+        return "AppVar(%r, %r, %r)" % (
+            self.app.unique_id, self.name, self.value)
+
+    @classmethod
+    def find_by_var_id(cls, var_id):
+        return DBS.query(cls).filter_by(var_id=var_id).first()
+
+
