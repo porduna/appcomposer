@@ -3,7 +3,7 @@ import os
 import random
 import time
 
-from flask import Blueprint, render_template, flash, redirect, url_for, request, json
+from flask import Blueprint, render_template, flash, redirect, url_for, request, json, jsonify
 from babel import Locale
 
 from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, db_session, add_var, remove_var
@@ -30,8 +30,6 @@ translate_blueprint = Blueprint(info['blueprint'], __name__)
 # This import NEEDS to be after the translate_blueprint assignment due to
 # importing and cyclic dependencies issues.
 import backend
-
-
 
 @translate_blueprint.route("/merge_existing", methods=["GET", "POST"])
 def translate_merge_existing():
@@ -120,6 +118,39 @@ def __db_get_children_apps(spec):
 #----------------------------------------
 # other pages 
 #----------------------------------------
+
+
+def _db_get_proposals(app):
+    return db_session.query(AppVar).filter_by(name="proposal", app=app).all()
+
+@translate_blueprint.route("/get_proposal", methods=["GET"])
+def get_proposal():
+    """
+    API to get the contents of a Proposal var.
+    As of now it does no checks. Lets you retrieve any proposal var as
+    long as you know its IP.
+    @return: JSON string containing the data.
+    """
+    result = {}
+    proposal_id = request.values.get("proposal_id")
+    if proposal_id is None:
+        result["result"] = "error"
+        result["message"] = "proposal_id not provided"
+        return jsonify(**result)
+
+    # Retrieve the var.
+    prop = db_session.query(AppVar).filter_by(name="proposal", var_id=proposal_id).first()
+    if prop is None:
+        result["result"] = "error"
+        result["message"] = "proposal not found"
+        return jsonify(**result)
+
+    # Parse the contents
+    contents = json.loads(prop.value)
+    result["result"] = "success"
+    result["code"] = proposal_id
+    result["proposal"] = contents
+    return jsonify(**result)
 
 
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])
@@ -316,10 +347,6 @@ def translate_edit():
 def translate_about():
     """Information about the translator application."""
     return render_template("composers/translate/about.html")
-
-
-def _db_get_proposals(app):
-    return db_session.query(AppVar).filter_by(name="proposal", app=app).all()
 
 
 @translate_blueprint.route("/proposed_list", methods=["POST", "GET"])

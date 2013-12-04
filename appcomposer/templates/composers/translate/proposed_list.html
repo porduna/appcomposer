@@ -9,7 +9,10 @@
     <script type="text/javascript">
 
     $(document).ready( function() {
-        var options = $("#proposals").find("option");
+
+        var proposal = $("#proposals");
+
+        var options = proposal.find("option");
         var numProposals = options.length;
 
         if (numProposals == 0)
@@ -21,8 +24,29 @@
         else
         {
             $(options[0]).attr("selected", "selected");
+
+            // Initialize the preview.
+            loadPreview(options.find(":selected").val);
         }
+
+        // Listen for selection events.
+        proposal.change( function(event) {
+            var selected = proposal.find(":selected").val();
+            loadPreview(selected);
+        });
+
     });
+
+
+    function loadPreview(translationCode)
+    {
+        console.log("Loading Preview: " + translationCode);
+
+        var requestURL = "{{ url_for(".get_proposal", _external=True) }}";
+        $.getJSON( requestURL+"?proposal_id="+translationCode, function(data){
+            $("#preview").text(JSON.stringify(data));
+        } );
+    }
 
     </script>
 
@@ -67,7 +91,7 @@
                         <div class="form-group">
                             <label class="control-label" for="proposals">Select the translation ({{ proposals|length }})</label>
 
-                            <select id="proposals" multiple="" name="proposals" class="form-control">
+                            <select size="20" id="proposals" multiple="" name="proposals" class="form-control">
 
                                 {% for proposal in proposals %}
                                 <option value="{{ proposal["id"] }}">{{ proposal["from"] }}'s {{ proposal["bundle_code"] }} </option>
@@ -98,6 +122,13 @@
 
 
                     </div>
+
+                    <div class="col-lg-6 col-md-6">
+
+                        <label class="control-label" id="previewlabel" for="preview">Preview</label>
+                        <textarea rows="20" readonly class="uneditable-input" style="width:100%;height:100%" id="preview"></textarea>
+                    </div>
+
                 </form>
 
             </div>
