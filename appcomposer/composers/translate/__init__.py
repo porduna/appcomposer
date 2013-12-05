@@ -239,7 +239,6 @@ def translate_selectlang():
         is_owner = False
 
     owner = ownerApp.owner
-
     if not is_owner and owner is None:
         flash("Error: Owner is None", "error")
 
@@ -253,9 +252,12 @@ def translate_selectlang():
     for loc in locales:
         src_groups_dict[loc["pcode"]].append(loc["group"])
 
+
+    locales_codes = [tlang["pcode"] for tlang in locales]
+
     # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
     # because those will be added to the targetlangs by default.
-    targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["pcode"] not in targetlangs_codes]
+    targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["pcode"] not in locales_codes]
 
     return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered,
                            source_groups_json=json.dumps(src_groups_dict), app=app,
@@ -291,9 +293,11 @@ def translate_edit():
 
     # The target bundle doesn't exist yet. We need to create it ourselves.
     if targetbundle is None:
-        lang, country = targetlang.split("_")
-        targetbundle = backend.Bundle(lang, country, targetgroup)
-        bm.add_bundle(targetbundle_code, targetbundle)
+        splits = targetlang.split("_")
+        if len(splits) == 2:
+            lang, country = splits
+            targetbundle = backend.Bundle(lang, country, targetgroup)
+            bm.add_bundle(targetbundle_code, targetbundle)
 
 
     # Get the owner app.
