@@ -57,17 +57,20 @@
         } );
     }
 
+
     function addMessage(parent_div, label, content)
     {
         {# TODO: Add XSS protection etc. #}
         var labelspan = '<span class="input-group-addon">' + label + '</span>';
-        var input = '<input type="text" class="form-control" value="' + content + '"/>';
+        var inputOriginal = '<input type="text" class="form-control" value="' + content + '"/>';
+        var inputProposed = '<input type="text" class="form-control" value="' + content + '"/>';
         var tick = '<span class="input-group-addon glyphicon glyphicon-ok"/>';
 
-        var wrapping_div = $('<div name="mytestdiv" class="input-group">').appendTo(parent_div);
+        var wrapping_div = $('<div name="mytestdiv" class="input-group" style="padding-bottom: 10px">').appendTo(parent_div);
         wrapping_div
                 .append(labelspan)
-                .append(input)
+                .append(inputOriginal)
+                .append(inputProposed)
                 .append(tick);
     }
 
