@@ -106,7 +106,7 @@ def _db_get_owner_app(spec):
     return ownerApp
 
 
-def __db_get_children_apps(spec):
+def _db_get_children_apps(spec):
     """
     Gets from the database the Apps that are NOT the owner.
     @param spec: String to the app's original XML.
@@ -177,6 +177,7 @@ def translate_selectlang():
             return redirect(url_for("translate.translate_index"))
 
         # Get all the existing bundles.
+        # TODO: Use a specific purpose ctor here.
         bm = backend.BundleManager()
         bm.load_full_spec(appurl)
         spec = bm.get_gadget_spec()  # For later
