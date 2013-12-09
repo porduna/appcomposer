@@ -150,6 +150,13 @@ def get_proposal():
     result["result"] = "success"
     result["code"] = proposal_id
     result["proposal"] = contents
+
+    # Add the parent's application bundle to the response, so that it can be compared
+    # more easily.
+    bm = backend.BundleManager.create_from_existing_app(prop.app.data)
+    bundle = bm.get_bundle(contents["bundle_code"])
+    result["original"] = bundle.to_jsonable()["messages"]
+
     return jsonify(**result)
 
 
