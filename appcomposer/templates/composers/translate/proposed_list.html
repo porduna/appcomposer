@@ -43,16 +43,32 @@
         // console.log("Loading Preview: " + translationCode);
         var requestURL = "{{ url_for(".get_proposal", _external=True) }}";
 
-        $("#preview").text("Loading...");
+        var previewDiv = $("#preview_div");
+
+        $("#previewlabel").text("Preview (Loading...)");
 
         $.getJSON( requestURL+"?proposal_id="+translationCode, function(data){
-            var text = "";
             var messages = data["proposal"]["bundle_contents"]["messages"];
+            $("#previewlabel").text("Preview");
             $.each(messages, function(k, v){
-                text += k + ": " + v + "\n";
+                addMessage(previewDiv, k, v);
             });
             $("#preview").text(text);
         } );
+    }
+
+    function addMessage(parent_div, label, content)
+    {
+        {# TODO: Add XSS protection etc. #}
+        var labelspan = '<span class="input-group-addon">' + label + '</span>';
+        var input = '<input type="text" class="form-control" value="' + content + '"/>';
+        var tick = '<span class="input-group-addon glyphicon glyphicon-ok"/>';
+
+        var wrapping_div = $('<div name="mytestdiv" class="input-group">').appendTo(parent_div);
+        wrapping_div
+                .append(labelspan)
+                .append(input)
+                .append(tick);
     }
 
     </script>
@@ -121,17 +137,22 @@
                                 <button type="submit" id="denyButton" name="denyButton" class="btn btn-warning">
                                     Deny it
                                 </button>
-
                             </div>
                         </div>
-
 
                     </div>
 
                     <div class="col-lg-6 col-md-6">
 
                         <label class="control-label" id="previewlabel" for="preview">Preview</label>
-                        <textarea rows="20" readonly class="uneditable-input" style="width:100%;height:100%" id="preview"></textarea>
+                        <!--<textarea rows="1" readonly class="uneditable-input" style="width:100%;height:100%" id="preview"></textarea>
+                        -->
+
+
+                        <div id="preview_div">
+                            <!-- To be filled through JavaScript -->
+                        </div>
+
                     </div>
 
                 </form>

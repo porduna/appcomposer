@@ -511,7 +511,7 @@ class Bundle(object):
         for ident, msg in merging_bundle._msgs.items():
             if not ignore_empty or (msg is not None and len(msg) > 0):
                 rb._msgs[ident] = msg
-                    
+
         return rb
 
     @staticmethod
