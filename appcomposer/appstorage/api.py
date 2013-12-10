@@ -5,7 +5,7 @@ other modules.
 
 from appcomposer.login import current_user
 from appcomposer.db import db_session
-from appcomposer.models import App
+from appcomposer.models import App, AppVar
 
 import json
 
@@ -16,6 +16,20 @@ class AppExistsException(Exception):
 
 
 class NotAuthorizedException(Exception):
+    def __init__(self, message=None):
+        self.message = message
+
+
+class InvalidParameterException(Exception):
+    def __init__(self, message=None):
+        self.message = message
+
+
+class NonUniqueVarException(Exception):
+    """
+    Exception to be thrown when an operation did not expect more than one Var with the same name to exist.
+    """
+
     def __init__(self, message=None):
         self.message = message
 
@@ -71,6 +85,27 @@ def get_app(unique_id):
     return app
 
 
+def _get_app_obj(app):
+    """
+    Internal method to retrieve an App object. If it is passed a string it
+    will assume it is a unique_id. If, however, it is already an App object,
+    the object itself will be returned.
+
+    Thus, this can be used to ensure that an App parameter that was passed
+    to a function points to the object and not to the ID, with the function
+    actually accepting both.
+
+    @param app: Unique identifier of the app as a string, or the app object itself.
+    @return: The app object.
+    """
+    if type(app) is str or type(app) is unicode:
+        return get_app(app)
+    if type(app) is App:
+        return app
+    else:
+        raise InvalidParameterException("app parameter was not a string, nor an App object")
+
+
 def get_app_by_name(app_name):
     """
     get_app_by_name(app_name)
@@ -116,8 +151,9 @@ def update_app_data(composed_app, data):
     @note: This function can only be used by logged-on users, and they must be the
     owners of the app being saved.
     """
-    if type(composed_app) is str or type(composed_app) is unicode:
-        composed_app = get_app(composed_app)
+
+    # Convert ID to App if not done already (otherwise it's NOP).
+    composed_app = _get_app_obj(composed_app)
 
     if type(data) is not str and type(data) is not unicode:
         data = json.dumps(data)
@@ -140,11 +176,92 @@ def delete_app(composed_app):
     @note: This function can only be used by logged-on users, and they must be the owners of
     the app being saved.
     """
-    if type(composed_app) is str or type(composed_app) is unicode:
-        composed_app = get_app(composed_app)
+
+    composed_app = _get_app_obj(composed_app)
 
     if composed_app.owner != current_user():
         raise NotAuthorizedException()
 
+    # Delete every AppVar for that App. Otherwise, as of now, deletion doesn't work because
+    # the delete cascade on the relationship has some problem.
+    # TODO: Fix me.
+    db_session.query(AppVar).filter_by(app=composed_app).delete()
+
     db_session.delete(composed_app)
+    db_session.commit()
+
+
+def add_var(app, name, value):
+    """
+    Adds a new variable to an application.
+
+    As of now, several variables with the same name can be added.
+
+    @param app: App to which to add the variable (unique_id or App object).
+    @param name: Name of the variable.
+    @param value: Value for the variable.
+    """
+    app = _get_app_obj(app)
+    var = AppVar(name, value)
+    var.app = app
+    db_session.add(var)
+    db_session.commit()
+
+
+def get_all_vars(app):
+    """
+    Gets every AppVars for an App.
+
+    @param app: App's unique_id or object.
+    @return: List of every appvar.
+    """
+    app = _get_app_obj(app)
+    vars = db_session.query(AppVar).filter_by(app=app).all()
+    return vars
+
+
+def set_var(app, name, value):
+    """
+    Sets a var's value. If the Var doesn't exist, it is added.
+    If there is more than one Var with the specified value a
+    NonUniqueVarException will be thrown.
+    @param app: App's unique id or object.
+    @param name: Name of the variable.
+    @param value: Value of the variable.
+    """
+    app = _get_app_obj(app)
+    vars = db_session.query(AppVar).filter_by(app=app, name=name).all()
+    if len(vars) == 0:
+        add_var(app, name, value)
+        return
+    elif len(vars) == 1:
+        var = vars[0]
+        var.value = value
+        db_session.add(var)
+        db_session.commit()
+    else:
+        raise NonUniqueVarException("Cannot set value: App has more than one variable with the specified name.")
+
+
+def update_var(appvar):
+    """
+    Reflects the changes done to an AppVar object to the DB.
+    This method should rarely be called, because most methods in this API
+    update it automatically.
+
+    @param appvar: AppVar object to update.
+    """
+    db_session.add(appvar)
+    db_session.commit()
+
+
+def remove_var(appvar):
+    """
+    Removes an AppVar from the Database.
+    @param appvar: AppVar object to remove.
+    """
+    if type(appvar) is not AppVar:
+        raise ValueError("Cannot remove var: Invalid Parameter. It's not an AppVar object.")
+
+    db_session.delete(appvar)
     db_session.commit()
