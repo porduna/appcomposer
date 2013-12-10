@@ -8,6 +8,10 @@
 
     <script type="text/javascript">
 
+    var COLOR_NOT_CHANGED = "#C3F7D7";
+    var COLOR_CHANGED = "#F7C3D3";
+    var COLOR_ADDED = "#F7F6C3";
+
     $(document).ready( function() {
 
         var proposal = $("#proposals");
@@ -45,25 +49,43 @@
 
         var previewDiv = $("#preview_div");
 
+        // Clean old elements within the div, we need load new ones.
+        previewDiv.html("");
+
         $("#previewlabel").text("Translation (Loading...)");
 
         $.getJSON( requestURL+"?proposal_id="+translationCode, function(data){
             dbgel = data;
             var messages = data["proposal"]["bundle_contents"]["messages"];
+            var originals = data.original;
+
             $("#previewlabel").text("Translation");
-            $.each(messages, function(k, v){
-                addMessage(previewDiv, k, v);
+            $.each(messages, function(ident, newMsg){
+
+                // Find the original msg (undefined if it doesn't exist).
+                var origMsg = originals[ident];
+
+                addMessage(previewDiv, ident, newMsg, origMsg);
             });
         } );
     }
 
 
-    function addMessage(parent_div, label, content)
+    function addMessage(parent_div, ident, newMsg, origMsg)
     {
+        // Calculate the color for the fields
+        var proposedColor;
+        if(origMsg == undefined)
+            proposedColor = COLOR_ADDED;
+        else if(origMsg === newMsg)
+            proposedColor = COLOR_NOT_CHANGED;
+        else
+            proposedColor = COLOR_CHANGED;
+
         {# TODO: Add XSS protection etc. #}
-        var labelspan = '<span class="input-group-addon">' + label + '</span>';
-        var inputOriginal = '<input type="text" class="form-control" value="' + content + '"/>';
-        var inputProposed = '<input type="text" class="form-control" value="' + content + '"/>';
+        var labelspan = '<span class="input-group-addon">' + ident + '</span>';
+        var inputOriginal = '<input type="text" class="form-control" style="background-color:#DEDEDE" value="' + origMsg + '"/>';
+        var inputProposed = '<input type="text" class="form-control" style="background-color:' + proposedColor +'" value="' + newMsg + '"/>';
         var tick = '<span class="input-group-addon glyphicon glyphicon-ok"/>';
 
         var wrapping_div = $('<div name="mytestdiv" class="input-group" style="padding-bottom: 10px">').appendTo(parent_div);
