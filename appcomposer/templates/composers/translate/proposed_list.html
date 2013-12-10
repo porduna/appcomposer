@@ -65,13 +65,13 @@
                 // Find the original msg (undefined if it doesn't exist).
                 var origMsg = originals[ident];
 
-                addMessage(previewDiv, ident, newMsg, origMsg);
+                addMessage(previewDiv, ident, newMsg, origMsg, true);
             });
         } );
     }
 
 
-    function addMessage(parent_div, ident, newMsg, origMsg)
+    function addMessage(parent_div, ident, newMsg, origMsg, tickOn)
     {
         // Calculate the color for the fields
         var proposedColor;
@@ -82,11 +82,23 @@
         else
             proposedColor = COLOR_CHANGED;
 
+        // Do not show "undefined"
+        if(origMsg == undefined)
+            origMsg = "";
+
+        // Define the tick
+        var tickSpan;
+        if(tickOn)
+            tickSpan = $('<span class="btn btn-lg btn-success input-group-addon glyphicon glyphicon-ok" />');
+        else
+            tickSpan = $('<span class="btn btn-lg btn-danger input-group-addon glyphicon glyphicon-remove"/>');
+
+
         {# TODO: Add XSS protection etc. #}
         var labelspan = '<span class="input-group-addon">' + ident + '</span>';
-        var inputOriginal = '<input type="text" class="form-control" style="background-color:#DEDEDE" value="' + origMsg + '"/>';
+        var inputOriginal = '<input type="text" readonly class="form-control" style="background-color:#DEDEDE" value="' + origMsg + '"/>';
         var inputProposed = '<input type="text" class="form-control" style="background-color:' + proposedColor +'" value="' + newMsg + '"/>';
-        var tick = '<span class="input-group-addon glyphicon glyphicon-ok"/>';
+        var tick = tickSpan;
 
         var wrapping_div = $('<div name="mytestdiv" class="input-group" style="padding-bottom: 10px">').appendTo(parent_div);
         wrapping_div
@@ -94,6 +106,29 @@
                 .append(inputOriginal)
                 .append(inputProposed)
                 .append(tick);
+
+        // Register click event so that the tick acts as a button.
+        tick.click(function(event){
+            ev = event;
+            var target = $(ev.target);
+
+
+
+            if(target.hasClass("btn-success"))
+            {
+                target.removeClass("btn-success");
+                target.removeClass("glyphicon-ok");
+                target.addClass("btn-danger");
+                target.addClass("glyphicon-remove");
+            }
+            else
+            {
+                target.removeClass("btn-danger");
+                target.removeClass("glyphicon-remove");
+                target.addClass("btn-success");
+                target.addClass("glyphicon-ok");
+            }
+        });
     }
 
     </script>
