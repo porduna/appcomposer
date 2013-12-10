@@ -39,7 +39,31 @@
             loadPreview(selected);
         });
 
+        // Prepare to intercept the Accept button so that we can build
+        // the actual request.
+        //
+        // Figure out which button is clicked.
+        $("form button[type=submit]").click(function() {
+            $("button[type=submit]", $(this).parents("form")).removeAttr("clicked");
+            $(this).attr("clicked", "true");
+        });
+
+        $("#merge").submit(onAcceptSubmit);
     });
+
+
+    function onAcceptSubmit(event)
+    {
+        ev = event;
+
+        clickedButton = $("button[type=submit][clicked=true]");
+        if(clickedButton[0].id == "acceptButton")
+        {
+            alert("Accept clicked");
+        }
+
+        event.preventDefault();
+    }
 
 
     function loadPreview(translationCode)
@@ -112,10 +136,9 @@
             ev = event;
             var target = $(ev.target);
 
-
-
             if(target.hasClass("btn-success"))
             {
+                ev.target.parentNode.style.opacity = 0.4;
                 target.removeClass("btn-success");
                 target.removeClass("glyphicon-ok");
                 target.addClass("btn-danger");
@@ -123,6 +146,7 @@
             }
             else
             {
+                ev.target.parentNode.style.opacity = 1;
                 target.removeClass("btn-danger");
                 target.removeClass("glyphicon-remove");
                 target.addClass("btn-success");
@@ -166,7 +190,7 @@
                     {# This is necessary so that the next page knows which App to load. #}
                     <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
 
-                    <legend>Select a translation to decide what to do</legend>
+                    <legend>Select a proposal and choose or edit the translations</legend>
 
                     <div class="col-lg-4 col-md-4">
 
@@ -191,11 +215,11 @@
                                    href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">« Go Back</a>
 
                                 <button type="submit" id="acceptButton" name="acceptButton" class="btn btn-success">
-                                    Accept it
+                                    Accept
                                 </button>
 
                                 <button type="submit" id="denyButton" name="denyButton" class="btn btn-warning">
-                                    Deny it
+                                    Deny all
                                 </button>
                             </div>
                         </div>

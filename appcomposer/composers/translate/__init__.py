@@ -414,12 +414,14 @@ def translate_proposed_list():
             merged_bundle = backend.Bundle.merge(base_bundle, proposed_bundle)
             bm._bundles[bundle_code] = merged_bundle
 
-        update_app_data(app, bm.to_json())
+        if False:
+            update_app_data(app, bm.to_json())
 
         flash("Merge done.", "success")
 
-        # Remove the proposal from the DB.
-        remove_var(proposal)
+        if False:
+            # Remove the proposal from the DB.
+            remove_var(proposal)
 
         # Remove it from our current proposal list as well, so that it isn't displayed anymore.
         props = [prop for prop in props if prop["id"] != proposal_id]
