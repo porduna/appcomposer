@@ -106,7 +106,7 @@ def _db_get_owner_app(spec):
     return ownerApp
 
 
-def __db_get_children_apps(spec):
+def _db_get_children_apps(spec):
     """
     Gets from the database the Apps that are NOT the owner.
     @param spec: String to the app's original XML.
@@ -150,6 +150,13 @@ def get_proposal():
     result["result"] = "success"
     result["code"] = proposal_id
     result["proposal"] = contents
+
+    # Add the parent's application bundle to the response, so that it can be compared
+    # more easily.
+    bm = backend.BundleManager.create_from_existing_app(prop.app.data)
+    bundle = bm.get_bundle(contents["bundle_code"])
+    result["original"] = bundle.to_jsonable()["messages"]
+
     return jsonify(**result)
 
 
@@ -177,6 +184,7 @@ def translate_selectlang():
             return redirect(url_for("translate.translate_index"))
 
         # Get all the existing bundles.
+        # TODO: Use a specific purpose ctor here.
         bm = backend.BundleManager()
         bm.load_full_spec(appurl)
         spec = bm.get_gadget_spec()  # For later

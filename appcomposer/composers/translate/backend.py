@@ -502,9 +502,16 @@ class Bundle(object):
         @return: A resulting bundle which is the merge of the merging_bundle into the base_bundle.
         """
         rb = Bundle(base_bundle.lang, base_bundle.country, base_bundle.group)
+
+        # Copy the base_bundle into rb
+        for ident, msg in base_bundle._msgs.items():
+            rb._msgs[ident] = msg
+
+        # Copy the merging_bundle items over the rb
         for ident, msg in merging_bundle._msgs.items():
             if not ignore_empty or (msg is not None and len(msg) > 0):
-                base_bundle._msgs[ident] = msg
+                rb._msgs[ident] = msg
+
         return rb
 
     @staticmethod
