@@ -1,0 +1,20 @@
+<Module>
+ <ModulePrefs title="Widget ball-white of aquarium">
+ <Require feature="osapi" />
+ </ModulePrefs>
+ <Content type="html" view="home,canvas">
+ <![CDATA[
+        
+
+    <div id="container">Loading...</div>
+
+    <script>
+        var token = shindig.auth.getSecurityToken();
+        var url = '{{ url_for('graasp_authn', _external = True) }}?st=' + token;
+        document.getElementById('container').innerHTML = "<a href='" + url + "' target='_top'>Go to App Composer</a>";
+        console.log("Loading... " + url);
+    </script>
+
+ ]]>
+</Content>
+</Module>
