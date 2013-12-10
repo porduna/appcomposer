@@ -13,7 +13,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="page-header">
-                        <h1 id="apptitle">Adapt a guidance app -  - {{ adaptor_type }}</h1>
+                        <h1 id="apptitle">Adapt a guidance app - {{ adaptor_type }} - {{ name }} {{ n_rows }}</h1>
                     </div>
                 </div>
             </div>
@@ -60,7 +60,7 @@
                                 <div class="tab-pane fade active in" id="domain-one">
                                     <div class="col-lg-12">                                                                        
 
-                                        <form class="form-horizontal" id="object-system-properties" action="{{ url_for('adapt.adapt_edit') }}" method="POST">                      
+                                        <form class="form-horizontal" id="object-system-properties" action="#" method="POST">                      
 
                                             <fieldset>
                                                 <legend>General</legend> 
@@ -191,8 +191,8 @@
                                             
                                             <div class="form-group">
                                                 <div class="col-lg-10 col-lg-offset-2">
-                                                    <a class="btn btn-default" id="adaptcreate" href="{{ url_for('adapt.adapt_create') }}">« Go back to list </a>
-                                                    <input type="hidden" name="app_id" value="{{ app.unique_id }}">                                  
+                                                    <a class="btn btn-default" id="adaptcreate" href="#">« Go back to list </a> <!-- WE NEED TO BUILD WITH app_id or not show this at all or go to INDEX -->
+                                                    <input type="hidden" name="app_id" value="{{ app_id }}">                                  
                                                     <input type="submit" value="Save properties" class="btn btn-success">  
                                                 </div>
                                             </div>                                                                                          
@@ -204,7 +204,7 @@
                         
                                 <div class="tab-pane fade" id="domain-two">
 
-                                    <form class="form-horizontal" id="object-relations-measures" action="{{ url_for('adapt.adapt_edit') }}" method="POST">
+                                    <form class="form-horizontal" id="object-relations-measures" action="#" method="POST">
 
                                     <!-- Second step of Domain editing- IF some_var exists then... ->
                                     <!-- Begin Table :: Object relations -->
@@ -280,8 +280,8 @@
                                     
                                     <div class="form-group">
                                         <div class="col-lg-10 col-lg-offset-2">
-                                            <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_create') }}">« Go back to properties</a>
-                                            <input type="hidden" name="app_id" value="{{ app.unique_id }}">                                  
+                                            <a class="btn btn-default" id="adaptindex" href="#">« Go back to properties</a>
+                                            <input type="hidden" name="app_id" value="{{ app_id }}">                                  
                                             <input type="submit" value="Save measures and relations" class="btn btn-success">  
                                         </div>
                                     </div>                                      
@@ -294,7 +294,7 @@
 
                                 <div class="tab-pane fade" id="experiment">
 
-                                    <form class="form-horizontal" id="object-properties-specs" action="{{ url_for('adapt.adapt_edit') }}" method="POST">
+                                    <form class="form-horizontal" id="object-properties-specs" action="#" method="POST">
 
                                     <!-- Third step : Editing the Experiment...  -->
                                     
@@ -439,8 +439,8 @@
 
                                     <div class="form-group">
                                         <div class="col-lg-10 col-lg-offset-2">
-                                            <a class="btn btn-default" id="adaptmeasures" href="{{ url_for('adapt.adapt_create') }}">« Go back to measures</a>
-                                            <input type="hidden" name="app_id" value="{{ app.unique_id }}">                                  
+                                            <a class="btn btn-default" id="adaptmeasures" href="#">« Go back to measures</a>
+                                            <input type="hidden" name="app_id" value="{{ app_id }}">                                  
                                             <input type="submit" value="Save experiment" class="btn btn-success">  
                                         </div>
                                     </div>
@@ -473,8 +473,9 @@
                                                * Concept mapper & Hypothesis tools: form input.  
                                                Variables to fill: domain = "concepts" of the concept mapper, and "elements" (conditionals+inputs/outputs) of the hypothesis tool, respectively.
                                         -->
-                                        <form class="form-horizontal" method="POST" action={{ url_for('adapt.adapt_edit') }}>                                                                                                                                  
+                                        <form class="form-horizontal" method="POST" action="#">                                                                                                                                  
 
+                                        {% if adaptor_type == 'concept_map' %}
                                         <!-- Block for the Concept map-->
                                             <div class="form-group">
                                                 <label for="concepts" class="col-lg-2 control-label">Concepts:</label>
@@ -482,35 +483,36 @@
                                                     <input type="text" name="concepts" value="{{ concepts|replace('[', '')|replace(']', '')|replace('"', '') }}" data-role="tagsinput">
                                                 </div>
                                             </div>                                          
+                                        {% endif %}                    
 
                                         {% if adaptor_type == 'hypothesis' %}
                                         <!-- The previous block and this one are used by the Hypothesis tool -->
                                             <div class="form-group">
                                                 <label for="conditionals" class="col-lg-2 control-label">Conditionals:</label>
                                                 <div class="col-lg-10">
-                                                    <input type="text" name="conditionals" class="form-control" value="" data-role="tagsinput">
+                                                    <input type="text" name="conditionals" class="form-control" value="{{ conditionals|replace('[', '')|replace(']', '')|replace('"', '') }}" data-role="tagsinput">
                                                 </div>
                                             </div>
                                             
                                             <div class="form-group">
                                                 <label for="inputs" class="col-lg-2 control-label">Inputs:</label>
                                                 <div class="col-lg-10">
-                                                    <input type="text" name="inputs"  value="" data-role="tagsinput">
+                                                    <input type="text" name="inputs"  value="{{ inputs|replace('[', '')|replace(']', '')|replace("'", '') }}" data-role="tagsinput">
                                                 </div>
                                             </div>
                                             
                                             <div class="form-group">
                                                 <label for="outputs" class="col-lg-2 control-label">Outputs:</label>
                                                 <div class="col-lg-10">
-                                                    <input type="text" name="outputs"  value="" data-role="tagsinput">
+                                                    <input type="text" name="outputs"  value="{{ outputs|replace('[', '')|replace(']', '')|replace('"', '') }}" data-role="tagsinput">
                                                 </div>
                                             </div>  
                                             {% endif %}
 
                                             <div class="form-group">
                                                 <div class="col-lg-10 col-lg-offset-2">
-                                                    <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_create') }}">« Go back to list </a>
-                                                    <input type="hidden" name="app_id" value="{{ app.unique_id }}">                                  
+                                                    <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_index') }}">« Go back to index </a>
+                                                    <input type="hidden" name="app_id" value="{{ app_id }}">                                  
                                                     <input type="submit" value="Save" class="btn btn-success"> 
                                                 </div>
                                             </div>                                            
@@ -520,7 +522,15 @@
                                 </div>
                         
                                 <div class="tab-pane fade" id="preview">
-                                  <iframe src="http://localhost:5000/composers/adapt/export/{{ app.unique_id }}/conceptmapper/conceptmapper.html" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+                                   
+                                  {# TODO: These URLs must be built outside the template. #} 
+                                  {% if adaptor_type == 'concept_map' %}  
+                                  <iframe src="http://localhost:5000/composers/adapt/export/{{ app_id }}/conceptmapper/conceptmapper.html" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+                                  {% elif adaptor_type == 'hypothesis' %}
+                                  <iframe src="http://localhost:5000/composers/adapt/export/{{ app_id }}/hypothesis/hypothesis.html" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+                                  {% else %}
+                                  <iframe src="http://localhost:5000/composers/adapt/export/{{ app_id }}/edt/edt.html" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+                                  {% endif %}
                                 </div>                        
                             </div>                                          
                         </div><!-- end wrap concept forms-->  

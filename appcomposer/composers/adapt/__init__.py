@@ -2,6 +2,7 @@ from flask import Blueprint, flash, json, redirect, render_template, request, se
 
 import appcomposer.appstorage.api as appstorage
 from appcomposer.appstorage.api import create_app, get_app, update_app_data, db_session
+from urlparse import urlparse
 
 from forms import AdaptappCreateForm
 
@@ -17,9 +18,7 @@ info = {
 
     'new_endpoint': 'adapt.adapt_index',
     'create_endpoint': 'adapt.adapt_create',    
-    'edit_endpoint': 'adapt.adapt_edit',
-    'open_endpoint': 'adapt.adapt_open', 
-    'delete_endpoint': 'dummy.delete',         
+    'edit_endpoint': 'adapt.adapt_edit',        
 
     'name': 'Adaptor Composer',
     'description': 'Adapt an existing app.'
@@ -48,25 +47,25 @@ def adapt_index():
     elif request.method == "POST":
 
         adaptor_type = request.form["adaptor_type"]
-        if adaptor_type is None:
+        if adaptor_type is None or len(adaptor_type) == 0:
             flash("adaptor_type not present", "error")
 
             # An adaptor_type is required.
             return redirect(url_for("adapt.adapt_index"))    
-                                        
-        return redirect(url_for("adapt.adapt_create", adaptor_type = adaptor_type))
+
+        # In order to show the list of apps we redirect to other url                                         
+        return redirect(url_for("adapt.adapt_create", adaptor_type = adaptor_type))                   
 
 
-@adapt_blueprint.route("/create", methods=["GET", "POST"])
-def adapt_create():
+@adapt_blueprint.route("/create/<adaptor_type>/", methods=["GET", "POST"])
+def adapt_create(adaptor_type):
     """
     adapt_create()
     Loads the form for creating new adaptor apps and the list of adaptor apps from a specific type.
-    @return: The app unique id and its name.
+    @return: The app unique id.
     """    
     
-    apps = db_session.query(App).filter_by(owner_id=1).all()    
-    adaptor_type = request.args.get("adaptor_type")  
+    apps = db_session.query(App).filter_by(owner_id=1).all()     
 
     def build_edit_link(app):
         return url_for("adapt.adapt_edit", app_id=app.unique_id, adaptor_type = adaptor_type)  
@@ -79,98 +78,240 @@ def adapt_create():
             return "Missing parameters (Adaptor Type)", 400                     
 
         return render_template('composers/adapt/create.html', apps=apps, adaptor_type = adaptor_type, build_edit_link=build_edit_link) 
+        #return render_template('composers/adapt/create.html', apps=apps, adaptor_type = adaptor_type) 
 
     # If a post is received, we are creating an adaptor app.
     elif request.method == "POST":
-                   
-        name = request.form["app_name"]
-        description = request.form["app_description"]      
-        adaptor_type = request.form["adaptor_type"]                      
 
-        # Build the adaptor composer JSON schema.
-             
+        # We read the app details provided by the user                        
+        name = request.form["app_name"]
+        app_description = request.form["app_description"]      
+        adaptor_type = request.form["adaptor_type"]                               
+
+        if name is None or len(name) == 0:
+            flash("An application name is required", "error")
+            return redirect(url_for("adapt.adapt_create", adaptor_type = adaptor_type))
+
+        if app_description is None or len(app_description) == 0:
+            app_description = "No description"
+                 
+        # Build the basic JSON schema of the adaptor app           
         data = {
-            "dummy_version": 1,
-            "name": name,
-            "description": description,
-            "adaptor_type": adaptor_type,
-            "concepts": [],
-            "conditionals": "", 
-            "inputs": "",
-            "outputs": ""}
+            'adaptor_version': '1',
+            'name': str(name),
+            'description': str(app_description),
+            'adaptor_type': str(adaptor_type)
+        }               
+
+        #Dump the contents of the previous block and check if an app with the same name exists.
+        # (TODO): do we force different names even if the apps belong to another adaptor type?
+        app_data = json.dumps(data)
 
         try:
-            app = appstorage.create_app(name, "dummy", data)
+            app = appstorage.create_app(name, "dummy", app_data)
         except appstorage.AppExistsException:
             flash("An App with that name already exists", "error")
                         
             return render_template("composers/adapt/create.html", name=name, apps = apps, adaptor_type = adaptor_type, build_edit_link=build_edit_link)
+        
+        #Assign a unique identifier to the created app
+        app_id =app.unique_id
+                
+        return redirect(url_for("adapt.adapt_edit", app_id = app_id))               
 
-        return redirect(url_for("adapt.adapt_edit", app_id =app.unique_id, app_name = name, adaptor_type = adaptor_type))        
+        #return url_for("adapt.adapt_edit", app_id =app_id, _external=True)
 
 
-@adapt_blueprint.route("/edit", methods = ['GET', 'POST'])
-def adapt_edit():
+@adapt_blueprint.route("/edit/<app_id>/", methods = ['GET', 'POST'])
+def adapt_edit(app_id):
     """
     adapt_edit()
     Form-based user interface for editing the contents of an adaptor app.
     @return: The final app with all its fields stored in the database.
     """        
          
-    # If we receive a get we just want to show the page.
-    if request.method == "GET":
-        
-        app_id = request.args.get("app_id")
-        adaptor_type = request.args.get("adaptor_type")
-                
+    # If a GET request is received, the page is shown.
+    if request.method == "GET":        
+                  
         if not app_id:
             return "app_id not provided", 400
         app = appstorage.get_app(app_id)
         if app is None:
             return "App not found", 500
-        
-        data = json.loads(app.data)
-        concepts = data["concepts"]                                
 
-        return render_template("composers/adapt/edit.html", app=app, concepts = concepts, adaptor_type = adaptor_type)
+        # Common data to pass to the template (the URL only contains the app_id)
+        data = json.loads(app.data)     
+        name = data["name"]            
+        adaptor_type = data["adaptor_type"]        
+        description = data["description"]                           
+        n_rows = 0                                             
+
+        # If the app data is empty (basic JSON schema), we are editing a new app. Otherwise, the data values are loaded from the database.
+        if len(data) == 4:
+                   
+            return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, n_rows = n_rows)        
+        
+        else:       
+            if adaptor_type == 'concept_map':
+                
+                concepts = data["concepts"]  
+                return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, concepts = concepts)            
+            
+            elif adaptor_type == 'hypothesis':
+                
+                conditionals_stored = data["conditionals"]
+                inputs_stored = data["inputs"]
+                outputs_stored = data["outputs"]      
+
+                # Format to load: inputs = [ {'text': 'immersed object','type': 'input'}, {'text': 'pressure','type': 'input'},... ]            
+                def load_hypothesis_list(list_stored):
+                    lst = []
+                    for item in list_stored:
+                        lst.append(item['text'])                
+                    return lst     
+                                     
+                conditionals = load_hypothesis_list(conditionals_stored)
+                inputs = load_hypothesis_list(inputs_stored)
+                outputs = load_hypothesis_list(outputs_stored)
+                        
+                return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, conditionals = conditionals, inputs = inputs, outputs = outputs)            
+            
+            else:
+                
+                # Default number of rows for the experiment design
+                n_rows = 5
+                return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, conditionals = conditionals, inputs = inputs, outputs = outputs)                                                            
     
+    # If a POST request is received, the adaptor app is saved the database.    
     elif request.method == "POST":
         
-        app_id = request.form["app_id"]                 
-        
-        # Retrieve the list of concepts                
-        concepts = json.dumps(request.form["concepts"] .split(','))
+        app_id = request.form["app_id"]                                       
         
         # Select the app we're editing by its id.
-        app = appstorage.get_app(app_id)
+        app = appstorage.get_app(app_id)                        
         
+        # Common data to pass to the template (the URL only contains the app_id)
         data = json.loads(app.data)     
-        name = request.args.get("app_name")  
+        name = str(data["name"])            
+        adaptor_type = str(data["adaptor_type"])        
+        description = str(data["description"])                           
+        n_rows = 0                                             
         
-        # FIX: App data is not saved,
-        #description = app.data["description"]     
-        #adaptor_type = app.data["adaptor_type"]    
+        # SPECIFIC CONTROL STRUCTURE FOR THE SELECTED ADAPTOR TYPE --- TO CHANGE IN #74        
+        if adaptor_type == 'concept_map':            
+            '''
+            data = {
+                'adaptor_version': '1',
+                'name': str(name),
+                'description': str(app_description),
+                'adaptor_type': str(adaptor_type),
+                'concepts': list()}                         
+            '''            
+            # Retrieve the list of concepts and convert it to the format supported by the app.  
+            # Request-- concepts: "a,b,c"  -> Concepts (python object) = ['a','b','c']                
+      
+            concepts = json.dumps(request.form["concepts"].split(','))   
 
-        # Build the adaptor composer JSON.
-        data = {
-            "dummy_version": 1,
-            "name": name,
-            "description": "",
-            "adaptor_type": "",
-            "concepts": concepts,
-            "conditionals": "", 
-            "inputs": "",
-            "outputs": ""}    
+            # Build the JSON of the current concept map.
+            data = {
+                "adaptor_version": 1,
+                "name": name,
+                "description": description,
+                "adaptor_type": adaptor_type,
+                "concepts": concepts}               
+        
+            appstorage.update_app_data(app, data)
+            flash("Concept map saved successfully", "success")
+                      
+            return render_template("composers/adapt/edit.html", app=app, app_id = app_id, adaptor_type = adaptor_type, concepts = data["concepts"])
+             
+        elif adaptor_type == 'hypothesis':
+            '''
+            data = {
+                'adaptor_version': '1',
+                'name': str(name),
+                'description': str(app_description),
+                'adaptor_type': str(adaptor_type),
+                'conditionals': list(), 
+                'inputs': list(),
+                'outputs': list()} 
+            '''            
 
-        #flash(data, "success") 
-        #flash(app.data, "success")  
-        #-- DIFFERENCE between these two variables? First: single quotes. Second: double quotes
+            # Build the JSON of the current hypothesis tool.                    
+            conditionals_orig = request.form["conditionals"].split(',')                         
+            inputs_orig = request.form["inputs"].split(',')         
+            outputs_orig = request.form["outputs"].split(',')                     
 
-        appstorage.update_app_data(app, data)
-        #flash(concepts, "success")
-        flash("Saved successfully", "success")        
+            # Conversion of the form input values to the hypothesis tool format below:
+            # Request-- input_name = "input_type", value =  "a,b,c"  -> Output format = [ {'text':'a', 'type': 'input_type'}, {'text':'b', 'type': 'input_type', ...} ]
+            def build_hypothesis_list(list_orig, element_type):
+                lst = []
+                for item in list_orig:
+                    dic = { 'text': item, 'type': str(element_type)}
+                    lst.append(dic)                                 
+                return lst
+                            
+            # A reserved word showed up.                        
+            no_reserved = 'inputs'
+            reserved_element_type = no_reserved[0:-1]
+            
+            inputs = json.dumps( build_hypothesis_list(inputs_orig, str(reserved_element_type)) )        
+            outputs = json.dumps( build_hypothesis_list(outputs_orig, 'output')  )
+            conditionals = json.dumps( build_hypothesis_list(conditionals_orig, 'conditional') )
 
-        return render_template("composers/adapt/edit.html", app=app, concepts = data["concepts"])
+            data = {
+                "adaptor_version": 1,
+                "name": name,
+                "description": description,
+                "adaptor_type": adaptor_type,
+                "conditionals": conditionals, 
+                "inputs": inputs,
+                "outputs": outputs} 
+
+            appstorage.update_app_data(app, data)
+            #flash("Hypothesis saved successfully", "success")
+            flash(data, "success")
+
+            return render_template("composers/adapt/edit.html", app=app, app_id = app_id, adaptor_type = adaptor_type, conditionals = data["conditionals"], inputs = data["inputs"], outputs = data["outputs"])         
+        
+        else:
+            '''
+            # Experiment design tool monster specification. [!] name == domain name                                
+            data = {
+                'adaptor_version': '1',
+                'name': str(name),
+                'description': str(app_description),
+                'adaptor_type': str(adaptor_type),
+                'object properties': [{ 'name': str(objprop_name), 'type': str(objprop_type), 'symbol': str(objprop_symbol), 'unit': str(obj_propunit), 'obvalues': str(objprop_values) }],
+                'object_relations':  [{ 'name': str(relname), 'object_properties':list(),'relation': str(relation) }], 
+                'system_properties':  [{ 'name': str(sysprop_name), 'type':str(sysprop_type),'values': str(sysprop_values), 'symbol': str(sysprop_symbol), 'unit': str(sysprop_unit) }], 
+                'object_measures': [{ 'name': str(objmeas_name), 'type': str(objmeas_type), 'values': list(), 'unit': str(objmeas_unit), 'depends_on': { 'object_properties': list(), 'system_properties': list() }} ],    
+
+                # Warning: There can be more than one experiment stored here
+                'expname': str(exp_name),
+                'description': str(exp_description),
+                'domain': str(domain_name),
+                'object_property_selection': list(),
+                'object_measure_selection': list(),
+                'system_property_selection': list(),
+                'object_property_specification': [ {'property': str(objpropspec_name),'initial': str(), 'unit': str(), 'values': list(), 'range': {'minimum': str(), 'maximum': str(), 'increment': str()}} ],
+                'system_property_values': [ {'property': str(), 'value': str()} ]
+            }                        
+            '''
+            
+            # Default number of rows for the experiment design
+            n_rows = 5       
+          
+            appstorage.update_app_data(app, data)
+            flash("Experiment design saved successfully", "success")
+
+            return render_template("composers/adapt/edit.html", app=app, app_id = app_id, adaptor_type = adaptor_type, n_rows = n_rows) 
+
+            #flash(data, "success") 
+            #flash(app.data, "success")  
+            #-- DIFFERENCE between these two variables? First: single quotes. Second: double quotes      
+
+            #return render_template("composers/adapt/edit.html", app=app, app_id = app_id, concepts = data["concepts"], conditionals = data["conditionals"], inputs = data["inputs"], outputs = data["outputs"]) 
 
 
 @adapt_blueprint.route("/export/<app_id>/conceptmapper/conceptmapper.html")
@@ -224,6 +365,8 @@ def hypothesis_index(app_id):
     # instead of DomainTemplates.js
     # The domain name is not generated here.
 
+    #app = get_app(app_id)    
+
     return render_template("composers/adapt/hypothesis/hypothesis.html", app_id = app_id)
 
 
@@ -251,10 +394,15 @@ def hypothesis_domain(app_id):
 
     """    
     
-    #json_str = domain_orig
     app = get_app(app_id)
-    #update_app_data(app, domain_orig)
-    domain = app.data   
+    
+    data = json.loads(app.data)
+    conditionals = data["conditionals"] 
+    inputs = data["inputs"] 
+    outputs = data["outputs"]
+
+    domain = conditionals + inputs + outputs   
+    
     # We cannot prettify the JSON in this template because it is stored with other JS content
     return render_template("composers/adapt/hypothesis/domain.js", domain = domain)    
 
@@ -334,17 +482,14 @@ def edt_domain(app_id):
     return render_template("composers/adapt/edt/domain.js", domain = json.dumps(domain, indent = 4), experiment = json.dumps(experiment, indent = 4))
 
 
-## Tests
+## Tests            
 
-@adapt_blueprint.route("/go", methods = ['GET', 'POST'])
-def adapt_go():
-    if request.method == "GET":    
-        app_id = "1b5d3349-ef68-4774-a6d9-50c8ddeaa245"
-        app = appstorage.get_app(app_id)
-        
-        
-        data = json.loads(app.data)        
-        concepts = data["concepts"]
-        description = data["description"]
-        return concepts
-    return render_template("composers/adapt/index.html") 
+@adapt_blueprint.route("/more/<uuid_test>/", methods = ['GET', 'POST'])
+def adapt_uuid(uuid_test):
+    return uuid_test
+
+"""
+@app.errorhandler(404)
+def not_found(error):
+    return render_template('error.html'), 404
+"""
