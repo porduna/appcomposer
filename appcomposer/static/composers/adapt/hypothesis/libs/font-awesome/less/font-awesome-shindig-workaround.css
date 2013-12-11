@@ -27,8 +27,8 @@
  * -------------------------- */
 @font-face {
   font-family: 'FontAwesome';
-  src: url('../font/fontawesome-webfont.eot%3Fv=3.2.1');
-  src: url('../font/fontawesome-webfont.eot%3F') format('embedded-opentype'), url('../font/fontawesome-webfont.woff%3Fv=3.2.1') format('woff'), url('../font/fontawesome-webfont.ttf%3Fv=3.2.1') format('truetype'), url('http://go-lab.gw.utwente.nl/sources/libs/font-awesome/font/fontawesome-webfont.svg#fontawesomeregular?v=3.2.1') format('svg');
+  src: url('../font/fontawesome-webfont.eot');
+  src: url('../font/fontawesome-webfont.eot') format('embedded-opentype'), url('../font/fontawesome-webfont.woff') format('woff'), url('../font/fontawesome-webfont.ttf') format('truetype'), url('http://go-lab.gw.utwente.nl/sources/libs/font-awesome/font/fontawesome-webfont.svg#fontawesomeregular') format('svg');
   font-weight: normal;
   font-style: normal;
 }
