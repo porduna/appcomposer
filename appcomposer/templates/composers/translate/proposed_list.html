@@ -14,6 +14,9 @@
 
     $(document).ready( function() {
 
+        // Clean up the preview div.
+        $("#preview_div").html("");
+
         var proposal = $("#proposals");
 
         var options = proposal.find("option");
@@ -52,17 +55,30 @@
     });
 
 
+    // Function that intercepts clicks on Accept before the submit
+    // POST actually takes place.
     function onAcceptSubmit(event)
     {
-        ev = event;
-
-        clickedButton = $("button[type=submit][clicked=true]");
+        var clickedButton = $("button[type=submit][clicked=true]");
         if(clickedButton[0].id == "acceptButton")
         {
-            alert("Accept clicked");
-        }
+            var elements = $("#preview_div div");
+            var dict = {};
 
-        event.preventDefault();
+            elements.each(function(index){
+                var key = this.children[0].innerText;
+                var value = this.children[2].value;
+                var enabled = $(this.children[3]).hasClass("glyphicon-ok");
+
+                if(enabled)
+                {
+                    dict[key] = value;
+                }
+            });
+
+            // Store the data as a JSON on the hidden field created for that purpose.
+            $("#data").val(JSON.stringify(dict));
+        }
     }
 
 
@@ -190,7 +206,14 @@
                     {# This is necessary so that the next page knows which App to load. #}
                     <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
 
+                    {# Value set from JavaScript #}
+                    <input type="hidden" id="data" name="data" value=""/>
+
+                    {% if proposals|length > 0 %}
                     <legend>Select a proposal and choose or edit the translations</legend>
+                    {% else %}
+                    <legend>There are currently no translation proposals for this app</legend>
+                    {% endif %}
 
                     <div class="col-lg-4 col-md-4">
 

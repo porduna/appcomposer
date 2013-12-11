@@ -392,6 +392,11 @@ def translate_proposed_list():
         if proposal_id is None:
             return "Proposal not selected", 500
 
+        merge_data = request.values.get("data")
+        if merge_data is None:
+            return "Merge data was not provided", 500
+        merge_data = json.loads(merge_data)
+
         # TODO: Consider creating API for this.
         # TODO: Optimize this. We already have the vars.
         proposal = db_session.query(AppVar).filter_by(app=app, var_id=proposal_id).first()
@@ -399,9 +404,11 @@ def translate_proposed_list():
             return "Proposal not found", 500
 
         flash("Proposal loaded: " + proposal.value)
+
         data = json.loads(proposal.value)
-        proposed_bundle = backend.Bundle.from_jsonable(data["bundle_contents"])
         bundle_code = data["bundle_code"]
+
+        proposed_bundle = backend.Bundle.from_messages(merge_data, bundle_code)
 
         # TODO: Improve this code.
         bm = backend.BundleManager.create_from_existing_app(app.data)
@@ -414,14 +421,13 @@ def translate_proposed_list():
             merged_bundle = backend.Bundle.merge(base_bundle, proposed_bundle)
             bm._bundles[bundle_code] = merged_bundle
 
-        if False:
-            update_app_data(app, bm.to_json())
+        update_app_data(app, bm.to_json())
 
         flash("Merge done.", "success")
 
-        if False:
-            # Remove the proposal from the DB.
-            remove_var(proposal)
+
+        # Remove the proposal from the DB.
+        remove_var(proposal)
 
         # Remove it from our current proposal list as well, so that it isn't displayed anymore.
         props = [prop for prop in props if prop["id"] != proposal_id]
