@@ -19,7 +19,7 @@ def upgrade():
     op.create_table('AppVars',
     sa.Column('var_id', sa.Integer(), nullable=False),
     sa.Column('name', sa.Unicode(length=50), nullable=True),
-    sa.Column('value', sa.Unicode(), nullable=True),
+    sa.Column('value', sa.Unicode(length=500), nullable=True),
     sa.Column('app_id', sa.Integer(), nullable=False),
     sa.ForeignKeyConstraint(['app_id'], ['Apps.id'], ),
     sa.PrimaryKeyConstraint('var_id')
