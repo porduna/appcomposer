@@ -143,7 +143,7 @@ class AppVar(Base):
 
     var_id = Column(Integer, primary_key=True)
     name = Column(Unicode(50))
-    value = Column(Unicode)
+    value = Column(Unicode(500))
 
     app_id = Column(Integer, ForeignKey("Apps.id"), nullable=False)
     app = relation("App", backref=backref("appvars"))
