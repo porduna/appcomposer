@@ -4,14 +4,18 @@
  </ModulePrefs>
  <Content type="html" view="home,canvas">
  <![CDATA[
-        
+ 
+    <link href="{{ url_for('static', filename='css/bootstrap.css', _external=True) }}" rel="stylesheet">
 
-    <div id="container">Loading...</div>
+    
+    <div style="width:100%; text-align: center">
+        <div id="container">Loading...</div>
+    </div>
 
     <script>
         var token = shindig.auth.getSecurityToken();
         var url = '{{ url_for('graasp_authn', _external = True) }}?st=' + token;
-        document.getElementById('container').innerHTML = "<a href='" + url + "' target='_top'>Go to App Composer</a>";
+        document.getElementById('container').innerHTML = "<a href='" + url + "' class='btn btn-success' target='_top'>Go to App Composer</a>";
         console.log("Loading... " + url);
     </script>
 
