@@ -292,6 +292,8 @@ def translate_edit():
 
     # Retrieve the application we want to view or edit.
     app = get_app(appid)
+    if app is None:
+        return "500: App not found", 500
 
     bm = backend.BundleManager.create_from_existing_app(app.data)
     spec = bm.get_gadget_spec()
