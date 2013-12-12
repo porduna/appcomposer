@@ -155,7 +155,11 @@ def get_proposal():
     # more easily.
     bm = backend.BundleManager.create_from_existing_app(prop.app.data)
     bundle = bm.get_bundle(contents["bundle_code"])
-    result["original"] = bundle.to_jsonable()["messages"]
+    if bundle:
+        result["original"] = bundle.to_jsonable()["messages"]
+    else:
+        # If the bundle doesn't exist, the original messages dict should be empty.
+        result["original"] = {}
 
     return jsonify(**result)
 
