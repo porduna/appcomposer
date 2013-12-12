@@ -1,0 +1,51 @@
+{% set link = 'home' %}
+{% extends 'master.html' %}
+{% block body %}
+
+<div class="row text-center">
+    <h1>Login through Graasp</h1>
+
+    <p>Using Graasp for logging in takes only two small steps!</p>
+</div>
+
+<div class="row">
+    <div class="span6">
+    
+        <div class="text-center">
+            <h3>Step 1: create an app in your Graasp space</h3>
+        </div>
+
+        <p>If you have never created the App Composer login app, create it by clicking on the following button.</p> 
+
+        <div class="text-center" style="margin: 10px">
+            <a href="{{ space_creation_link }}" class="btn btn-success">Create login app</a>
+        </div>
+        
+        <p>If you have created it in the past, simply go to <a href="https://graasp.epfl.ch/">your graasp space</a>.</p>
+        <p>Alternatively, you can also do this process manually, by taking the following URL:</p>
+        <div class="text-center">
+            <input type="text" value="{{ url_for('graasp_widget', _external = True) }}" style="width: 300px"/>
+        </div>
+        <p>And pasting it in your Space in Graasp Home Space by clicking on "New application".</p>
+    </div>
+
+    <div class="span6">
+        <div class="text-center">
+            <h3>Step 2: go to that widget</h3>
+            <br/>
+            <br/>
+            <a href="https://graasp.epfl.ch/" class="btn btn-success">Go to your space in Graasp</a>
+
+        </div>
+
+
+    </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    $(":pre").click(function(){
+        this.select();
+    });
+{% endblock %}

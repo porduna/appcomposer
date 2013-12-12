@@ -29,10 +29,6 @@
         font-weight: bold;
       }
 
-      .login-form {
-        margin-left: 65px;
-      }
-
       .container {
         width: 600px;
       }
@@ -45,8 +41,11 @@
 {% from "user/wl_form_helpers.html" import render_field %}
 
     <div class="container">
+
     <div class="content">
+
         <div class="row">
+
             <div style="margin:0 auto;float:none;text-align:center;">
                 <br/>
                 <h1>Welcome to the App Composer!</h1>
@@ -54,7 +53,20 @@
                 <br/>
             </div>
 
-            <div class="text-center login-form">
+            <div class="span2">
+                <div style="text-align: center">
+                    <h3>Use Graasp</h3>
+                    <a href="{{ url_for('graasp_login') }}"><img src="{{ url_for('static', filename='graasp.jpg') }}" style="margin: 20px"/></a><br/>
+                    <a href="{{ url_for('graasp_login') }}" class="btn btn-primary btn-block">Log in</a>
+                </div>
+            </div>
+
+            <div class="span4 text-center login-form">
+                <div style="text-align: center; width: 100%">
+                    <h3>Local users</h3>
+                    <br/>
+                    <br/>
+                </div>
                 <form method="POST" action="{{ url_for('login', next = next) }}" class="form-horizontal">
                     <fieldset>
                     {{ form.hidden_tag() }}
@@ -74,12 +86,17 @@
 
                     <div class="control-group">
                         <div class="controls">
-                            <button type="submit" class="btn btn-primary btn-block">Login</button>
+                            <button type="submit" class="btn btn-primary btn-block">Log in</button>
                         </div>
                     </div>
-                    <a href="{{ url_for('index') }}" class="btn">Back</a>
                     </fieldset>
-                </form>
+                </form>                    
+            </div>
+        </div>
+        <div class="row">
+            <div class="span1">
+                <br>
+                <a href="{{ url_for('index') }}" class="btn">Back</a>
             </div>
         </div>
     </div>

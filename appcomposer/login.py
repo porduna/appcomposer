@@ -1,3 +1,8 @@
+import json
+import datetime
+import urllib
+import urllib2
+
 from flask import session, render_template, render_template_string, flash
 
 from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField, validators
@@ -21,6 +26,14 @@ class LoginForm(Form):
     password = PasswordField(u"Password:", validators=[validators.Required()])
 
 
+def login_user(login, name):
+    # Store the username in the session object.
+    # The session is stored client-side but cryptographically signed.
+    session["logged_in"] = True
+    session["login"] = login
+    session["name"] = name
+   
+
 @app.route('/login', methods=["GET", "POST"])
 def login():
     next_url = request.args.get('next', '')
@@ -29,15 +42,12 @@ def login():
 
     # This is an effective login request
     if form.validate_on_submit():
-        num = db_session.query(User).filter_by(login=form.login.data, auth_data=form.password.data).count()
-        if num == 0:
+        user = db_session.query(User).filter_by(login=form.login.data, auth_data=form.password.data).first()
+        if user is None:
             flash("Invalid login")
         else:
-            # Store the username in the session object.
-            # The session is stored client-side but cryptographically signed.
-            session["logged_in"] = True
-            session["login"] = form.login.data
-            return redirect(next_url or url_for("user.index"))
+            login_user(form.login.data, user.name)
+            return redirect(next_url or url_for('user.index'))
 
     return render_template("login/login.html", form=form, next=next_url)
 
@@ -47,9 +57,73 @@ def logout():
     if "logged_in" in session and session["logged_in"]:
         session["logged_in"] = False
         session["login"] = ""
-        return redirect(url_for("login"))
+        return redirect(url_for("index"))
     else:
         return render_template_string("You are not logged in.")
 
+@app.route('/graasp-login')
+def graasp_login():
+    origin_url = url_for('graasp_login', _external = True)
+    widget_url = url_for('graasp_widget', _external = True)
 
+    data = {
+        "url": origin_url,
+        "phases": [
+            {
+                "items": [
+                    {
+                        "url": widget_url,
+                        "name": "Login app",
+                        "description": "Login app for App composer"
+                    },
+                ],
+                "name": "Login",
+                "description": "You may log in the app composer from here."
+            }
+        ],
+        "name": "App Composer log in space",
+        "description": "<p>In this space, you may log in the app composer automatically</p>\n"
+    }
+
+    url_base = "https://graasp.epfl.ch/spaces/instantiate/ils.json?ils="
+
+    space_creation_link = url_base + urllib.quote(json.dumps(data))
+    return render_template('login/graasp.html', space_creation_link = space_creation_link)
+
+SHINDIG = 'https://shindig.epfl.ch'
+def url_shindig(url):
+    return '%s%s' % (SHINDIG, url)
+
+def graasp_user(id):
+    return 'graasp_%s' % id
+
+@app.route('/graasp/authn/')
+def graasp_authn():
+    st = request.args.get('st', '')
+    # Step 1: do something with security token (e.g. check who is)
+    current_user_str  = urllib2.urlopen(url_shindig("/rest/people/@me/@self?st=%s" % st)).read()
+    current_user_data = json.loads(current_user_str)
+
+    name    = current_user_data['entry'].get('displayName') or 'anonymous'
+    user_id = current_user_data['entry'].get('id') or 'no-id'
+
+    # TODO: if user_id == '2', 'no_id'...: error
+
+    # Step 2: check if the user is in the database.
+    existing_user = db_session.query(User).filter_by(login=graasp_user(user_id)).first()
+    if existing_user is None:
+        # Create the user
+        new_user = User(login = graasp_user(user_id), name = name, password = '', email = '', organization = 'Graasp', role = '', creation_date = datetime.datetime.now(), last_access_date = datetime.datetime.now(), auth_system = 'graasp', auth_data = user_id)
+        db_session.add(new_user)
+        db_session.commit()
+    
+    # Step 3: log in the user
+    login_user(graasp_user(user_id), name)
+
+    # Redirect to the main user interface
+    return redirect(url_for('user.index'))
+
+@app.route('/login-widget.xml')
+def graasp_widget():
+    return render_template('login/widget.xml')
 
