@@ -1,24 +1,14 @@
 
-from flask import session, render_template, render_template_string
+from flask import request, redirect
+from appcomposer.appstorage.api import create_app
+from appcomposer.appstorage.api import add_var, get_all_vars, set_var, remove_var, create_app
 
-from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
-from flask import request, redirect, url_for, session
+
 
 from appcomposer.login import current_user
 from appcomposer.db import db_session
 from appcomposer.application import app as flask_app
 from appcomposer.models import App
-
-import random
-
-import json
-
-
-
-# TODO: This whole module should be made secure, and cleaned up.
-
-
-
 
 
 @flask_app.route('/appstorage', methods=["GET", "POST"])
@@ -54,12 +44,26 @@ def list():
 def get(appid):
     app = db_session.query(App).filter_by(unique_id=appid).first()
     if app is None:
-        return ("404: App doesn't exist", 404)
+        return "404: App doesn't exist", 404
     if request.method == "DELETE":
         db_session.delete(app)
         db_session.commit()
     else:
         return app.to_json()
+
+
+@flask_app.route('/appstorage/test/<appid>', methods=["GET", "POST", "DELETE"])
+def test(appid):
+    # Remove all existing testvars.
+    for v in get_all_vars(appid):
+        remove_var(v)
+
+    add_var(appid, "testvar", "Test Value")
+    vars = get_all_vars(appid)
+
+    var = set_var(appid, "testvar", "Hello")
+
+    return repr(vars)
 
 
 @flask_app.route('/appstorage/save', methods=["GET", "POST"])

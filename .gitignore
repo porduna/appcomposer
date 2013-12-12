@@ -1,6 +1,9 @@
 # Appcomposer
 config.py
 database.db
+stdout.txt
+stderr.txt
+errors.log
 
 # vim
 *.swp

@@ -7,7 +7,10 @@
         <div class="hero-unit">
             <h1>Welcome {{session.login}}!</h1>
             <p>This is the main page of the App Composer. The App Composer lets you customize an application easily, in different ways. Choose the type of App Composer you want to use, and get started!</p>
-            <p><a href="#" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+            <p>
+                <a href="#" class="btn btn-primary btn-large">Learn more &raquo;</a>
+                <a href="{{ url_for("user.apps.index") }}" class="btn btn-success btn-large">Go to My Apps &raquo</a>
+            </p>
         </div>
 
 
