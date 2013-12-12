@@ -37,7 +37,7 @@ def login():
             # The session is stored client-side but cryptographically signed.
             session["logged_in"] = True
             session["login"] = form.login.data
-            return redirect(next_url or "/user")
+            return redirect(next_url or url_for("user.index"))
 
     return render_template("login/login.html", form=form, next=next_url)
 
@@ -47,7 +47,7 @@ def logout():
     if "logged_in" in session and session["logged_in"]:
         session["logged_in"] = False
         session["login"] = ""
-        return redirect("/")
+        return redirect(url_for("login"))
     else:
         return render_template_string("You are not logged in.")
 
