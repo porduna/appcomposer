@@ -8,7 +8,6 @@ from forms import AdaptappCreateForm
 
 # Required imports for a customized app view for the adapt tool (a possible block to be refactored?)
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
-from appcomposer.application import COMPOSERS, COMPOSERS_DICT
 from appcomposer.models import App
 
 
