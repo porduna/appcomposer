@@ -1,5 +1,6 @@
 from flask import Blueprint, flash, json, redirect, render_template, request, session, url_for
 
+from collections import OrderedDict
 import appcomposer.appstorage.api as appstorage
 from appcomposer.appstorage.api import create_app, get_app, update_app_data, db_session
 from urlparse import urlparse
@@ -8,7 +9,6 @@ from forms import AdaptappCreateForm
 
 # Required imports for a customized app view for the adapt tool (a possible block to be refactored?)
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
-from appcomposer.application import COMPOSERS, COMPOSERS_DICT
 from appcomposer.models import App
 
 
@@ -210,7 +210,8 @@ def adapt_edit(app_id):
             # Retrieve the list of concepts and convert it to the format supported by the app.  
             # Request-- concepts: "a,b,c"  -> Concepts (python object) = ['a','b','c']                
       
-            concepts = json.dumps(request.form["concepts"].split(','))   
+            concepts = ', '.join(list(OrderedDict.fromkeys([ s.strip() for s in request.form["concepts"].split(',') ])))
+            print concepts
 
             # Build the JSON of the current concept map.
             data = {
@@ -330,6 +331,22 @@ def conceptmapper_index(app_id):
     
     return render_template("composers/adapt/conceptmapper/conceptmapper.html", app_id = app_id)
 
+@adapt_blueprint.route("/export/<app_id>/conceptmapper/widget.xml")
+def conceptmapper_widget(app_id):
+    """
+    conceptmapper_widget(app_id)
+    This function points to the concept map instance.
+
+    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
+    @return: The webpage of a concept map.
+    """  
+        
+    # In the templates, conceptmapper.html points to {{ url_for('adapt.conceptmapper_domain', app_id = app_id) }} 
+    # instead of domain.js (In the original app, the "concepts" variable was stored into the index.html file)
+    # The domain name is not generated here.
+    
+    return render_template("composers/adapt/conceptmapper/widget.xml", app_id = app_id)
+
 
 @adapt_blueprint.route("/export/<app_id>/conceptmapper/domain.js")
 def conceptmapper_domain(app_id):
@@ -346,7 +363,7 @@ def conceptmapper_domain(app_id):
     app = get_app(app_id)
     
     data = json.loads(app.data)
-    domain = data["concepts"]      
+    domain = json.dumps([ s.strip() for s in data["concepts"].split(',') ])
 
     return render_template("composers/adapt/conceptmapper/domain.js", domain = domain)    
 
