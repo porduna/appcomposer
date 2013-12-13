@@ -2,6 +2,7 @@
 This module contains a few appstorage-related functions which are meant to be used from
 other modules.
 """
+import datetime
 
 from appcomposer.login import current_user
 from appcomposer.db import db_session
@@ -82,6 +83,11 @@ def get_app(unique_id):
     restrictions. Not even being logged on.
     """
     app = db_session.query(App).filter_by(unique_id=unique_id).first()
+
+    # TODO: last_access_date is not updated.
+    # Consider whether it should be (would require an update, which would mean this
+    # method, which is used very often, would be significantly slower).
+
     return app
 
 
@@ -136,6 +142,8 @@ def save_app(composed_app):
     if composed_app.owner != current_user():
         raise NotAuthorizedException()
 
+    composed_app.modification_date = composed_app.last_access_date = datetime.datetime.now()
+
     db_session.add(composed_app)
     db_session.commit()
 
@@ -162,6 +170,7 @@ def update_app_data(composed_app, data):
         raise NotAuthorizedException()
 
     composed_app.data = data
+    composed_app.modification_date = composed_app.last_access_date = datetime.datetime.now()
 
     db_session.add(composed_app)
     db_session.commit()
