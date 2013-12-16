@@ -9,6 +9,7 @@ from babel import Locale
 from appcomposer import db
 from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, add_var, remove_var
 from appcomposer.models import AppVar, App
+from appcomposer.babel import lazy_gettext
 from forms import UrlForm, LangselectForm
 
 
@@ -21,8 +22,8 @@ info = {
     'edit_endpoint': 'translate.translate_selectlang',
     'delete_endpoint': 'dummy.delete',
 
-    'name': 'Translate Composer',
-    'description': 'Translate an existing app.'
+    'name': lazy_gettext('Translate Composer'),
+    'description': lazy_gettext('Translate an existing app.')
 }
 
 translate_blueprint = Blueprint(info['blueprint'], __name__)

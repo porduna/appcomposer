@@ -63,9 +63,9 @@
 
     <div style="margin:0 auto;float:none;text-align:center;">
         <br/>
-        <h1>Dummy Composer</h1>
-        <h2>Please, set the text for your application.</h2>
-        Note: Your application is {{ app.name }} {{  app.unique_id }}
+        <h1>{{ gettext("Dummy Composer") }}</h1>
+        <h2>{{ gettext("Please, set the text for your application")}}.</h2>
+        {{ gettext("Note: Your application is %(app)s %(id)s", app = app.name, id = app.unique_id) }}
         <br/>
         <br/>
     </div>
@@ -78,8 +78,8 @@
                     <textarea rows="6" name="text">{{ text }}</textarea>
                     <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
                     <br><br>
-                    <input type="submit" value="Save" name="save" class="btn btn-primary"/>
-                    <input type="submit" value="Save & exit" name="saveexit" class="btn btn-warning"/>
+                    <input type="submit" value="{{ gettext("Save") }}" name="save" class="btn btn-primary"/>
+                    <input type="submit" value="{{ gettext("Save & exit") }}" name="saveexit" class="btn btn-warning"/>
                 </form>
             </div>
         </div>

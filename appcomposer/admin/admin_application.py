@@ -1,13 +1,13 @@
 from flask import redirect, request, flash, session, render_template_string, url_for
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
-from flask.ext.admin.contrib.sqlamodel import ModelView
+from flask.ext.admin.contrib.sqla import ModelView
 
 from flask.ext import wtf
 from wtforms.fields import PasswordField
 
-from appcomposer import models
+from appcomposer import models, db
 from appcomposer.login import current_user
-from appcomposer import db
+from appcomposer.babel import lazy_gettext
 
 
 ##########################################################
@@ -107,12 +107,12 @@ class UsersView(AdminModelView):
     
     column_list = ('login', 'name', 'email', 'organization', 'role')
 
-    column_labels = dict(login = 'Login', name = 'Full Name', email = 'E-mail', organization = 'Organization', role = 'Role')
+    column_labels = dict(login = lazy_gettext('Login'), name = lazy_gettext('Full Name'), email = lazy_gettext('E-mail'), organization = lazy_gettext('Organization'), role = lazy_gettext('Role'))
     column_filters = ('login', 'name', 'email', 'organization', 'role')
 
-    column_descriptions = dict(login='Username (all letters, dots and numbers)',
-                               name='First and Last name',
-                               email='Valid e-mail address')
+    column_descriptions = dict(login = lazy_gettext('Username (all letters, dots and numbers)'),
+                               name = lazy_gettext('First and Last name'),
+                               email = lazy_gettext('Valid e-mail address'))
 
     # List of columns that can be sorted
     column_sortable_list = ('login', 'name', 'email', 'organization', 'role')

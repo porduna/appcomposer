@@ -1,4 +1,4 @@
-from flask import Flask
+from flask import Flask, request
 from flask import render_template, render_template_string, escape
 import os
 
@@ -14,6 +14,25 @@ if not app.config.get('SQLALCHEMY_DATABASE_URI', False):
     if app.config.get('SQLALCHEMY_ENGINE_STR', False):
         app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_ENGINE_STR']
 
+
+from appcomposer.babel import Babel
+
+if Babel is None:
+    print "Not using Babel. Everything will be in English"
+else:
+    babel = Babel(app)
+
+    supported_languages = ['en']
+    supported_languages.extend([ translation.language for translation in babel.list_translations() ])
+
+    @babel.localeselector
+    def get_locale():
+        locale = request.args.get('locale',  None)
+        if locale is None:
+            locale = request.accept_languages.best_match(supported_languages)
+        if locale is None:
+            locale = 'en'
+        return locale
 
 ###
 # Composers info
