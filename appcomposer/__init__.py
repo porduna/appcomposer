@@ -14,9 +14,9 @@ from .application import app
 from .login import current_user
 
 assert current_user is not None  # ignore pyflakes
-from .db import db_session, upgrader
+from .db import db, upgrader
 
-assert db_session is not None  # ignore pyflakes
+assert db is not None  # ignore pyflakes
 
 from flask import render_template
 

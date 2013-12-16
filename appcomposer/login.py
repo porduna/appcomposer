@@ -8,7 +8,7 @@ from flask import session, render_template, render_template_string, flash
 from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField, validators
 from flask import request, redirect, url_for, session
 
-from .db import db_session
+from appcomposer import db
 from .models import User
 
 from .application import app
@@ -18,7 +18,7 @@ def current_user():
     if not session.get("logged_in", False):
         return None
 
-    return db_session.query(User).filter_by(login=session['login']).first()
+    return User.query.filter_by(login=session['login']).first()
 
 
 class LoginForm(Form):
@@ -50,7 +50,7 @@ def login():
 
     # This is an effective login request
     if form.validate_on_submit():
-        user = db_session.query(User).filter_by(login=form.login.data, auth_data=form.password.data).first()
+        user = User.query.filter_by(login=form.login.data, auth_data=form.password.data).first()
         if user is None:
             flash("Invalid login")
         else:
@@ -101,12 +101,12 @@ def graasp_authn():
         return render_template("login/errors.html", message = "You must be logged in to use the App Composer.", show_graasp_link = True)
 
     # Step 2: check if the user is in the database.
-    existing_user = db_session.query(User).filter_by(login=graasp_user(user_id)).first()
+    existing_user = User.query.filter_by(login=graasp_user(user_id)).first()
     if existing_user is None:
         # Create the user
         new_user = User(login = graasp_user(user_id), name = name, password = '', email = '', organization = 'Graasp', role = '', creation_date = datetime.datetime.now(), last_access_date = datetime.datetime.now(), auth_system = 'graasp', auth_data = user_id)
-        db_session.add(new_user)
-        db_session.commit()
+        db.session.add(new_user)
+        db.session.commit()
     
     # Step 3: log in the user
     login_user(graasp_user(user_id), name)

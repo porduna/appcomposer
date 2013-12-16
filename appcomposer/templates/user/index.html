@@ -15,20 +15,19 @@
 
 
         <div class="row">
-            {% for composer in composers %}
-        <div class="span4">
-            <h2>{{composer.name}}
-            </h2>
-            <p>
-                {{composer.description}}
-            </p>
-            <p>
-                <a class="btn" href="{{url_for(composer.new_endpoint)}}">Start composing &raquo;
-                </a>
-            </p>
-        </div>
-            {% endfor %}
-
+                {% for composer in composers %}
+            <div class="span4">
+                <h2>{{composer.name}}
+                </h2>
+                <p>
+                    {{composer.description}}
+                </p>
+                <p>
+                    <a class="btn" href="{{url_for(composer.new_endpoint)}}">Start composing &raquo;
+                    </a>
+                </p>
+            </div>
+                {% endfor %}
 
         </div>
     </div>

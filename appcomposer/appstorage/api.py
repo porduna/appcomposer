@@ -2,9 +2,10 @@
 This module contains a few appstorage-related functions which are meant to be used from
 other modules.
 """
+import datetime
 
 from appcomposer.login import current_user
-from appcomposer.db import db_session
+from appcomposer import db
 from appcomposer.models import App, AppVar
 
 import json
@@ -55,7 +56,7 @@ def create_app(name, composer, data):
         data = json.dumps(data)
 
     # Check if an app with that name and owner exists already.
-    existing_app = db_session.query(App).filter_by(owner=owner, name=name).first()
+    existing_app = App.query.filter_by(owner=owner, name=name).first()
     if existing_app is not None:
         raise AppExistsException()
 
@@ -64,8 +65,8 @@ def create_app(name, composer, data):
     new_app.data = data
 
     # Insert the new app into the database
-    db_session.add(new_app)
-    db_session.commit()
+    db.session.add(new_app)
+    db.session.commit()
 
     return new_app
 
@@ -81,7 +82,12 @@ def get_app(unique_id):
     @note: As of now, this function can be used by anyone. There are no
     restrictions. Not even being logged on.
     """
-    app = db_session.query(App).filter_by(unique_id=unique_id).first()
+    app = App.query.filter_by(unique_id=unique_id).first()
+
+    # TODO: last_access_date is not updated.
+    # Consider whether it should be (would require an update, which would mean this
+    # method, which is used very often, would be significantly slower).
+
     return app
 
 
@@ -117,7 +123,7 @@ def get_app_by_name(app_name):
     @note: This function can only be used by logged-on users.
     """
     user = current_user()
-    retrieved_app = db_session.query(App).filter_by(owner=user, name=app_name).first()
+    retrieved_app = App.query.filter_by(owner=user, name=app_name).first()
     return retrieved_app
 
 
@@ -136,8 +142,10 @@ def save_app(composed_app):
     if composed_app.owner != current_user():
         raise NotAuthorizedException()
 
-    db_session.add(composed_app)
-    db_session.commit()
+    composed_app.modification_date = composed_app.last_access_date = datetime.datetime.now()
+
+    db.session.add(composed_app)
+    db.session.commit()
 
 
 def update_app_data(composed_app, data):
@@ -162,9 +170,10 @@ def update_app_data(composed_app, data):
         raise NotAuthorizedException()
 
     composed_app.data = data
+    composed_app.modification_date = composed_app.last_access_date = datetime.datetime.now()
 
-    db_session.add(composed_app)
-    db_session.commit()
+    db.session.add(composed_app)
+    db.session.commit()
 
 
 def delete_app(composed_app):
@@ -185,10 +194,10 @@ def delete_app(composed_app):
     # Delete every AppVar for that App. Otherwise, as of now, deletion doesn't work because
     # the delete cascade on the relationship has some problem.
     # TODO: Fix me.
-    db_session.query(AppVar).filter_by(app=composed_app).delete()
+    AppVar.query.filter_by(app=composed_app).delete()
 
-    db_session.delete(composed_app)
-    db_session.commit()
+    db.session.delete(composed_app)
+    db.session.commit()
 
 
 def add_var(app, name, value):
@@ -204,8 +213,8 @@ def add_var(app, name, value):
     app = _get_app_obj(app)
     var = AppVar(name, value)
     var.app = app
-    db_session.add(var)
-    db_session.commit()
+    db.session.add(var)
+    db.session.commit()
 
 
 def get_all_vars(app):
@@ -216,7 +225,7 @@ def get_all_vars(app):
     @return: List of every appvar.
     """
     app = _get_app_obj(app)
-    vars = db_session.query(AppVar).filter_by(app=app).all()
+    vars = AppVar.query.filter_by(app=app).all()
     return vars
 
 
@@ -230,15 +239,15 @@ def set_var(app, name, value):
     @param value: Value of the variable.
     """
     app = _get_app_obj(app)
-    vars = db_session.query(AppVar).filter_by(app=app, name=name).all()
+    vars = AppVar.query.filter_by(app=app, name=name).all()
     if len(vars) == 0:
         add_var(app, name, value)
         return
     elif len(vars) == 1:
         var = vars[0]
         var.value = value
-        db_session.add(var)
-        db_session.commit()
+        db.session.add(var)
+        db.session.commit()
     else:
         raise NonUniqueVarException("Cannot set value: App has more than one variable with the specified name.")
 
@@ -251,8 +260,8 @@ def update_var(appvar):
 
     @param appvar: AppVar object to update.
     """
-    db_session.add(appvar)
-    db_session.commit()
+    db.session.add(appvar)
+    db.session.commit()
 
 
 def remove_var(appvar):
@@ -263,5 +272,5 @@ def remove_var(appvar):
     if type(appvar) is not AppVar:
         raise ValueError("Cannot remove var: Invalid Parameter. It's not an AppVar object.")
 
-    db_session.delete(appvar)
-    db_session.commit()
+    db.session.delete(appvar)
+    db.session.commit()

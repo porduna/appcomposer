@@ -7,7 +7,7 @@ from wtforms.fields import PasswordField
 
 from appcomposer import models
 from appcomposer.login import current_user
-from appcomposer.db import db_session
+from appcomposer import db
 
 
 ##########################################################
@@ -21,7 +21,7 @@ def initialize_admin_component(app):
     # Endpoint enables us to do url_for('userp') to yield the URL
     url = '/admin'
     admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name='Admin Profile', endpoint = "home-admin")
-    admin.add_view(UsersView(db_session, name='Users', url = 'users', endpoint = 'admin.users'))
+    admin.add_view(UsersView(name='Users', url = 'users', endpoint = 'admin.users'))
     admin.add_view(ApplicationsView(name='Applications', url = 'applications', endpoint = 'admin.applications'))    
     admin.add_view(ProfileView(name='My Profile', url = 'profile', endpoint = 'admin.profile'))    
     admin.init_app(app)
@@ -124,8 +124,8 @@ class UsersView(AdminModelView):
     form_columns = ('login', 'name', 'email', 'organization', 'role', 'password', 'creation_date', 'last_access_date')
     form_overrides = dict(access_level=wtf.SelectField, password=PasswordField)
 
-    def __init__(self, session, **kwargs):
-        super(UsersView, self).__init__(models.User, session, **kwargs)
+    def __init__(self, **kwargs):
+        super(UsersView, self).__init__(models.User, db.session, **kwargs)
 
 
 class ApplicationsView(AdminBaseView):
