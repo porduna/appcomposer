@@ -31,7 +31,7 @@
           </ul>
 
         <div class="navbar-inner pull-right">
-            <div class="brand" style="float:left"><i>{{ session.login }}</i></div>
+            <div class="brand" style="float:left"><i>{{ session.name }}</i></div>
             <form class="navbar-form navbar-right" style="float:left;" action="{{ url_for('logout') }}">
                 <button type="submit" class="btn btn-primary">Log out</button>
             </form>
