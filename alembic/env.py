@@ -26,8 +26,8 @@ except:
     print "Error importing appcomposer"
     print sys.path
 
-from appcomposer import models
-target_metadata = models.Base.metadata
+from appcomposer import db
+target_metadata = db.metadata
 
 # This is the application's standard config script.
 # The name stdconfig isn't very appropriate. However, just 'config' is already used for the alembic.ini config,
@@ -35,7 +35,7 @@ target_metadata = models.Base.metadata
 import config as stdconfig
 
 # Override alembic.ini configuration with config.py's.
-config.set_main_option("sqlalchemy.url", stdconfig.SQLALCHEMY_ENGINE_STR)
+config.set_main_option("sqlalchemy.url", stdconfig.SQLALCHEMY_DATABASE_URI)
 
 
 # other values from the config, defined by the needs of env.py,

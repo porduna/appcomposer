@@ -6,7 +6,7 @@ from .fields import DisabledTextField
 
 from appcomposer import models
 from appcomposer.login import current_user
-from appcomposer.db import db_session
+from appcomposer import db
 
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -90,7 +90,7 @@ class AppsView(UserBaseView):
     @expose('/')
     def index(self):
         # Retrieve the apps
-        apps = db_session.query(App).filter_by(owner_id=self._current_user.id).all()
+        apps = App.query.filter_by(owner_id=self._current_user.id).all()
 
         def build_edit_link(app):
             endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]
@@ -156,8 +156,8 @@ class ProfileEditView(UserBaseView):
             user.role = form.role.data
             user.auth_type = form.auth_system.data # Probably in the release we shouldn't let users modify the auth this way
             user.auth_data = form.password.data # For the userpass method, the auth_data should contain the password. Eventually, should add hashing.
-            db_session.add(user)
-            db_session.commit()
+            db.session.add(user)
+            db.session.commit()
 
         return self.render("user/profile-edit.html", user=user, form=form, change_password=change_password)
     
