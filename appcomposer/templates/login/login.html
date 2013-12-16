@@ -48,27 +48,27 @@
 
             <div style="margin:0 auto;float:none;text-align:center;">
                 <br/>
-                <h1>Welcome to the App Composer!</h1>
+                <h1>{{ gettext('Welcome to the App Composer!') }}</h1>
                 <br/>
                 <br/>
             </div>
 
             <div class="span2">
                 <div style="text-align: center">
-                    <h3>Use Graasp</h3>
+                    <h3>{{ gettext('Use Graasp') }}</h3>
                     {% if login_app_creation %}
                         <a href="{{ url_for('graasp_login') }}"><img src="{{ url_for('static', filename='graasp.jpg') }}" style="margin: 20px"/></a><br/>
-                        <a href="{{ url_for('graasp_login') }}" class="btn btn-primary btn-block">Log in</a>
+                        <a href="{{ url_for('graasp_login') }}" class="btn btn-primary btn-block">{{ gettext('Log in') }}</a>
                     {% else %}
                         <a href="{{ login_app }}"><img src="{{ url_for('static', filename='graasp.jpg') }}" style="margin: 20px"/></a><br/>
-                        <a href="{{ login_app }}" class="btn btn-primary btn-block">Log in</a>
+                        <a href="{{ login_app }}" class="btn btn-primary btn-block">{{ gettext('Log in') }}</a>
                     {% endif %}
                 </div>
             </div>
 
             <div class="span4 text-center login-form">
                 <div style="text-align: center; width: 100%">
-                    <h3>Local users</h3>
+                    <h3>{{ gettext('Local users') }}</h3>
                     <br/>
                     <br/>
                 </div>
@@ -91,7 +91,7 @@
 
                     <div class="control-group">
                         <div class="controls">
-                            <button type="submit" class="btn btn-primary btn-block">Log in</button>
+                            <button type="submit" class="btn btn-primary btn-block">{{ gettext('Log in') }}</button>
                         </div>
                     </div>
                     </fieldset>
@@ -101,7 +101,7 @@
         <div class="row">
             <div class="span1">
                 <br>
-                <a href="{{ url_for('index') }}" class="btn">Back</a>
+                <a href="{{ url_for('index') }}" class="btn">{{ gettext('Back') }}</a>
             </div>
         </div>
     </div>

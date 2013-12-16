@@ -7,7 +7,7 @@
     {% if apps|length == 0 %}
         <div class="span6 offset3">
             <div class="alert text-center alert-info">
-                <h2>No application.</h2>
+                <h2>{{ gettext("No application.") }}</h2>
             </div>
         </div>
     {% endif %}
@@ -21,15 +21,15 @@
             <div class="span3 alert alert-info" style="padding: 10px; margin: 15px;">
                 <h2>{{ app.name }}</h2>
                 <p>
-                    <h4>Composer: {{ app.composer }}</h4><br>
-                    Created: {{ app.creation_date }}<br>
-                    Modified: {{ app.modification_date }}<br>
-                    Accessed: {{ app.last_access_date }}<br>
+                    <h4>{{ gettext("Composer") }}: {{ app.composer }}</h4><br>
+                    {{ gettext("Created") }}: {{ app.creation_date }}<br>
+                    {{ gettext("Modified") }}: {{ app.modification_date }}<br>
+                    {{ gettext("Accessed") }}: {{ app.last_access_date }}<br>
                 </p>
                 <br/>
                 <p>
-                    <a href="{{ build_edit_link(app) }}" class="btn btn-primary" type="button">Open</a>
-                    <a href="{{ build_delete_link(app) }}" class="btn btn-danger" type="button">Delete</a>
+                    <a href="{{ build_edit_link(app) }}" class="btn btn-primary" type="button">{{ gettext("Open") }}</a>
+                    <a href="{{ build_delete_link(app) }}" class="btn btn-danger" type="button">{{ gettext("Delete") }}</a>
                 </p>
             </div>
 

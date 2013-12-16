@@ -7,11 +7,11 @@
             <img src="{{ url_for('static', filename='golab.png') }}">
         </div>
         <div class="span8">
-           <h1>Contact</h1>
-           <p>For questions about the Go-Lab project, go to the <a href="http://www.go-lab-project.eu/contact">main website</a></p>
-           <p>You may access the code at <a href="https://github.com/porduna/appcomposer/">http://github.com/porduna/appcomposer</a>.</p>
+           <h1>{{ gettext('Contact') }}</h1>
+           <p>{{ gettext('For questions about the Go-Lab project, go to the <a href="%(link)s">main website</a>', link = 'http://www.go-lab-project.eu/contact') }}</p>
+           <p>{{ gettext('You may access the code at %(link)s.', link = '<a href="https://github.com/porduna/appcomposer/">http://github.com/porduna/appcomposer</a>'|safe ) }}</p>
            <div class="alert">
-                <h1>Documentation is still not provided</h1>
+                <h1>{{ gettext('Documentation is still not provided') }}</h1>
            </div>
         </div>
     </div>

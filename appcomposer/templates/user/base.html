@@ -18,11 +18,12 @@
     {% block head_tail %}
     {% endblock %}
   </head>
-  <body style="padding-top: 60px">
+  <body style="padding-top: 4px">
     {% block page_body %}
-      <div class="navbar navbar-fixed-top">
+    <div class="container">
+      <div class="navbar">
         <div class="navbar-inner">
-        <div class="container">
+
           {% block brand %}
           <span class="brand">{{ admin_view.admin.name }}</span>
           {% endblock %}
@@ -30,16 +31,14 @@
             {{ layout.menu() }}
           </ul>
 
-        <div class="navbar-inner pull-right">
-            <div class="brand" style="float:left"><i>{{ session.name }}</i></div>
-            <form class="navbar-form navbar-right" style="float:left;" action="{{ url_for('logout') }}">
-                <button type="submit" class="btn btn-primary">Log out</button>
-            </form>
-        </div>
+        <div class="pull-right">
+            <i>{{ session.name }}</i>&nbsp;&nbsp;
+            <a href="{{ url_for('logout') }}" class="btn btn-primary">{{ gettext("Log out") }}</a>
         </div>
 
         </div>
       </div>
+    </div>
 
     <div class="container">
       {% block body %}{% endblock %}

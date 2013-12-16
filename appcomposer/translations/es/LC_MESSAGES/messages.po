@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-16 17:59+0100\n"
+"POT-Creation-Date: 2013-12-16 19:14+0100\n"
 "PO-Revision-Date: 2013-12-16 17:02+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -51,6 +51,78 @@ msgstr "Primer nombre y apellido"
 msgid "Valid e-mail address"
 msgstr "E-mail válido"
 
+#: appcomposer/composers/adapt/__init__.py:23
+msgid "Adaptor Composer"
+msgstr "Creador de adaptaciones"
+
+#: appcomposer/composers/adapt/__init__.py:24
+msgid "Adapt an existing app."
+msgstr "Adaptar un app existente."
+
+#: appcomposer/composers/dummy/__init__.py:12
+#: appcomposer/templates/composers/dummy/delete.html:66
+#: appcomposer/templates/composers/dummy/edit.html:66
+#: appcomposer/templates/composers/dummy/new.html:9
+#: appcomposer/templates/composers/dummy/new.html:31
+#, fuzzy
+msgid "Dummy Composer"
+msgstr "Creador Dummy"
+
+#: appcomposer/composers/dummy/__init__.py:13
+msgid "Pretend that you are composing an app. For testing purposes."
+msgstr "Pretende que estás creando una app. Para pruebas."
+
+#: appcomposer/composers/dummy/__init__.py:53
+msgid "App successfully deleted."
+msgstr "App borrada satisfactoriamente."
+
+#: appcomposer/composers/dummy/__init__.py:86
+msgid "Saved successfully"
+msgstr "Salvada satisfactoriamente"
+
+#: appcomposer/composers/dummy/__init__.py:110
+msgid "An App with that name exists already"
+msgstr "Ya hay una App con ese nombre"
+
+#: appcomposer/composers/translate/__init__.py:25
+#, fuzzy
+msgid "Translate Composer"
+msgstr "Comienza a crear"
+
+#: appcomposer/composers/translate/__init__.py:26
+msgid "Translate an existing app."
+msgstr "Traduce una aplicación existente."
+
+#: appcomposer/templates/about.html:10 appcomposer/templates/master.html:28
+msgid "About"
+msgstr "Acerca de"
+
+#: appcomposer/templates/about.html:12
+msgid "This page is still missing"
+msgstr "Esta página todavía no está disponible"
+
+#: appcomposer/templates/contact.html:10 appcomposer/templates/master.html:29
+msgid "Contact"
+msgstr "Contacto"
+
+#: appcomposer/templates/contact.html:11
+#, python-format
+msgid ""
+"For questions about the Go-Lab project, go to the <a "
+"href=\"%(link)s\">main website</a>"
+msgstr ""
+"Para preguntas acerca del proyecto Go-Lab, ve a la <a "
+"href=\"%(link)s\">página principal</a>"
+
+#: appcomposer/templates/contact.html:12
+#, python-format
+msgid "You may access the code at %(link)s."
+msgstr "Puedes acceder al código en %(link)s."
+
+#: appcomposer/templates/contact.html:14
+msgid "Documentation is still not provided"
+msgstr "Documentación todavía no disponible"
+
 #: appcomposer/templates/index.html:7
 msgid "Build supercool apps for your students!"
 msgstr "¡Construye aplicaciones fantásticas para tus estudiantes!"
@@ -59,7 +131,226 @@ msgstr "¡Construye aplicaciones fantásticas para tus estudiantes!"
 msgid "Use it!"
 msgstr "¡Úsalo!"
 
-#: appcomposer/templates/index.html:10
+#: appcomposer/templates/index.html:10 appcomposer/templates/user/index.html:11
 msgid "Learn more"
 msgstr "Leer más"
+
+#: appcomposer/templates/master.html:26
+msgid "Home"
+msgstr "Inicio"
+
+#: appcomposer/templates/master.html:27
+msgid "Admin"
+msgstr "Administración"
+
+#: appcomposer/templates/master.html:42
+#, python-format
+msgid "the %(link)s application creator for teachers"
+msgstr "el creador de aplicaciones para profesores de %(link)s"
+
+#: appcomposer/templates/composers/dummy/delete.html:67
+msgid "Are you sure you want to delete this application?"
+msgstr "¿Estás seguro de querer eliminar esta aplicación?"
+
+#: appcomposer/templates/composers/dummy/delete.html:68
+#: appcomposer/templates/composers/dummy/edit.html:68
+#, python-format
+msgid "Note: Your application is %(app)s %(id)s"
+msgstr "Nota: Tu aplicación es %(app)s %(id)s"
+
+#: appcomposer/templates/composers/dummy/delete.html:79
+#: appcomposer/templates/user/profile-apps.html:32
+msgid "Delete"
+msgstr "Borrar"
+
+#: appcomposer/templates/composers/dummy/delete.html:80
+msgid "Cancel"
+msgstr "Cancelar"
+
+#: appcomposer/templates/composers/dummy/edit.html:67
+#, fuzzy
+msgid "Please, set the text for your application"
+msgstr "Por favor, pon el nombre de tu aplicación"
+
+#: appcomposer/templates/composers/dummy/edit.html:81
+#: appcomposer/templates/user/profile-edit.html:33
+#: appcomposer/templates/user/profile-edit.html:35
+msgid "Save"
+msgstr "Salvar"
+
+#: appcomposer/templates/composers/dummy/edit.html:82
+msgid "Save & exit"
+msgstr "Salvar y salir"
+
+#: appcomposer/templates/composers/dummy/index.html:3
+#, fuzzy
+msgid "Welcome to dummy composer!"
+msgstr "Creador Dummy"
+
+#: appcomposer/templates/composers/dummy/new.html:32
+msgid "Please, set your application's name"
+msgstr "Por favor, pon el nombre de tu aplicación"
+
+#: appcomposer/templates/composers/dummy/new.html:42
+#, fuzzy
+msgid "Name"
+msgstr "Nombre:"
+
+#: appcomposer/templates/composers/dummy/new.html:44
+msgid "App name"
+msgstr "Nombre de la App"
+
+#: appcomposer/templates/login/errors.html:7
+msgid "Error"
+msgstr "Error"
+
+#: appcomposer/templates/login/errors.html:10
+#: appcomposer/templates/login/login.html:104
+msgid "Back"
+msgstr "Atrás"
+
+#: appcomposer/templates/login/login.html:51
+#, fuzzy
+msgid "Welcome to the App Composer!"
+msgstr "Creador Dummy"
+
+#: appcomposer/templates/login/login.html:58
+msgid "Use Graasp"
+msgstr "Usar Graasp"
+
+#: appcomposer/templates/login/login.html:61
+#: appcomposer/templates/login/login.html:64
+#: appcomposer/templates/login/login.html:94
+#, fuzzy
+msgid "Log in"
+msgstr "Usuario"
+
+#: appcomposer/templates/login/login.html:71
+msgid "Local users"
+msgstr "Usuarios locales"
+
+#: appcomposer/templates/login/widget.xml:12
+msgid "Loading..."
+msgstr "Cargando..."
+
+#: appcomposer/templates/login/widget.xml:18
+msgid "Go to App Composer"
+msgstr "Ir al App Composer"
+
+#: appcomposer/templates/user/base.html:36
+msgid "Log out"
+msgstr "Salir"
+
+#: appcomposer/templates/user/index.html:8
+#, python-format
+msgid "Welcome %(user)s!"
+msgstr "¡Bienvenido, %(user)s!"
+
+#: appcomposer/templates/user/index.html:9
+msgid ""
+"This is the main page of the App Composer. The App Composer lets you "
+"customize an application easily, in different ways. Choose the type of "
+"App Composer you want to use, and get started!"
+msgstr ""
+"Esta es la página principal del App Composer. El App Composer te permite "
+"customizar una aplicación fácilmente, de diferentes formas. Elige el tipo"
+" de App Composer que quieres usar y ¡comienza a construir aplicaciones!"
+
+#: appcomposer/templates/user/index.html:12
+msgid "Go to My Apps"
+msgstr "Ir a Mis Apps"
+
+#: appcomposer/templates/user/index.html:26
+msgid "Start composing"
+msgstr "Comienza a crear"
+
+#: appcomposer/templates/user/profile-apps.html:10
+msgid "No application."
+msgstr "No hay apps."
+
+#: appcomposer/templates/user/profile-apps.html:24
+msgid "Composer"
+msgstr "Creador"
+
+#: appcomposer/templates/user/profile-apps.html:25
+msgid "Created"
+msgstr "Creada"
+
+#: appcomposer/templates/user/profile-apps.html:26
+msgid "Modified"
+msgstr "Modificada"
+
+#: appcomposer/templates/user/profile-apps.html:27
+msgid "Accessed"
+msgstr "Accedida"
+
+#: appcomposer/templates/user/profile-apps.html:31
+msgid "Open"
+msgstr "Abrir"
+
+#: appcomposer/templates/user/profile-edit.html:10
+msgid "My profile"
+msgstr "Mi perfil"
+
+#: appcomposer/user/fields.py:35
+msgid "Show"
+msgstr "Mostrar"
+
+#: appcomposer/user/user_application.py:22
+msgid "Home view"
+msgstr "Inicio"
+
+#: appcomposer/user/user_application.py:22
+#, fuzzy
+msgid "User Profile"
+msgstr "Mi perfil"
+
+#: appcomposer/user/user_application.py:23
+#, fuzzy
+msgid "Profile"
+msgstr "Mi perfil"
+
+#: appcomposer/user/user_application.py:24
+msgid "Apps"
+msgstr "Apps"
+
+#: appcomposer/user/user_application.py:70
+msgid "Name:"
+msgstr "Nombre:"
+
+#: appcomposer/user/user_application.py:71
+msgid "Login:"
+msgstr "Usuario:"
+
+#: appcomposer/user/user_application.py:72
+msgid "E-mail:"
+msgstr "E-mail:"
+
+#: appcomposer/user/user_application.py:73
+msgid "Password:"
+msgstr "Contraseña:"
+
+#: appcomposer/user/user_application.py:73
+msgid "Password."
+msgstr "Contraseña."
+
+#: appcomposer/user/user_application.py:74
+msgid "Organization:"
+msgstr "Organización:"
+
+#: appcomposer/user/user_application.py:75
+msgid "Role:"
+msgstr "Rol:"
+
+#: appcomposer/user/user_application.py:76
+msgid "Creation date:"
+msgstr "Fecha creación:"
+
+#: appcomposer/user/user_application.py:77
+msgid "Last access:"
+msgstr "Último acceso:"
+
+#: appcomposer/user/user_application.py:78
+msgid "Auth system:"
+msgstr "Sistema autentiación:"
 

@@ -10,7 +10,7 @@ from forms import AdaptappCreateForm
 # Required imports for a customized app view for the adapt tool (a possible block to be refactored?)
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from appcomposer.models import App
-
+from appcomposer.babel import lazy_gettext
 
 info = {
     'blueprint': 'adapt',
@@ -20,8 +20,8 @@ info = {
     'create_endpoint': 'adapt.adapt_create',    
     'edit_endpoint': 'adapt.adapt_edit',        
 
-    'name': 'Adaptor Composer',
-    'description': 'Adapt an existing app.'
+    'name': lazy_gettext('Adaptor Composer'),
+    'description': lazy_gettext('Adapt an existing app.')
 }
 
 adapt_blueprint = Blueprint(info['blueprint'], __name__)
