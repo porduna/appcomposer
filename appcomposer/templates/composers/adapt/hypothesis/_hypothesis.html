@@ -1,0 +1,124 @@
+{% macro render_hypothesis(app_id) %}
+<html>
+<head>
+    <title>Go-Lab - Hypothesis Scratchpad v0.9</title>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <!-- CSS -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='composers/adapt/hypothesis/css/hypothesis0.9.css') }}"/>  
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='composers/adapt/hypothesis/libs/bootstrap/css/bootstrap.min.css') }}"> 
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='composers/adapt/hypothesis/libs/font-awesome/less/font-awesome-shindig-workaround.css') }}"> 
+    <!-- "external JS -->
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/commons/js/jsChecker.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/libs/js/jquery-min.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/libs/js/jquery-ui.custom.min.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/libs/js/jquery.ui.touch-punch.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/libs/bootstrap/js/bootstrap.min.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/commons/js/metadata.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/commons/js/persistency.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/commons/js/utils.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/libs/js/angular/angular.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/libs/js/angular/angular-ui-sortable.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/libs/js/angular/angular-dragdrop.min.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/libs/js/angular/localStorageModule.js') }}"></script> 
+    <!-- "internal" JS -->
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/hypothesis0.9/HypothesisApp.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/hypothesis0.9/HypothesisController.js') }}"></script> 
+
+    <!-- Editable elements from the Adapter app: conditionals, inputs and outputs-->
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('adapt.hypothesis_domain', app_id = app_id) }}"></script>
+
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/hypothesis0.9/HypothesisView.js') }}"></script>
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/hypothesis0.9/TemplateView.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/hypothesis0.9/ToolbarView.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('static', filename='composers/adapt/hypothesis/hypothesis0.9/FreeInputView.js') }}"></script> 
+
+</head>
+
+<body>
+<div class="container unselectable" ng-controller="HypothesisController">
+
+    <!-- the header-->
+    <div class="row">
+        <div class="col-md-2">
+            <img alt="Go-Lab logo" src="{{ url_for('static', filename='composers/adapt/hypothesis/commons/images/golabLogo131_117.png') }}"> 
+        </div>
+        <div class="col-md-10">
+            <h1>Hypothesis Scratchpad <small>v0.9</small></h1>
+            <h2>Interacting Galaxies</h2>
+        </div>
+    </div>
+
+    <!-- the help text -->
+    <div class="row">
+        <div class="col-md-6">
+            <div class="accordion" id="ut_tools_questioning_help_accordion">
+                <div class="accordion-heading">
+                    <a class="accordion-toggle" data-toggle="collapse" data-parent="#ut_tools_questioning_help_accordion" href="#ut_tools_questioning_help">
+                        <i class="glyphicon glyphicon-question-sign"></i>  Need help?</li>
+                    </a>
+                </div>
+                <div id="ut_tools_questioning_help" class="accordion-body collapse">
+                    <div class="accordion-inner">
+                        Create your hypothesis by dragging and dropping the elements from the bottoms to empty hypothesis.
+                        Create a new, empty hypothesis by clicking "add".
+                        Delete elements from a hypothesis by dragging them to the bin.
+                        Delete a complete hypothesis by clicking the bin.
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12 areaLabel">Your elements</div>
+    </div>
+
+    <div class="row">
+        <table class="col-sm-12 col-md-12 col-lg-12" width="100%" ng-controller="DefaultTemplates">
+            <tr width="100%" class="toolAreaContainer" >
+                <td width="140px">
+                    <div freeinput></div>
+                </td>
+                <td ng-controller="DefaultTemplates">
+                    <div template ng-repeat="element in templates"></div>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="row">
+        <div class="col-sm-12 col-md-12 col-lg-12 areaLabel">Your hypotheses</div>
+    </div>
+
+    <div class="row" id="ut_tools_questioning_container">
+        <div class="col-sm-12 col-md-12 col-lg-12" ng-repeat="hypothesis in hypotheses">
+            <div hypothesis/>
+        </div>
+    </div>
+</div>
+
+<div class="row ut_tools_questioning_toolbar">
+    <div toolbar class="col-sm-12 col-md-12 col-lg-12">
+    </div>
+</div>
+
+<script type="text/javascript">
+    function init() {
+        console.log("Initializing Hypothesis Scratchpad.");
+        angular.bootstrap(document, ["HypothesisApp"]);
+        ut.commons.utils.gadgetResize();
+    }
+
+    if (typeof gadgets === "undefined") {
+        $(window).load(function () {
+            init();
+        });
+    } else {
+        gadgets.util.registerOnLoadHandler(init);
+    }
+</script>
+
+</body>
+</html>
+{% endmacro %}

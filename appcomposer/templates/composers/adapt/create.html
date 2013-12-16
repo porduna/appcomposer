@@ -20,14 +20,14 @@
             </div>                
         </div>
 
-        <h4>Create a new app</h4>
+        <h4>Create a new {{ adaptor_type|replace('_', ' ')|title }}</h4>
         <hr>
         
         <div class="row">            
             <div class="col-lg-4">
                 <div class="panel panel-success">
                     <div class="panel-heading">
-                        <h5 class="panel-title">Details of the app</h5>
+                        <h5 class="panel-title">Details of the {{ adaptor_type|replace('_', ' ') }}</h5>
                     </div>
                     <div class="panel-body">
                         <form class="form-horizontal" method="POST" action=".">
@@ -35,7 +35,7 @@
                             <div class="form-group">
                                 <label for="app_name" class="col-lg-4 control-label">Name: </label>
                                 <div class="col-lg-8">
-                                    <input type="text" name="app_name" class="form-control" placeholder="app name" autofocus>
+                                    <input type="text" name="app_name" class="form-control" placeholder="{{ adaptor_type|replace('_', ' ') }} title" autofocus>
                                     <input type="hidden" name="adaptor_type" value="{{ adaptor_type }}">                                                                                                                            
                                 </div>
                             </div>                                                                                                                                                                                     
@@ -43,18 +43,9 @@
                             <div class="form-group">
                                 <label for="app_description" class="col-lg-4 control-label">Description: </label>
                                 <div class="col-lg-8">
-                                    <input type="text" name="app_description" class="form-control" placeholder="">                                                                                        
-                                </div>
-                            </div>  
-
-                            {% if  adaptor_type == 'experiment_design' %}
-                            <div class="form-group">
-                                <label for="n_rows" class="col-lg-4 control-label">Elements: </label>
-                                <div class="col-lg-8">
-                                    <input type="text" name="n_rows" class="form-control"  placeholder="max. number of rows">                                                                                        
+                                    <input type="text" name="app_description" class="form-control" placeholder="{{ adaptor_type|replace('_', ' ') }} description">                                                                                        
                                 </div>
                             </div>
-                            {% endif %} 
                             
                             <a class="btn btn-default" id="returnbtn" href="{{ url_for('adapt.adapt_index') }}">« Go Back</a>
                             <input type="submit"  class="btn btn-success" value="Build it »">                                                                                              
@@ -67,8 +58,10 @@
             </div>
         </div>
 
+        {% if apps %}
         <h4>...or edit an existing one from the following list:</h4>
         <hr>
+        {% endif %}
 
         <div class="row">
 

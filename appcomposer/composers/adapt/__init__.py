@@ -11,14 +11,16 @@ from forms import AdaptappCreateForm
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from appcomposer.models import App
 from appcomposer.babel import lazy_gettext
+from itertools import izip
 
 info = {
     'blueprint': 'adapt',
     'url': '/composers/adapt',
 
-    'new_endpoint': 'adapt.adapt_index',
-    'create_endpoint': 'adapt.adapt_create',    
+    'new_endpoint': 'adapt.adapt_index',   
     'edit_endpoint': 'adapt.adapt_edit',        
+    'create_endpoint': 'adapt.adapt_create', 
+    'delete_endpoint': 'dummy.delete',    
 
     'name': lazy_gettext('Adaptor Composer'),
     'description': lazy_gettext('Adapt an existing app.')
@@ -68,7 +70,7 @@ def adapt_create(adaptor_type):
     apps = App.query.filter_by(owner_id=1).all()     
 
     def build_edit_link(app):
-        return url_for("adapt.adapt_edit", app_id=app.unique_id, adaptor_type = adaptor_type)  
+        return url_for("adapt.adapt_edit", app_id=app.unique_id)  
 
     # If a get request is received, we just show the new app form and the list of adaptor apps    
     if request.method == "GET":               
@@ -178,9 +180,12 @@ def adapt_edit(app_id):
             
             else:
                 
-                # Default number of rows for the experiment design
+                # Default number of rows for the experiment design -- GET REQUESTS
                 n_rows = 5
-                return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, conditionals = conditionals, inputs = inputs, outputs = outputs)                                                            
+                
+              
+
+                return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, x = x)                                                            
     
     # If a POST request is received, the adaptor app is saved the database.    
     elif request.method == "POST":
@@ -208,10 +213,9 @@ def adapt_edit(app_id):
                 'concepts': list()}                         
             '''            
             # Retrieve the list of concepts and convert it to the format supported by the app.  
-            # Request-- concepts: "a,b,c"  -> Concepts (python object) = ['a','b','c']                
+            # Request-- concepts: "a,b,c"  -> Concepts  (str): "a,b,c"               
       
             concepts = ', '.join(list(OrderedDict.fromkeys([ s.strip() for s in request.form["concepts"].split(',') ])))
-            print concepts
 
             # Build the JSON of the current concept map.
             data = {
@@ -223,6 +227,7 @@ def adapt_edit(app_id):
         
             appstorage.update_app_data(app, data)
             flash("Concept map saved successfully", "success")
+            # flash(data["concepts"], "success")                      
                       
             return render_template("composers/adapt/edit.html", app=app, app_id = app_id, adaptor_type = adaptor_type, concepts = data["concepts"])
              
@@ -236,30 +241,38 @@ def adapt_edit(app_id):
                 'conditionals': list(), 
                 'inputs': list(),
                 'outputs': list()} 
-            '''            
-
-            # Build the JSON of the current hypothesis tool.                    
-            conditionals_orig = request.form["conditionals"].split(',')                         
-            inputs_orig = request.form["inputs"].split(',')         
-            outputs_orig = request.form["outputs"].split(',')                     
-
+            '''                                                       
+            
+            # Template values
+            conditionals_values = request.form["conditionals"]             
+            inputs_values = request.form["inputs"]
+            outputs_values = request.form["outputs"]
+            
+            # Database manipulation
+            conditionals_orig = request.form["conditionals"].split(',')         
+            inputs_orig = request.form["inputs"].split(',') 
+            outputs_orig = request.form["outputs"].split(',')
+            
+            
             # Conversion of the form input values to the hypothesis tool format below:
             # Request-- input_name = "input_type", value =  "a,b,c"  -> Output format = [ {'text':'a', 'type': 'input_type'}, {'text':'b', 'type': 'input_type', ...} ]
             def build_hypothesis_list(list_orig, element_type):
                 lst = []
                 for item in list_orig:
-                    dic = { 'text': item, 'type': str(element_type)}
+                    dic = { 'text': item, 'type': element_type}
                     lst.append(dic)                                 
                 return lst
+
                             
             # A reserved word showed up.                        
             no_reserved = 'inputs'
             reserved_element_type = no_reserved[0:-1]
             
-            inputs = json.dumps( build_hypothesis_list(inputs_orig, str(reserved_element_type)) )        
-            outputs = json.dumps( build_hypothesis_list(outputs_orig, 'output')  )
-            conditionals = json.dumps( build_hypothesis_list(conditionals_orig, 'conditional') )
+            inputs = build_hypothesis_list(inputs_orig, reserved_element_type)        
+            outputs = build_hypothesis_list(outputs_orig, 'output') 
+            conditionals = build_hypothesis_list(conditionals_orig, 'conditional')
 
+            # Build the JSON of the current hypothesis tool.  
             data = {
                 "adaptor_version": 1,
                 "name": name,
@@ -270,10 +283,10 @@ def adapt_edit(app_id):
                 "outputs": outputs} 
 
             appstorage.update_app_data(app, data)
-            #flash("Hypothesis saved successfully", "success")
-            flash(data, "success")
+            flash("Hypothesis saved successfully", "success")
+            # flash(conditionals_orig, "success")
 
-            return render_template("composers/adapt/edit.html", app=app, app_id = app_id, adaptor_type = adaptor_type, conditionals = data["conditionals"], inputs = data["inputs"], outputs = data["outputs"])         
+            return render_template("composers/adapt/edit.html", app=app, app_id = app_id, adaptor_type = adaptor_type, conditionals = conditionals_values, inputs = inputs_values, outputs = outputs_values)         
         
         else:
             '''
@@ -302,6 +315,10 @@ def adapt_edit(app_id):
             
             # Default number of rows for the experiment design
             n_rows = 5       
+
+
+            
+
           
             appstorage.update_app_data(app, data)
             flash("Experiment design saved successfully", "success")
@@ -331,7 +348,7 @@ def conceptmapper_index(app_id):
     
     return render_template("composers/adapt/conceptmapper/conceptmapper.html", app_id = app_id)
 
-@adapt_blueprint.route("/export/<app_id>/conceptmapper/widget.xml")
+@adapt_blueprint.route("/export/<app_id>/conceptmapper/app.xml")
 def conceptmapper_widget(app_id):
     """
     conceptmapper_widget(app_id)
@@ -346,7 +363,7 @@ def conceptmapper_widget(app_id):
     # The domain name is not generated here.
     
     return render_template("composers/adapt/conceptmapper/widget.xml", app_id = app_id)
-
+    
 
 @adapt_blueprint.route("/export/<app_id>/conceptmapper/domain.js")
 def conceptmapper_domain(app_id):
@@ -363,7 +380,11 @@ def conceptmapper_domain(app_id):
     app = get_app(app_id)
     
     data = json.loads(app.data)
-    domain = json.dumps([ s.strip() for s in data["concepts"].split(',') ])
+
+    if len(data) == 4:    
+        domain = json.dumps("empty")    
+    else:    
+        domain = json.dumps([ s.strip() for s in data["concepts"].split(',') ])
 
     return render_template("composers/adapt/conceptmapper/domain.js", domain = domain)    
 
@@ -385,6 +406,22 @@ def hypothesis_index(app_id):
     #app = get_app(app_id)    
 
     return render_template("composers/adapt/hypothesis/hypothesis.html", app_id = app_id)
+
+@adapt_blueprint.route("/export/<app_id>/hypothesis/app.xml")
+def hypothesis_widget(app_id):
+    """
+    hypothesis_widget(app_id)
+    This function points to the hypothesis instance.
+
+    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
+    @return: The webpage of a concept map.
+    """  
+        
+    # In the templates, hypothesis.html points to {{ url_for('adapt.hypothesis_domain', app_id = app_id) }} 
+    # instead of domain.js (In the original app, the "concepts" variable was stored into the index.html file)
+    # The domain name is not generated here.
+    
+    return render_template("composers/adapt/hypothesis/widget.xml", app_id = app_id)
 
 
 @adapt_blueprint.route("/export/<app_id>/hypothesis/domain.js")
@@ -418,11 +455,10 @@ def hypothesis_domain(app_id):
     inputs = data["inputs"] 
     outputs = data["outputs"]
 
-    domain = conditionals + inputs + outputs   
+    domain = json.dumps(conditionals + inputs + outputs)
     
-    # We cannot prettify the JSON in this template because it is stored with other JS content
     return render_template("composers/adapt/hypothesis/domain.js", domain = domain)    
-
+    
 
 @adapt_blueprint.route("/export/<app_id>/edt/edt.html")
 def edt_index(app_id):
@@ -441,6 +477,23 @@ def edt_index(app_id):
     experiment_name = 'Archimedes'
     return render_template("composers/adapt/edt/edt.html", app_id = app_id, domain_name = domain_name, experiment_name = experiment_name)
 
+
+@adapt_blueprint.route("/export/<app_id>/edt/app.xml")
+def edt_widget(app_id):
+    """
+    edt_widget(app_id)
+    This function points to the edt instance.
+
+    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
+    @return: The webpage of a edt.
+    """  
+        
+    # In the templates, conceptmapper.html points to {{ url_for('adapt.edt_domain', app_id = app_id) }} 
+    # instead of domain.js (In the original app, the "concepts" variable was stored into the index.html file)
+    # The domain name is not generated here.
+    
+    return render_template("composers/adapt/edt/widget.xml", app_id = app_id)
+    
 
 @adapt_blueprint.route("/export/<app_id>/edt/domain.js")
 def edt_domain(app_id):
