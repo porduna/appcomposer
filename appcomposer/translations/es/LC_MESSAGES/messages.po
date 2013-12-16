@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-16 17:01+0100\n"
+"POT-Creation-Date: 2013-12-16 17:35+0100\n"
 "PO-Revision-Date: 2013-12-16 17:02+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -18,4 +18,48 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
+
+#: appcomposer/admin/admin_application.py:110
+msgid "Login"
+msgstr "Usuario"
+
+#: appcomposer/admin/admin_application.py:110
+msgid "Full Name"
+msgstr "Nombre completo"
+
+#: appcomposer/admin/admin_application.py:110
+msgid "E-mail"
+msgstr "E-mail"
+
+#: appcomposer/admin/admin_application.py:110
+msgid "Organization"
+msgstr "Organización"
+
+#: appcomposer/admin/admin_application.py:110
+msgid "Role"
+msgstr "Rol"
+
+#: appcomposer/admin/admin_application.py:114
+msgid "Username (all letters, dots and numbers)"
+msgstr "Usuario (todo letras, puntos y números)"
+
+#: appcomposer/admin/admin_application.py:115
+msgid "First and Last name"
+msgstr "Primer nombre y apellido"
+
+#: appcomposer/admin/admin_application.py:116
+msgid "Valid e-mail address"
+msgstr "E-mail válido"
+
+#: appcomposer/templates/index.html:7
+msgid "Build supercool apps for your students!"
+msgstr "¡Construye aplicaciones fantásticas para tus estudiantes!"
+
+#: appcomposer/templates/index.html:9
+msgid "Use it!"
+msgstr "¡Úsalo!"
+
+#: appcomposer/templates/index.html:10
+msgid "Learn more"
+msgstr "Leer más"
 
