@@ -89,9 +89,8 @@ def graasp_authn():
     name    = current_user_data['entry'].get('displayName') or 'anonymous'
     user_id = current_user_data['entry'].get('id') or 'no-id'
 
-    # TODO: if user_id == '2', 'no_id'...: error
     if unicode(user_id) in (u'1', u'2', u'no-id'):
-        return render_template("login/errors.html", message = "You must be logged in to use the App Composer.")
+        return render_template("login/errors.html", message = "You must be logged in to use the App Composer.", show_graasp_link = True)
 
     # Step 2: check if the user is in the database.
     existing_user = db_session.query(User).filter_by(login=graasp_user(user_id)).first()
