@@ -1,11 +1,23 @@
 from flask import Flask
 from flask import render_template, render_template_string, escape
+from flask.ext.sqlalchemy import SQLAlchemy
 import os
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(32)
 app.config['SESSION_COOKIE_NAME'] = 'appcompsession'
+app.config['SQLALCHEMY_NATIVE_UNICODE'] = True
+app.config['SQLALCHEMY_POOL_RECYCLE'] = 3600
 app.config.from_object('config')
+
+# Support old deployments
+if not app.config.get('SQLALCHEMY_DATABASE_URI', False):
+    if app.config.get('SQLALCHEMY_ENGINE_STR', False):
+        app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_ENGINE_STR']
+
+
+db = SQLAlchemy()
+db.init_app(app)
 
 
 ###

@@ -1,6 +1,6 @@
 # Configuration example
 
-SQLALCHEMY_ENGINE_STR = 'sqlite:///database.db'
+SQLALCHEMY_DATABASE_URI = 'sqlite:///database.db'
 USE_PYMYSQL = False
 
 # IMPORTANT: Each login app is bound to a particular system (i.e., it contains the URL of the particular appcomposer).

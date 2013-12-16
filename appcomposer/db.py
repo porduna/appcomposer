@@ -10,13 +10,14 @@ import hashlib
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from config import SQLALCHEMY_ENGINE_STR, USE_PYMYSQL
 
-if USE_PYMYSQL:
-    import pymysql_sa
+from .application import app, db as sqlalchemy_db
 
-    pymysql_sa.make_default_mysql_dialect()
+SQLALCHEMY_ENGINE_STR = app.config['SQLALCHEMY_DATABASE_URI']
 
+session = sqlalchemy_db.session
+
+# TODO: Remove all this
 engine = create_engine(SQLALCHEMY_ENGINE_STR, convert_unicode=True, pool_recycle=3600)
 
 db_session = scoped_session(sessionmaker(autocommit=False,
@@ -40,8 +41,8 @@ def init_db(drop=False):
 
     password = unicode(hashlib.new('sha', 'password').hexdigest())
     admin_user = User(u'admin', u'Administrator', password)
-    db_session.add(admin_user)
-    db_session.commit()
+    session.add(admin_user)
+    session.commit()
 
 
 from alembic.script import ScriptDirectory
