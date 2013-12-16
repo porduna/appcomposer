@@ -4,6 +4,7 @@ import os
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(32)
+app.config.from_object('config')
 
 ###
 # Composers info
