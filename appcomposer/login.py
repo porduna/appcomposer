@@ -40,6 +40,14 @@ def login():
 
     form = LoginForm(request.form)
 
+    login_app = app.config.get('GRAASP_LOGIN_APP', None)
+    login_app_creation = app.config.get('SHOW_LOGIN_APP_CREATION', False)
+
+    # If a login app is not provided, show the creation interface
+    if not login_app:
+        login_app_creation = True
+
+
     # This is an effective login request
     if form.validate_on_submit():
         user = db_session.query(User).filter_by(login=form.login.data, auth_data=form.password.data).first()
@@ -49,7 +57,7 @@ def login():
             login_user(form.login.data, user.name)
             return redirect(next_url or url_for('user.index'))
 
-    return render_template("login/login.html", form=form, next=next_url)
+    return render_template("login/login.html", form=form, next=next_url, login_app = login_app, login_app_creation = login_app_creation)
 
 
 @app.route('/logout', methods=["GET", "POST"])
@@ -59,7 +67,7 @@ def logout():
         session["login"] = ""
         return redirect(url_for("index"))
     else:
-        return render_template_string("You are not logged in.")
+        return redirect(url_for("index"))
 
 @app.route('/graasp-login')
 def graasp_login():
