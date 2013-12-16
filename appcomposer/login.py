@@ -12,6 +12,7 @@ from appcomposer import db
 from .models import User
 
 from .application import app
+from .babel import gettext, lazy_gettext
 
 
 def current_user():
@@ -22,8 +23,8 @@ def current_user():
 
 
 class LoginForm(Form):
-    login = TextField(u"Login:", validators=[validators.Required()])
-    password = PasswordField(u"Password:", validators=[validators.Required()])
+    login = TextField(lazy_gettext(u"Login:"), validators=[validators.Required()])
+    password = PasswordField(lazy_gettext(u"Password:"), validators=[validators.Required()])
 
 
 def login_user(login, name):
@@ -52,7 +53,7 @@ def login():
     if form.validate_on_submit():
         user = User.query.filter_by(login=form.login.data, auth_data=form.password.data).first()
         if user is None:
-            flash("Invalid login")
+            flash(gettext("Invalid login"))
         else:
             login_user(form.login.data, user.name)
             return redirect(next_url or url_for('user.index'))
@@ -98,7 +99,7 @@ def graasp_authn():
     user_id = current_user_data['entry'].get('id') or 'no-id'
 
     if unicode(user_id) in (u'1', u'2', u'no-id'):
-        return render_template("login/errors.html", message = "You must be logged in to use the App Composer.", show_graasp_link = True)
+        return render_template("login/errors.html", message = gettext("You must be logged in to use the App Composer."), show_graasp_link = True)
 
     # Step 2: check if the user is in the database.
     existing_user = User.query.filter_by(login=graasp_user(user_id)).first()

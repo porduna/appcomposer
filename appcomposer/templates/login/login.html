@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Sign in</title>
+	<title>{{ gettext('Sign in') }}</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" media="screen"/>
 	<link href="{{ url_for('static', filename='css/bootstrap-responsive.min.css') }}" rel="stylesheet" media="screen"/>
@@ -76,8 +76,8 @@
                     <fieldset>
                     {{ form.hidden_tag() }}
 
-                    {{ render_field(form.login, autofocus = 'autofocus', placeholder = 'Username') }}
-                    {{ render_field(form.password, placeholder = 'Password') }}
+                    {{ render_field(form.login, autofocus = 'autofocus', placeholder = gettext('Username')) }}
+                    {{ render_field(form.password, placeholder = gettext('Password')) }}
 
                     {% with messages = get_flashed_messages() %}
                         {% if messages %}

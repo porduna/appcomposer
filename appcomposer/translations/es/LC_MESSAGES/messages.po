@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-16 19:14+0100\n"
+"POT-Creation-Date: 2013-12-16 19:28+0100\n"
 "PO-Revision-Date: 2013-12-16 17:02+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -18,6 +18,22 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
+
+#: appcomposer/login.py:26 appcomposer/user/user_application.py:71
+msgid "Login:"
+msgstr "Usuario:"
+
+#: appcomposer/login.py:27 appcomposer/user/user_application.py:73
+msgid "Password:"
+msgstr "Contraseña:"
+
+#: appcomposer/login.py:56
+msgid "Invalid login"
+msgstr "Credenciales inválidas"
+
+#: appcomposer/login.py:102
+msgid "You must be logged in to use the App Composer."
+msgstr "Debes estar logueado para usar el App Composer."
 
 #: appcomposer/admin/admin_application.py:110
 msgid "Login"
@@ -51,11 +67,11 @@ msgstr "Primer nombre y apellido"
 msgid "Valid e-mail address"
 msgstr "E-mail válido"
 
-#: appcomposer/composers/adapt/__init__.py:23
+#: appcomposer/composers/adapt/__init__.py:25
 msgid "Adaptor Composer"
 msgstr "Creador de adaptaciones"
 
-#: appcomposer/composers/adapt/__init__.py:24
+#: appcomposer/composers/adapt/__init__.py:26
 msgid "Adapt an existing app."
 msgstr "Adaptar un app existente."
 
@@ -64,7 +80,6 @@ msgstr "Adaptar un app existente."
 #: appcomposer/templates/composers/dummy/edit.html:66
 #: appcomposer/templates/composers/dummy/new.html:9
 #: appcomposer/templates/composers/dummy/new.html:31
-#, fuzzy
 msgid "Dummy Composer"
 msgstr "Creador Dummy"
 
@@ -85,9 +100,8 @@ msgid "An App with that name exists already"
 msgstr "Ya hay una App con ese nombre"
 
 #: appcomposer/composers/translate/__init__.py:25
-#, fuzzy
 msgid "Translate Composer"
-msgstr "Comienza a crear"
+msgstr "Creador de traducciones"
 
 #: appcomposer/composers/translate/__init__.py:26
 msgid "Translate an existing app."
@@ -168,7 +182,6 @@ msgid "Cancel"
 msgstr "Cancelar"
 
 #: appcomposer/templates/composers/dummy/edit.html:67
-#, fuzzy
 msgid "Please, set the text for your application"
 msgstr "Por favor, pon el nombre de tu aplicación"
 
@@ -183,18 +196,16 @@ msgid "Save & exit"
 msgstr "Salvar y salir"
 
 #: appcomposer/templates/composers/dummy/index.html:3
-#, fuzzy
 msgid "Welcome to dummy composer!"
-msgstr "Creador Dummy"
+msgstr "¡Bienvenido al Creador Dummy!"
 
 #: appcomposer/templates/composers/dummy/new.html:32
 msgid "Please, set your application's name"
 msgstr "Por favor, pon el nombre de tu aplicación"
 
 #: appcomposer/templates/composers/dummy/new.html:42
-#, fuzzy
 msgid "Name"
-msgstr "Nombre:"
+msgstr "Nombre"
 
 #: appcomposer/templates/composers/dummy/new.html:44
 msgid "App name"
@@ -209,10 +220,13 @@ msgstr "Error"
 msgid "Back"
 msgstr "Atrás"
 
+#: appcomposer/templates/login/login.html:4
+msgid "Sign in"
+msgstr "Entrar"
+
 #: appcomposer/templates/login/login.html:51
-#, fuzzy
 msgid "Welcome to the App Composer!"
-msgstr "Creador Dummy"
+msgstr "¡Bienvenido al App Composer!"
 
 #: appcomposer/templates/login/login.html:58
 msgid "Use Graasp"
@@ -221,13 +235,20 @@ msgstr "Usar Graasp"
 #: appcomposer/templates/login/login.html:61
 #: appcomposer/templates/login/login.html:64
 #: appcomposer/templates/login/login.html:94
-#, fuzzy
 msgid "Log in"
-msgstr "Usuario"
+msgstr "Entrar"
 
 #: appcomposer/templates/login/login.html:71
 msgid "Local users"
 msgstr "Usuarios locales"
+
+#: appcomposer/templates/login/login.html:79
+msgid "Username"
+msgstr "Usuario"
+
+#: appcomposer/templates/login/login.html:80
+msgid "Password"
+msgstr "Contraseña"
 
 #: appcomposer/templates/login/widget.xml:12
 msgid "Loading..."
@@ -301,12 +322,10 @@ msgid "Home view"
 msgstr "Inicio"
 
 #: appcomposer/user/user_application.py:22
-#, fuzzy
 msgid "User Profile"
 msgstr "Mi perfil"
 
 #: appcomposer/user/user_application.py:23
-#, fuzzy
 msgid "Profile"
 msgstr "Mi perfil"
 
@@ -318,17 +337,9 @@ msgstr "Apps"
 msgid "Name:"
 msgstr "Nombre:"
 
-#: appcomposer/user/user_application.py:71
-msgid "Login:"
-msgstr "Usuario:"
-
 #: appcomposer/user/user_application.py:72
 msgid "E-mail:"
 msgstr "E-mail:"
-
-#: appcomposer/user/user_application.py:73
-msgid "Password:"
-msgstr "Contraseña:"
 
 #: appcomposer/user/user_application.py:73
 msgid "Password."
