@@ -4,6 +4,13 @@
 {% block body %}
 
 
+    {% if apps|length == 0 %}
+        <div class="span6 offset3">
+            <div class="alert text-center alert-info">
+                <h2>No application.</h2>
+            </div>
+        </div>
+    {% endif %}
 
     {% for app in apps %}
 
@@ -11,7 +18,7 @@
         <div class="row">
         {% endif %}
 
-            <div class="span3" style="background-color:#C2DFFF; padding: 10px; border: 1px solid #003580; border-radius: 3px; margin: 15px;">
+            <div class="span3 alert alert-info" style="padding: 10px; margin: 15px;">
                 <h2>{{ app.name }}</h2>
                 <p>
                     <h4>Composer: {{ app.composer }}</h4><br>

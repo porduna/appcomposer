@@ -10,21 +10,13 @@ import hashlib
 from sqlalchemy import create_engine
 from sqlalchemy.orm import scoped_session, sessionmaker
 from sqlalchemy.ext.declarative import declarative_base
-from config import SQLALCHEMY_ENGINE_STR, USE_PYMYSQL
 
-if USE_PYMYSQL:
-    import pymysql_sa
+from flask.ext.sqlalchemy import SQLAlchemy
+from .application import app
 
-    pymysql_sa.make_default_mysql_dialect()
-
-engine = create_engine(SQLALCHEMY_ENGINE_STR, convert_unicode=True, pool_recycle=3600)
-
-db_session = scoped_session(sessionmaker(autocommit=False,
-                                         autoflush=False,
-                                         bind=engine))
-Base = declarative_base()
-Base.query = db_session.query_property()
-
+db = SQLAlchemy()
+db.init_app(app)
+session = db.session
 
 def init_db(drop=False):
     # import all modules here that might define models so that
@@ -35,13 +27,13 @@ def init_db(drop=False):
 
     if drop:
         print "Dropping Database"
-        Base.metadata.drop_all(bind=engine)
-    Base.metadata.create_all(bind=engine)
+        db.session.drop_all(app=app)
+    db.session.create_all(app=app)
 
     password = unicode(hashlib.new('sha', 'password').hexdigest())
     admin_user = User(u'admin', u'Administrator', password)
-    db_session.add(admin_user)
-    db_session.commit()
+    db.session.add(admin_user)
+    db.session.commit()
 
 
 from alembic.script import ScriptDirectory
@@ -54,8 +46,8 @@ class DbParticularUpgrader(object):
     def __init__(self):
         self.config = Config("alembic.ini")
         self.config.set_main_option("script_location", os.path.abspath('alembic'))
-        self.config.set_main_option("url", SQLALCHEMY_ENGINE_STR)
-        self.config.set_main_option("sqlalchemy.url", SQLALCHEMY_ENGINE_STR)
+        self.config.set_main_option("url", app.config['SQLALCHEMY_DATABASE_URI'])
+        self.config.set_main_option("sqlalchemy.url", app.config['SQLALCHEMY_DATABASE_URI'])
 
     @property
     def head(self):
@@ -63,7 +55,7 @@ class DbParticularUpgrader(object):
         return script.get_current_head()
 
     def check(self):
-        engine = create_engine(SQLALCHEMY_ENGINE_STR)
+        engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
 
         context = MigrationContext.configure(engine)
         current_rev = context.get_current_revision()

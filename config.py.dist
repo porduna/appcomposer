@@ -1,4 +1,12 @@
 # Configuration example
 
-SQLALCHEMY_ENGINE_STR = 'sqlite:///database.db'
+SQLALCHEMY_DATABASE_URI = 'sqlite:///database.db'
 USE_PYMYSQL = False
+
+# IMPORTANT: Each login app is bound to a particular system (i.e., it contains the URL of the particular appcomposer).
+# The administrator must create this login app and put it here. So as to create it, set SHOW_LOGIN_APP_CREATION to True
+# follow the instructions in the login screen, make the URL public and configure it in this file. Then, set 
+# SHOW_LOGIN_APP_CREATION again to False. This procedure will not work if you deploy the system in localhost (since
+# Graasp will not be able to access it).
+GRAASP_LOGIN_APP = 'https://graasp.epfl.ch/#url=appcomposer_pablo'
+SHOW_LOGIN_APP_CREATION = False

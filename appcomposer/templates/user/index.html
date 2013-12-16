@@ -5,7 +5,7 @@
     <div class="container">
 
         <div class="hero-unit">
-            <h1>Welcome {{session.login}}!</h1>
+            <h1>Welcome {{session.name}}!</h1>
             <p>This is the main page of the App Composer. The App Composer lets you customize an application easily, in different ways. Choose the type of App Composer you want to use, and get started!</p>
             <p>
                 <a href="#" class="btn btn-primary btn-large">Learn more &raquo;</a>
@@ -15,20 +15,19 @@
 
 
         <div class="row">
-            {% for composer in composers %}
-        <div class="span4">
-            <h2>{{composer.name}}
-            </h2>
-            <p>
-                {{composer.description}}
-            </p>
-            <p>
-                <a class="btn" href="{{url_for(composer.new_endpoint)}}">Start composing &raquo;
-                </a>
-            </p>
-        </div>
-            {% endfor %}
-
+                {% for composer in composers %}
+            <div class="span4">
+                <h2>{{composer.name}}
+                </h2>
+                <p>
+                    {{composer.description}}
+                </p>
+                <p>
+                    <a class="btn" href="{{url_for(composer.new_endpoint)}}">Start composing &raquo;
+                    </a>
+                </p>
+            </div>
+                {% endfor %}
 
         </div>
     </div>

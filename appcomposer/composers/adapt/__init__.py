@@ -2,7 +2,7 @@ from flask import Blueprint, flash, json, redirect, render_template, request, se
 
 from collections import OrderedDict
 import appcomposer.appstorage.api as appstorage
-from appcomposer.appstorage.api import create_app, get_app, update_app_data, db_session
+from appcomposer.appstorage.api import create_app, get_app, update_app_data
 from urlparse import urlparse
 
 from forms import AdaptappCreateForm
@@ -67,7 +67,7 @@ def adapt_create(adaptor_type):
     @return: The app unique id.
     """    
     
-    apps = db_session.query(App).filter_by(owner_id=1).all()     
+    apps = App.query.filter_by(owner_id=1).all()     
 
     def build_edit_link(app):
         return url_for("adapt.adapt_edit", app_id=app.unique_id)  

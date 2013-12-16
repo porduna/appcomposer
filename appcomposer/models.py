@@ -3,29 +3,29 @@ import datetime
 
 from flask.ext.login import UserMixin
 
-from sqlalchemy import Column, Integer, Unicode, sql, UniqueConstraint, DateTime, ForeignKey, Text
+from sqlalchemy import sql, UniqueConstraint, ForeignKey
 from sqlalchemy.orm import relation, backref
 
-from appcomposer.db import Base, db_session as DBS
+from appcomposer.db import db
 
 import json
 
 
-class User(Base, UserMixin):
+class User(db.Model, UserMixin):
     __tablename__ = 'Users'
 
-    id = Column(Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
 
-    login = Column(Unicode(50), unique=True)
-    name = Column(Unicode(50), nullable=False)
-    password = Column(Unicode(50), nullable=False)  # hash
-    email = Column(Unicode(254), nullable=False)
-    organization = Column(Unicode(50))
-    role = Column(Unicode(50))
-    creation_date = Column(DateTime, nullable=False, index=True)
-    last_access_date = Column(DateTime, nullable=False, index=True)
-    auth_system = Column(Unicode(20), nullable=True)
-    auth_data = Column(Unicode(255), nullable=True)
+    login = db.Column(db.Unicode(50), unique=True)
+    name = db.Column(db.Unicode(50), nullable=False)
+    password = db.Column(db.Unicode(50), nullable=False)  # hash
+    email = db.Column(db.Unicode(254), nullable=False)
+    organization = db.Column(db.Unicode(50))
+    role = db.Column(db.Unicode(50))
+    creation_date = db.Column(db.DateTime, nullable=False, index=True)
+    last_access_date = db.Column(db.DateTime, nullable=False, index=True)
+    auth_system = db.Column(db.Unicode(20), nullable=True)
+    auth_data = db.Column(db.Unicode(255), nullable=True)
 
     def __init__(self, login=None, name=None, password=None, email=None, organization=None, role=None,
                  creation_date=None, last_access_date=None, auth_system=None, auth_data=None):
@@ -50,19 +50,18 @@ class User(Base, UserMixin):
 
     @classmethod
     def exists(cls, login, word):
-        return DBS.query(cls).filter(sql.and_(cls.login == login, cls.password == word)).first()
+        return cls.query.filter(sql.and_(cls.login == login, cls.password == word)).first()
 
     @classmethod
     def find_by_id(cls, id):
-        return DBS.query(cls).filter_by(id=id).first()
+        return cls.query.filter_by(id=id).first()
 
-
-class AppVersion(Base):
+class AppVersion(db.Model):
     __tablename__ = 'AppVersions'
 
-    version_id = Column(Integer, primary_key=True)
-    app_id = Column(Integer, ForeignKey("Apps.id"), primary_key=True)
-    creation_date = Column(DateTime, nullable=False, index=True)
+    version_id = db.Column(db.Integer, primary_key=True)
+    app_id = db.Column(db.Integer, ForeignKey("Apps.id"), primary_key=True)
+    creation_date = db.Column(db.DateTime, nullable=False, index=True)
 
     app = relation("App", backref="app_versions")
 
@@ -76,20 +75,20 @@ class AppVersion(Base):
 # - Remove id column
 # - Make unique_id primary key
 # - Remove owner_id ( I think the "owner" relation covers this already? )
-class App(Base):
+class App(db.Model):
     __tablename__ = 'Apps'
     __table_args__ = (UniqueConstraint('name', 'owner_id'), )
 
-    id = Column(Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True)
 
-    unique_id = Column(Unicode(50), index=True, unique=True)
-    name = Column(Unicode(50), index=True)
-    owner_id = Column(Integer, ForeignKey("Users.id"), nullable=False, index=True)
-    composer = Column(Unicode(50), index=True, nullable=False, server_default=u'expert')
-    data = Column(Text, nullable=False, server_default=u'{}')
-    creation_date = Column(DateTime, nullable=False, index=True)
-    modification_date = Column(DateTime, nullable=False, index=True)
-    last_access_date = Column(DateTime, nullable=False, index=True)
+    unique_id = db.Column(db.Unicode(50), index=True, unique=True)
+    name = db.Column(db.Unicode(50), index=True)
+    owner_id = db.Column(db.Integer, ForeignKey("Users.id"), nullable=False, index=True)
+    composer = db.Column(db.Unicode(50), index=True, nullable=False, server_default=u'expert')
+    data = db.Column(db.Text, nullable=False, server_default=u'{}')
+    creation_date = db.Column(db.DateTime, nullable=False, index=True)
+    modification_date = db.Column(db.DateTime, nullable=False, index=True)
+    last_access_date = db.Column(db.DateTime, nullable=False, index=True)
 
     # TODO: Find out why this relationships seems to not work sometimes.
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
@@ -131,21 +130,21 @@ class App(Base):
 
     @classmethod
     def find_by_unique_id(cls, unique_id):
-        return DBS.query(cls).filter_by(unique_id=unique_id).first()
+        return cls.query.filter_by(unique_id=unique_id).first()
 
 
-class AppVar(Base):
+class AppVar(db.Model):
     """
     Stores a variable. A variable is a key:value pair linked to a specific App.
     """
 
     __tablename__ = 'AppVars'
 
-    var_id = Column(Integer, primary_key=True)
-    name = Column(Unicode(50))
-    value = Column(Unicode(500))
+    var_id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Unicode(50))
+    value = db.Column(db.Unicode(500))
 
-    app_id = Column(Integer, ForeignKey("Apps.id"), nullable=False)
+    app_id = db.Column(db.Integer, ForeignKey("Apps.id"), nullable=False)
     app = relation("App", backref=backref("appvars"))
 
     def __init__(self, name, value):
@@ -158,6 +157,6 @@ class AppVar(Base):
 
     @classmethod
     def find_by_var_id(cls, var_id):
-        return DBS.query(cls).filter_by(var_id=var_id).first()
+        return cls.query.filter_by(var_id=var_id).first()
 
 

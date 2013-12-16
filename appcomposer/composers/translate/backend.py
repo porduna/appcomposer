@@ -613,6 +613,18 @@ class Bundle(object):
         out.write('</messagebundle>\n')
         return out.getvalue()
 
+    @classmethod
+    def from_messages(cls, proposal_data, bundle_code):
+        """
+        Builds a new Bundle from a dictionary containing the messages, and a full bundle_code.
+        @param proposal_data Dictionary with the messages.
+        @param bundle_code Full code in the CA_ES_ALL format.
+        """
+        lang, country, group = bundle_code.split("_")
+        bundle = Bundle(lang, country, group)
+        bundle._msgs = proposal_data
+        return bundle
+
 
 @translate_blueprint.route('/app/<appid>/app.xml')
 def app_xml(appid):

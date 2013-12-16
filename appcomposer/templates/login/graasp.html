@@ -1,0 +1,56 @@
+{% set link = 'home' %}
+{% extends 'master.html' %}
+{% block body %}
+
+<div class="row text-center">
+    <h1>Login through Graasp</h1>
+
+</div>
+
+<div class="row">
+    {% if login_app_creation %}
+        <div class="span6">
+            
+            <div class="text-center">
+                <h3>Create an app in your Graasp space</h3>
+            </div>
+
+            <div class="alert text-center">
+                <h4>Warning</h4>
+                <p>This message is only for administrators. If you see this message, the App composer is wrongly configured. Contact your administrator</p>
+            </div>
+
+            <p>Take the following URL:</p>
+            <div class="text-center">
+                <input type="text" value="{{ url_for('graasp_widget', _external = True) }}" style="width: 300px"/>
+            </div>
+            <p>And paste it in your Space in Graasp Home Space by clicking on "New application". Then, click on "URL" in Graasp, and set a URL name. Take the URL generated (e.g., http://graasp.epfl.ch/#url=yourname), and put it in the GRAASP_LOGIN_APP variable of the appcomposer config.py.</p>
+        </div>
+    {% endif %}
+
+        <div class="span6 {% if not login_app_creation %}offset3{% endif %}">
+            <div class="text-center">
+                {% if login_app %}
+                    {% if login_app_creation %}
+                    <h3>Go to the login app widget</h3>
+                    <br/>
+                    <br/>
+                    {% endif %}
+                    <a href="{{ login_app }}" class="btn btn-success">Go to the login app in Graasp</a>
+                {% else %}
+                    <div class="alert alert-error text-center">
+                        <h4>GRAASP_LOGIN_APP not configured</h4>
+                        <p>Follow the steps described on this page and restart the app composer.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+</div>
+
+{% endblock %}
+
+{% block scripts %}
+    $(":pre").click(function(){
+        this.select();
+    });
+{% endblock %}

@@ -6,7 +6,8 @@ import time
 from flask import Blueprint, render_template, flash, redirect, url_for, request, json, jsonify
 from babel import Locale
 
-from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, db_session, add_var, remove_var
+from appcomposer import db
+from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, add_var, remove_var
 from appcomposer.models import AppVar, App
 from forms import UrlForm, LangselectForm
 
@@ -47,7 +48,7 @@ def translate_merge_existing():
         spec = data["spec"]
 
         # Find the Apps in the DB that match our criteria. We will need direct access to the DB, at least for now.
-        appvars = db_session.query(AppVar).filter_by(name="spec", value=spec).all()
+        appvars = AppVar.query.filter_by(name="spec", value=spec).all()
         apps_list = [var.app for var in appvars if var.app.composer == "translate"]
 
         return render_template('composers/translate/merge_existing.html', app=app, apps_list=apps_list)
@@ -94,15 +95,15 @@ def _db_get_owner_app(spec):
     @param spec: String to the App's original XML.
     @return: The owner for the App. None if no owner is found.
     """
-    relatedAppsIds = db_session.query(AppVar.app_id).filter_by(name="spec",
+    relatedAppsIds = db.session.query(AppVar.app_id).filter_by(name="spec",
                                                                value=spec).subquery()
-    ownerAppId = db_session.query(AppVar.app_id).filter(AppVar.name == "ownership",
+    ownerAppId = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
                                                         AppVar.app_id.in_(relatedAppsIds)).first()
 
     if ownerAppId is None:
         return None
 
-    ownerApp = db_session.query(App).filter_by(id=ownerAppId[0]).first()
+    ownerApp = App.query.filter_by(id=ownerAppId[0]).first()
     return ownerApp
 
 
@@ -121,7 +122,7 @@ def _db_get_children_apps(spec):
 
 
 def _db_get_proposals(app):
-    return db_session.query(AppVar).filter_by(name="proposal", app=app).all()
+    return AppVar.query.filter_by(name="proposal", app=app).all()
 
 @translate_blueprint.route("/get_proposal", methods=["GET"])
 def get_proposal():
@@ -139,7 +140,7 @@ def get_proposal():
         return jsonify(**result)
 
     # Retrieve the var.
-    prop = db_session.query(AppVar).filter_by(name="proposal", var_id=proposal_id).first()
+    prop = AppVar.query.filter_by(name="proposal", var_id=proposal_id).first()
     if prop is None:
         result["result"] = "error"
         result["message"] = "proposal not found"
@@ -155,7 +156,11 @@ def get_proposal():
     # more easily.
     bm = backend.BundleManager.create_from_existing_app(prop.app.data)
     bundle = bm.get_bundle(contents["bundle_code"])
-    result["original"] = bundle.to_jsonable()["messages"]
+    if bundle:
+        result["original"] = bundle.to_jsonable()["messages"]
+    else:
+        # If the bundle doesn't exist, the original messages dict should be empty.
+        result["original"] = {}
 
     return jsonify(**result)
 
@@ -288,6 +293,8 @@ def translate_edit():
 
     # Retrieve the application we want to view or edit.
     app = get_app(appid)
+    if app is None:
+        return "500: App not found", 500
 
     bm = backend.BundleManager.create_from_existing_app(app.data)
     spec = bm.get_gadget_spec()
@@ -392,16 +399,23 @@ def translate_proposed_list():
         if proposal_id is None:
             return "Proposal not selected", 500
 
+        merge_data = request.values.get("data")
+        if merge_data is None:
+            return "Merge data was not provided", 500
+        merge_data = json.loads(merge_data)
+
         # TODO: Consider creating API for this.
         # TODO: Optimize this. We already have the vars.
-        proposal = db_session.query(AppVar).filter_by(app=app, var_id=proposal_id).first()
+        proposal = AppVar.query.filter_by(app=app, var_id=proposal_id).first()
         if proposal is None:
             return "Proposal not found", 500
 
         flash("Proposal loaded: " + proposal.value)
+
         data = json.loads(proposal.value)
-        proposed_bundle = backend.Bundle.from_jsonable(data["bundle_contents"])
         bundle_code = data["bundle_code"]
+
+        proposed_bundle = backend.Bundle.from_messages(merge_data, bundle_code)
 
         # TODO: Improve this code.
         bm = backend.BundleManager.create_from_existing_app(app.data)
@@ -418,6 +432,7 @@ def translate_proposed_list():
 
         flash("Merge done.", "success")
 
+
         # Remove the proposal from the DB.
         remove_var(proposal)
 
@@ -429,7 +444,7 @@ def translate_proposed_list():
         if proposal_id is None:
             return "Proposal not selected", 500
 
-        proposal = db_session.query(AppVar).filter_by(app=app, var_id=proposal_id).first()
+        proposal = AppVar.query.filter_by(app=app, var_id=proposal_id).first()
         if proposal is None:
             return "Proposal not found", 500
 
@@ -445,13 +460,13 @@ def translate_proposed_list():
 def translate_wip():
     """Work in progress..."""
 
-    relatedAppsIds = db_session.query(AppVar.app_id).filter_by(name="spec",
+    relatedAppsIds = db.session.query(AppVar.app_id).filter_by(name="spec",
                                                                value="https://raw.github.com/ORNGatUCSF/Gadgets/master/test-opensocial-0.8.xml").subquery()
 
-    ownerAppId = db_session.query(AppVar.app_id).filter(AppVar.name == "ownership",
+    ownerAppId = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
                                                         AppVar.app_id.in_(relatedAppsIds)).first()
 
-    ownerApp = db_session.query(App).filter_by(id=ownerAppId[0]).first()
+    ownerApp = App.query.filter_by(id=ownerAppId[0]).first()
 
     return "OWN " + str(ownerApp)
 

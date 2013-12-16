@@ -8,7 +8,14 @@
 
     <script type="text/javascript">
 
+    var COLOR_NOT_CHANGED = "#C3F7D7";
+    var COLOR_CHANGED = "#F7C3D3";
+    var COLOR_ADDED = "#F7F6C3";
+
     $(document).ready( function() {
+
+        // Clean up the preview div.
+        $("#preview_div").html("");
 
         var proposal = $("#proposals");
 
@@ -35,7 +42,44 @@
             loadPreview(selected);
         });
 
+        // Prepare to intercept the Accept button so that we can build
+        // the actual request.
+        //
+        // Figure out which button is clicked.
+        $("form button[type=submit]").click(function() {
+            $("button[type=submit]", $(this).parents("form")).removeAttr("clicked");
+            $(this).attr("clicked", "true");
+        });
+
+        $("#merge").submit(onAcceptSubmit);
     });
+
+
+    // Function that intercepts clicks on Accept before the submit
+    // POST actually takes place.
+    function onAcceptSubmit(event)
+    {
+        var clickedButton = $("button[type=submit][clicked=true]");
+        if(clickedButton[0].id == "acceptButton")
+        {
+            var elements = $("#preview_div div");
+            var dict = {};
+
+            elements.each(function(index){
+                var key = this.children[0].innerText;
+                var value = this.children[2].value;
+                var enabled = $(this.children[3]).hasClass("glyphicon-ok");
+
+                if(enabled)
+                {
+                    dict[key] = value;
+                }
+            });
+
+            // Store the data as a JSON on the hidden field created for that purpose.
+            $("#data").val(JSON.stringify(dict));
+        }
+    }
 
 
     function loadPreview(translationCode)
@@ -45,26 +89,56 @@
 
         var previewDiv = $("#preview_div");
 
+        // Clean old elements within the div, we need load new ones.
+        previewDiv.html("");
+
         $("#previewlabel").text("Translation (Loading...)");
 
         $.getJSON( requestURL+"?proposal_id="+translationCode, function(data){
             dbgel = data;
             var messages = data["proposal"]["bundle_contents"]["messages"];
+            var originals = data.original;
+
             $("#previewlabel").text("Translation");
-            $.each(messages, function(k, v){
-                addMessage(previewDiv, k, v);
+            $.each(messages, function(ident, newMsg){
+
+                // Find the original msg (undefined if it doesn't exist).
+                var origMsg = originals[ident];
+
+                addMessage(previewDiv, ident, newMsg, origMsg, true);
             });
         } );
     }
 
 
-    function addMessage(parent_div, label, content)
+    function addMessage(parent_div, ident, newMsg, origMsg, tickOn)
     {
+        // Calculate the color for the fields
+        var proposedColor;
+        if(origMsg == undefined)
+            proposedColor = COLOR_ADDED;
+        else if(origMsg === newMsg)
+            proposedColor = COLOR_NOT_CHANGED;
+        else
+            proposedColor = COLOR_CHANGED;
+
+        // Do not show "undefined"
+        if(origMsg == undefined)
+            origMsg = "";
+
+        // Define the tick
+        var tickSpan;
+        if(tickOn)
+            tickSpan = $('<span class="btn btn-lg btn-success input-group-addon glyphicon glyphicon-ok" />');
+        else
+            tickSpan = $('<span class="btn btn-lg btn-danger input-group-addon glyphicon glyphicon-remove"/>');
+
+
         {# TODO: Add XSS protection etc. #}
-        var labelspan = '<span class="input-group-addon">' + label + '</span>';
-        var inputOriginal = '<input type="text" class="form-control" value="' + content + '"/>';
-        var inputProposed = '<input type="text" class="form-control" value="' + content + '"/>';
-        var tick = '<span class="input-group-addon glyphicon glyphicon-ok"/>';
+        var labelspan = '<span class="input-group-addon">' + ident + '</span>';
+        var inputOriginal = '<input type="text" readonly class="form-control" style="background-color:#DEDEDE" value="' + origMsg + '"/>';
+        var inputProposed = '<input type="text" class="form-control" style="background-color:' + proposedColor +'" value="' + newMsg + '"/>';
+        var tick = tickSpan;
 
         var wrapping_div = $('<div name="mytestdiv" class="input-group" style="padding-bottom: 10px">').appendTo(parent_div);
         wrapping_div
@@ -72,6 +146,29 @@
                 .append(inputOriginal)
                 .append(inputProposed)
                 .append(tick);
+
+        // Register click event so that the tick acts as a button.
+        tick.click(function(event){
+            ev = event;
+            var target = $(ev.target);
+
+            if(target.hasClass("btn-success"))
+            {
+                ev.target.parentNode.style.opacity = 0.4;
+                target.removeClass("btn-success");
+                target.removeClass("glyphicon-ok");
+                target.addClass("btn-danger");
+                target.addClass("glyphicon-remove");
+            }
+            else
+            {
+                ev.target.parentNode.style.opacity = 1;
+                target.removeClass("btn-danger");
+                target.removeClass("glyphicon-remove");
+                target.addClass("btn-success");
+                target.addClass("glyphicon-ok");
+            }
+        });
     }
 
     </script>
@@ -109,7 +206,14 @@
                     {# This is necessary so that the next page knows which App to load. #}
                     <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
 
-                    <legend>Select a translation to decide what to do</legend>
+                    {# Value set from JavaScript #}
+                    <input type="hidden" id="data" name="data" value=""/>
+
+                    {% if proposals|length > 0 %}
+                    <legend>Select a proposal and choose or edit the translations</legend>
+                    {% else %}
+                    <legend>There are currently no translation proposals for this app</legend>
+                    {% endif %}
 
                     <div class="col-lg-4 col-md-4">
 
@@ -134,11 +238,11 @@
                                    href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">« Go Back</a>
 
                                 <button type="submit" id="acceptButton" name="acceptButton" class="btn btn-success">
-                                    Accept it
+                                    Accept
                                 </button>
 
                                 <button type="submit" id="denyButton" name="denyButton" class="btn btn-warning">
-                                    Deny it
+                                    Deny all
                                 </button>
                             </div>
                         </div>
