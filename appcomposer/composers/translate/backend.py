@@ -191,7 +191,8 @@ class BundleManager(object):
                 country = ""
             return Locale(lang, country).english_name
         except UnknownLocaleError:
-            return None
+            return Locale("en", "US").languages.get(lang)
+
 
     @staticmethod
     def fullcode_to_partialcode(code):

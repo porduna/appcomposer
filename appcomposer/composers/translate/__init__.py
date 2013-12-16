@@ -2,6 +2,7 @@ from collections import defaultdict
 import os
 import random
 import time
+import babel
 
 from flask import Blueprint, render_template, flash, redirect, url_for, request, json, jsonify
 from babel import Locale
@@ -31,8 +32,14 @@ translate_blueprint = Blueprint(info['blueprint'], __name__)
 # importing and cyclic dependencies issues.
 import backend
 
+
 @translate_blueprint.route("/merge_existing", methods=["GET", "POST"])
 def translate_merge_existing():
+    """
+    Provides the logic for one of the merging features. This merging method
+    was implemented before the "proposals" system, which is superior.
+    Should probably be adapted or removed in the future.
+    """
     appid = request.values.get("appid")
     if appid is None:
         # An appid is required.
@@ -123,10 +130,11 @@ def _db_get_children_apps(spec):
 def _db_get_proposals(app):
     return db_session.query(AppVar).filter_by(name="proposal", app=app).all()
 
+
 @translate_blueprint.route("/get_proposal", methods=["GET"])
 def get_proposal():
     """
-    API to get the contents of a Proposal var.
+    JSON API to get the contents of a Proposal var.
     As of now it does no checks. Lets you retrieve any proposal var as
     long as you know its IP.
     @return: JSON string containing the data.
@@ -171,9 +179,19 @@ def translate_selectlang():
     # TODO: This approach has many flaws, should be changed eventually.
     # Note: The name pcode refers to the fact that the codes we deal with here are partial (do not include
     # the group).
-    targetlangs_codes = ["es_ALL", "eu_ALL", "ca_ALL", "en_ALL", "de_ALL", "fr_ALL", "pt_ALL"]
+
+    # We will build a list of possible languages using the babel library.
+    languages = babel.core.Locale("en", "US").languages.items()
+    languages.sort(key=lambda it: it[1])
+    # TODO: Currently, we filter languages which contain "_" in their code so as to simplify.
+    # Because we use _ throughout the composer as a separator character, trouble is caused otherwise.
+    # Eventually we should consider whether we need to support special languages with _
+    # on its code.
+    targetlangs_codes = [lang[0] + "_ALL" for lang in languages if "_" not in lang[0]]
+
     targetlangs_list = [{"pcode": code, "repr": backend.BundleManager.get_locale_english_name(
         *backend.BundleManager.get_locale_info_from_code(code))} for code in targetlangs_codes]
+
     full_groups_list = [("ALL", "ALL"), ("10-13", "Preadolescence (age 10-13)"), ("14-18", "Adolescence (age 14-18)")]
     # TODO: For now we will solve the above by only showing the DEFAULT in the source groups list.
 
