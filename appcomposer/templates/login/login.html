@@ -56,8 +56,13 @@
             <div class="span2">
                 <div style="text-align: center">
                     <h3>Use Graasp</h3>
-                    <a href="{{ url_for('graasp_login') }}"><img src="{{ url_for('static', filename='graasp.jpg') }}" style="margin: 20px"/></a><br/>
-                    <a href="{{ url_for('graasp_login') }}" class="btn btn-primary btn-block">Log in</a>
+                    {% if login_app_creation %}
+                        <a href="{{ url_for('graasp_login') }}"><img src="{{ url_for('static', filename='graasp.jpg') }}" style="margin: 20px"/></a><br/>
+                        <a href="{{ url_for('graasp_login') }}" class="btn btn-primary btn-block">Log in</a>
+                    {% else %}
+                        <a href="{{ login_app }}"><img src="{{ url_for('static', filename='graasp.jpg') }}" style="margin: 20px"/></a><br/>
+                        <a href="{{ login_app }}" class="btn btn-primary btn-block">Log in</a>
+                    {% endif %}
                 </div>
             </div>
 

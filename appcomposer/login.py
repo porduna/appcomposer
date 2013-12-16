@@ -40,6 +40,14 @@ def login():
 
     form = LoginForm(request.form)
 
+    login_app = app.config.get('GRAASP_LOGIN_APP', None)
+    login_app_creation = app.config.get('SHOW_LOGIN_APP_CREATION', False)
+
+    # If a login app is not provided, show the creation interface
+    if not login_app:
+        login_app_creation = True
+
+
     # This is an effective login request
     if form.validate_on_submit():
         user = db_session.query(User).filter_by(login=form.login.data, auth_data=form.password.data).first()
@@ -49,7 +57,7 @@ def login():
             login_user(form.login.data, user.name)
             return redirect(next_url or url_for('user.index'))
 
-    return render_template("login/login.html", form=form, next=next_url)
+    return render_template("login/login.html", form=form, next=next_url, login_app = login_app, login_app_creation = login_app_creation)
 
 
 @app.route('/logout', methods=["GET", "POST"])
@@ -59,36 +67,18 @@ def logout():
         session["login"] = ""
         return redirect(url_for("index"))
     else:
-        return render_template_string("You are not logged in.")
+        return redirect(url_for("index"))
 
 @app.route('/graasp-login')
 def graasp_login():
-    origin_url = url_for('graasp_login', _external = True)
-    widget_url = url_for('graasp_widget', _external = True)
+    login_app = app.config.get('GRAASP_LOGIN_APP', None)
+    login_app_creation = app.config.get('SHOW_LOGIN_APP_CREATION', False)
 
-    data = {
-        "url": origin_url,
-        "phases": [
-            {
-                "items": [
-                    {
-                        "url": widget_url,
-                        "name": "Login app",
-                        "description": "Login app for App composer"
-                    },
-                ],
-                "name": "Login",
-                "description": "You may log in the app composer from here."
-            }
-        ],
-        "name": "App Composer log in space",
-        "description": "<p>In this space, you may log in the app composer automatically</p>\n"
-    }
+    # If a login app is not provided, show the creation interface
+    if not login_app:
+        login_app_creation = True
 
-    url_base = "https://graasp.epfl.ch/spaces/instantiate/ils.json?ils="
-
-    space_creation_link = url_base + urllib.quote(json.dumps(data))
-    return render_template('login/graasp.html', space_creation_link = space_creation_link)
+    return render_template('login/graasp.html', login_app = login_app, login_app_creation = login_app_creation)
 
 SHINDIG = 'https://shindig.epfl.ch'
 def url_shindig(url):
@@ -107,7 +97,8 @@ def graasp_authn():
     name    = current_user_data['entry'].get('displayName') or 'anonymous'
     user_id = current_user_data['entry'].get('id') or 'no-id'
 
-    # TODO: if user_id == '2', 'no_id'...: error
+    if unicode(user_id) in (u'1', u'2', u'no-id'):
+        return render_template("login/errors.html", message = "You must be logged in to use the App Composer.", show_graasp_link = True)
 
     # Step 2: check if the user is in the database.
     existing_user = db_session.query(User).filter_by(login=graasp_user(user_id)).first()
