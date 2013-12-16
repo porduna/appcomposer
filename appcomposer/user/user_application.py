@@ -7,6 +7,7 @@ from .fields import DisabledTextField
 from appcomposer import models, db
 from appcomposer.login import current_user
 from appcomposer.babel import lazy_gettext
+from appcomposer.views import RedirectView
 
 from sqlalchemy.orm import scoped_session, sessionmaker
 
@@ -22,6 +23,7 @@ def initialize_user_component(app):
     admin = Admin(index_view=HomeView(url=url, endpoint='user', name=lazy_gettext("Home view")), name=lazy_gettext("User Profile"), url=url, endpoint="home-user")
     admin.add_view(ProfileEditView(name=lazy_gettext("Profile"), url='profile', endpoint='user.profile'))
     admin.add_view(AppsView(name=lazy_gettext("Apps"), url="apps", endpoint='user.apps'))
+    admin.add_view(RedirectView('index', name=lazy_gettext("Back"), url="back", endpoint='user.back'))
     admin.init_app(app)
 
 
