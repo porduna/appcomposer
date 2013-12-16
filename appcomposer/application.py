@@ -4,7 +4,9 @@ import os
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(32)
+app.config['SESSION_COOKIE_NAME'] = 'appcompsession'
 app.config.from_object('config')
+
 
 ###
 # Composers info
