@@ -1,22 +1,32 @@
 <Module>
- <ModulePrefs title="Widget ball-white of aquarium">
+ <ModulePrefs title="App Composer login">
  <Require feature="osapi" />
+     <Locale messages="{{ url_for('static', filename='login/messages_ALL_ALL.xml', _external = True) }}"/>
+     <Locale lang="es" messages="{{ url_for('static', filename='login/messages_es_ALL.xml', _external = True) }}"/>
+     <!-- Further translatiosn -->
  </ModulePrefs>
  <Content type="html" view="home,canvas">
  <![CDATA[
  
-    <link href="{{ url_for('static', filename='css/bootstrap.css', _external=True) }}" rel="stylesheet">
+    <!-- <link href="{{ url_for('static', filename='css/bootstrap.css', _external=True) }}" rel="stylesheet"> -->
+    <link rel="stylesheet" href="http://graasp.epfl.ch/gadget/libs/bootstrap/css/bootstrap.min.css" type="text/css">
 
     
     <div style="width:100%; text-align: center">
-        <div id="container">{{ gettext("Loading...") }}</div>
+        <div id="container">Loading...</div>
     </div>
 
     <script>
-        var token = shindig.auth.getSecurityToken();
-        var url = '{{ url_for('graasp_authn', _external = True) }}?st=' + token;
-        document.getElementById('container').innerHTML = "<a href='" + url + "' class='btn btn-success' target='_top'>{{ gettext("Go to App Composer") }}</a>";
-        console.log("Loading... " + url);
+        function onGadgetLoad() {
+            var prefs = new gadgets.Prefs();
+            var token = shindig.auth.getSecurityToken();
+            var url = '{{ url_for('graasp_authn', _external = True) }}?st=' + token;
+            var message = prefs.getMsg("go_to_app_composer");
+            document.getElementById('container').innerHTML = "<a href='" + url + "' class='btn btn-success' target='_top'>" + message + "</a>";
+            console.log("Loading... " + url);
+        };
+
+        gadgets.util.registerOnLoadHandler(onGadgetLoad);
     </script>
 
  ]]>
