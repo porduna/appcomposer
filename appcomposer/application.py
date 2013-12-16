@@ -1,6 +1,5 @@
 from flask import Flask
 from flask import render_template, render_template_string, escape
-from flask.ext.sqlalchemy import SQLAlchemy
 import os
 
 app = Flask(__name__)
@@ -14,10 +13,6 @@ app.config.from_object('config')
 if not app.config.get('SQLALCHEMY_DATABASE_URI', False):
     if app.config.get('SQLALCHEMY_ENGINE_STR', False):
         app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_ENGINE_STR']
-
-
-db = SQLAlchemy()
-db.init_app(app)
 
 
 ###

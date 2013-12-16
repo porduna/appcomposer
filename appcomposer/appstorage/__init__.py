@@ -6,7 +6,7 @@ from appcomposer.appstorage.api import add_var, get_all_vars, set_var, remove_va
 
 
 from appcomposer.login import current_user
-from appcomposer.db import db_session
+from appcomposer import db
 from appcomposer.application import app as flask_app
 from appcomposer.models import App
 
@@ -29,7 +29,7 @@ def new():
 
 @flask_app.route('/appstorage/list', methods=["GET", "POST"])
 def list():
-    apps = db_session.query(App).all()
+    apps = App.query.all()
 
     ret = ""
 
@@ -42,12 +42,12 @@ def list():
 # TODO: Very important to secure this (check that the user has priviledges over the specified app).
 @flask_app.route('/appstorage/<appid>', methods=["GET", "POST", "DELETE"])
 def get(appid):
-    app = db_session.query(App).filter_by(unique_id=appid).first()
+    app = App.query.filter_by(unique_id=appid).first()
     if app is None:
         return "404: App doesn't exist", 404
     if request.method == "DELETE":
-        db_session.delete(app)
-        db_session.commit()
+        db.session.delete(app)
+        db.session.commit()
     else:
         return app.to_json()
 
@@ -77,7 +77,7 @@ def save():
         return "400: Malformed Request. Data not present.", 400
 
     # Locate the app
-    app = db_session.query(App).filter_by(unique_id=appid).first()
+    app = App.query.filter_by(unique_id=appid).first()
     if app is None:
         return "404: App doesn't exist. Can't save.", 404
 
