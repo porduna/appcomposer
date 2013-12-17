@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-17 17:20+0100\n"
+"POT-Creation-Date: 2013-12-17 18:19+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -44,6 +44,11 @@ msgstr ""
 
 #: appcomposer/admin/admin_application.py:30
 msgid "Basic Management"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:30
+#: appcomposer/admin/admin_application.py:31
+msgid "Applications"
 msgstr ""
 
 #: appcomposer/admin/admin_application.py:31
@@ -246,8 +251,8 @@ msgstr ""
 
 #: appcomposer/templates/admin/index.html:9
 msgid ""
-"This is the Admin View of the App Composer. You can use this panel too to"
-" manage users and applications."
+"This is the Admin View of the App Composer. You can use this panel to "
+"manage users and applications."
 msgstr ""
 
 #: appcomposer/templates/admin/profile.html:9

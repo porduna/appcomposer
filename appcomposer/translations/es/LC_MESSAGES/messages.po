@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-17 17:20+0100\n"
+"POT-Creation-Date: 2013-12-17 18:19+0100\n"
 "PO-Revision-Date: 2013-12-16 17:02+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -45,7 +45,12 @@ msgstr "Usuarios"
 
 #: appcomposer/admin/admin_application.py:30
 msgid "Basic Management"
-msgstr "Gestión básica"
+msgstr "Gestión Básica"
+
+#: appcomposer/admin/admin_application.py:30
+#: appcomposer/admin/admin_application.py:31
+msgid "Applications"
+msgstr "Aplicaciones"
 
 #: appcomposer/admin/admin_application.py:31
 msgid "Advanced Management"
@@ -249,11 +254,11 @@ msgstr "¡Bienvenido, %(user)s!"
 
 #: appcomposer/templates/admin/index.html:9
 msgid ""
-"This is the Admin View of the App Composer. You can use this panel to"
-" manage users and applications."
+"This is the Admin View of the App Composer. You can use this panel to "
+"manage users and applications."
 msgstr ""
-"Esta es la vista de administración del creador de aplicaciones. Puedes utilizar este"
-" panel para gestionar los usuarios y aplicaciones."
+"Esta es la vista de administración del creador de aplicaciones. Puedes "
+"utilizar este panel para gestionar los usuarios y aplicaciones."
 
 #: appcomposer/templates/admin/profile.html:9
 msgid ""
@@ -332,9 +337,9 @@ msgid ""
 "This message is only for administrators. If you see this message, the App"
 " composer is wrongly configured. Contact your administrator"
 msgstr ""
-"Este mensaje es sólo para administradores. Si ves este mensajes, "
-"el creador de aplicaciones está mal configurado. Contacta con el administrador"
-
+"Este mensaje es sólo para administradores. Si ves este mensajes, el "
+"creador de aplicaciones está mal configurado. Contacta con el "
+"administrador"
 
 #: appcomposer/templates/login/graasp.html:23
 msgid "Take the following URL:"
@@ -347,6 +352,10 @@ msgid ""
 " the URL generated (e.g., http://graasp.epfl.ch/#url=yourname), and put "
 "it in the GRAASP_LOGIN_APP variable of the appcomposer config.py."
 msgstr ""
+"Y pégalo en tu espacio de Graasp haciendo click on \"Nueva aplicación\"."
+"A continuación, haz click en \"URL\" de Graasp y establece el nombre de la URL."
+"Coge la URL generada (por ejemplo, http://graasp.epfl.ch/#url=yourname) y ponla"
+"en la variable GRAASP_LOGIN_APP del fichero config.py del creador de aplicaciones."
 
 #: appcomposer/templates/login/graasp.html:35
 msgid "Go to the login app widget"
