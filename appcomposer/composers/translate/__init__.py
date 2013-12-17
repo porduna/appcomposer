@@ -414,6 +414,8 @@ def translate_proposed_list():
         propdata["id"] = str(prop.var_id)
         proposed_translations.append(propdata)
 
+    # If we received a POST with acceptButton set then we will need to merge the
+    # proposal.
     if request.method == "POST" and request.values.get("acceptButton") is not None:
         proposal_id = request.values.get("proposals")
         if proposal_id is None:
@@ -424,7 +426,6 @@ def translate_proposed_list():
             return render_template("composers/errors.html", message="Merge data was not provided")
         merge_data = json.loads(merge_data)
 
-        # TODO: Consider creating API for this.
         # TODO: Optimize this. We already have the vars.
         proposal = AppVar.query.filter_by(app=app, var_id=proposal_id).first()
         if proposal is None:
@@ -437,16 +438,8 @@ def translate_proposed_list():
 
         proposed_bundle = backend.Bundle.from_messages(merge_data, bundle_code)
 
-        # TODO: Improve this code.
         bm = backend.BundleManager.create_from_existing_app(app.data)
-        base_bundle = bm.get_bundle(bundle_code)
-        if base_bundle is None:
-            # The bundle doesn't exist, so no actual merge is needed.
-            bm._bundles[bundle_code] = proposed_bundle
-        else:
-            # Merge the proposed Bundle with our Bundle.
-            merged_bundle = backend.Bundle.merge(base_bundle, proposed_bundle)
-            bm._bundles[bundle_code] = merged_bundle
+        bm.merge_bundle(bundle_code, proposed_bundle)
 
         update_app_data(app, bm.to_json())
 
@@ -458,6 +451,7 @@ def translate_proposed_list():
         # Remove it from our current proposal list as well, so that it isn't displayed anymore.
         proposed_translations = [prop for prop in proposed_translations if prop["id"] != proposal_id]
 
+    # The DENY button was pressed. We have to discard the whole proposal.
     elif request.method == "POST" and request.values.get("denyButton") is not None:
         proposal_id = request.values.get("proposals")
         if proposal_id is None:

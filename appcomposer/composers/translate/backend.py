@@ -467,6 +467,27 @@ class BundleManager(object):
         output_xml = self._inject_locales_into_spec(appid, xmlspec, True, group)
         return output_xml
 
+    def merge_bundle(self, base_bundle_code, proposed_bundle):
+        """
+        Merges two bundles. Messages in the proposed_bundle will replace those messages
+        with the same name in the base bundle.
+
+        @param base_bundle_code: The code of the bundle to use as base. If it exists, it
+        will be found within this manager. Otherwise the merge will be trivial, because
+        a new bundle for that code will simply be created with the proposed_bundle's contents.
+
+        @param proposed_bundle: The proposed bundle. This should be a Bundle object.
+        """
+        base_bundle = self.get_bundle(base_bundle_code)
+
+        if base_bundle is None:
+            # The bundle doesn't exist, so no actual merge is needed.
+            self._bundles[base_bundle_code] = proposed_bundle
+        else:
+            # Merge the proposed Bundle with our Bundle.
+            merged_bundle = Bundle.merge(base_bundle, proposed_bundle)
+            self._bundles[base_bundle_code] = merged_bundle
+
 
 class Bundle(object):
     """
