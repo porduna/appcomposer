@@ -40,6 +40,7 @@
 
           <ul class="nav navbar-nav">
             <li {% if current_link == 'home' %}    class="active" {% endif %}><a href="{{ url_for('adapt.adapt_index') }}">Home</a></li>
+            <li                                                              ><a href="{{ url_for('user.apps.index') }}">Apps</a></li>
             <!--
             <li {% if current_link == 'about' %}    class="active" {% endif %}><a href="{{ url_for('translate.translate_about') }}">About</a></li>
             <li {% if current_link == 'contact' %}    class="active" {% endif %}><a href="{{ url_for('translate.translate_about') }}">Contact</a></li>

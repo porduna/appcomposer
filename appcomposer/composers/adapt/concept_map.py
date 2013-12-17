@@ -105,7 +105,7 @@ def conceptmapper_domain(app_id):
 data = {
    'version' : 1,
    'initial' : lambda : {
-        'concepts' : list()
+        'concepts' : ''
    },
    'load' : concept_map_load,
    'edit' : concept_map_edit,
