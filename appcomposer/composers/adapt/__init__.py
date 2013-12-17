@@ -23,6 +23,7 @@ adapt_blueprint = Blueprint(info['blueprint'], __name__)
 
 ADAPTORS = {
     # 'identifier' : {
+    #     'initial' : function,
     #     'load' : function,
     #     'edit' : function,
     #     'name' : 'Something',
@@ -96,6 +97,8 @@ def adapt_create(adaptor_type):
         flash("Invalid adaptor type", "error")
         return render_template('composers/adapt/create.html', apps=[], adaptor_type = adaptor_type, build_edit_link=build_edit_link)
 
+    app_plugin = ADAPTORS[adaptor_type]
+
     apps = appstorage.get_my_apps(adaptor_type = adaptor_type)
 
     # If a get request is received, we just show the new app form and the list of adaptor apps
@@ -124,6 +127,9 @@ def adapt_create(adaptor_type):
             'description': unicode(app_description),
             'adaptor_type': unicode(adaptor_type)
         }
+
+        # Fill with the initial structure
+        data.update(app_plugin['initial']())
 
         #Dump the contents of the previous block and check if an app with the same name exists.
         # (TODO): do we force different names even if the apps belong to another adaptor type?

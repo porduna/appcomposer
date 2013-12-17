@@ -161,6 +161,11 @@ def hypothesis_domain(app_id):
 
 data = {
    'version' : 1,
+   'initial' : lambda : {
+    'conditionals' : list(),
+    'inputs' : list(),
+    'outputs' : list(),
+   },
    'load' : hypothesis_load,
    'edit' : hypothesis_edit,
    'name' : 'Hypothesis',
