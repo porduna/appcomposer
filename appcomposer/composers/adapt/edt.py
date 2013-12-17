@@ -15,16 +15,16 @@ def edt_load(app, app_id, name, data):
 
 def edt_edit(app, app_id, name, data):
     '''
-    # Experiment design tool monster specification. [!] name == domain name                                
+    # Experiment design tool monster specification. [!] name == domain name
     data = {
         'adaptor_version': '1',
         'name': str(name),
         'description': str(app_description),
         'adaptor_type': str(adaptor_type),
         'object properties': [{ 'name': str(objprop_name), 'type': str(objprop_type), 'symbol': str(objprop_symbol), 'unit': str(obj_propunit), 'obvalues': str(objprop_values) }],
-        'object_relations':  [{ 'name': str(relname), 'object_properties':list(),'relation': str(relation) }], 
-        'system_properties':  [{ 'name': str(sysprop_name), 'type':str(sysprop_type),'values': str(sysprop_values), 'symbol': str(sysprop_symbol), 'unit': str(sysprop_unit) }], 
-        'object_measures': [{ 'name': str(objmeas_name), 'type': str(objmeas_type), 'values': list(), 'unit': str(objmeas_unit), 'depends_on': { 'object_properties': list(), 'system_properties': list() }} ],    
+        'object_relations':  [{ 'name': str(relname), 'object_properties':list(),'relation': str(relation) }],
+        'system_properties':  [{ 'name': str(sysprop_name), 'type':str(sysprop_type),'values': str(sysprop_values), 'symbol': str(sysprop_symbol), 'unit': str(sysprop_unit) }],
+        'object_measures': [{ 'name': str(objmeas_name), 'type': str(objmeas_type), 'values': list(), 'unit': str(objmeas_unit), 'depends_on': { 'object_properties': list(), 'system_properties': list() }} ],
 
         # Warning: There can be more than one experiment stored here
         'expname': str(exp_name),
@@ -35,7 +35,7 @@ def edt_edit(app, app_id, name, data):
         'system_property_selection': list(),
         'object_property_specification': [ {'property': str(objpropspec_name),'initial': str(), 'unit': str(), 'values': list(), 'range': {'minimum': str(), 'maximum': str(), 'increment': str()}} ],
         'system_property_values': [ {'property': str(), 'value': str()} ]
-    }                        
+    }
     '''
 
     # Default number of rows for the experiment design
@@ -45,9 +45,9 @@ def edt_edit(app, app_id, name, data):
     return render_template("composers/adapt/edt/edit.html", app=app, app_id = app_id, n_rows = 5)
 
 
-# 
+#
 # Auxiliar routes
-# 
+#
 
 @adapt_blueprint.route("/export/<app_id>/edt/edt.html")
 def edt_index(app_id):
@@ -55,11 +55,11 @@ def edt_index(app_id):
     hypothesis_index(app_id)
     This function points to the experiment design tool instance.
 
-    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
+    @param app_id: Identifier of the application. It will be unique within the list of user's apps.
     @return: The webpage of an experiment design.
-    """  
-    
-    # In the templates, edt.html points to {{ url_for('adapt.edt_domain', app_id = app_id) }} 
+    """
+
+    # In the templates, edt.html points to {{ url_for('adapt.edt_domain', app_id = app_id) }}
     # instead of buoyancy.js
     # The domain name is also generated here.
     domain_name = 'buoyancy'
@@ -73,16 +73,16 @@ def edt_widget(app_id):
     edt_widget(app_id)
     This function points to the edt instance.
 
-    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
+    @param app_id: Identifier of the application. It will be unique within the list of user's apps.
     @return: The webpage of a edt.
-    """  
-        
-    # In the templates, conceptmapper.html points to {{ url_for('adapt.edt_domain', app_id = app_id) }} 
+    """
+
+    # In the templates, conceptmapper.html points to {{ url_for('adapt.edt_domain', app_id = app_id) }}
     # instead of domain.js (In the original app, the "concepts" variable was stored into the index.html file)
     # The domain name is not generated here.
-    
+
     return render_template("composers/adapt/edt/widget.xml", app_id = app_id)
-    
+
 
 @adapt_blueprint.route("/export/<app_id>/edt/domain.js")
 def edt_domain(app_id):
@@ -90,10 +90,10 @@ def edt_domain(app_id):
     edt_domain(app_id)
     This function points to the javascript file associated to an instance of the experiment design tool.
 
-    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
-    @return: The javascript file with all its contents filled. Those contents are stored in the database. 
-    """   
-    
+    @param app_id: Identifier of the application. It will be unique within the list of user's apps.
+    @return: The javascript file with all its contents filled. Those contents are stored in the database.
+    """
+
     domain = {
         # This variable stores all the information required for the domain
         'name': 'buoyancy',
@@ -116,7 +116,7 @@ def edt_domain(app_id):
         'object_measures': [
             {'name': 'water_displacement', 'type': 'magnitude', 'unit': 'm^3', 'depends_on': { 'object_properties': ['mass'], 'system_properties': ['fluid_density']}},
             {'name': 'sink_or_float', 'type': 'multitude', 'values': ['sinks', 'floats'], 'depends_on': { 'object_properties': ['density'], 'system_properties': ['fluid_density']}}
-        ] 
+        ]
     }
 
     experiment = {
@@ -137,7 +137,7 @@ def edt_domain(app_id):
 	        {'property': 'density', 'value': '1.0'}
         ]
     }
-    
+
     return render_template("composers/adapt/edt/domain.js", domain = json.dumps(domain, indent = 4), experiment = json.dumps(experiment, indent = 4))
 
 
@@ -146,5 +146,5 @@ data = {
     'new'  : edt_new,
     'load' : edt_load,
     'edit' : edt_edit,
-    'id'   : 'edt', 
+    'id'   : 'edt',
 }
