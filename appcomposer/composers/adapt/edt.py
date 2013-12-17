@@ -142,5 +142,6 @@ def edt_domain(app_id):
 data = {
     'load' : edt_load,
     'edit' : edt_edit,
+    'name' : 'Experiment Design Tool',
     'id'   : 'edt',
 }

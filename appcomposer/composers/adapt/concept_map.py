@@ -106,5 +106,6 @@ data = {
    'version' : 1,
    'load' : concept_map_load,
    'edit' : concept_map_edit,
+   'name' : 'Concept Mapper',
    'id' : 'concept_map',
 }

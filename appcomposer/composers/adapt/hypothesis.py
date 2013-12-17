@@ -163,5 +163,6 @@ data = {
    'version' : 1,
    'load' : hypothesis_load,
    'edit' : hypothesis_edit,
+   'name' : 'Hypothesis',
    'id' : 'hypothesis',
 }

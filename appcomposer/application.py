@@ -1,5 +1,5 @@
 from flask import Flask, request
-from flask import render_template, render_template_string, escape
+from flask import escape
 import os
 
 app = Flask(__name__)

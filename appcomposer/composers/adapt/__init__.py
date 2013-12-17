@@ -3,9 +3,8 @@ from flask import Blueprint, flash, json, redirect, render_template, request, ur
 import appcomposer.appstorage.api as appstorage
 
 # Required imports for a customized app view for the adapt tool (a possible block to be refactored?)
-from appcomposer.models import App
 from appcomposer.babel import lazy_gettext
-from appcomposer.login import current_user
+from appcomposer.login import requires_login
 
 info = {
     'blueprint': 'adapt',
@@ -26,6 +25,7 @@ ADAPTORS = {
     # 'identifier' : {
     #     'load' : function,
     #     'edit' : function,
+    #     'name' : 'Something',
     # }
 }
 
@@ -61,6 +61,7 @@ register_plugin(edt_data)
 
 
 @adapt_blueprint.route("/", methods=["GET", "POST"])
+@requires_login
 def adapt_index():
     """
     adapt_index()
@@ -70,33 +71,32 @@ def adapt_index():
     if request.method == "POST":
         adaptor_type = request.form["adaptor_type"]
 
-        if adaptor_type:
+        if adaptor_type and adaptor_type in ADAPTORS:
             # In order to show the list of apps we redirect to other url
             return redirect(url_for("adapt.adapt_create", adaptor_type = adaptor_type))
         else:
             # An adaptor_type is required.
-            flash("adaptor_type not present", "error")
+            flash("Invalid adaptor type", "error")
 
-    return render_template("composers/adapt/index.html")
+    return render_template("composers/adapt/index.html", adaptors = ADAPTORS)
 
 @adapt_blueprint.route("/create/<adaptor_type>/", methods=["GET", "POST"])
+@requires_login
 def adapt_create(adaptor_type):
     """
     adapt_create()
     Loads the form for creating new adaptor apps and the list of adaptor apps from a specific type.
     @return: The app unique id.
     """
-    # TODO: request this to the appstorage API
-    apps = App.query.filter_by(owner_id=current_user().id, composer='adapt').all()
-
     def build_edit_link(app):
-        return url_for("adapt.adapt_edit", app_id=app.unique_id)
+        return url_for("adapt.adapt_edit", appid=app.unique_id)
 
 
     if adaptor_type not in ADAPTORS:
         flash("Invalid adaptor type", "error")
-        return render_template('composers/adapt/create.html', apps=apps, adaptor_type = adaptor_type, build_edit_link=build_edit_link)
+        return render_template('composers/adapt/create.html', apps=[], adaptor_type = adaptor_type, build_edit_link=build_edit_link)
 
+    apps = appstorage.get_my_apps(adaptor_type = adaptor_type)
 
     # If a get request is received, we just show the new app form and the list of adaptor apps
     if request.method == "GET":
@@ -130,24 +130,26 @@ def adapt_create(adaptor_type):
         app_data = json.dumps(data)
 
         try:
-            app = appstorage.create_app(name, "adapt", app_data)
+            app = appstorage.create_app(name, 'adapt', app_data)
+            appstorage.add_var(app, 'adaptor_type', unicode(adaptor_type))
         except appstorage.AppExistsException:
             flash("An App with that name already exists", "error")
             return render_template("composers/adapt/create.html", name=name, apps = apps, adaptor_type = adaptor_type, build_edit_link=build_edit_link)
 
-        return redirect(url_for("adapt.adapt_edit", app_id = app.unique_id))
+        return redirect(url_for("adapt.adapt_edit", appid = app.unique_id))
 
 
-@adapt_blueprint.route("/edit/<app_id>/", methods = ['GET', 'POST'])
-def adapt_edit(app_id):
+@adapt_blueprint.route("/edit/<appid>/", methods = ['GET', 'POST'])
+@requires_login
+def adapt_edit(appid):
     """
     adapt_edit()
     Form-based user interface for editing the contents of an adaptor app.
     @return: The final app with all its fields stored in the database.
     """
-    if not app_id:
-        return "app_id not provided", 400
-    app = appstorage.get_app(app_id)
+    if not appid:
+        return "appid not provided", 400
+    app = appstorage.get_app(appid)
     if app is None:
         return "App not found", 500
 
@@ -161,10 +163,10 @@ def adapt_edit(app_id):
     adaptor_plugin = ADAPTORS[adaptor_type]
 
     if request.method == "GET":
-        return adaptor_plugin['load'](app, app_id, name, data)
+        return adaptor_plugin['load'](app, appid, name, data)
 
     else: # Only GET and POST in the route
-        return adaptor_plugin['edit'](app, app_id, name, data)
+        return adaptor_plugin['edit'](app, appid, name, data)
 
 ## Tests
 

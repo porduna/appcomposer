@@ -1,15 +1,13 @@
-from flask import redirect, request, flash, session, render_template_string, url_for
-from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
-from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
-from appcomposer.models import App
+from flask import redirect, request, url_for
+from flask.ext.admin import Admin, BaseView, expose
+from flask.ext.wtf import TextField, Form, PasswordField
 from .fields import DisabledTextField
 
-from appcomposer import models, db
+from appcomposer import db
 from appcomposer.login import current_user
 from appcomposer.babel import lazy_gettext
 from appcomposer.views import RedirectView
-
-from sqlalchemy.orm import scoped_session, sessionmaker
+from appcomposer.appstorage import api as appstorage
 
 # List of all available composers
 from appcomposer.application import COMPOSERS, COMPOSERS_DICT
@@ -92,7 +90,7 @@ class AppsView(UserBaseView):
     @expose('/')
     def index(self):
         # Retrieve the apps
-        apps = App.query.filter_by(owner_id=self._current_user.id).all()
+        apps = appstorage.get_my_apps()
 
         def build_edit_link(app):
             endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]

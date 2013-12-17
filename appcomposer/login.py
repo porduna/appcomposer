@@ -1,12 +1,11 @@
 import json
 import datetime
-import urllib
 import urllib2
 
-from flask import session, render_template, render_template_string, flash
+from functools import wraps
 
-from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField, validators
-from flask import request, redirect, url_for, session
+from flask import session, render_template, flash, request, redirect, url_for
+from flask.ext.wtf import TextField, Form, PasswordField, validators
 
 from appcomposer import db
 from .models import User
@@ -21,6 +20,15 @@ def current_user():
 
     return User.query.filter_by(login=session['login']).first()
 
+def requires_login(f):
+    """Require that a particular flask URL requires login. It will require the user to be logged, and if he's not logged he will be redirected there afterwards."""
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if current_user() is None:
+            return redirect(url_for('login', next = request.url))
+        return f(*args, **kwargs)
+
+    return wrapper
 
 class LoginForm(Form):
     login = TextField(lazy_gettext(u"Login:"), validators=[validators.Required()])
