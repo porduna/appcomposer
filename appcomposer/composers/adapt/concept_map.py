@@ -5,9 +5,6 @@ import appcomposer.appstorage.api as appstorage
 
 from appcomposer.composers.adapt import adapt_blueprint
 
-def concept_map_new():
-    pass
-
 def concept_map_load(app, app_id, name, data):
     # If the app data is empty (basic JSON schema), we are editing a new app. Otherwise, the data values are loaded from the database.
     if len(data) == 4:
@@ -107,7 +104,6 @@ def conceptmapper_domain(app_id):
 
 data = {
    'version' : 1,
-   'new' : concept_map_new,
    'load' : concept_map_load,
    'edit' : concept_map_edit,
    'id' : 'concept_map',

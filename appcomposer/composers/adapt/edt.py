@@ -3,9 +3,6 @@ from flask import render_template, flash
 from appcomposer.composers.adapt import adapt_blueprint
 import appcomposer.appstorage.api as appstorage
 
-def edt_new():
-    return
-
 def edt_load(app, app_id, name, data):
     # If the app data is empty (basic JSON schema), we are editing a new app. Otherwise, the data values are loaded from the database.
     if len(data) == 4:
@@ -143,7 +140,6 @@ def edt_domain(app_id):
 
 
 data = {
-    'new'  : edt_new,
     'load' : edt_load,
     'edit' : edt_edit,
     'id'   : 'edt',

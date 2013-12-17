@@ -24,14 +24,13 @@ adapt_blueprint = Blueprint(info['blueprint'], __name__)
 
 ADAPTORS = {
     # 'identifier' : {
-    #     'new'  : function,
     #     'load' : function,
     #     'edit' : function,
     # }
 }
 
 def register_plugin(plugin_data):
-    for field in 'new', 'load', 'edit', 'id':
+    for field in 'load', 'edit', 'id':
         if field not in plugin_data:
             raise Exception("Plug-in misconfigured. Field %s missing." % field)
 
@@ -152,43 +151,20 @@ def adapt_edit(app_id):
     if app is None:
         return "App not found", 500
 
-    # Common data to pass to the template (the URL only contains the app_id)
     data = json.loads(app.data)
     name = data["name"]
     adaptor_type = data["adaptor_type"]
 
-    # If a GET request is received, the page is shown.
+    if adaptor_type not in ADAPTORS:
+        return ":-("
+
+    adaptor_plugin = ADAPTORS[adaptor_type]
+
     if request.method == "GET":
-        if adaptor_type == 'concept_map':
-            # TODO: convert into plug-in
-            return concept_map_data['load'](app, app_id, name, data)
-        elif adaptor_type == 'hypothesis':
-            # TODO: convert into plug-in
-            return hypothesis_data['load'](app, app_id, name, data)
-        elif adaptor_type == 'edt':
-            # TODO: convert into plug-in
-            return edt_data['load'](app, app_id, name, data)
-        else:
-            # TODO: what to do?
-            return ":-("
+        return adaptor_plugin['load'](app, app_id, name, data)
 
-    # If a POST request is received, the adaptor app is saved the database.
-    elif request.method == "POST":
-
-        # SPECIFIC CONTROL STRUCTURE FOR THE SELECTED ADAPTOR TYPE --- TO CHANGE IN #74
-        if adaptor_type == 'concept_map':
-            # TODO: convert into plug-in
-            return concept_map_data['edit'](app, app_id, name, data)
-        elif adaptor_type == 'hypothesis':
-            # TODO: convert into plug-in
-            return hypothesis_data['edit'](app, app_id, name, data)
-        elif adaptor_type == 'edt':
-            # TODO: convert into plug-in
-            return edt_data['edit'](app, app_id, name, data)
-        else:
-            # TODO: what to do?
-            return ":-("
-
+    else: # Only GET and POST in the route
+        return adaptor_plugin['edit'](app, app_id, name, data)
 
 ## Tests
 
