@@ -5,9 +5,11 @@
     <div class="container">
 
         <div class="hero-unit">
-            <h1>Welcome to the Administrator panel: {{session.login}}</h1>
+            <h1>Welcome {{session.name}}!</h1>
             <p>This is the Admin View of the App Composer. You can use this panel too to manage users and applications.</p>
-            <p><a href="#" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+            <p>
+                <a href="#" class="btn btn-primary btn-large">Learn more &raquo;</a>
+            </p>
         </div>
     </div>
 {% endblock %}

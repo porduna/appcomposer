@@ -12,6 +12,8 @@ from appcomposer import models, db
 from appcomposer.login import current_user
 from appcomposer.babel import lazy_gettext
 
+# List of all available composers
+from appcomposer.application import COMPOSERS, COMPOSERS_DICT
 
 ##########################################################
 #
@@ -192,7 +194,7 @@ class ProfileView(AdminBaseView):
     
     @expose('/')
     def index(self):       
-        return self.render('admin/profile-edit.html')
+        return self.render('admin/profile.html')
 
 
 class BackView(AdminBaseView):
