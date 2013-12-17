@@ -12,6 +12,7 @@ from appcomposer.appstorage.api import create_app, get_app, update_app_data, set
 from appcomposer.models import AppVar, App
 from forms import UrlForm, LangselectForm
 
+from appcomposer.login import current_user
 
 info = {
     'blueprint': 'translate',
@@ -27,10 +28,10 @@ info = {
 
 translate_blueprint = Blueprint(info['blueprint'], __name__)
 
-# If CFG_UNIQUE_XML_FOR_USER is set to True then a user can have a single translator App for a given XML spec.
-# If set to False, then a user can have several different apps for a same XML spec.
-# This doesn't affect the maximum number of Apps that a given user can have at a given time.
-CFG_UNIQUE_XML_FOR_USER = False
+# Maximum number of Apps that can have the same name.
+# Note that strictly speaking the name is never the same.
+# Repeated Apps have a (#number) appended to their name.
+CFG_SAME_NAME_LIMIT = 20
 
 
 # This import NEEDS to be after the translate_blueprint assignment due to
@@ -177,6 +178,36 @@ def get_proposal():
     return jsonify(**result)
 
 
+def _find_unique_name_for_app(base_name):
+    """
+    Generates a unique (for the current user) name for the app, using a base name.
+    Because two apps for the same user cannot have the same name, if the base_name that the user chose
+    exists already then we append (#num) to it.
+
+    @param base_name: Name to use as base. If it's not unique (for the user) then we will append the counter.
+    @return: The generated name, guaranteed to be unique for the current user, or None, if it was not possible
+    to obtain the unique name. The failure would most likely be that the limit of apps with the same name has
+    been reached. This limit is specified through the CFG_SAME_NAME_LIMIT variable.
+    """
+    if base_name is None:
+        return None
+
+    if get_app_by_name(base_name) is None:
+        return base_name
+    else:
+        app_name_counter = 1
+        while True:
+            # Just in case, enforce a limit.
+            if app_name_counter > CFG_SAME_NAME_LIMIT:
+                return None
+            composed_app_name = "%s (%d)" % (base_name, app_name_counter)
+            if get_app_by_name(composed_app_name) is not None:
+                app_name_counter += 1
+            else:
+                # Success. We found a unique name.
+                return composed_app_name
+
+
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])
 def translate_selectlang():
     """ Source language & target language selection."""
@@ -208,29 +239,24 @@ def translate_selectlang():
             flash("An application URL is required", "error")
             return redirect(url_for("translate.translate_index"))
 
+        base_appname = request.values.get("appname")
+        if base_appname is None:
+            return render_template("composers/errors.html", message="An appname was not specified")
+
+        # Generates a unique (for the current user) name for the App,
+        # based on the base name that the user himself chose. Note that
+        # this method can actually return None under certain conditions.
+        appname = _find_unique_name_for_app(base_appname)
+        if appname is None:
+            return render_template("composers/errors.html",
+                                   message="Too many Apps with the same name. Please, choose another.")
+
         # Create a fully new App. It will be automatically generated from a XML.
         bm = backend.BundleManager.create_new_app(appurl)
         spec = bm.get_gadget_spec()  # For later
 
         # Build JSON data
         js = bm.to_json()
-
-
-        # Generate a name for the app. (Must be unique for the current user).
-        # ISSUE: This isn't a very nice approach.
-        appname = os.path.basename(appurl)
-
-        if CFG_UNIQUE_XML_FOR_USER:
-            if get_app_by_name(appname) is not None:
-                return render_template("composers/errors.html",
-                                       message="An App for that XML file seems to exist already.")
-        else:
-            # Check if our appname exists already to generate a more random one.
-            if get_app_by_name(appname) is not None:
-                appname += "_%d" % random.randint(0, 9999)
-                if get_app_by_name(appname) is not None:
-                    return render_template("composers/errors.html",
-                                           message="Couldn't generate a unique name for the App. Please, try again.")
 
         # Create a new App from the specified XML
         app = create_app(appname, "translate", js)
