@@ -214,6 +214,7 @@ def translate_selectlang():
 
         # Generate a name for the app.
         # TODO: Eventually, this name should probably be given explicitly by the user.
+        # Alternatively, the creation of multiple apps for the same XML could be disallowed.
         appname = os.path.basename(appurl) + "_%d" % random.randint(0, 9999)
 
         # Create a new App from the specified XML
