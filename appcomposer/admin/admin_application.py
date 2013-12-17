@@ -1,9 +1,12 @@
+import datetime
+
 from flask import redirect, request, flash, session, render_template_string, url_for
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from flask.ext.admin.contrib.sqla import ModelView
 
 from flask.ext import wtf
 from wtforms.fields import PasswordField
+from wtforms.validators import Email, Regexp
 
 from appcomposer import models, db
 from appcomposer.login import current_user
@@ -22,18 +25,17 @@ def initialize_admin_component(app):
     url = '/admin'
     admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name='Admin Profile', endpoint = "home-admin")
     admin.add_view(UsersView(name='Users', url = 'users', endpoint = 'admin.users'))
-    admin.add_view(ApplicationsView(name='Applications', url = 'applications', endpoint = 'admin.applications'))    
-    admin.add_view(ProfileView(name='My Profile', url = 'profile', endpoint = 'admin.profile'))    
+    admin.add_view(BasicAdminAppsView(name='Basic Management', url = 'basic-apps-admin', endpoint = 'admin.basic-admin-apps', category='Applications'))    
+    admin.add_view(AdvancedAdminAppsView(name='Advanced Management', url = 'advanced-apps-admin', endpoint = 'admin.advanced-admin-apps', category='Applications'))   
+    admin.add_view(ProfileView(name='My Profile', url = 'profile', endpoint = 'admin.profile'))
+    admin.add_view(BackView(name='Back', url = 'back', endpoint = 'admin.back'))     
     admin.init_app(app)
+
+# Regular expression to validate the "login" field
+LOGIN_REGEX = '^[A-Za-z0-9\._-][A-Za-z0-9\._-][A-Za-z0-9\._-][A-Za-z0-9\._-]*$'
 
 
 #####################################################################
-#
-#
-# Parent views
-#
-# 
-
 class MyAdminIndexView(AdminIndexView):
     """
     View that will be used as index for Admin.
@@ -110,9 +112,9 @@ class UsersView(AdminModelView):
     column_labels = dict(login = lazy_gettext('Login'), name = lazy_gettext('Full Name'), email = lazy_gettext('E-mail'), organization = lazy_gettext('Organization'), role = lazy_gettext('Role'))
     column_filters = ('login', 'name', 'email', 'organization', 'role')
 
-    column_descriptions = dict(login = lazy_gettext('Username (all letters, dots and numbers)'),
-                               name = lazy_gettext('First and Last name'),
-                               email = lazy_gettext('Valid e-mail address'))
+    column_descriptions = dict(login=lazy_gettext('Username (all letters, dots and numbers)'),
+                               name=lazy_gettext('First and Last name'),
+                               email=lazy_gettext('Valid e-mail address'))
 
     # List of columns that can be sorted
     column_sortable_list = ('login', 'name', 'email', 'organization', 'role')
@@ -121,21 +123,66 @@ class UsersView(AdminModelView):
     column_searchable_list = ('login', 'name', 'email', 'organization', 'role')
  
     # Fields used for the creations of new users    
-    form_columns = ('login', 'name', 'email', 'organization', 'role', 'password', 'creation_date', 'last_access_date')
-    form_overrides = dict(access_level=wtf.SelectField, password=PasswordField)
-
+    form_columns = ('login', 'name', 'email', 'organization', 'role', 'password')
+    sel_choices = [(level, level.title()) for level in ('administrator', 'teacher')] # TODO: establish different permisions in the system   
+    
+    form_overrides = dict(access_level=wtf.SelectField, password=PasswordField, role=wtf.SelectField)        
+    form_args = dict(email=dict(validators=[Email()]), login=dict(validators=[Regexp(LOGIN_REGEX)]), role=dict(choices=sel_choices))
+    
     def __init__(self, **kwargs):
         super(UsersView, self).__init__(models.User, db.session, **kwargs)
 
+    # This function is used when creating a new empty composer    
+    def on_model_change(self, form, model):        
+        # TODO: Include more sophisticated authentications        
+        model.auth_system = 'userpass'
+        model.auth_data = model.password
+        model.creation_date = datetime.datetime.now()
+        model.last_access_date = datetime.datetime.now()
+        
 
-class ApplicationsView(AdminBaseView):
+class BasicAdminAppsView(AdminModelView):
     """
-    Applications View. Entry view which lets us manage the applications in the system.
+    Basic Admin Apps View. Basic entry view which lets us manage the applications located at the system.
+    We will be able to create, edit, and delete apps.
     """
-    
+
+    column_list = ('owner', 'unique_id', 'name', 'composer', 'creation_date', 'modification_date', 'last_access_date')
+    column_labels = dict(owner = 'Owner', unique_id = 'ID', name = 'Name', composer = 'Composer', creation_date = 'Creation Date', modification_date = 'Modification Date', last_access_date = 'Last Access Date')
+    column_sortable_list = ('unique_id', 'name', 'composer')
+    column_searchable_list = ('unique_id', 'name', 'composer')
+   
+    # Information needed when creating a new composer
+    form_columns = ('owner', 'name', 'composer') 
+    sel_choices = [(level, level.title()) for level in ('translate', 'adapt','dummy')] # TODO: find where this is registered
+    form_overrides = dict(composer=wtf.SelectField)
+    form_args = dict(composer=dict(choices=sel_choices))   
+   
+    def __init__(self, **kwargs):
+        super(BasicAdminAppsView, self).__init__(models.App, db.session, **kwargs)
+
+
+class AdvancedAdminAppsView(AdminBaseView):
+    """
+    Advanced Admin Apps View. Advanced entry view which lets us manage the applications located at the system. 
+    We will be able to create, edit, and delete apps.
+    """
+
     @expose('/')
-    def index(self):       
-        return self.render('admin/applications.html')
+    def index(self):
+        # Retrieve the apps
+        apps = db.session.query(models.App).all()
+        
+        def build_edit_link(app):
+            endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]
+            return url_for(endpoint, appid=app.unique_id)
+
+        def build_delete_link(app):
+            endpoint = COMPOSERS_DICT[app.composer]["delete_endpoint"]
+            return url_for(endpoint, appid=app.unique_id)
+
+        return self.render('admin/advanced-admin-apps.html', composers=COMPOSERS, apps=apps, build_edit_link=build_edit_link,
+                           build_delete_link=build_delete_link)
 
 
 class ProfileView(AdminBaseView):
@@ -145,7 +192,14 @@ class ProfileView(AdminBaseView):
     
     @expose('/')
     def index(self):       
-        return self.render('admin/profile.html')
+        return self.render('admin/profile-edit.html')
 
 
-
+class BackView(AdminBaseView):
+    """
+    Back View.Entry view which lets us come back to the initial page.
+    """
+    
+    @expose('/')
+    def index(self):       
+        return self.render('index.html')
