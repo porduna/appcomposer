@@ -30,7 +30,7 @@ translate_blueprint = Blueprint(info['blueprint'], __name__)
 # If CFG_UNIQUE_XML_FOR_USER is set to True then a user can have a single translator App for a given XML spec.
 # If set to False, then a user can have several different apps for a same XML spec.
 # This doesn't affect the maximum number of Apps that a given user can have at a given time.
-CFG_UNIQUE_XML_FOR_USER = True
+CFG_UNIQUE_XML_FOR_USER = False
 
 
 # This import NEEDS to be after the translate_blueprint assignment due to
@@ -208,10 +208,8 @@ def translate_selectlang():
             flash("An application URL is required", "error")
             return redirect(url_for("translate.translate_index"))
 
-        # Get all the existing bundles.
-        # TODO: Use a specific purpose ctor here.
-        bm = backend.BundleManager()
-        bm.load_full_spec(appurl)
+        # Create a fully new App. It will be automatically generated from a XML.
+        bm = backend.BundleManager.create_new_app(appurl)
         spec = bm.get_gadget_spec()  # For later
 
         # Build JSON data

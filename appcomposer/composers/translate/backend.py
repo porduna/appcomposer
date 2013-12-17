@@ -138,6 +138,19 @@ class BundleManager(object):
         return self.original_spec_file
 
     @staticmethod
+    def create_new_app(app_spec_url):
+        """
+        Handles the creation of a completely new App from a standard OpenSocial XML specification.
+        This operation needs to request the external XML and in some cases external XMLs referred by it.
+        As such, it can take a while to complete, and there are potential security issues.
+
+        @param app_spec_url: URL of the XML to use to construct the App.
+        """
+        bm = BundleManager()
+        bm.load_full_spec(app_spec_url)
+        return bm
+
+    @staticmethod
     def create_from_existing_app(app_data):
         """
         Acts as a CTOR. Creates a BundleManager for managing an App that exists already.
@@ -219,7 +232,6 @@ class BundleManager(object):
     # TODO: Add support for non-standard xml specs. For instance, if the lang contains "es_ES" we should probably try
     # to fail gracefully. (Or actually to ignore the pack).
     # TODO: Careful when it fails so that no partially-created App remains.
-
     def get_locales_list(self):
         """
         get_locales_list()
