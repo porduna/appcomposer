@@ -222,15 +222,18 @@ msgstr "¡Bienvenido, %(user)s!"
 
 #: appcomposer/templates/admin/index.html:9
 msgid ""
-"This is the Admin View of the App Composer. You can use this panel too to"
+"This is the Admin View of the App Composer. You can use this panel to"
 " manage users and applications."
 msgstr ""
+"Esta es la vista de administración del App Composer. Puedes utilizar este panel para"
+"gestionar los usuarios y aplicaciones."
 
 #: appcomposer/templates/admin/profile.html:9
 msgid ""
 "You can change your profile data in the User Panel. Please, click next "
 "button."
 msgstr ""
+"Puedes cambiar tu perfil en el panel de usuario. Por favor, pulsa el botón siguiente."
 
 #: appcomposer/templates/admin/profile.html:11
 msgid "Go to My Profile"
