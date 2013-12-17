@@ -1,98 +1,42 @@
 {% set title = "Edit the app content" %}
 {% set current_link = "home" %}
-{% extends 'composers/adapt/layout.html' %}
+{% extends 'composers/adapt/edit.html' %}
+
+{% block edit_tab %}
+<div class="col-lg-10">
+
+<form class="form-horizontal" method="POST" action=".">
+    <div class="form-group">
+        <label for="concepts" class="col-lg-2 control-label">Concepts:</label>
+        <div class="col-lg-10">
+            <input type="text" name="concepts" value="{{ concepts|replace('[', '')|replace(']', '')|replace('"', '') }}" data-role="tagsinput">
+        </div>
+    </div>
 
 
-    {% block styles %}
-        {{ super() }}
-        <link rel="stylesheet" href="{{ url_for('static', filename='initializr/css/bootstrap-tagsinput.css') }}">
-    {% endblock styles %}
+    <div class="form-group">
+        <div class="col-lg-10 col-lg-offset-2">
+            <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_index') }}">« Go back to adaptor index</a>
+            <input type="hidden" name="app_id" value="{{ app_id }}">
+            <input type="submit" value="Save" class="btn btn-success">
+        </div>
+    </div>
+</form>
 
-    {% block body_content %}
-        <div id="adaptblock">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="page-header">
-                        <h1 id="apptitle">Adapt a guidance app - Concept Mapper - {{ name }} {{ n_rows }} </h1>
-                    </div>
-                </div>
-            </div>
+</div>
 
-            <div class="row">
-                <div class="col-lg-12">
-                {% from "user/wl_form_helpers.html" import render_field %}
+{% endblock %}
 
-                {% with messages = get_flashed_messages() %}
-                    {% for message in messages %}
-                        <div class="alert alert-success">
-                            <button type="button" class="close" data-dismiss="alert">×</button>
-                            {{ message }}
-                        </div>
-                    {% endfor %}
-                {% endwith %}
-                </div>
-            </div>
+{% block preview_tab %}
+<iframe src="{{ url_for('.conceptmapper_index', app_id = app_id) }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+<div>
+    <a href="{{ url_for('.conceptmapper_widget', app_id = app_id) }}">[+] Widget link</a>
+</div>
+{% endblock %}
 
-            <div class="well">
-                <div class="row">
-                    <div class="col-lg-12">
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='initializr/js/vendor/bootstrap-tagsinput.min.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='initializr/js/vendor/typeahead.min.js') }}" type="text/javascript"></script>
 
-                        <!-- Tabs & Form for the Concept Mapper variables
-                        ================================================== -->
-
-                        <div class="wrap">
-                            <ul class="nav nav-tabs" style="margin-bottom: 15px;">
-                                <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
-                                <li><a href="#preview" data-toggle="tab">Preview</a></li>
-                            </ul>
-
-                            <div id="tabadapt" class="tab-content">
-                                <div class="tab-pane fade active in" id="edit">
-                                    <div class="col-lg-10">
-
-                                        <!--
-                                               * Concept mapper & Hypothesis tools: form input.
-                                               Variables to fill: domain = "concepts" of the concept mapper, and "elements" (conditionals+inputs/outputs) of the hypothesis tool, respectively.
-                                        -->
-                                        <form class="form-horizontal" method="POST" action=".">
-                                        <!-- Block for the Concept map-->
-                                            <div class="form-group">
-                                                <label for="concepts" class="col-lg-2 control-label">Concepts:</label>
-                                                <div class="col-lg-10">
-                                                    <input type="text" name="concepts" value="{{ concepts|replace('[', '')|replace(']', '')|replace('"', '') }}" data-role="tagsinput">
-                                                </div>
-                                            </div>
-
-
-                                            <div class="form-group">
-                                                <div class="col-lg-10 col-lg-offset-2">
-                                                    <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_index') }}">« Go back to adaptor index</a>
-                                                    <input type="hidden" name="app_id" value="{{ app_id }}">
-                                                    <input type="submit" value="Save" class="btn btn-success">
-                                                </div>
-                                            </div>
-                                        </form>
-
-                                    </div>
-                                </div>
-
-                                <div class="tab-pane fade" id="preview">
-
-                                  <iframe src="{{ url_for('.conceptmapper_index', app_id = app_id) }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
-                                  <div>
-                                    <a href="{{ url_for('.conceptmapper_widget', app_id = app_id) }}">[+] Widget link</a>
-                                  </div>
-                                </div>
-                            </div>
-                        </div><!-- end wrap concept forms-->
-                    </div>
-                </div>
-            </div>
-    {% endblock %}
-
-    {% block scripts %}
-    {{ super() }}
-    <script src="{{ url_for('static', filename='initializr/js/vendor/bootstrap-tagsinput.min.js') }}" type="text/javascript"></script>
-    <script src="{{ url_for('static', filename='initializr/js/vendor/typeahead.min.js') }}" type="text/javascript"></script>
-
-    {% endblock scripts %}
+{% endblock scripts %}
