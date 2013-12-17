@@ -2,9 +2,9 @@
 {% set current_link = "home" %}
 {% extends 'composers/adapt/layout.html' %}
 
-    {% block styles %}           
+    {% block styles %}
         {{ super() }}
-        <link rel="stylesheet"  type="text/css" href="{{ url_for('static', filename='initializr/js/vendor/image-picker/image-picker.css') }}">                                   
+        <link rel="stylesheet"  type="text/css" href="{{ url_for('static', filename='initializr/js/vendor/image-picker/image-picker.css') }}">
     {% endblock styles %}
 
 {% block body_content %}
@@ -21,39 +21,39 @@
             <div class="row">
                 <div class="col-lg-6">
                   <div class="well">
-                                                                                                                                
+
                         <form class="form-horizontal" id="apptype" action="{{ url_for('adapt.adapt_index') }}" method="POST">
                             <legend>Pick your choice</legend>
-                            
-                            <hr>                                                                    
-                                            
+
+                            <hr>
+
                             <div class="form-group">
-                                
+
                               <!-- App type list -->
                               <!-- TODO: Include Font Awesome icons -->
-                                <div id="picker" class="col-lg-10 col-lg-offset-2">                                                                 
+                                <div id="picker" class="col-lg-10 col-lg-offset-2">
                                         <select name="adaptor_type" class="image-picker form-control">
                                           <option data-img-src="{{ url_for('static', filename='initializr/img/cmap.png') }}" value="concept_map">  Concept Map  </option>
                                           <option data-img-src="{{ url_for('static', filename='initializr/img/hypo.png') }}" value="hypothesis">  Hypothesis  </option>
                                           <option data-img-src="{{ url_for('static', filename='initializr/img/edt.png') }}" value="experiment_design">  Experiment Design  </option>
-                                        </select>                                       
+                                        </select>
                                 </div>
-                                
-                                <div class="col-lg-10 col-lg-offset-2">                            
+
+                                <div class="col-lg-10 col-lg-offset-2">
                                     <label class="control-label" for="createbtn"></label>
-                                    <div class="controls">                                        
+                                    <div class="controls">
                                         <input type="hidden" name="n_rows" value="5">
-                                        <a href="{{ url_for("user.index") }}" class="btn btn-default btn-medium">&laquo; Go back to main</a>                                        
-                                        <input type="submit"  class="btn btn-success" value="Next step &raquo;">                                                                               
+                                        <a href="{{ url_for("user.index") }}" class="btn btn-default btn-medium">&laquo; Go back to main</a>
+                                        <input type="submit"  class="btn btn-success" value="Next step &raquo;">
                                     </div>
-                                </div>                                 
+                                </div>
                             </div>
-                            
+
                         </form>
                     </div>
                 </div>
-            </div>            
-        
+            </div>
+
 {% endblock %}
 
 {% block scripts %}
@@ -61,11 +61,11 @@
     <script src="{{ url_for('static', filename='initializr/js/vendor/jquery-1.10.1.min.js') }}" type="text/javascript"></script>
     <script src="{{ url_for('static', filename='initializr/js/vendor/bootstrap.min.js') }}" type="text/javascript"></script>
     <script src="{{ url_for('static', filename='initializr/js/vendor/image-picker/image-picker.min.js') }}" type="text/javascript"></script>
- 
-    
+
+
   <script type="text/javascript">
     jQuery("select.image-picker").imagepicker({
       hide_select:  true, //if we want to inspect the select menu, this variable holds the key
     });
-  </script>     
+  </script>
 {% endblock scripts %}
