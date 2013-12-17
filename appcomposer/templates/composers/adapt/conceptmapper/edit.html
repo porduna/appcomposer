@@ -78,11 +78,9 @@
 
                                 <div class="tab-pane fade" id="preview">
 
-                                  {# TODO: These URLs must be built outside the template. #}
-                                 {# TODO: Change the naming scheme of adaptor apps to avoid repeating these if/else structures. #}
-                                  <iframe src="http://localhost:5000/composers/adapt/export/{{ app_id }}/conceptmapper/conceptmapper.html" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+                                  <iframe src="{{ url_for('.conceptmapper_index', app_id = app_id) }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
                                   <div>
-                                    <a href="http://localhost:5000/composers/adapt/export/{{ app_id }}/conceptmapper/app.xml">[+] Widget link</a>
+                                    <a href="{{ url_for('.conceptmapper_widget', app_id = app_id) }}">[+] Widget link</a>
                                   </div>
                                 </div>
                             </div>
