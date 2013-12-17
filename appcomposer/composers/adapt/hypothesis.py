@@ -1,5 +1,7 @@
-from flask import render_template
+import json
+from flask import render_template, request, flash
 from appcomposer.composers.adapt import adapt_blueprint
+import appcomposer.appstorage.api as appstorage
 
 
 def hypothesis_new():
@@ -25,7 +27,60 @@ def hypothesis_load(app, app_id, name, data):
     inputs = load_hypothesis_list(inputs_stored)
     outputs = load_hypothesis_list(outputs_stored)
             
-    return render_template("composers/adapt/hypothesis/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, conditionals = conditionals, inputs = inputs, outputs = outputs)            
+    return render_template("composers/adapt/hypothesis/edit.html", app=app, app_id = app_id, name = name, conditionals = conditionals, inputs = inputs, outputs = outputs)            
+
+def hypothesis_edit(app, app_id, name, data):
+    '''
+    data = {
+        'adaptor_version': '1',
+        'name': str(name),
+        'description': str(app_description),
+        'adaptor_type': str(adaptor_type),
+        'conditionals': list(), 
+        'inputs': list(),
+        'outputs': list()} 
+    '''                                                       
+    # Template values
+    conditionals_values = request.form["conditionals"]             
+    inputs_values = request.form["inputs"]
+    outputs_values = request.form["outputs"]
+    
+    # Database manipulation
+    conditionals_orig = request.form["conditionals"].split(',')         
+    inputs_orig = request.form["inputs"].split(',') 
+    outputs_orig = request.form["outputs"].split(',')
+    
+    
+    # Conversion of the form input values to the hypothesis tool format below:
+    # Request-- input_name = "input_type", value =  "a,b,c"  -> Output format = [ {'text':'a', 'type': 'input_type'}, {'text':'b', 'type': 'input_type', ...} ]
+    def build_hypothesis_list(list_orig, element_type):
+        lst = []
+        for item in list_orig:
+            dic = { 'text': item, 'type': element_type}
+            lst.append(dic)                                 
+        return lst
+
+                    
+    # A reserved word showed up.                        
+    no_reserved = 'inputs'
+    reserved_element_type = no_reserved[0:-1]
+    
+    inputs = build_hypothesis_list(inputs_orig, reserved_element_type)        
+    outputs = build_hypothesis_list(outputs_orig, 'output') 
+    conditionals = build_hypothesis_list(conditionals_orig, 'conditional')
+
+    # Build the JSON of the current hypothesis tool.  
+    data.update({
+        "conditionals": conditionals, 
+        "inputs": inputs,
+        "outputs": outputs})
+
+    appstorage.update_app_data(app, data)
+    flash("Hypothesis saved successfully", "success")
+    # flash(conditionals_orig, "success")
+
+    return render_template("composers/adapt/edit.html", app=app, app_id = app_id, conditionals = conditionals_values, inputs = inputs_values, outputs = outputs_values)         
+
 
 # 
 # Auxiliar routes
@@ -44,8 +99,6 @@ def hypothesis_index(app_id):
     # In the templates, hypothesis.html points to {{ url_for('adapt.hypothesis_domain', app_id = app_id) }} 
     # instead of DomainTemplates.js
     # The domain name is not generated here.
-
-    #app = get_app(app_id)    
 
     return render_template("composers/adapt/hypothesis/hypothesis.html", app_id = app_id)
 
@@ -90,7 +143,7 @@ def hypothesis_domain(app_id):
 
     """    
     
-    app = get_app(app_id)
+    app = appstorage.get_app(app_id)
     
     data = json.loads(app.data)
     conditionals = data["conditionals"] 
@@ -113,5 +166,6 @@ data = {
    'version' : 1,
    'new' : hypothesis_new,
    'load' : hypothesis_load,
+   'edit' : hypothesis_edit,
    'id' : 'edt',
 }

@@ -1,5 +1,7 @@
 import json
-from flask import render_template
+from collections import OrderedDict
+from flask import render_template, request, flash
+import appcomposer.appstorage.api as appstorage
 
 from appcomposer.composers.adapt import adapt_blueprint
 
@@ -13,6 +15,31 @@ def concept_map_load(app, app_id, name, data):
 
     concepts = data["concepts"]
     return render_template("composers/adapt/conceptmapper/edit.html", app=app, app_id = app_id, name = name, concepts = concepts)
+
+def concept_map_edit(app, app_id, name, data):
+    '''
+    data = {
+        'adaptor_version': '1',
+        'name': str(name),
+        'description': str(app_description),
+        'adaptor_type': str(adaptor_type),
+        'concepts': list()}                         
+    '''            
+    # Retrieve the list of concepts and convert it to the format supported by the app.
+    # Request-- concepts: "a,b,c"  -> Concepts  (str): "a,b,c"
+
+    concepts = ', '.join(list(OrderedDict.fromkeys([ s.strip() for s in request.form["concepts"].split(',') ])))
+
+    # Build the JSON of the current concept map.
+    data.update({
+        "concepts": concepts})
+
+    appstorage.update_app_data(app, data)
+    flash("Concept map saved successfully", "success")
+    # flash(data["concepts"], "success")                      
+              
+    return render_template("composers/adapt/conceptmapper/edit.html", app=app, app_id = app_id, concepts = data["concepts"])
+
 
 # Auxiliar routes
 
@@ -62,7 +89,7 @@ def conceptmapper_domain(app_id):
     
     #domain_orig = ["mass", "fluid", "density", "volume", "weight", "immersed object", "pressure", "force", "gravity", "acceleration", "Archimedes", "displacement", "equilibrium"]    
 
-    app = get_app(app_id)
+    app = appstorage.get_app(app_id)
     
     data = json.loads(app.data)
 
@@ -82,5 +109,6 @@ data = {
    'version' : 1,
    'new' : concept_map_new,
    'load' : concept_map_load,
+   'edit' : concept_map_edit,
    'id' : 'edt',
 }
