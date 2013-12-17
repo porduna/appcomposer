@@ -1,6 +1,6 @@
+{% extends 'composers/translate/layout.html' %}
 {% set title = "Translation tool :: Source and Target language" %}
 {% set current_link = "home" %}
-{% extends 'composers/translate/layout.html' %}
 
 
 {% block body_content %}
@@ -226,7 +226,7 @@
                                 {# When displaying the languages note that we only show those with GROUP=ALL. This is because otherwise some languages
                                  would appear more than once. Though somewhat kludgey, this approach should always work because a language must always
                                  have a default (ALL) translation. #}
-                                {% for loc in locales if loc["group"] == "ALL" and not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}
+                                {% for loc in translated_langs if loc["group"] == "ALL" and not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}
                                     <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
                                 {% endfor %}
                             </select>
@@ -241,12 +241,12 @@
                                 {# TODO: Clean this up. The design probably needs some changes as well. #}
 
                                 {# Now add the messages that are already translated. #}
-                                {% for loc in locales if loc["group"] == "ALL" and not (loc["lang"] == "all" and loc["country"] == "ALL") %}
+                                {% for loc in translated_langs if loc["group"] == "ALL" and not (loc["lang"] == "all" and loc["country"] == "ALL") %}
                                     <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
                                 {% endfor %}
 
                                 {# Now add the messages that are suggested by the system. #}
-                                {% for lang in target_langs %}
+                                {% for lang in suggested_target_langs %}
                                     <option value="{{ lang["pcode"] }}">{{ lang["repr"] }}</option>
                                 {% endfor %}
                             </select>
@@ -266,7 +266,7 @@
                         <div class="form-group">
                             <label class="control-label" for="srcgroup">Select source group</label>
                             <select id="srcgroup" multiple="" name="srcgroup" class="form-control">
-
+                                <!-- These are dynamically filled through JavaScript -->
                             </select>
                         </div>
                         <div class="form-group">

@@ -235,7 +235,7 @@ def translate_selectlang():
             flash("You are not the owner of this App, so the owner's translations have been merged", "success")
 
         # Find out which locales does the app provide (for now).
-        locales = bm.get_locales_list()
+        translated_langs = bm.get_locales_list()
 
     # This was a GET, the app should exist already somehow, we will try to retrieve it.
     elif request.method == "GET":
@@ -254,7 +254,7 @@ def translate_selectlang():
 
         spec = bm.get_gadget_spec()
 
-        locales = bm.get_locales_list()
+        translated_langs = bm.get_locales_list()
 
 
     # The following is again common for both GET (view) and POST (edit).
@@ -277,22 +277,27 @@ def translate_selectlang():
 
     # Build a dictionary. For each source lang, a list of source groups.
     src_groups_dict = defaultdict(list)
-    for loc in locales:
+    for loc in translated_langs:
         src_groups_dict[loc["pcode"]].append(loc["group"])
 
-
-    locales_codes = [tlang["pcode"] for tlang in locales]
+    locales_codes = [tlang["pcode"] for tlang in translated_langs]
 
     # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
     # because those will be added to the targetlangs by default.
-    targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["pcode"] not in locales_codes]
+    suggested_target_langs = [elem for elem in targetlangs_list if elem["pcode"] not in locales_codes]
 
-    return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered,
-                           source_groups_json=json.dumps(src_groups_dict), app=app,
-                           full_groups_json=json.dumps(full_groups_list),
-                           target_groups=full_groups_list,
-                           Locale=Locale, locales=locales, is_owner=is_owner, owner=owner,
-                           proposal_num=proposal_num)
+    # We pass some parameters as JSON strings because they are generated dynamically
+    # through JavaScript in the template.
+    return render_template("composers/translate/selectlang.html",
+                           app=app, # Current app object.
+                           suggested_target_langs=suggested_target_langs, # Suggested (not already translated) langs
+                           source_groups_json=json.dumps(src_groups_dict), # Source groups in a JSON string
+                           full_groups_json=json.dumps(full_groups_list), # (To find names etc)
+                           target_groups=full_groups_list, # Target groups in a JSON string
+                           translated_langs=translated_langs, # Already translated langs
+                           is_owner=is_owner, # Whether the loaded app has the "Owner" status
+                           owner=owner, # Reference to the Owner
+                           proposal_num=proposal_num)  # Number of pending translation proposals
 
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
@@ -398,15 +403,16 @@ def translate_proposed_list():
     # Ensure that only the app owner can carry out these operations.
     owner_app = _db_get_owner_app(appdata["spec"])
     if app != owner_app:
-        return render_template("composers/errors.html", message="Not Authorized: You don't seem to be the owner of this app")
+        return render_template("composers/errors.html",
+                               message="Not Authorized: You don't seem to be the owner of this app")
 
     # Get the list of proposed translations.
-    vars = _db_get_proposals(app)
-    props = []
-    for prop in vars:
+    proposal_vars = _db_get_proposals(app)
+    proposed_translations = []
+    for prop in proposal_vars:
         propdata = json.loads(prop.value)
         propdata["id"] = str(prop.var_id)
-        props.append(propdata)
+        proposed_translations.append(propdata)
 
     if request.method == "POST" and request.values.get("acceptButton") is not None:
         proposal_id = request.values.get("proposals")
@@ -446,12 +452,11 @@ def translate_proposed_list():
 
         flash("Merge done.", "success")
 
-
         # Remove the proposal from the DB.
         remove_var(proposal)
 
         # Remove it from our current proposal list as well, so that it isn't displayed anymore.
-        props = [prop for prop in props if prop["id"] != proposal_id]
+        proposed_translations = [prop for prop in proposed_translations if prop["id"] != proposal_id]
 
     elif request.method == "POST" and request.values.get("denyButton") is not None:
         proposal_id = request.values.get("proposals")
@@ -465,22 +470,8 @@ def translate_proposed_list():
         remove_var(proposal)
 
         # Remove it from our current proposal list as well, so that it isn't displayed anymore.
-        props = [prop for prop in props if prop["id"] != proposal_id]
+        proposed_translations = [prop for prop in proposed_translations if prop["id"] != proposal_id]
 
-    return render_template("composers/translate/proposed_list.html", app=app, proposals=props)
+    return render_template("composers/translate/proposed_list.html", app=app, proposals=proposed_translations)
 
-
-@translate_blueprint.route('/wip', methods=['GET', 'POST'])
-def translate_wip():
-    """Work in progress..."""
-
-    relatedAppsIds = db.session.query(AppVar.app_id).filter_by(name="spec",
-                                                               value="https://raw.github.com/ORNGatUCSF/Gadgets/master/test-opensocial-0.8.xml").subquery()
-
-    ownerAppId = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
-                                                        AppVar.app_id.in_(relatedAppsIds)).first()
-
-    ownerApp = App.query.filter_by(id=ownerAppId[0]).first()
-
-    return "OWN " + str(ownerApp)
 
