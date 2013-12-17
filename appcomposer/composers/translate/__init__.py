@@ -463,8 +463,6 @@ def translate_proposed_list():
         if proposal is None:
             return render_template("composers/errors.html", message="Proposals not found")
 
-        flash("Proposal loaded: " + proposal.value)
-
         data = json.loads(proposal.value)
         bundle_code = data["bundle_code"]
 
