@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-17 15:47+0100\n"
+"POT-Creation-Date: 2013-12-17 17:20+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -32,6 +32,33 @@ msgstr ""
 
 #: appcomposer/login.py:102
 msgid "You must be logged in to use the App Composer."
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:28
+msgid "Admin Profile"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:29
+msgid "Users"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:30
+msgid "Basic Management"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:31
+msgid "Advanced Management"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:32
+msgid "My Profile"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:33
+#: appcomposer/templates/login/errors.html:10
+#: appcomposer/templates/login/login.html:104
+#: appcomposer/user/user_application.py:26
+msgid "Back"
 msgstr ""
 
 #: appcomposer/admin/admin_application.py:114
@@ -279,12 +306,6 @@ msgstr ""
 
 #: appcomposer/templates/login/errors.html:7
 msgid "Error"
-msgstr ""
-
-#: appcomposer/templates/login/errors.html:10
-#: appcomposer/templates/login/login.html:104
-#: appcomposer/user/user_application.py:26
-msgid "Back"
 msgstr ""
 
 #: appcomposer/templates/login/graasp.html:6

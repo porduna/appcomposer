@@ -25,12 +25,12 @@ def initialize_admin_component(app):
     # URL describes through which address we access the page.
     # Endpoint enables us to do url_for('userp') to yield the URL
     url = '/admin'
-    admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name='Admin Profile', endpoint = "home-admin")
-    admin.add_view(UsersView(name='Users', url = 'users', endpoint = 'admin.users'))
-    admin.add_view(BasicAdminAppsView(name='Basic Management', url = 'basic-apps-admin', endpoint = 'admin.basic-admin-apps', category='Applications'))    
-    admin.add_view(AdvancedAdminAppsView(name='Advanced Management', url = 'advanced-apps-admin', endpoint = 'admin.advanced-admin-apps', category='Applications'))   
-    admin.add_view(ProfileView(name='My Profile', url = 'profile', endpoint = 'admin.profile'))
-    admin.add_view(BackView(name='Back', url = 'back', endpoint = 'admin.back'))     
+    admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name=lazy_gettext('Admin Profile'), endpoint = "home-admin")
+    admin.add_view(UsersView(name=lazy_gettext('Users'), url = 'users', endpoint = 'admin.users'))
+    admin.add_view(BasicAdminAppsView(name=lazy_gettext('Basic Management'), url = 'basic-apps-admin', endpoint = 'admin.basic-admin-apps', category='Applications'))    
+    admin.add_view(AdvancedAdminAppsView(name=lazy_gettext('Advanced Management'), url = 'advanced-apps-admin', endpoint = 'admin.advanced-admin-apps', category='Applications'))   
+    admin.add_view(ProfileView(name=lazy_gettext('My Profile'), url = 'profile', endpoint = 'admin.profile'))
+    admin.add_view(BackView(name=lazy_gettext('Back'), url = 'back', endpoint = 'admin.back'))     
     admin.init_app(app)
 
 # Regular expression to validate the "login" field

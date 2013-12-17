@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-17 15:47+0100\n"
+"POT-Creation-Date: 2013-12-17 17:20+0100\n"
 "PO-Revision-Date: 2013-12-16 17:02+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -35,6 +35,33 @@ msgstr "Credenciales inválidas"
 msgid "You must be logged in to use the App Composer."
 msgstr "Debes estar logueado para usar el App Composer."
 
+#: appcomposer/admin/admin_application.py:28
+msgid "Admin Profile"
+msgstr "Administrador"
+
+#: appcomposer/admin/admin_application.py:29
+msgid "Users"
+msgstr "Usuarios"
+
+#: appcomposer/admin/admin_application.py:30
+msgid "Basic Management"
+msgstr "Gestión básica"
+
+#: appcomposer/admin/admin_application.py:31
+msgid "Advanced Management"
+msgstr "Gestión Avanzada"
+
+#: appcomposer/admin/admin_application.py:32
+msgid "My Profile"
+msgstr "Mi perfil"
+
+#: appcomposer/admin/admin_application.py:33
+#: appcomposer/templates/login/errors.html:10
+#: appcomposer/templates/login/login.html:104
+#: appcomposer/user/user_application.py:26
+msgid "Back"
+msgstr "Atrás"
+
 #: appcomposer/admin/admin_application.py:114
 msgid "Login"
 msgstr "Usuario"
@@ -57,11 +84,11 @@ msgstr "Rol"
 
 #: appcomposer/admin/admin_application.py:117
 msgid "Username (all letters, dots and numbers)"
-msgstr "Usuario (todo letras, puntos y números)"
+msgstr "Usuario (letras, puntos y números)"
 
 #: appcomposer/admin/admin_application.py:118
 msgid "First and Last name"
-msgstr "Primer nombre y apellido"
+msgstr "Nombre y apellidos"
 
 #: appcomposer/admin/admin_application.py:119
 msgid "Valid e-mail address"
@@ -180,7 +207,7 @@ msgstr "No hay apps."
 
 #: appcomposer/templates/admin/advanced-admin-apps.html:48
 msgid "Owner"
-msgstr ""
+msgstr "Propietario"
 
 #: appcomposer/templates/admin/advanced-admin-apps.html:49
 #: appcomposer/templates/user/profile-apps.html:24
@@ -225,15 +252,16 @@ msgid ""
 "This is the Admin View of the App Composer. You can use this panel to"
 " manage users and applications."
 msgstr ""
-"Esta es la vista de administración del App Composer. Puedes utilizar este panel para"
-"gestionar los usuarios y aplicaciones."
+"Esta es la vista de administración del creador de aplicaciones. Puedes utilizar este"
+" panel para gestionar los usuarios y aplicaciones."
 
 #: appcomposer/templates/admin/profile.html:9
 msgid ""
 "You can change your profile data in the User Panel. Please, click next "
 "button."
 msgstr ""
-"Puedes cambiar tu perfil en el panel de usuario. Por favor, pulsa el botón siguiente."
+"Puedes cambiar tu perfil en el panel de usuario. Por favor, pulsa el "
+"botón siguiente."
 
 #: appcomposer/templates/admin/profile.html:11
 msgid "Go to My Profile"
@@ -287,33 +315,30 @@ msgstr "Nombre de la App"
 msgid "Error"
 msgstr "Error"
 
-#: appcomposer/templates/login/errors.html:10
-#: appcomposer/templates/login/login.html:104
-#: appcomposer/user/user_application.py:26
-msgid "Back"
-msgstr "Atrás"
-
 #: appcomposer/templates/login/graasp.html:6
 msgid "Login through Graasp"
-msgstr ""
+msgstr "Autenticación mediante Graasp"
 
 #: appcomposer/templates/login/graasp.html:15
 msgid "Create an app in your Graasp space"
-msgstr ""
+msgstr "Crea un aplicación en tu spacio de Graasp"
 
 #: appcomposer/templates/login/graasp.html:19
 msgid "Warning"
-msgstr ""
+msgstr "Aviso"
 
 #: appcomposer/templates/login/graasp.html:20
 msgid ""
 "This message is only for administrators. If you see this message, the App"
 " composer is wrongly configured. Contact your administrator"
 msgstr ""
+"Este mensaje es sólo para administradores. Si ves este mensajes, "
+"el creador de aplicaciones está mal configurado. Contacta con el administrador"
+
 
 #: appcomposer/templates/login/graasp.html:23
 msgid "Take the following URL:"
-msgstr ""
+msgstr "Utiliza la siguiente URL:"
 
 #: appcomposer/templates/login/graasp.html:27
 msgid ""
@@ -325,20 +350,20 @@ msgstr ""
 
 #: appcomposer/templates/login/graasp.html:35
 msgid "Go to the login app widget"
-msgstr ""
+msgstr "Ir a la aplicación widget de login"
 
 #: appcomposer/templates/login/graasp.html:39
 msgid "Go to the login app in Graasp"
-msgstr ""
+msgstr "Ir a la aplicación de login de Graasp"
 
 #: appcomposer/templates/login/graasp.html:42
 #, python-format
 msgid "%(variable)s not configured"
-msgstr ""
+msgstr "%(variable)s no configurada"
 
 #: appcomposer/templates/login/graasp.html:43
 msgid "Follow the steps described on this page and restart the app composer."
-msgstr ""
+msgstr "Sigue los pasos descritos en esta página y reinicia el creador de aplicaciones."
 
 #: appcomposer/templates/login/login.html:4
 msgid "Sign in"
