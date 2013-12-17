@@ -35,13 +35,8 @@ def adapt_index():
     @return: The adaptor type that the user has selected.
     """        
  
-    if request.method == "GET":    
+    if request.method == "GET":
 
-        #We log in automatically as "testuser". ONLY for testing purposes: the session must be retrieved from the main page        
-        if not session.get("logged_in", False):
-            session["logged_in"] = True
-            session["login"] = "testuser"
-            return redirect(url_for('adapt.adapt_index'))
         return render_template("composers/adapt/index.html")       
          
     elif request.method == "POST":

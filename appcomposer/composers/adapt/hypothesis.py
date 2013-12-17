@@ -79,7 +79,7 @@ def hypothesis_edit(app, app_id, name, data):
     flash("Hypothesis saved successfully", "success")
     # flash(conditionals_orig, "success")
 
-    return render_template("composers/adapt/edit.html", app=app, app_id = app_id, conditionals = conditionals_values, inputs = inputs_values, outputs = outputs_values)         
+    return render_template("composers/adapt/hypothesis/edit.html", app=app, app_id = app_id, conditionals = conditionals_values, inputs = inputs_values, outputs = outputs_values)         
 
 
 # 
