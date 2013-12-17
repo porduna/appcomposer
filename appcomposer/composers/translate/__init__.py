@@ -8,7 +8,7 @@ from flask import Blueprint, render_template, flash, redirect, url_for, request,
 from babel import Locale
 
 from appcomposer import db
-from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, add_var, remove_var
+from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, add_var, remove_var, get_app_by_name
 from appcomposer.models import AppVar, App
 from forms import UrlForm, LangselectForm
 
@@ -26,6 +26,11 @@ info = {
 }
 
 translate_blueprint = Blueprint(info['blueprint'], __name__)
+
+# If CFG_UNIQUE_XML_FOR_USER is set to True then a user can have a single translator App for a given XML spec.
+# If set to False, then a user can have several different apps for a same XML spec.
+# This doesn't affect the maximum number of Apps that a given user can have at a given time.
+CFG_UNIQUE_XML_FOR_USER = True
 
 
 # This import NEEDS to be after the translate_blueprint assignment due to
@@ -212,10 +217,22 @@ def translate_selectlang():
         # Build JSON data
         js = bm.to_json()
 
-        # Generate a name for the app.
-        # TODO: Eventually, this name should probably be given explicitly by the user.
-        # Alternatively, the creation of multiple apps for the same XML could be disallowed.
-        appname = os.path.basename(appurl) + "_%d" % random.randint(0, 9999)
+
+        # Generate a name for the app. (Must be unique for the current user).
+        # ISSUE: This isn't a very nice approach.
+        appname = os.path.basename(appurl)
+
+        if CFG_UNIQUE_XML_FOR_USER:
+            if get_app_by_name(appname) is not None:
+                return render_template("composers/errors.html",
+                                       message="An App for that XML file seems to exist already.")
+        else:
+            # Check if our appname exists already to generate a more random one.
+            if get_app_by_name(appname) is not None:
+                appname += "_%d" % random.randint(0, 9999)
+                if get_app_by_name(appname) is not None:
+                    return render_template("composers/errors.html",
+                                           message="Couldn't generate a unique name for the App. Please, try again.")
 
         # Create a new App from the specified XML
         app = create_app(appname, "translate", js)
