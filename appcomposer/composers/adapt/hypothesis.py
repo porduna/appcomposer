@@ -6,6 +6,10 @@ def hypothesis_new():
     pass
 
 def hypothesis_load(app, app_id, name, data):
+    # If the app data is empty (basic JSON schema), we are editing a new app. Otherwise, the data values are loaded from the database.
+    if len(data) == 4:
+        return render_template("composers/adapt/hypothesis/edit.html", app=app, app_id = app_id, name = name, n_rows = 0)
+
     conditionals_stored = data["conditionals"]
     inputs_stored = data["inputs"]
     outputs_stored = data["outputs"]      
@@ -21,7 +25,7 @@ def hypothesis_load(app, app_id, name, data):
     inputs = load_hypothesis_list(inputs_stored)
     outputs = load_hypothesis_list(outputs_stored)
             
-    return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, conditionals = conditionals, inputs = inputs, outputs = outputs)            
+    return render_template("composers/adapt/hypothesis/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, conditionals = conditionals, inputs = inputs, outputs = outputs)            
 
 # 
 # Auxiliar routes

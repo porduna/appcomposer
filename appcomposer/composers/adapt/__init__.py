@@ -113,7 +113,7 @@ def adapt_create(adaptor_type):
         app_data = json.dumps(data)
 
         try:
-            app = appstorage.create_app(name, "dummy", app_data)
+            app = appstorage.create_app(name, "adapt", app_data)
         except appstorage.AppExistsException:
             flash("An App with that name already exists", "error")
                         
@@ -150,22 +150,16 @@ def adapt_edit(app_id):
         adaptor_type = data["adaptor_type"]        
         description = data["description"]                           
 
-        # If the app data is empty (basic JSON schema), we are editing a new app. Otherwise, the data values are loaded from the database.
-        if len(data) == 4:
-                   
-            return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, n_rows = 0)
+        if adaptor_type == 'concept_map':
+            # TODO: convert into plug-in
+            return concept_map_data['load'](app, app_id, name, data)
         
-        else:       
-            if adaptor_type == 'concept_map':
-                # TODO: convert into plug-in
-                return concept_map_data['load'](app, app_id, name, data)
-            
-            elif adaptor_type == 'hypothesis':
-                # TODO: convert into plug-in
-                return hypothesis_data['load'](app, app_id, name, data)
-            else:
-                # Default number of rows for the experiment design -- GET REQUESTS
-                return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, x = x)
+        elif adaptor_type == 'hypothesis':
+            # TODO: convert into plug-in
+            return hypothesis_data['load'](app, app_id, name, data)
+        else:
+            # Default number of rows for the experiment design -- GET REQUESTS
+            return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, x = x)
     
     # If a POST request is received, the adaptor app is saved the database.    
     elif request.method == "POST":

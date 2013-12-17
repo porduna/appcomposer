@@ -7,6 +7,10 @@ def concept_map_new():
     pass
 
 def concept_map_load(app, app_id, name, data):
+    # If the app data is empty (basic JSON schema), we are editing a new app. Otherwise, the data values are loaded from the database.
+    if len(data) == 4:
+        return render_template("composers/adapt/conceptmapper/edit.html", app=app, app_id = app_id, name = name, n_rows = 0)
+
     concepts = data["concepts"]
     return render_template("composers/adapt/conceptmapper/edit.html", app=app, app_id = app_id, name = name, concepts = concepts)
 
