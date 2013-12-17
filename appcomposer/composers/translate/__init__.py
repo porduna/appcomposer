@@ -13,7 +13,6 @@ from appcomposer.models import AppVar, App
 from forms import UrlForm, LangselectForm
 
 
-
 info = {
     'blueprint': 'translate',
     'url': '/composers/translate',
@@ -177,7 +176,6 @@ def get_proposal():
 def translate_selectlang():
     """ Source language & target language selection."""
 
-    # TODO: This approach has many flaws, should be changed eventually.
     # Note: The name pcode refers to the fact that the codes we deal with here are partial (do not include
     # the group).
 
@@ -194,7 +192,6 @@ def translate_selectlang():
         *backend.BundleManager.get_locale_info_from_code(code))} for code in targetlangs_codes]
 
     full_groups_list = [("ALL", "ALL"), ("10-13", "Preadolescence (age 10-13)"), ("14-18", "Adolescence (age 14-18)")]
-    # TODO: For now we will solve the above by only showing the DEFAULT in the source groups list.
 
     # As of now (may change in the future) if it is a POST we are creating the app for the first time.
     # Hence, we will need to carry out a full spec retrieval.
@@ -312,7 +309,7 @@ def translate_edit():
     # Retrieve the application we want to view or edit.
     app = get_app(appid)
     if app is None:
-        return "500: App not found", 500
+        return render_template("composers/errors.html", message="App not found")
 
     bm = backend.BundleManager.create_from_existing_app(app.data)
     spec = bm.get_gadget_spec()
@@ -401,8 +398,7 @@ def translate_proposed_list():
     # Ensure that only the app owner can carry out these operations.
     owner_app = _db_get_owner_app(appdata["spec"])
     if app != owner_app:
-        return "Not Authorized: You don't seem to be the owner of this app", 401
-
+        return render_template("composers/errors.html", message="Not Authorized: You don't seem to be the owner of this app")
 
     # Get the list of proposed translations.
     vars = _db_get_proposals(app)
@@ -415,18 +411,18 @@ def translate_proposed_list():
     if request.method == "POST" and request.values.get("acceptButton") is not None:
         proposal_id = request.values.get("proposals")
         if proposal_id is None:
-            return "Proposal not selected", 500
+            return render_template("composers/errors.html", message="Proposal not selected")
 
         merge_data = request.values.get("data")
         if merge_data is None:
-            return "Merge data was not provided", 500
+            return render_template("composers/errors.html", message="Merge data was not provided")
         merge_data = json.loads(merge_data)
 
         # TODO: Consider creating API for this.
         # TODO: Optimize this. We already have the vars.
         proposal = AppVar.query.filter_by(app=app, var_id=proposal_id).first()
         if proposal is None:
-            return "Proposal not found", 500
+            return render_template("composers/errors.html", message="Proposals not found")
 
         flash("Proposal loaded: " + proposal.value)
 
@@ -460,11 +456,11 @@ def translate_proposed_list():
     elif request.method == "POST" and request.values.get("denyButton") is not None:
         proposal_id = request.values.get("proposals")
         if proposal_id is None:
-            return "Proposal not selected", 500
+            return render_template("composers/errors.html", message="Proposal not selected")
 
         proposal = AppVar.query.filter_by(app=app, var_id=proposal_id).first()
         if proposal is None:
-            return "Proposal not found", 500
+            return render_template("composers/errors.html", message="Proposal not found")
 
         remove_var(proposal)
 
