@@ -28,6 +28,9 @@ info = {
 
 adapt_blueprint = Blueprint(info['blueprint'], __name__)
 
+# TODO: Register it or something
+from .concept_map import data as concept_map_data
+from .hypothesis import data as hypothesis_data
 
 @adapt_blueprint.route("/", methods=["GET", "POST"])
 def adapt_index():
@@ -146,46 +149,23 @@ def adapt_edit(app_id):
         name = data["name"]            
         adaptor_type = data["adaptor_type"]        
         description = data["description"]                           
-        n_rows = 0                                             
 
         # If the app data is empty (basic JSON schema), we are editing a new app. Otherwise, the data values are loaded from the database.
         if len(data) == 4:
                    
-            return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, n_rows = n_rows)        
+            return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, n_rows = 0)
         
         else:       
             if adaptor_type == 'concept_map':
-                
-                concepts = data["concepts"]  
-                return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, concepts = concepts)            
+                # TODO: convert into plug-in
+                return concept_map_data['load'](app, app_id, name, data)
             
             elif adaptor_type == 'hypothesis':
-                
-                conditionals_stored = data["conditionals"]
-                inputs_stored = data["inputs"]
-                outputs_stored = data["outputs"]      
-
-                # Format to load: inputs = [ {'text': 'immersed object','type': 'input'}, {'text': 'pressure','type': 'input'},... ]            
-                def load_hypothesis_list(list_stored):
-                    lst = []
-                    for item in list_stored:
-                        lst.append(item['text'])                
-                    return lst     
-                                     
-                conditionals = load_hypothesis_list(conditionals_stored)
-                inputs = load_hypothesis_list(inputs_stored)
-                outputs = load_hypothesis_list(outputs_stored)
-                        
-                return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, conditionals = conditionals, inputs = inputs, outputs = outputs)            
-            
+                # TODO: convert into plug-in
+                return hypothesis_data['load'](app, app_id, name, data)
             else:
-                
                 # Default number of rows for the experiment design -- GET REQUESTS
-                n_rows = 5
-                
-              
-
-                return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, x = x)                                                            
+                return render_template("composers/adapt/edit.html", app=app, app_id = app_id, name = name, adaptor_type = adaptor_type, x = x)
     
     # If a POST request is received, the adaptor app is saved the database.    
     elif request.method == "POST":
@@ -200,7 +180,6 @@ def adapt_edit(app_id):
         name = str(data["name"])            
         adaptor_type = str(data["adaptor_type"])        
         description = str(data["description"])                           
-        n_rows = 0                                             
         
         # SPECIFIC CONTROL STRUCTURE FOR THE SELECTED ADAPTOR TYPE --- TO CHANGE IN #74        
         if adaptor_type == 'concept_map':            
@@ -314,244 +293,17 @@ def adapt_edit(app_id):
             '''
             
             # Default number of rows for the experiment design
-            n_rows = 5       
-
-
-            
-
-          
             appstorage.update_app_data(app, data)
             flash("Experiment design saved successfully", "success")
 
-            return render_template("composers/adapt/edit.html", app=app, app_id = app_id, adaptor_type = adaptor_type, n_rows = n_rows) 
+            return render_template("composers/adapt/edit.html", app=app, app_id = app_id, adaptor_type = adaptor_type, n_rows = 5)
 
             #flash(data, "success") 
             #flash(app.data, "success")  
             #-- DIFFERENCE between these two variables? First: single quotes. Second: double quotes      
 
             #return render_template("composers/adapt/edit.html", app=app, app_id = app_id, concepts = data["concepts"], conditionals = data["conditionals"], inputs = data["inputs"], outputs = data["outputs"]) 
-
-
-@adapt_blueprint.route("/export/<app_id>/conceptmapper/conceptmapper.html")
-def conceptmapper_index(app_id):
-    """
-    conceptmapper_index(app_id)
-    This function points to the concept map instance.
-
-    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
-    @return: The webpage of a concept map.
-    """  
-        
-    # In the templates, conceptmapper.html points to {{ url_for('adapt.conceptmapper_domain', app_id = app_id) }} 
-    # instead of domain.js (In the original app, the "concepts" variable was stored into the index.html file)
-    # The domain name is not generated here.
     
-    return render_template("composers/adapt/conceptmapper/conceptmapper.html", app_id = app_id)
-
-@adapt_blueprint.route("/export/<app_id>/conceptmapper/app.xml")
-def conceptmapper_widget(app_id):
-    """
-    conceptmapper_widget(app_id)
-    This function points to the concept map instance.
-
-    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
-    @return: The webpage of a concept map.
-    """  
-        
-    # In the templates, conceptmapper.html points to {{ url_for('adapt.conceptmapper_domain', app_id = app_id) }} 
-    # instead of domain.js (In the original app, the "concepts" variable was stored into the index.html file)
-    # The domain name is not generated here.
-    
-    return render_template("composers/adapt/conceptmapper/widget.xml", app_id = app_id)
-    
-
-@adapt_blueprint.route("/export/<app_id>/conceptmapper/domain.js")
-def conceptmapper_domain(app_id):
-    """
-    conceptmapper_domain(app_id)
-    This function points to the javascript file associated to an instance of the concept map.
-
-    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
-    @return: The javascript file with all its contents filled. Those contents are stored in the database. 
-    """  
-    
-    #domain_orig = ["mass", "fluid", "density", "volume", "weight", "immersed object", "pressure", "force", "gravity", "acceleration", "Archimedes", "displacement", "equilibrium"]    
-
-    app = get_app(app_id)
-    
-    data = json.loads(app.data)
-
-    if len(data) == 4:    
-        domain = json.dumps("empty")    
-    else:    
-        domain = json.dumps([ s.strip() for s in data["concepts"].split(',') ])
-
-    return render_template("composers/adapt/conceptmapper/domain.js", domain = domain)    
-
-
-@adapt_blueprint.route("/export/<app_id>/hypothesis/hypothesis.html")
-def hypothesis_index(app_id):
-    """
-    hypothesis_index(app_id)
-    This function points to the hypothesis tool instance.
-
-    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
-    @return: The webpage of a list of hypotheses.
-    """   
-        
-    # In the templates, hypothesis.html points to {{ url_for('adapt.hypothesis_domain', app_id = app_id) }} 
-    # instead of DomainTemplates.js
-    # The domain name is not generated here.
-
-    #app = get_app(app_id)    
-
-    return render_template("composers/adapt/hypothesis/hypothesis.html", app_id = app_id)
-
-@adapt_blueprint.route("/export/<app_id>/hypothesis/app.xml")
-def hypothesis_widget(app_id):
-    """
-    hypothesis_widget(app_id)
-    This function points to the hypothesis instance.
-
-    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
-    @return: The webpage of a concept map.
-    """  
-        
-    # In the templates, hypothesis.html points to {{ url_for('adapt.hypothesis_domain', app_id = app_id) }} 
-    # instead of domain.js (In the original app, the "concepts" variable was stored into the index.html file)
-    # The domain name is not generated here.
-    
-    return render_template("composers/adapt/hypothesis/widget.xml", app_id = app_id)
-
-
-@adapt_blueprint.route("/export/<app_id>/hypothesis/domain.js")
-def hypothesis_domain(app_id):
-    """
-    hypothesis_domain(app_id)
-    This function points to the javascript file associated to an instance of the hypothesis tool.
-
-    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
-    @return: The javascript file with all its contents filled. Those contents are stored in the database. 
-    """  
-    
-    """    
-    domain_orig = [
-        {'text': 'IF', 'type': 'conditional'}, {'text': 'THEN', 'type': 'conditional'}, {'text': 'increases', 'type': 'conditional'}, 
-        {'text': 'is larger than','type': 'conditional'}, {'text': 'is smaller than','type': 'conditional'}, {'text': 'decreases','type': 'conditional'}, 
-        {'text': 'is equal to','type': 'conditional'}, {'text': 'remains','type': 'conditional'}, {'text': 'floats','type': 'output'}, 
-        {'text': 'sinks','type': 'output'}, {'text': 'mass','type': 'input'}, {'text': 'fluid','type': 'input'}, 
-        {'text': 'density','type': 'input'}, {'text': 'volume','type': 'input'}, {'text': 'weight','type': 'input'}, 
-        {'text': 'immersed object','type': 'input'}, {'text': 'pressure','type': 'input'}, {'text': 'force','type': 'input'}, 
-        {'text': 'gravity','type': 'input'}, {'text': 'acceleration','type': 'output'}, {'text': 'Archimedes principle','type': 'input'}, 
-        {'text': 'submerge','type': 'input'}, {'text': 'float','type': 'output'}, {'text': 'displacement','type': 'input'}, {'text': 'equilibrium','type': 'output'}
-    ]
-
-    """    
-    
-    app = get_app(app_id)
-    
-    data = json.loads(app.data)
-    conditionals = data["conditionals"] 
-    inputs = data["inputs"] 
-    outputs = data["outputs"]
-
-    domain = json.dumps(conditionals + inputs + outputs)
-    
-    return render_template("composers/adapt/hypothesis/domain.js", domain = domain)    
-    
-
-@adapt_blueprint.route("/export/<app_id>/edt/edt.html")
-def edt_index(app_id):
-    """
-    hypothesis_index(app_id)
-    This function points to the experiment design tool instance.
-
-    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
-    @return: The webpage of an experiment design.
-    """  
-    
-    # In the templates, edt.html points to {{ url_for('adapt.edt_domain', app_id = app_id) }} 
-    # instead of buoyancy.js
-    # The domain name is also generated here.
-    domain_name = 'buoyancy'
-    experiment_name = 'Archimedes'
-    return render_template("composers/adapt/edt/edt.html", app_id = app_id, domain_name = domain_name, experiment_name = experiment_name)
-
-
-@adapt_blueprint.route("/export/<app_id>/edt/app.xml")
-def edt_widget(app_id):
-    """
-    edt_widget(app_id)
-    This function points to the edt instance.
-
-    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
-    @return: The webpage of a edt.
-    """  
-        
-    # In the templates, conceptmapper.html points to {{ url_for('adapt.edt_domain', app_id = app_id) }} 
-    # instead of domain.js (In the original app, the "concepts" variable was stored into the index.html file)
-    # The domain name is not generated here.
-    
-    return render_template("composers/adapt/edt/widget.xml", app_id = app_id)
-    
-
-@adapt_blueprint.route("/export/<app_id>/edt/domain.js")
-def edt_domain(app_id):
-    """
-    edt_domain(app_id)
-    This function points to the javascript file associated to an instance of the experiment design tool.
-
-    @param app_id: Identifier of the application. It will be unique within the list of user's apps.    
-    @return: The javascript file with all its contents filled. Those contents are stored in the database. 
-    """   
-    
-    domain = {
-        # This variable stores all the information required for the domain
-        'name': 'buoyancy',
-        'description': 'Buoyancy is an upward force exerted by a fluid.',
-        'object_properties': [
-            {'name': 'mass', 'type': 'magnitude', 'symbol': 'm', 'unit': 'kg'},
-            {'name': 'volume', 'type': 'magnitude', 'symbol': 'V', 'unit': 'm^3'},
-            {'name': 'density', 'type': 'magnitude', 'symbol': 'rho', 'unit': 'kg / m^3'},
-            {'name': 'material', 'type': 'multitude', 'values': '*'},
-            {'name': 'shape', 'type': 'multitude', 'values': '*'}
-        ],
-        'object_relations': [
-            {'name': 'density', 'object_properties': [ 'density', 'mass', 'volume' ], 'relation': 'density = mass / volume'}
-        ],
-        'system_properties': [
-            {'name': 'fluid_aquarium', 'type': 'multitude', 'values': '*'},
-            {'name': 'fluid_density', 'type': 'multitude', 'symbol': 'rho', 'unit': 'kg / m^3'},
-            {'name': 'fluid_column', 'type': 'multitude', 'symbol': 'h', 'unit': 'm'}
-        ],
-        'object_measures': [
-            {'name': 'water_displacement', 'type': 'magnitude', 'unit': 'm^3', 'depends_on': { 'object_properties': ['mass'], 'system_properties': ['fluid_density']}},
-            {'name': 'sink_or_float', 'type': 'multitude', 'values': ['sinks', 'floats'], 'depends_on': { 'object_properties': ['density'], 'system_properties': ['fluid_density']}}
-        ] 
-    }
-
-    experiment = {
-        # This variable stores all the information required for the experiment
-        'name': 'Archimedes',
-	    'description': 'Simulation-based version of the buoyancy experiment',
-	    'domain': 'buoyancy',
-	    'object_property_selection': ['mass', 'volume', 'shape'],
-	    'object_measure_selection': ['sink_or_float', 'water_displacement'],
-	    'system_property_selection': ['fluid_aquarium'],
-	    'object_property_specification': [
-            {'property': 'mass', 'initial': '300', 'unit': 'gram', 'range': {'minimum': '50', 'maximum': '500', 'increment': '50'}},
-            {'property': 'volume','initial': '200', 'unit': 'cm_3', 'range': {'minimum': '50', 'maximum': '500', 'increment': '50'}},
-            {'property': 'shape', 'initial': 'sphere', 'values': ['sphere', 'cube']}
-        ],
-	    'system_property_values': [
-            {'property': 'fluid_aquarium', 'value': 'water'},
-	        {'property': 'density', 'value': '1.0'}
-        ]
-    }
-    
-    return render_template("composers/adapt/edt/domain.js", domain = json.dumps(domain, indent = 4), experiment = json.dumps(experiment, indent = 4))
-
-
 ## Tests            
 
 @adapt_blueprint.route("/more/<uuid_test>/", methods = ['GET', 'POST'])
