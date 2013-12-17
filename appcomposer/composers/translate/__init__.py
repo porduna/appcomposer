@@ -1,17 +1,15 @@
 from collections import defaultdict
-import os
-import random
 import time
 import babel
 
 from flask import Blueprint, render_template, flash, redirect, url_for, request, json, jsonify
-from babel import Locale
 
 from appcomposer import db
 from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, add_var, remove_var, get_app_by_name
 from appcomposer.models import AppVar, App
 from forms import UrlForm, LangselectForm
 
+# Note: PyCharm detects the following import as not needed, but, at the moment of writing this, IT IS.
 from appcomposer.login import current_user
 
 info = {
@@ -31,7 +29,7 @@ translate_blueprint = Blueprint(info['blueprint'], __name__)
 # Maximum number of Apps that can have the same name.
 # Note that strictly speaking the name is never the same.
 # Repeated Apps have a (#number) appended to their name.
-CFG_SAME_NAME_LIMIT = 20
+CFG_SAME_NAME_LIMIT = 30
 
 
 # This import NEEDS to be after the translate_blueprint assignment due to
@@ -118,14 +116,6 @@ def _db_get_owner_app(spec):
     ownerApp = App.query.filter_by(id=ownerAppId[0]).first()
     return ownerApp
 
-
-def _db_get_children_apps(spec):
-    """
-    Gets from the database the Apps that are NOT the owner.
-    @param spec: String to the app's original XML.
-    @return: The children for the App. None if no children are found.
-    """
-    raise NotImplemented
 
 
 #----------------------------------------
