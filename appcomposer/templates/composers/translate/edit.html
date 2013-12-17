@@ -12,8 +12,9 @@
                         <h2 id="appfullname">{{ app.name }}</h2>
 
 
+                        <h5>Your App for this specific translation is being published at:</h5>
                         <a href="{{ url_for('.app_xml', appid=app.unique_id, group=request.values["targetgroup"], _external=True) }}">
-                        app.xml
+                        <h5>app.xml</h5>
                         </a>
 
                     </div>
