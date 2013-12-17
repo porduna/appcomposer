@@ -5,10 +5,10 @@
     <div class="container">
 
         <div class="hero-unit">
-            <h1>Welcome {{session.name}}!</h1>
-            <p>You can change your profile data in the User Panel. Please, click next button.</p>
+            <h1>{{ gettext("Welcome %(user)s!", user = session.name) }}</h1>
+            <p>{{ gettext("You can change your profile data in the User Panel. Please, click next button.") }}</p>
             <p>
-                <a href="#" class="btn btn-success btn-large">Go to My Profile &raquo;</a>
+                <a href="#" class="btn btn-success btn-large">{{ gettext("Go to My Profile") }} &raquo;</a>
             </p>
 
         </div>
