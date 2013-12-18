@@ -54,3 +54,10 @@
     <a href="{{ url_for('.hypothesis_widget', app_id = app_id) }}">[+] Widget link</a>
 </div>
 {% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='initializr/js/vendor/bootstrap-tagsinput.min.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='initializr/js/vendor/typeahead.min.js') }}" type="text/javascript"></script>
+
+{% endblock scripts %}

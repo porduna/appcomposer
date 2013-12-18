@@ -45,8 +45,15 @@ from .composers.adapt import info as adapt_info
 # So that we can have access to all the info from the Users component.
 # It is important that this is done early. Otherwise, it will be accessed by the
 # user component before it is ready.
-COMPOSERS = [dummy_info, translate_info, adapt_info]
+COMPOSERS = [translate_info, adapt_info]
 COMPOSERS_DICT = {info["blueprint"]: info for info in COMPOSERS}
+
+def register_dummy():
+    COMPOSERS.insert(0, dummy_info)
+    COMPOSERS_DICT[dummy_info['blueprint']] = dummy_info
+
+
+app.config['COMPOSERS'] = COMPOSERS
 
 # TODO: The COMPOSERS_DICT thing is not very pretty. Find a work-around.
 

@@ -18,10 +18,9 @@ def initialize_user_component(app):
     # URL describes through which address we access the page.
     # Endpoint enables us to do url_for('userp') to yield the URL
     url = '/user'
-    admin = Admin(index_view=HomeView(url=url, endpoint='user', name=lazy_gettext("Home view")), name=lazy_gettext("User Profile"), url=url, endpoint="home-user")
+    admin = Admin(index_view=HomeView(url=url, endpoint='user', name=lazy_gettext("Home")), name=lazy_gettext("User Profile"), url=url, endpoint="home-user")
     admin.add_view(ProfileEditView(name=lazy_gettext("Profile"), url='profile', endpoint='user.profile'))
     admin.add_view(AppsView(name=lazy_gettext("Apps"), url="apps", endpoint='user.apps'))
-    admin.add_view(RedirectView('index', name=lazy_gettext("Back"), url="back", endpoint='user.back'))
     admin.init_app(app)
 
 
