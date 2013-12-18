@@ -15,10 +15,7 @@ def hypothesis_load(app, app_id, name, data):
 
     # Format to load: inputs = [ {'text': 'immersed object','type': 'input'}, {'text': 'pressure','type': 'input'},... ]
     def load_hypothesis_list(list_stored):
-        lst = []
-        for item in list_stored:
-            lst.append(item['text'])
-        return lst
+        return ', '.join([ item['text'] for item in list_stored])
 
     conditionals = load_hypothesis_list(conditionals_stored)
     inputs = load_hypothesis_list(inputs_stored)
@@ -37,11 +34,6 @@ def hypothesis_edit(app, app_id, name, data):
         'inputs': list(),
         'outputs': list()}
     '''
-    # Template values
-    conditionals_values = request.form["conditionals"]
-    inputs_values = request.form["inputs"]
-    outputs_values = request.form["outputs"]
-
     # Database manipulation
     conditionals_orig = request.form["conditionals"].split(',')
     inputs_orig = request.form["inputs"].split(',')
@@ -72,9 +64,13 @@ def hypothesis_edit(app, app_id, name, data):
         "inputs": inputs,
         "outputs": outputs})
 
+    # Template values
+    conditionals_values = ', '.join([ item['text'] for item in conditionals])
+    inputs_values = ', '.join([ item['text'] for item in inputs])
+    outputs_values = ', '.join([ item['text'] for item in outputs])
+
     appstorage.update_app_data(app, data)
     flash("Hypothesis saved successfully", "success")
-    # flash(conditionals_orig, "success")
 
     return render_template("composers/adapt/hypothesis/edit.html", app=app, app_id = app_id, conditionals = conditionals_values, inputs = inputs_values, outputs = outputs_values)
 
@@ -162,7 +158,11 @@ def hypothesis_domain(app_id):
 data = {
    'version' : 1,
    'initial' : lambda : {
-    'conditionals' : list(),
+    'conditionals' : [
+                {'text': 'IF','type': 'conditional'},
+                {'text': 'THEN','type': 'conditional'},
+                {'text': 'is equal to','type': 'conditional'},
+        ],
     'inputs' : list(),
     'outputs' : list(),
    },
