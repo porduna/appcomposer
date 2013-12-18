@@ -1,0 +1,43 @@
+{% set title = "Translation tool :: About" %}
+{% set current_link = "about" %}
+{% extends 'composers/translate/layout.html' %}
+{% block body_content %}
+        <div class="translateblock">
+            <div class="row">
+                <div class="col-lg-12">
+                    <div class="page-header">
+                        <h1 id="apptitle">Publishing</h1>
+                    </div>
+                </div>
+        </div>
+
+        <div class="row">
+            <div class="col-lg-6">        
+                <div class="panel panel-primary">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">How to publish your App</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>
+                            Because Google's OpenSocial internationalization scheme doesn't support translations unique
+                            for specific groups of people (such as specific ages), a unique app is generated for each
+                            language and group combination.
+                        </p>
+                        <p>The specific XML specification of the App for the language and group you chose is here:</p>
+                        <p>
+                            <a href="{{ link }}">{{ link }}</a>
+                        </p>
+                        <p>
+                            The XML file in the link will be updated automatically each time your translation is updated.
+                            Copy the link wherever appropriate to refer to your App (you may copy the link in Graasp, for instance).
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                   <a href="{{ request.referrer }}">
+                       <button class="btn btn-primary">Back</button>
+                   </a>
+                </div>
+        </div>
+{% endblock %}
