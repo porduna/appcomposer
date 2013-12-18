@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-18 11:11+0100\n"
+"POT-Creation-Date: 2013-12-18 13:22+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -89,55 +89,55 @@ msgstr ""
 msgid "Valid e-mail address"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:129
+#: appcomposer/admin/admin_application.py:130
 msgid "administrator"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:129
+#: appcomposer/admin/admin_application.py:130
 msgid "teacher"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 #: appcomposer/templates/admin/advanced-admin-apps.html:48
 msgid "Owner"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 msgid "ID"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 #: appcomposer/templates/composers/dummy/new.html:42
 msgid "Name"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 #: appcomposer/templates/admin/advanced-admin-apps.html:49
 #: appcomposer/templates/user/profile-apps.html:24
 msgid "Composer"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 msgid "Creation Date"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 msgid "Modification Date"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 msgid "Last Access Date"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:158
+#: appcomposer/admin/admin_application.py:159
 msgid "translate"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:158
+#: appcomposer/admin/admin_application.py:159
 msgid "adapt"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:158
+#: appcomposer/admin/admin_application.py:159
 msgid "dummy"
 msgstr ""
 

@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-18 11:11+0100\n"
+"POT-Creation-Date: 2013-12-18 13:22+0100\n"
 "PO-Revision-Date: 2013-12-16 17:02+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -90,55 +90,55 @@ msgstr "Nombre y apellidos"
 msgid "Valid e-mail address"
 msgstr "E-mail válido"
 
-#: appcomposer/admin/admin_application.py:129
+#: appcomposer/admin/admin_application.py:130
 msgid "administrator"
 msgstr "administrador"
 
-#: appcomposer/admin/admin_application.py:129
+#: appcomposer/admin/admin_application.py:130
 msgid "teacher"
 msgstr "profesor"
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 #: appcomposer/templates/admin/advanced-admin-apps.html:48
 msgid "Owner"
 msgstr "Propietario"
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 msgid "ID"
 msgstr "Identificador"
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 #: appcomposer/templates/composers/dummy/new.html:42
 msgid "Name"
 msgstr "Nombre"
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 #: appcomposer/templates/admin/advanced-admin-apps.html:49
 #: appcomposer/templates/user/profile-apps.html:24
 msgid "Composer"
-msgstr "Creador"
+msgstr "Tipo de componedor"
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 msgid "Creation Date"
 msgstr "Fecha de creación"
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 msgid "Modification Date"
 msgstr "Fecha de modificación:"
 
-#: appcomposer/admin/admin_application.py:152
+#: appcomposer/admin/admin_application.py:153
 msgid "Last Access Date"
 msgstr "Fechaa de último acceso:"
 
-#: appcomposer/admin/admin_application.py:158
+#: appcomposer/admin/admin_application.py:159
 msgid "translate"
 msgstr "traductor"
 
-#: appcomposer/admin/admin_application.py:158
+#: appcomposer/admin/admin_application.py:159
 msgid "adapt"
 msgstr "adaptador"
 
-#: appcomposer/admin/admin_application.py:158
+#: appcomposer/admin/admin_application.py:159
 msgid "dummy"
 msgstr "dummy"
 
@@ -148,7 +148,7 @@ msgstr "Creador de adaptaciones"
 
 #: appcomposer/composers/adapt/__init__.py:26
 msgid "Adapt an existing app."
-msgstr "Adaptar un app existente."
+msgstr "Adapta una aplicación existente."
 
 #: appcomposer/composers/dummy/__init__.py:12
 #: appcomposer/templates/composers/dummy/delete.html:66
@@ -160,7 +160,7 @@ msgstr "Creador Dummy"
 
 #: appcomposer/composers/dummy/__init__.py:13
 msgid "Pretend that you are composing an app. For testing purposes."
-msgstr "Pretende que estás creando una app. Para pruebas."
+msgstr "Simula que estás creando una aplicación para pruebas."
 
 #: appcomposer/composers/dummy/__init__.py:53
 msgid "App successfully deleted."
@@ -176,7 +176,7 @@ msgstr "Ya hay una App con ese nombre"
 
 #: appcomposer/composers/translate/__init__.py:25
 msgid "Translate Composer"
-msgstr "Creador de traducciones"
+msgstr "Componedor de traducciones"
 
 #: appcomposer/composers/translate/__init__.py:26
 msgid "Translate an existing app."
@@ -237,12 +237,12 @@ msgstr "Administración"
 #: appcomposer/templates/master.html:42
 #, python-format
 msgid "the %(link)s application creator for teachers"
-msgstr "el creador de aplicaciones para profesores de %(link)s"
+msgstr "el sistema de creación de aplicaciones para profesores de %(link)s"
 
 #: appcomposer/templates/admin/advanced-admin-apps.html:17
 #: appcomposer/templates/user/index.html:26
 msgid "Start composing"
-msgstr "Comienza a crear"
+msgstr "Comienza a componer"
 
 #: appcomposer/templates/admin/advanced-admin-apps.html:29
 msgid "Existing Apps"
@@ -280,8 +280,9 @@ msgid ""
 "This is the Admin View of the App Composer. You can use this panel to "
 "manage users and applications."
 msgstr ""
-"Esta es la vista de administración del creador de aplicaciones. Puedes "
-"utilizar este panel para gestionar los usuarios y aplicaciones."
+"Esta es la vista de administración del sistema de creación de "
+"aplicaciones. Puedes utilizar este panel para gestionar los usuarios y "
+"aplicaciones."
 
 #: appcomposer/templates/admin/profile.html:9
 msgid ""
@@ -362,8 +363,8 @@ msgid ""
 " composer is wrongly configured. Contact your administrator"
 msgstr ""
 "Este mensaje es sólo para administradores. Si ves este mensajes, el "
-"creador de aplicaciones está mal configurado. Contacta con el "
-"administrador"
+"sistema de creación de aplicaciones está mal configurado. Contacta con el"
+" administrador"
 
 #: appcomposer/templates/login/graasp.html:23
 msgid "Take the following URL:"
@@ -380,7 +381,8 @@ msgstr ""
 " continuación, haz click en \"URL\" de Graasp y establece el nombre de la"
 " URL.Coge la URL generada (por ejemplo, "
 "http://graasp.epfl.ch/#url=yourname) y ponlaen la variable "
-"GRAASP_LOGIN_APP del fichero config.py del creador de aplicaciones."
+"GRAASP_LOGIN_APP del fichero config.py del sistema de creación de "
+"aplicaciones."
 
 #: appcomposer/templates/login/graasp.html:35
 msgid "Go to the login app widget"
@@ -397,7 +399,9 @@ msgstr "%(variable)s no configurada"
 
 #: appcomposer/templates/login/graasp.html:43
 msgid "Follow the steps described on this page and restart the app composer."
-msgstr "Sigue los pasos descritos en esta página y reinicia el creador de aplicaciones."
+msgstr ""
+"Sigue los pasos descritos en esta página y reinicia el sistema de "
+"creación de aplicaciones."
 
 #: appcomposer/templates/login/login.html:4
 msgid "Sign in"
@@ -441,7 +445,8 @@ msgid ""
 msgstr ""
 "Esta es la página principal del App Composer. El App Composer te permite "
 "customizar una aplicación fácilmente, de diferentes formas. Elige el tipo"
-" de componedor de aplicaciones que quieres usar y ¡comienza a construir aplicaciones!"
+" de componedor de aplicaciones que quieres usar y ¡comienza a construir "
+"aplicaciones!"
 
 #: appcomposer/templates/user/index.html:12
 msgid "Go to My Apps"

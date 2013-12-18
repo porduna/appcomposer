@@ -10,7 +10,7 @@ from wtforms.validators import Email, Regexp
 
 from appcomposer import models, db
 from appcomposer.login import current_user
-from appcomposer.babel import lazy_gettext
+from appcomposer.babel import lazy_gettext, gettext
 
 # List of all available composers
 from appcomposer.application import COMPOSERS, COMPOSERS_DICT
@@ -126,10 +126,11 @@ class UsersView(AdminModelView):
  
     # Fields used for the creations of new users    
     form_columns = ('login', 'name', 'email', 'organization', 'role', 'password')
+   
     sel_choices = [(level, level.title()) for level in (lazy_gettext('administrator'), lazy_gettext('teacher'))] # TODO: establish different permisions in the system   
     
     form_overrides = dict(access_level=wtf.SelectField, password=PasswordField, role=wtf.SelectField)        
-    form_args = dict(email=dict(validators=[Email()]), login=dict(validators=[Regexp(LOGIN_REGEX)]), role=dict(choices=sel_choices))
+    form_args = dict(email=dict(validators=[Email()]), login=dict(validators=[Regexp(LOGIN_REGEX)]), role=dict(choices = sel_choices))
     
     def __init__(self, **kwargs):
         super(UsersView, self).__init__(models.User, db.session, **kwargs)
