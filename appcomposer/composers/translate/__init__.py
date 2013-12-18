@@ -117,7 +117,6 @@ def _db_get_owner_app(spec):
     return ownerApp
 
 
-
 #----------------------------------------
 # other pages 
 #----------------------------------------
@@ -242,8 +241,14 @@ def translate_selectlang():
                                    message="Too many Apps with the same name. Please, choose another.")
 
         # Create a fully new App. It will be automatically generated from a XML.
-        bm = backend.BundleManager.create_new_app(appurl)
+        try:
+            bm = backend.BundleManager.create_new_app(appurl)
+        except backend.InvalidXMLFileException:
+            return render_template("composers/errors.html",
+                                   message="Invalid XML in either the XML specification file or the XML translation bundles that it links to")
+
         spec = bm.get_gadget_spec()  # For later
+
 
         # Build JSON data
         js = bm.to_json()

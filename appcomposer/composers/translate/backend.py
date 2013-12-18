@@ -63,6 +63,16 @@ SERVE_APP()
  """
 
 
+class InvalidXMLFileException(Exception):
+    """
+    Exception to be thrown when the XML spec of the App can't be parsed, most likely because
+    it contains invalid XML.
+    """
+
+    def __init__(self, message=None):
+        self.message = message
+
+
 class NoDefaultLanguageException(Exception):
     """
     Exception to be thrown when an App specified to be translated does not have a default translation.
@@ -343,22 +353,27 @@ class BundleManager(object):
         @note: The XML format is specified by Google and does not support the concept of "groups".
         """
         locales = []
-        xmldoc = minidom.parseString(xml_str)
-        itemlist = xmldoc.getElementsByTagName("Locale")
-        for elem in itemlist:
-            messages_file = elem.attributes["messages"].nodeValue
 
-            try:
-                lang = elem.attributes["lang"].nodeValue
-            except KeyError:
-                lang = "all"
+        try:
+            xmldoc = minidom.parseString(xml_str)
+            itemlist = xmldoc.getElementsByTagName("Locale")
+            for elem in itemlist:
+                messages_file = elem.attributes["messages"].nodeValue
 
-            try:
-                country = elem.attributes["country"].nodeValue
-            except KeyError:
-                country = "ALL"
+                try:
+                    lang = elem.attributes["lang"].nodeValue
+                except KeyError:
+                    lang = "all"
 
-            locales.append((lang, country, messages_file))
+                try:
+                    country = elem.attributes["country"].nodeValue
+                except KeyError:
+                    country = "ALL"
+
+                locales.append((lang, country, messages_file))
+        except:
+            raise InvalidXMLFileException("Could not parse XML file")
+
         return locales
 
     def _inject_locales_into_spec(self, appid, xml_str, respect_default=True, group=None):
@@ -629,11 +644,14 @@ class Bundle(object):
         """
         Creates a new Bundle from XML.
         """
-        bundle = Bundle(lang, country, group)
-        xmldoc = minidom.parseString(xml_str)
-        itemlist = xmldoc.getElementsByTagName("msg")
-        for elem in itemlist:
-            bundle.add_msg(elem.attributes["name"].nodeValue, elem.firstChild.nodeValue.strip())
+        try:
+            bundle = Bundle(lang, country, group)
+            xmldoc = minidom.parseString(xml_str)
+            itemlist = xmldoc.getElementsByTagName("msg")
+            for elem in itemlist:
+                bundle.add_msg(elem.attributes["name"].nodeValue, elem.firstChild.nodeValue.strip())
+        except:
+            raise InvalidXMLFileException("Could not load an XML translation")
         return bundle
 
     def to_xml(self):
