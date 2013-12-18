@@ -736,7 +736,7 @@ def app_xml(appid, group):
     app = get_app(appid)
 
     if app is None:
-        return render_template("composers/errors.html", message="Error 404: App doesn't exist", 404)
+        return render_template("composers/errors.html", message="Error 404: App doesn't exist"), 404
 
     # The composer MUST be 'translate'
     if app.composer != "translate":
