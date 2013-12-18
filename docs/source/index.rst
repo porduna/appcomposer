@@ -6,10 +6,23 @@
 Welcome to App Composer's documentation!
 ========================================
 
-Contents:
+.. toctree::
+   :maxdepth: 1
+
+   introduction
+   adapt
+   translate
+
+Developers and administrators
+=============================
+
+This section is intended for people who is going to download the App Composer and create adaptors.
 
 .. toctree::
    :maxdepth: 2
+
+   installation
+   adapt_development
 
 
 
