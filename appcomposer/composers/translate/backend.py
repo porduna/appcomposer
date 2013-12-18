@@ -4,7 +4,7 @@ from xml.dom import minidom
 import StringIO
 
 from babel import Locale, UnknownLocaleError
-from flask import make_response, url_for
+from flask import make_response, url_for, render_template
 
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
@@ -445,7 +445,6 @@ class BundleManager(object):
                 if bundle.group != group:
                     continue
 
-
             locale = xmldoc.createElement("Locale")
 
             # Build our locales to inject. We modify the case to respect the standard. It shouldn't be necessary
@@ -703,11 +702,12 @@ def app_xml(appid):
     app = get_app(appid)
 
     if app is None:
-        return "Error 404: App doesn't exist", 404
+        return render_template("composers/errors.html", message="Error 404: App doesn't exist"), 404
 
     # The composer MUST be 'translate'
     if app.composer != "translate":
-        return "Error 500: The composer for the specified App is not Translate", 500
+        return render_template("composers/errors.html",
+                               message="Error 500: The composer for the specified App is not Translate"), 500
 
     bm = BundleManager.create_from_existing_app(app.data)
     output_xml = bm.do_render_app_xml(appid)
@@ -715,6 +715,7 @@ def app_xml(appid):
     response = make_response(output_xml)
     response.mimetype = "application/xml"
     return response
+
 
 @translate_blueprint.route('/app/<appid>/<group>/app.xml')
 def app_xml(appid, group):
@@ -735,11 +736,12 @@ def app_xml(appid, group):
     app = get_app(appid)
 
     if app is None:
-        return "Error 404: App doesn't exist", 404
+        return render_template("composers/errors.html", message="Error 404: App doesn't exist", 404)
 
     # The composer MUST be 'translate'
     if app.composer != "translate":
-        return "Error 500: The composer for the specified App is not Translate", 500
+        return render_template("composers/errors.html",
+                               message="Error 500: The composer for the specified App is not Translate"), 500
 
     bm = BundleManager.create_from_existing_app(app.data)
     output_xml = bm.do_render_app_xml(appid, group)
@@ -766,11 +768,12 @@ def app_langfile(appid, langfile):
     app = get_app(appid)
 
     if app is None:
-        return "Error 404: App doesn't exist", 404
+        return render_template("composers/errors.html", message="Error 404: App doesn't exist."), 404
 
     # The composer MUST be 'translate'
     if app.composer != "translate":
-        return "Error 500: The composer for the specified App is not Translate", 500
+        return render_template("composers/errors.html",
+                               message="Error 500: The composer for the specified App is not a Translate composer."), 500
 
     # Parse the appdata
     appdata = json.loads(app.data)
@@ -778,7 +781,8 @@ def app_langfile(appid, langfile):
     bundles = appdata["bundles"]
     if langfile not in bundles:
         dbg_info = str(bundles.keys())
-        return "Error 404: Could not find such language for the specified app. Available keys are: " + dbg_info, 404
+        return render_template("composers/errors.html",
+                               message="Error 404: Could not find such language for the specified app. Available keys are: " + dbg_info), 404
 
     bundle = Bundle.from_jsonable(bundles[langfile])
 
