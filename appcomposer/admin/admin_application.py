@@ -27,8 +27,8 @@ def initialize_admin_component(app):
     url = '/admin'
     admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name=lazy_gettext('Admin Profile'), endpoint = "home-admin")
     admin.add_view(UsersView(name=lazy_gettext('Users'), url = 'users', endpoint = 'admin.users'))
-    admin.add_view(BasicAdminAppsView(name=lazy_gettext('Basic Management'), url = 'basic-apps-admin', endpoint = 'admin.basic-admin-apps', category=lazy_gettext('Applications')))    
-    admin.add_view(AdvancedAdminAppsView(name=lazy_gettext('Advanced Management'), url = 'advanced-apps-admin', endpoint = 'admin.advanced-admin-apps', category=lazy_gettext('Applications')))   
+    admin.add_view(BasicAdminAppsView(name=lazy_gettext('Basic App View'), url = 'basic-apps-admin', endpoint = 'admin.basic-admin-apps'))    
+    admin.add_view(AdvancedAdminAppsView(name=lazy_gettext('Advanced App View'), url = 'advanced-apps-admin', endpoint = 'admin.advanced-admin-apps'))   
     admin.add_view(ProfileView(name=lazy_gettext('My Profile'), url = 'profile', endpoint = 'admin.profile'))
     admin.add_view(BackView(name=lazy_gettext('Back'), url = 'back', endpoint = 'admin.back'))     
     admin.init_app(app)
