@@ -287,10 +287,18 @@ class BundleManager(object):
         locales = self._extract_locales_from_xml(xml_str)
 
         for lang, country, bundle_url in locales:
-            bundle_xml = self._retrieve_url(bundle_url)
-            bundle = Bundle.from_xml(bundle_xml, lang, country, "ALL")
-            name = Bundle.get_standard_code_string(lang, country, "ALL")
-            self._bundles[name] = bundle
+            try:
+                bundle_xml = self._retrieve_url(bundle_url)
+                bundle = Bundle.from_xml(bundle_xml, lang, country, "ALL")
+                name = Bundle.get_standard_code_string(lang, country, "ALL")
+                self._bundles[name] = bundle
+            except:
+                # TODO: For now, we do not really handle errors, we simply ignore those locales which cause exceptions.
+                # In the future, we should probably analyze which kind of exceptions can occur, and decide what
+                # we must do in each case. For instance, sometimes we might wanna ignore the Bundle but sometimes we
+                # might wanna notify the user, etc. Also, there may be some cases of invalid bundles in which no
+                # exception occurs but which are somewhat invalid nonetheless.
+                pass
 
     def to_json(self):
         """
