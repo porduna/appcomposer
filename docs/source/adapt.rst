@@ -1,3 +1,5 @@
+.. _adapt:
+
 Adapt Composer
 --------------
 

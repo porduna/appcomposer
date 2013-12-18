@@ -1,3 +1,4 @@
+.. _adapt_development:
 Adapt plug-in development
 -------------------------
 
