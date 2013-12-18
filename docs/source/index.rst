@@ -24,7 +24,23 @@ This section is intended for people who is going to download the App Composer an
    installation
    adapt_development
 
+Contribute!
+===========
 
+This section is intended for people willing to contribute the project.
+
+.. toctree::
+   :maxdepth: 1
+
+   i18n
+   code
+
+Other
+=====
+
+.. toctree::
+
+   contact
 
 Indices and tables
 ==================
