@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2013-12-17 18:19+0100\n"
+"POT-Creation-Date: 2013-12-18 11:11+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -42,17 +42,8 @@ msgstr ""
 msgid "Users"
 msgstr ""
 
-#: appcomposer/admin/admin_application.py:30
-msgid "Basic Management"
-msgstr ""
-
-#: appcomposer/admin/admin_application.py:30
 #: appcomposer/admin/admin_application.py:31
-msgid "Applications"
-msgstr ""
-
-#: appcomposer/admin/admin_application.py:31
-msgid "Advanced Management"
+msgid "Apps View"
 msgstr ""
 
 #: appcomposer/admin/admin_application.py:32
@@ -96,6 +87,58 @@ msgstr ""
 
 #: appcomposer/admin/admin_application.py:119
 msgid "Valid e-mail address"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:129
+msgid "administrator"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:129
+msgid "teacher"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:152
+#: appcomposer/templates/admin/advanced-admin-apps.html:48
+msgid "Owner"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:152
+msgid "ID"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:152
+#: appcomposer/templates/composers/dummy/new.html:42
+msgid "Name"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:152
+#: appcomposer/templates/admin/advanced-admin-apps.html:49
+#: appcomposer/templates/user/profile-apps.html:24
+msgid "Composer"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:152
+msgid "Creation Date"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:152
+msgid "Modification Date"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:152
+msgid "Last Access Date"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:158
+msgid "translate"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:158
+msgid "adapt"
+msgstr ""
+
+#: appcomposer/admin/admin_application.py:158
+msgid "dummy"
 msgstr ""
 
 #: appcomposer/composers/adapt/__init__.py:25
@@ -207,15 +250,6 @@ msgstr ""
 msgid "No application."
 msgstr ""
 
-#: appcomposer/templates/admin/advanced-admin-apps.html:48
-msgid "Owner"
-msgstr ""
-
-#: appcomposer/templates/admin/advanced-admin-apps.html:49
-#: appcomposer/templates/user/profile-apps.html:24
-msgid "Composer"
-msgstr ""
-
 #: appcomposer/templates/admin/advanced-admin-apps.html:50
 #: appcomposer/templates/user/profile-apps.html:25
 msgid "Created"
@@ -229,17 +263,6 @@ msgstr ""
 #: appcomposer/templates/admin/advanced-admin-apps.html:52
 #: appcomposer/templates/user/profile-apps.html:27
 msgid "Accessed"
-msgstr ""
-
-#: appcomposer/templates/admin/advanced-admin-apps.html:56
-#: appcomposer/templates/user/profile-apps.html:31
-msgid "Open"
-msgstr ""
-
-#: appcomposer/templates/admin/advanced-admin-apps.html:57
-#: appcomposer/templates/composers/dummy/delete.html:79
-#: appcomposer/templates/user/profile-apps.html:32
-msgid "Delete"
 msgstr ""
 
 #: appcomposer/templates/admin/index.html:8
@@ -275,6 +298,11 @@ msgstr ""
 msgid "Note: Your application is %(app)s %(id)s"
 msgstr ""
 
+#: appcomposer/templates/composers/dummy/delete.html:79
+#: appcomposer/templates/user/profile-apps.html:32
+msgid "Delete"
+msgstr ""
+
 #: appcomposer/templates/composers/dummy/delete.html:80
 msgid "Cancel"
 msgstr ""
@@ -299,10 +327,6 @@ msgstr ""
 
 #: appcomposer/templates/composers/dummy/new.html:32
 msgid "Please, set your application's name"
-msgstr ""
-
-#: appcomposer/templates/composers/dummy/new.html:42
-msgid "Name"
 msgstr ""
 
 #: appcomposer/templates/composers/dummy/new.html:44
@@ -403,6 +427,10 @@ msgstr ""
 
 #: appcomposer/templates/user/index.html:12
 msgid "Go to My Apps"
+msgstr ""
+
+#: appcomposer/templates/user/profile-apps.html:31
+msgid "Open"
 msgstr ""
 
 #: appcomposer/templates/user/profile-edit.html:10

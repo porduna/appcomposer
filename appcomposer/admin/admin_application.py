@@ -27,8 +27,8 @@ def initialize_admin_component(app):
     url = '/admin'
     admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name=lazy_gettext('Admin Profile'), endpoint = "home-admin")
     admin.add_view(UsersView(name=lazy_gettext('Users'), url = 'users', endpoint = 'admin.users'))
-    admin.add_view(BasicAdminAppsView(name=lazy_gettext('Basic App View'), url = 'basic-apps-admin', endpoint = 'admin.basic-admin-apps'))    
-    admin.add_view(AdvancedAdminAppsView(name=lazy_gettext('Advanced App View'), url = 'advanced-apps-admin', endpoint = 'admin.advanced-admin-apps'))   
+    #admin.add_view(BasicAdminAppsView(name=lazy_gettext('Basic App View'), url = 'basic-apps-admin', endpoint = 'admin.basic-admin-apps'))    
+    admin.add_view(AdvancedAdminAppsView(name=lazy_gettext('Apps View'), url = 'advanced-apps-admin', endpoint = 'admin.advanced-admin-apps'))   
     admin.add_view(ProfileView(name=lazy_gettext('My Profile'), url = 'profile', endpoint = 'admin.profile'))
     admin.add_view(BackView(name=lazy_gettext('Back'), url = 'back', endpoint = 'admin.back'))     
     admin.init_app(app)
@@ -126,7 +126,7 @@ class UsersView(AdminModelView):
  
     # Fields used for the creations of new users    
     form_columns = ('login', 'name', 'email', 'organization', 'role', 'password')
-    sel_choices = [(level, level.title()) for level in ('administrator', 'teacher')] # TODO: establish different permisions in the system   
+    sel_choices = [(level, level.title()) for level in (lazy_gettext('administrator'), lazy_gettext('teacher'))] # TODO: establish different permisions in the system   
     
     form_overrides = dict(access_level=wtf.SelectField, password=PasswordField, role=wtf.SelectField)        
     form_args = dict(email=dict(validators=[Email()]), login=dict(validators=[Regexp(LOGIN_REGEX)]), role=dict(choices=sel_choices))
@@ -135,8 +135,7 @@ class UsersView(AdminModelView):
         super(UsersView, self).__init__(models.User, db.session, **kwargs)
 
     # This function is used when creating a new empty composer    
-    def on_model_change(self, form, model):        
-        # TODO: Include more sophisticated authentications        
+    def on_model_change(self, form, model):                
         model.auth_system = 'userpass'
         model.auth_data = model.password
         model.creation_date = datetime.datetime.now()
@@ -149,14 +148,14 @@ class BasicAdminAppsView(AdminModelView):
     We will be able to create, edit, and delete apps.
     """
 
-    column_list = ('owner', 'unique_id', 'name', 'composer', 'creation_date', 'modification_date', 'last_access_date')
-    column_labels = dict(owner = 'Owner', unique_id = 'ID', name = 'Name', composer = 'Composer', creation_date = 'Creation Date', modification_date = 'Modification Date', last_access_date = 'Last Access Date')
+    column_list = ('owner_id', 'unique_id', 'name', 'composer', 'creation_date', 'modification_date', 'last_access_date')
+    column_labels = dict(owner_id = lazy_gettext('Owner'), unique_id = lazy_gettext('ID'), name = lazy_gettext('Name'), composer = lazy_gettext('Composer'), creation_date = lazy_gettext('Creation Date'), modification_date = lazy_gettext('Modification Date'), last_access_date = lazy_gettext('Last Access Date'))
     column_sortable_list = ('unique_id', 'name', 'composer')
     column_searchable_list = ('unique_id', 'name', 'composer')
    
     # Information needed when creating a new composer
-    form_columns = ('owner', 'name', 'composer') 
-    sel_choices = [(level, level.title()) for level in ('translate', 'adapt','dummy')] # TODO: find where this is registered
+    form_columns = ('owner_id', 'name', 'composer') 
+    sel_choices = [(level, level.title()) for level in (lazy_gettext('translate'), lazy_gettext('adapt'),lazy_gettext('dummy'))] # TODO: find where this is registered
     form_overrides = dict(composer=wtf.SelectField)
     form_args = dict(composer=dict(choices=sel_choices))   
    
