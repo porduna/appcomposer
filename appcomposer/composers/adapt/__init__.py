@@ -47,7 +47,8 @@ def register_plugin(plugin_data):
 # extension system for flask.
 #
 
-from .concept_map import data as concept_map_data
+#from .concept_map import data as concept_map_data
+from .ext.concept_mapper import data as concept_map_data
 register_plugin(concept_map_data)
 
 from .hypothesis import data as hypothesis_data
