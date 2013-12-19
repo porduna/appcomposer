@@ -1,9 +1,10 @@
 import json
 from collections import OrderedDict
-from flask import render_template, request, flash, url_for
+from flask import render_template, request, flash
 
 from appcomposer.composers.adapt import create_adaptor
-adaptor = create_adaptor('Concept Mapper', lambda : {
+
+adaptor = create_adaptor('Concept Mapper', {
         'concepts' : ''
    })
 
@@ -15,7 +16,7 @@ def edit(app_id):
 
     if request.method == 'GET':
         concepts = data["concepts"]
-        return render_template("conceptmapper/edit.html", app_id = app_id, name = name, concepts = concepts)
+        return render_template("edit.html", app_id = app_id, name = name, concepts = concepts)
 
     else:
         # Retrieve the list of concepts and convert it to the format supported by the app.
@@ -28,11 +29,11 @@ def edit(app_id):
 
         adaptor.save_data(app_id, data)
         flash("Concept map saved successfully", "success")
-        return render_template("conceptmapper/edit.html", app_id = app_id, concepts = data["concepts"])
+        return render_template("edit.html", app_id = app_id, concepts = data["concepts"])
 
 
 # Auxiliar routes
-@adaptor.route("/export/<app_id>/conceptmapper.html")
+@adaptor.route("/export/<app_id>/")
 def conceptmapper_index(app_id):
     """
     conceptmapper_index(app_id)
@@ -46,7 +47,7 @@ def conceptmapper_index(app_id):
     # instead of domain.js (In the original app, the "concepts" variable was stored into the index.html file)
     # The domain name is not generated here.
 
-    return render_template("conceptmapper/conceptmapper.html", app_id = app_id)
+    return render_template("conceptmapper.html", app_id = app_id)
 
 @adaptor.route("/export/<app_id>/app.xml")
 def conceptmapper_widget(app_id):
@@ -62,7 +63,7 @@ def conceptmapper_widget(app_id):
     # instead of domain.js (In the original app, the "concepts" variable was stored into the index.html file)
     # The domain name is not generated here.
 
-    return render_template("conceptmapper/widget.xml", app_id = app_id)
+    return render_template("widget.xml", app_id = app_id)
 
 
 @adaptor.route("/export/<app_id>/domain.js")
@@ -81,5 +82,5 @@ def conceptmapper_domain(app_id):
 
     domain = json.dumps([ s.strip() for s in data["concepts"].split(',') ])
 
-    return render_template("conceptmapper/domain.js", domain = domain)
+    return render_template("domain.js", domain = domain)
 

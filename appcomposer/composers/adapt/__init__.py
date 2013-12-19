@@ -4,6 +4,7 @@ from functools import wraps
 from flask import Blueprint, flash, json, redirect, render_template, request, url_for
 
 import appcomposer.appstorage.api as appstorage
+from appcomposer.application import app
 
 # Required imports for a customized app view for the adapt tool (a possible block to be refactored?)
 from appcomposer.babel import lazy_gettext
@@ -42,8 +43,9 @@ ADAPTORS = {
 _current_plugin = threading.local()
 
 def load_plugins():
-    PLUGINS = ['concept_mapper']
-    for plugin in PLUGINS:
+    plugins = app.config.get('ADAPT_PLUGINS', [])
+    # plugins.extend(['concept_mapper'])
+    for plugin in plugins:
         _current_plugin.name = plugin
         try:
             __import__('appcomposer.composers.adapt.ext.%s' % plugin)
@@ -108,7 +110,11 @@ class AdaptorPlugin(object):
             return func(appid)
         return wrapper
 
-def create_adaptor(full_name, initial = lambda : {}):
+def create_adaptor(full_name, initial = {}):
+    # Make sure that:
+    # 1. It's serializable to JSON (as it's gonna be later in the appstorage layer)
+    # 2. It's never modified by any function
+    initial = json.loads(json.dumps(initial))
 
     plugin = getattr(_current_plugin, 'name', None)
     if not plugin:
@@ -139,10 +145,6 @@ def create_adaptor(full_name, initial = lambda : {}):
     return adaptor
 
 
-
-#from .concept_map import data as concept_map_data
-#from .ext.concept_mapper import data as concept_map_data
-#register_plugin(concept_map_data)
 
 # from .hypothesis import data as hypothesis_data
 # register_plugin(hypothesis_data)
@@ -223,7 +225,7 @@ def adapt_create(adaptor_type):
         }
 
         # Fill with the initial structure
-        data.update(app_plugin['initial']())
+        data.update(app_plugin['initial'])
 
         #Dump the contents of the previous block and check if an app with the same name exists.
         # (TODO): do we force different names even if the apps belong to another adaptor type?
@@ -259,10 +261,6 @@ def adapt_edit(appid):
         return "no attached adaptor_type variable"
     adaptor_type = adaptor_types[0].value
     
-    # TODO: remove this
-    if adaptor_type == 'concept_map':
-        adaptor_type = 'concept_mapper'
-
     adaptor_plugin = ADAPTORS[adaptor_type]['adaptor']
 
     return redirect(url_for(adaptor_plugin._edit_endpoint, appid = appid))
