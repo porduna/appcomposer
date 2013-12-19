@@ -43,7 +43,7 @@ ADAPTORS = {
 _current_plugin = threading.local()
 
 def load_plugins():
-    plugins = ['concept_mapper', 'hypothesis']
+    plugins = ['concept_mapper', 'hypothesis', 'edt']
 
     for plugin in app.config.get('ADAPT_PLUGINS', []):
         if plugin not in plugins:
@@ -144,13 +144,6 @@ def create_adaptor(full_name, initial = {}):
 
     return adaptor
 
-
-
-# from .hypothesis import data as hypothesis_data
-# register_plugin(hypothesis_data)
-# 
-# from .edt import data as edt_data
-# register_plugin(edt_data)
 
 # 
 # Common code 
