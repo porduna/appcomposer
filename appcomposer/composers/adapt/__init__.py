@@ -43,8 +43,12 @@ ADAPTORS = {
 _current_plugin = threading.local()
 
 def load_plugins():
-    plugins = app.config.get('ADAPT_PLUGINS', [])
-    # plugins.extend(['concept_mapper'])
+    plugins = ['concept_mapper']
+
+    for plugin in app.config.get('ADAPT_PLUGINS', []):
+        if plugin not in plugins:
+            plugins.append(plugin)
+
     for plugin in plugins:
         _current_plugin.name = plugin
         try:
