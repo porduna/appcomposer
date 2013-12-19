@@ -47,11 +47,10 @@ from .composers.adapt import info as adapt_info
 # user component before it is ready.
 COMPOSERS = [translate_info, adapt_info]
 COMPOSERS_DICT = {info["blueprint"]: info for info in COMPOSERS}
+COMPOSERS_DICT[dummy_info['blueprint']] = dummy_info
 
 def register_dummy():
     COMPOSERS.insert(0, dummy_info)
-    COMPOSERS_DICT[dummy_info['blueprint']] = dummy_info
-
 
 app.config['COMPOSERS'] = COMPOSERS
 
