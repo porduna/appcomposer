@@ -12,7 +12,7 @@ adaptor = create_adaptor('Concept Mapper', {
 @adaptor.edit_route
 def edit(app_id):
     data = adaptor.load_data(app_id)
-    name = data["concepts"]
+    name = data["name"]
 
     if request.method == 'GET':
         concepts = data["concepts"]
