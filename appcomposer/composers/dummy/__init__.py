@@ -1,6 +1,6 @@
 from flask import Blueprint, render_template, request, url_for, redirect, json, flash
 import appcomposer.appstorage.api as appstorage
-
+from appcomposer.babel import lazy_gettext, gettext
 
 info = {
     'blueprint': 'dummy',
@@ -9,8 +9,8 @@ info = {
     'edit_endpoint': 'dummy.edit',
     'delete_endpoint': 'dummy.delete',
 
-    'name': 'Dummy Composer',
-    'description': 'Pretend that you are composing an app. For testing purposes.'
+    'name': lazy_gettext('Dummy Composer'),
+    'description': lazy_gettext('Pretend that you are composing an app. For testing purposes.')
 }
 
 dummy_blueprint = Blueprint(info['blueprint'], __name__)
@@ -50,7 +50,7 @@ def delete():
 
         appstorage.delete_app(app)
 
-        flash("App successfully deleted.", "success")
+        flash(gettext("App successfully deleted."), "success")
 
         return redirect(url_for("user.apps.index"))
 
@@ -83,7 +83,7 @@ def edit():
 
         appstorage.update_app_data(app, data)
 
-        flash("Saved successfully", "success")
+        flash(gettext("Saved successfully"), "success")
 
         # TODO: Print a success message etc etc.
 
@@ -107,7 +107,7 @@ def new():
         try:
             app = appstorage.create_app(name, "dummy", data='{"text":""}')
         except appstorage.AppExistsException:
-            flash("An App with that name exists already", "error")
+            flash(gettext("An App with that name exists already"), "error")
             return render_template("composers/dummy/new.html", name=name)
 
         return redirect(url_for("dummy.edit", appid=app.unique_id))

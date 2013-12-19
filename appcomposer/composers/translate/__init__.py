@@ -7,6 +7,7 @@ from flask import Blueprint, render_template, flash, redirect, url_for, request,
 from appcomposer import db
 from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, add_var, remove_var, get_app_by_name
 from appcomposer.models import AppVar, App
+from appcomposer.babel import lazy_gettext
 from forms import UrlForm, LangselectForm
 
 # Note: PyCharm detects the following import as not needed, but, at the moment of writing this, IT IS.
@@ -20,8 +21,8 @@ info = {
     'edit_endpoint': 'translate.translate_selectlang',
     'delete_endpoint': 'dummy.delete',
 
-    'name': 'Translate Composer',
-    'description': 'Translate an existing app.'
+    'name': lazy_gettext('Translate Composer'),
+    'description': lazy_gettext('Translate an existing app.')
 }
 
 translate_blueprint = Blueprint(info['blueprint'], __name__)

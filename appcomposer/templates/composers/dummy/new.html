@@ -6,7 +6,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-	<title>Sign in</title>
+	<title>{{ gettext('Dummy Composer') }}</title>
 	<meta name="viewport" content="width=device-width, initial-scale=1.0">
 	<link href="{{ url_for('static', filename='css/bootstrap.min.css') }}" rel="stylesheet" media="screen"/>
 	<link href="{{ url_for('static', filename='css/bootstrap-responsive.min.css') }}" rel="stylesheet" media="screen"/>
@@ -28,8 +28,8 @@
 
     <div style="margin:0 auto;float:none;text-align:center;">
         <br/>
-        <h1>Dummy Composer</h1>
-        <h2>Please, set your application's name.</h2>
+        <h1>{{ gettext("Dummy Composer") }}</h1>
+        <h2>{{ gettext("Please, set your application's name") }}.</h2>
         <br/>
         <br/>
     </div>
@@ -39,9 +39,9 @@
             <div class="span6 offset3 pagination-centered">
                 <form class="form-inline" method="POST" action="{{ url_for("dummy.new") }}">
                       <div class="control-group">
-                        <label class="control-label" for="name">Name</label>
+                        <label class="control-label" for="name">{{ gettext("Name") }}</label>
                         <div class="controls">
-                          <input type="text" name="name" placeholder="App name">
+                          <input type="text" name="name" placeholder="{{ gettext("App name") }}">
                         </div>
                       </div>
                     <input type="submit" value="Save" class="btn btn-primary"/>

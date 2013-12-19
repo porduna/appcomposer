@@ -2,7 +2,11 @@
 
 import threading
 
-from flask.ext.wtf import TextField, PasswordField, PasswordInput
+from flask.ext.admin.contrib.sqla.fields import QuerySelectField
+from wtforms import TextField, PasswordField
+from wtforms.widgets import PasswordInput
+
+from appcomposer.babel import lazy_gettext
 
 from flask.ext.admin.contrib.sqlamodel.fields import QuerySelectField
 
@@ -36,7 +40,7 @@ class VisiblePasswordWidget(PasswordInput):
         resulting_input = super(VisiblePasswordWidget, self).__call__(field, *args, **kwargs)
         if visible:
             resulting_input = resulting_input.replace('password', 'text')
-        resulting_input += '<br/><label class="checkbox"><input type="checkbox" onclick="javascript:flipInputVisibility(this);" %s>Show</input></label>' % ('checked' if visible else '')
+        resulting_input += '<br/><label class="checkbox"><input type="checkbox" onclick="javascript:flipInputVisibility(this);" %s>%s</input></label>' % (('checked' if visible else ''), lazy_gettext("Show"))
         return resulting_input
 
 

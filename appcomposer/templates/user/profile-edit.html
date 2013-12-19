@@ -7,7 +7,7 @@
 <div class="row">
     <div class="span7 offset2">
         <br/>
-        <h1>My profile ({{user.name}}) </h1>
+        <h1>{{ gettext("My profile") }} ({{user.name}}) </h1>
         <br/>
         <br/>
 
@@ -30,9 +30,9 @@
 
                 <div class="form-actions">
                     {% if change_profile %}
-                        <button type="submit" class="btn btn-primary">Save</button>
+                        <button type="submit" class="btn btn-primary">{{ gettext("Save") }}</button>
                     {% else %}
-                        <button type="submit" class="btn btn-primary disabled">Save</button>
+                        <button type="submit" class="btn btn-primary disabled">{{ gettext("Save") }}</button>
                     {% endif %}
                 </div>
             </fieldset>

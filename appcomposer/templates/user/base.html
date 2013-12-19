@@ -18,31 +18,46 @@
     {% block head_tail %}
     {% endblock %}
   </head>
-  <body style="padding-top: 60px">
+  <body style="padding-top: 4px">
     {% block page_body %}
-      <div class="navbar navbar-fixed-top">
+    <div class="container">
+      <div class="navbar">
         <div class="navbar-inner">
-        <div class="container">
+
           {% block brand %}
-          <span class="brand">{{ admin_view.admin.name }}</span>
+          <a class="brand" href="{{ url_for('index') }}">App Composer</a>
           {% endblock %}
           <ul class="nav">
             {{ layout.menu() }}
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Composers <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    {% for composer in config['COMPOSERS'] %}
+                    <li><a href="{{ url_for(composer['new_endpoint']) }}">{{ composer['name'] }}</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
+
           </ul>
 
-        <div class="navbar-inner pull-right">
-            <div class="brand" style="float:left"><i>{{ session.name }}</i></div>
-            <form class="navbar-form navbar-right" style="float:left;" action="{{ url_for('logout') }}">
-                <button type="submit" class="btn btn-primary">Log out</button>
-            </form>
-        </div>
-        </div>
+        <ul class="nav pull-right">
+            <li><a href="{{ url_for('user.profile.index') }}"><i>{{ session.name }}</i></a></li>
+            <li><a href="{{ url_for('logout') }}">{{ gettext("Log out") }}</a></li>
+        </ul>
 
         </div>
       </div>
+    </div>
 
     <div class="container">
       {% block body %}{% endblock %}
+    </div>
+
+    <div class="container">
+      <hr>
+        <footer>         
+            <p style="text-align: center; font-style: italic; font-size: 10px">AppComposer, {{ gettext('the %(link)s application creator for teachers', link = '<a href="http://www.go-lab-project.eu/">Go-Lab</a>'|safe) }}.</p>
+        </footer>
     </div>
 
     {% endblock %}

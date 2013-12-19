@@ -1,6 +1,5 @@
 
 from flask import request, redirect
-from appcomposer.appstorage.api import create_app
 from appcomposer.appstorage.api import add_var, get_all_vars, set_var, remove_var, create_app
 
 

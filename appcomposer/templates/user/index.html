@@ -5,11 +5,11 @@
     <div class="container">
 
         <div class="hero-unit">
-            <h1>Welcome {{session.name}}!</h1>
-            <p>This is the main page of the App Composer. The App Composer lets you customize an application easily, in different ways. Choose the type of App Composer you want to use, and get started!</p>
+            <h1>{{ gettext("Welcome %(user)s!", user = session.name) }}</h1>
+            <p>{{ gettext("This is the main page of the App Composer. The App Composer lets you customize an application easily, in different ways. Choose the type of App Composer you want to use, and get started!") }}</p>
             <p>
-                <a href="#" class="btn btn-primary btn-large">Learn more &raquo;</a>
-                <a href="{{ url_for("user.apps.index") }}" class="btn btn-success btn-large">Go to My Apps &raquo</a>
+                <a href="#" class="btn btn-primary btn-large">{{ gettext("Learn more") }} &raquo;</a>
+                <a href="{{ url_for("user.apps.index") }}" class="btn btn-success btn-large">{{ gettext("Go to My Apps") }} &raquo;</a>
             </p>
         </div>
 
@@ -23,7 +23,7 @@
                     {{composer.description}}
                 </p>
                 <p>
-                    <a class="btn" href="{{url_for(composer.new_endpoint)}}">Start composing &raquo;
+                    <a class="btn" href="{{url_for(composer.new_endpoint)}}">{{ gettext("Start composing") }} &raquo;
                     </a>
                 </p>
             </div>

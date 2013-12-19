@@ -1,5 +1,5 @@
-from flask import Flask
-from flask import render_template, render_template_string, escape
+from flask import Flask, request
+from flask import escape
 import os
 
 app = Flask(__name__)
@@ -15,6 +15,25 @@ if not app.config.get('SQLALCHEMY_DATABASE_URI', False):
         app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_ENGINE_STR']
 
 
+from appcomposer.babel import Babel
+
+if Babel is None:
+    print "Not using Babel. Everything will be in English"
+else:
+    babel = Babel(app)
+
+    supported_languages = ['en']
+    supported_languages.extend([ translation.language for translation in babel.list_translations() ])
+
+    @babel.localeselector
+    def get_locale():
+        locale = request.args.get('locale',  None)
+        if locale is None:
+            locale = request.accept_languages.best_match(supported_languages)
+        if locale is None:
+            locale = 'en'
+        return locale
+
 ###
 # Composers info
 ###
@@ -26,8 +45,14 @@ from .composers.adapt import info as adapt_info
 # So that we can have access to all the info from the Users component.
 # It is important that this is done early. Otherwise, it will be accessed by the
 # user component before it is ready.
-COMPOSERS = [dummy_info, translate_info, adapt_info]
+COMPOSERS = [translate_info, adapt_info]
 COMPOSERS_DICT = {info["blueprint"]: info for info in COMPOSERS}
+COMPOSERS_DICT[dummy_info['blueprint']] = dummy_info
+
+def register_dummy():
+    COMPOSERS.insert(0, dummy_info)
+
+app.config['COMPOSERS'] = COMPOSERS
 
 # TODO: The COMPOSERS_DICT thing is not very pretty. Find a work-around.
 

@@ -1,0 +1,6 @@
+Translate the App Composer
+==========================
+
+The App Composer has been developed to be translated to different languages, and
+you don't need knowledge of computers or so. Please contact us (:ref:`contact`)
+so we can provide you a nice interface to do this.

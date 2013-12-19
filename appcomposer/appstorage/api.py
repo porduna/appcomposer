@@ -126,6 +126,27 @@ def get_app_by_name(app_name):
     retrieved_app = App.query.filter_by(owner=user, name=app_name).first()
     return retrieved_app
 
+def get_my_apps(**filters):
+    """
+    get_my_apps(**filters)
+    Retrieves the current user's app with a specified set of filters for the AppVars. For example:
+
+    get_my_apps(adaptor_type = 'composer') will only return those apps of the user which match that.
+
+    @note: This function can only be used by logged-on users.
+    """
+    user = current_user()
+
+    if filters:
+        app_vars_query_obj = db.session.query(AppVar.app_id)
+        for filter_name, filter_value in filters.iteritems():
+            app_vars_query_obj = app_vars_query_obj.filter_by(name = filter_name, value = filter_value)
+
+        subquery = app_vars_query_obj.subquery()
+
+        return App.query.filter(App.id.in_(subquery), App.owner == current_user()).all()
+    else:
+        return App.query.filter(App.owner == current_user()).all()
 
 def save_app(composed_app):
     """

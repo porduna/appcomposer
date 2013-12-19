@@ -3,9 +3,11 @@ from flask.ext.admin import Admin, BaseView, expose
 from flask.ext.wtf import TextField, Form, PasswordField
 from appcomposer.models import App
 from .fields import DisabledTextField
-
-from appcomposer.login import current_user
 from appcomposer import db
+from appcomposer.login import current_user
+from appcomposer.babel import lazy_gettext
+from appcomposer.views import RedirectView
+from appcomposer.appstorage import api as appstorage
 
 # List of all available composers
 from appcomposer.application import COMPOSERS, COMPOSERS_DICT
@@ -16,9 +18,9 @@ def initialize_user_component(app):
     # URL describes through which address we access the page.
     # Endpoint enables us to do url_for('userp') to yield the URL
     url = '/user'
-    admin = Admin(index_view=HomeView(url=url, endpoint='user'), name="User Profile", url=url, endpoint="home-user")
-    admin.add_view(ProfileEditView(name="Profile", url='profile', endpoint='user.profile'))
-    admin.add_view(AppsView(name="Apps", url="apps", endpoint='user.apps'))
+    admin = Admin(index_view=HomeView(url=url, endpoint='user', name=lazy_gettext("Home")), name=lazy_gettext("User Profile"), url=url, endpoint="home-user")
+    admin.add_view(ProfileEditView(name=lazy_gettext("Profile"), url='profile', endpoint='user.profile'))
+    admin.add_view(AppsView(name=lazy_gettext("Apps"), url="apps", endpoint='user.apps'))
     admin.init_app(app)
 
 
@@ -63,15 +65,15 @@ class ProfileEditForm(Form):
     """
     The form used for the Profile Edit view.
     """
-    name = DisabledTextField(u"Name:")
-    login = DisabledTextField(u"Login:")
-    email = TextField(u"E-mail:")
-    password = PasswordField(u"Password:", description="Password.")
-    organization = TextField(u"Organization:")
-    role = TextField(u"Role:")
-    creation_date = DisabledTextField(u"Creation date:")
-    last_access_date = DisabledTextField(u"Last access:")
-    auth_system = TextField(u"Auth system:")
+    name = DisabledTextField(lazy_gettext(u"Name:"))
+    login = DisabledTextField(lazy_gettext(u"Login:"))
+    email = TextField(lazy_gettext(u"E-mail:"))
+    password = PasswordField(lazy_gettext(u"Password:"), description=lazy_gettext("Password."))
+    organization = TextField(lazy_gettext(u"Organization:"))
+    role = TextField(lazy_gettext(u"Role:"))
+    creation_date = DisabledTextField(lazy_gettext(u"Creation date:"))
+    last_access_date = DisabledTextField(lazy_gettext(u"Last access:"))
+    auth_system = TextField(lazy_gettext(u"Auth system:"))
 
 
 class AppsView(UserBaseView):
@@ -86,7 +88,7 @@ class AppsView(UserBaseView):
     @expose('/')
     def index(self):
         # Retrieve the apps
-        apps = App.query.filter_by(owner=current_user()).all()
+        apps = appstorage.get_my_apps()
 
         def build_edit_link(app):
             endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]
