@@ -1,7 +1,6 @@
 import json
 from collections import OrderedDict
 from flask import render_template, request, flash, url_for
-import appcomposer.appstorage.api as appstorage
 
 from appcomposer.composers.adapt import create_adaptor
 adaptor = create_adaptor('Concept Mapper', lambda : {
@@ -16,7 +15,7 @@ def edit(app_id):
 
     if request.method == 'GET':
         concepts = data["concepts"]
-        return render_template("composers/adapt/conceptmapper/edit.html", app_id = app_id, name = name, concepts = concepts)
+        return render_template("conceptmapper/edit.html", app_id = app_id, name = name, concepts = concepts)
 
     else:
         # Retrieve the list of concepts and convert it to the format supported by the app.
@@ -29,7 +28,7 @@ def edit(app_id):
 
         adaptor.save_data(app_id, data)
         flash("Concept map saved successfully", "success")
-        return render_template("composers/adapt/conceptmapper/edit.html", app_id = app_id, concepts = data["concepts"])
+        return render_template("conceptmapper/edit.html", app_id = app_id, concepts = data["concepts"])
 
 
 # Auxiliar routes
@@ -78,14 +77,9 @@ def conceptmapper_domain(app_id):
 
     #domain_orig = ["mass", "fluid", "density", "volume", "weight", "immersed object", "pressure", "force", "gravity", "acceleration", "Archimedes", "displacement", "equilibrium"]
 
-    app = appstorage.get_app(app_id)
+    data = adaptor.load_data(app_id)
 
-    data = json.loads(app.data)
-
-    if len(data) == 4:
-        domain = json.dumps("empty")
-    else:
-        domain = json.dumps([ s.strip() for s in data["concepts"].split(',') ])
+    domain = json.dumps([ s.strip() for s in data["concepts"].split(',') ])
 
     return render_template("conceptmapper/domain.js", domain = domain)
 

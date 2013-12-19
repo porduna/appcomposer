@@ -28,22 +28,10 @@ adaptors_blueprints = []
 ADAPTORS = {
     # 'identifier' : {
     #     'initial' : function,
-    #     'load' : function,
-    #     'edit' : function,
+    #     'adaptor' : adaptor_object,
     #     'name' : 'Something',
     # }
 }
-
-def register_plugin(plugin_data):
-    for field in 'load', 'edit', 'id':
-        if field not in plugin_data:
-            raise Exception("Plug-in misconfigured. Field %s missing." % field)
-
-    plugin_id = plugin_data['id']
-    if plugin_id in ADAPTORS:
-        raise Exception("Plug-in id already registered: %s" % plugin_id)
-
-    ADAPTORS[plugin_id] = plugin_data
 
 
 #
@@ -70,15 +58,18 @@ class AdaptorPlugin(object):
         self.name      = name
         self.blueprint = blueprint
         self.initial   = initial
+        self._edit_endpoint = None
 
     def route(self, *args, **kwargs):
         return self.blueprint.route(*args, **kwargs)
 
     def load_data(self, appid):
+        """ Wrapper of the appstorage API. It returns a valid JSON file. """
         app = appstorage.get_app(appid)
         return json.loads(app.data)
 
     def save_data(self, app_id, data):
+        """ Wrapper of the appstorage API. It saves the data in JSON format. """
         app = appstorage.get_app(app_id)
         appstorage.update_app_data(app, data)
 
@@ -91,11 +82,13 @@ class AdaptorPlugin(object):
             # You may refer to this method as url_for('.edit')
             return "something"
         """
+        self._edit_endpoint = '%s.%s' % (self.name, func.__name__)
 
         @self.blueprint.route("/edit/<appid>/", methods = ['GET', 'POST'])
         @requires_login
         @wraps(func)
         def wrapper(appid):
+            # TODO: Improve this: do not load the whole thing. We just need the ID and so on.
             if not appid:
                 return "appid not provided", 400
             app = appstorage.get_app(appid)
@@ -115,7 +108,7 @@ class AdaptorPlugin(object):
             return func(appid)
         return wrapper
 
-def create_adaptor(name, initial = lambda : {}):
+def create_adaptor(full_name, initial = lambda : {}):
 
     plugin = getattr(_current_plugin, 'name', None)
     if not plugin:
@@ -126,14 +119,24 @@ def create_adaptor(name, initial = lambda : {}):
             raise Exception("The plug-in %s is already registered. Don't call the method twice and check that the plug-in name is not in collision with other plug-in.")
         
     import_name = 'golab_adapt_%s' % plugin
-    name = plugin
     url_prefix = '/composers/adapt/adaptors/%s' % plugin
 
-    plugin_blueprint = Blueprint(name, import_name, url_prefix = url_prefix, template_folder = 'templates', static_folder='static')
+    plugin_blueprint = Blueprint(plugin, import_name, url_prefix = url_prefix, template_folder = 'templates', static_folder='static')
 
     adaptors_blueprints.append(plugin_blueprint)
 
-    return AdaptorPlugin(name, plugin_blueprint, initial)
+    adaptor = AdaptorPlugin(plugin, plugin_blueprint, initial)
+
+    if plugin in ADAPTORS:
+        raise Exception("Plug-in id already registered: %s" % plugin)
+
+    ADAPTORS[plugin] = {
+        'name'    : full_name,
+        'adaptor' : adaptor,
+        'initial' : initial,
+    }
+
+    return adaptor
 
 
 
@@ -141,11 +144,11 @@ def create_adaptor(name, initial = lambda : {}):
 #from .ext.concept_mapper import data as concept_map_data
 #register_plugin(concept_map_data)
 
-from .hypothesis import data as hypothesis_data
-register_plugin(hypothesis_data)
-
-from .edt import data as edt_data
-register_plugin(edt_data)
+# from .hypothesis import data as hypothesis_data
+# register_plugin(hypothesis_data)
+# 
+# from .edt import data as edt_data
+# register_plugin(edt_data)
 
 # 
 # Common code 
@@ -245,24 +248,24 @@ def adapt_edit(appid):
     """
     if not appid:
         return "appid not provided", 400
+
+    # TODO: Improve this: do not load the whole thing. We just need the variables.
     app = appstorage.get_app(appid)
     if app is None:
         return "App not found", 500
 
-    data = json.loads(app.data)
-    name = data["name"]
-    adaptor_type = data["adaptor_type"]
+    adaptor_types = [ var for var in app.appvars if var.name == 'adaptor_type' ]
+    if not adaptor_types:
+        return "no attached adaptor_type variable"
+    adaptor_type = adaptor_types[0].value
+    
+    # TODO: remove this
+    if adaptor_type == 'concept_map':
+        adaptor_type = 'concept_mapper'
 
-    if adaptor_type not in ADAPTORS:
-        return ":-("
+    adaptor_plugin = ADAPTORS[adaptor_type]['adaptor']
 
-    adaptor_plugin = ADAPTORS[adaptor_type]
-
-    if request.method == "GET":
-        return adaptor_plugin['load'](app, appid, name, data)
-
-    else: # Only GET and POST in the route
-        return adaptor_plugin['edit'](app, appid, name, data)
+    return redirect(url_for(adaptor_plugin._edit_endpoint, appid = appid))
 
 ## Tests
 
