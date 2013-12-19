@@ -13,12 +13,9 @@ adaptor = create_adaptor('Concept Mapper', {
 def edit(app_id):
     data = adaptor.load_data(app_id)
     name = data["name"]
+    concepts = data["concepts"]
 
-    if request.method == 'GET':
-        concepts = data["concepts"]
-        return render_template("edit.html", app_id = app_id, name = name, concepts = concepts)
-
-    else:
+    if request.method == 'POST':
         # Retrieve the list of concepts and convert it to the format supported by the app.
         # Request-- concepts: "a,b,c"  -> Concepts  (str): "a,b,c"
         concepts = ', '.join(list(OrderedDict.fromkeys([ s.strip() for s in request.form["concepts"].split(',') ])))
@@ -29,7 +26,8 @@ def edit(app_id):
 
         adaptor.save_data(app_id, data)
         flash("Concept map saved successfully", "success")
-        return render_template("edit.html", app_id = app_id, concepts = data["concepts"])
+
+    return render_template("conceptmapper/edit.html", app_id = app_id, concepts = data["concepts"])
 
 
 # Auxiliar routes
@@ -47,7 +45,7 @@ def conceptmapper_index(app_id):
     # instead of domain.js (In the original app, the "concepts" variable was stored into the index.html file)
     # The domain name is not generated here.
 
-    return render_template("conceptmapper.html", app_id = app_id)
+    return render_template("conceptmapper/conceptmapper.html", app_id = app_id)
 
 @adaptor.route("/export/<app_id>/app.xml")
 def conceptmapper_widget(app_id):
@@ -63,7 +61,7 @@ def conceptmapper_widget(app_id):
     # instead of domain.js (In the original app, the "concepts" variable was stored into the index.html file)
     # The domain name is not generated here.
 
-    return render_template("widget.xml", app_id = app_id)
+    return render_template("conceptmapper/widget.xml", app_id = app_id)
 
 
 @adaptor.route("/export/<app_id>/domain.js")
@@ -82,5 +80,5 @@ def conceptmapper_domain(app_id):
 
     domain = json.dumps([ s.strip() for s in data["concepts"].split(',') ])
 
-    return render_template("domain.js", domain = domain)
+    return render_template("conceptmapper/domain.js", domain = domain)
 
