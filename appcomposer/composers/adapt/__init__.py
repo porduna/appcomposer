@@ -102,14 +102,10 @@ class AdaptorPlugin(object):
                 return "App not found", 500
 
             data = json.loads(app.data)
-            name = data["name"]
             adaptor_type = data["adaptor_type"]
 
             if adaptor_type != self.name:
-                # TODO:
-                # print adaptor_type, self.name
-                # return ":-("
-                pass
+                return "This Adaptor is not of this adaptor type", 400
 
             return func(appid)
         return wrapper
