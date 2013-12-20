@@ -126,8 +126,8 @@ Finally, in the appcomposer we need to add the following configuration variable 
 
 And restart the App Composer.
 
-My first adaptor
-^^^^^^^^^^^^^^^^
+Tutorial
+^^^^^^^^
 
 So as to put a simple example, let's start by a simple example over which we
 iterate. Let's imagine a very simple adaptor where the teacher is expected to
@@ -172,7 +172,7 @@ server (run.py), and when going to the Adapt Composer, you should see the
 Simple Text adaptor in the list of adaptors:
 
 .. image:: /_static/simpletext1.png
-   :width: 600 px
+   :width: 400 px
    :align: center
 
 If you build an application with it, once you have provided a name and a
@@ -307,7 +307,322 @@ so we have suddenly advanced around fifteen years.
    :width: 400 px
    :align: center
 
+Step 5: First form
+##################
 
+Now, if we recall, this adaptor was based on that teachers could add text and
+students would be able to see it. The first step to achieve this is to provide a
+form and store its contents. So let's change the template, in the ``edit_tab``
+and ``preview_tab`` contents, by the following:
+
+.. code-block:: jinja
+
+    {% set title = "Edit the app content" %}
+    {% set adaptor_type = "Simple text" %}
+    {% extends 'composers/adapt/edit.html' %}
+
+    {% block edit_tab %}
+        <div class="col-lg-10">
+            <form class="form" action="." method="POST" >
+                <input type="text" name="simple_text" value="{{ value }}"/>
+                <input type="submit" class="btn btn-primary" value="Submit"/>
+            </form>
+        </div>
+    {% endblock %}
+
+    {% block preview_tab %}
+        <div class="col-lg-10">
+            The teacher said: {{ value }}
+        </div>
+    {% endblock %}
+
+As you see, there is a ``{{ value }}``. If the variable does not exist, Flask
+simply renders an empty string, so it's not a problem. The result is the following:
+
+.. image:: /_static/simpletext6.png
+   :width: 400 px
+   :align: center
+
+Time to change the Python code to be aware of this. Note that ``request`` has been imported from ``flask``:
+
+.. code-block:: python
+
+    from flask import render_template, request
+
+    from appcomposer.composers.adapt import create_adaptor
+
+    adaptor = create_adaptor('Simple text')
+
+    @adaptor.edit_route
+    def edit(app_id):
+        value = ""
+        if request.method == 'POST':
+            value = request.form['simple_text']
+            print value
+        return render_template("simpletext/edit.html", value = value)
+
+In the console where you have the ``python run.py`` process being executed
+you'll be able to see the messages submitted in the web browser. And every time
+you post a message, that message should be shown.
+
+.. warning::
+
+    This example is not taking into consideration CSRF attacks for the sake of
+    simplicity. You may check the
+    `Flask-WTF documentation <https://flask-wtf.readthedocs.org/en/latest/>`_ on
+    automatic ways to avoid it.
+
+Step 6: Saving information in the database
+##########################################
+
+Until this point, if you refresh the application, you will start again. But
+you should want to save the information in the database. To do so, the
+``adaptor`` variable counts with two methods (``load_data`` and ``save_data``)
+which work with Python code that they serialize to JSON. By default, this is a
+dictionary. Here is how we could use it in this case:
+
+.. code-block:: python
+
+    from flask import render_template, request
+
+    from appcomposer.composers.adapt import create_adaptor
+
+    adaptor = create_adaptor('Simple text', 
+                    initial = {'simple_text' : 'No text'})
+
+    @adaptor.edit_route
+    def edit(app_id):
+        # Load data from the database for this application
+        data = adaptor.load_data(app_id)
+
+        if request.method == 'POST':
+            value = request.form['simple_text']
+            data['simple_text'] = value
+            # Store it in the database
+            adaptor.save_data(app_id, data)
+        
+        return render_template("simpletext/edit.html", 
+                                    value = data['simple_text'])
+
+Notes on this code:
+
+ * It has changed the call to ``create_adaptor``, providing the default value
+   that will be used every time that a new adaptation is made. This way, the
+   database will have a dictionary with a field ``simple_text``.
+
+ * It calls the ``load_data`` and ``save_data`` with the ``app_id``. The
+   ``load_data`` can be called by any user. But the ``save_data`` can only be
+   called by the owner of the application or by the administrators. Other users
+   will receive an exception.
+
+If you test this code, by default it will not work, since you are running an
+existing application, which had an empty dictionary in the database. If you're
+just developing, you should delete your current application and create a new
+application. Or you can do something like the following to make it backwards
+compatible:
+
+.. code-block:: python
+
+    @adaptor.edit_route
+    def edit(app_id):
+        # Load data from the database for this application
+        data = adaptor.load_data(app_id)
+
+        # If data does not have 'simple_text', add the default value.
+        if 'simple_text' not in data:
+            data['simple_text'] = 'No text'
+
+At this point, you can already save applications and preview them:
+
+.. image:: /_static/simpletext7.png
+   :width: 300 px
+   :align: center
+
+.. image:: /_static/simpletext8.png
+   :width: 300 px
+   :align: center
+
+Step 7: Exporting the application
+#################################
+
+Now, we have the application running, but we can not consume it from `Graasp
+<https://graasp.epfl.ch/>`_. What we need is other URL that can be consumed by
+other systems. We can create a new template for this, adding the following code
+to the ``__init__.py`` code at the end of the file. Note that the
+``render_template`` of the ``edit`` method now also includes the ``app_id``.
+
+.. code-block:: python
+
+    from flask import render_template, request
+
+    from appcomposer.composers.adapt import create_adaptor
+
+    adaptor = create_adaptor('Simple text',
+                    initial = {'simple_text' : 'No text'})
+
+    @adaptor.edit_route
+    def edit(app_id):
+        # Load data from the database for this application
+        data = adaptor.load_data(app_id)
+
+        # If data does not have 'simple_text', add the default value.
+        if 'simple_text' not in data:
+            data['simple_text'] = 'No text'
+
+        if request.method == 'POST':
+            value = request.form['simple_text']
+            data['simple_text'] = value
+            # Store it in the database
+            adaptor.save_data(app_id, data)
+
+        return render_template("simpletext/edit.html",  
+                                    value = data['simple_text'],
+                                    app_id = app_id)
+
+    @adaptor.route('/export/<app_id>/app.xml')
+    def app_xml(app_id):
+        data = adaptor.load_data(app_id)
+        return render_template("simpletext/app.xml",
+                                    value = data['simple_text'])
+
+
+Which establishes that there is a new URL that can receive a parameter ``app_id`` 
+with the application identifier, loads the data and renders a template called ``app.xml``.
+
+So we have to create this template, putting the following code in the ``templates/simpletext/app.xml`` file:
+
+.. code-block:: xml
+
+    <Module>
+        <ModulePrefs title="{{ title }}">                                                                 
+            <Require feature="osapi" />                                                                   
+        </ModulePrefs>                                                                                    
+        <Content type="html" view="home,canvas">                                                          
+            The teacher said: {{ value }}
+        </Content>                                                                                        
+    </Module> 
+
+Now we only need to link it in the ``edit.html`` template. We will use the same 
+function we used before ``url_for()`` but in a slightly different way: when 
+refering routes generated with ``@adaptor.route``, we have to call
+``url_for('.app_xml', app_id = 'something')``, being ``app_xml`` the function
+name, and ``app_id`` the arguments of the function. See the ``edit.html`` now
+(the changes are on the ``preview_tab``):
+
+.. code-block:: jinja
+
+    {% set title = "Edit the app content" %}
+    {% set adaptor_type = "Simple text" %}
+    {% extends 'composers/adapt/edit.html' %}
+
+    {% block edit_tab %}
+        <div class="col-lg-10">
+            <form class="form" action="." method="POST" >
+                <input type="text" name="simple_text" value="{{ value }}"/>
+                <input type="submit" class="btn btn-primary" value="Submit"/>
+            </form>
+        </div>
+    {% endblock %}
+
+    {% block preview_tab %}
+        <div class="col-lg-10">
+            The teacher said: {{ value }}
+            <br>
+            <a href="{{ url_for('.app_xml', app_id = app_id) }}">App URL</a>
+        </div>
+    {% endblock %}
+
+With this, you can see the link in the preview tab, which provides a link to the
+final URL that can be added to Graasp.
+
+.. image:: /_static/simpletext9.png
+   :width: 300 px
+   :align: center
+
+Step 8: Cleaning up
+###################
+
+In this simple example, all the HTML code you that will be displayed to the
+users is as simple as the following::
+
+    The teacher said: {{ value }}
+
+
+Which in the previous step, we see that is repeated in the two templates
+(``edit.html`` and ``app.xml``). In a real world scenario, this is not
+affordable neither can be maintained. The easiest solution is to centralize 
+it to a single template.
+
+So we will create a new HTML template file with these contents:
+
+.. code-block:: jinja
+
+    {% macro render_simpletext(value) %}
+    The teacher said: {{ value }}
+    {% endmacro %}
+
+And change the ``app.xml`` file to import it and call it:
+
+.. code-block:: xml
+
+    <Module>
+        <ModulePrefs title="{{ title }}">
+            <Require feature="osapi" />
+        </ModulePrefs>
+        <Content type="html" view="home,canvas">
+         <![CDATA[
+        {% from "simpletext/_simpletext.html" import render_simpletext %}
+        {{ render_simpletext(value) }}
+        ]]>
+        </Content>
+    </Module>
+
+Now, the ``edit.html`` file can also import it (showing only the ``preview_tab`` here):
+
+.. code-block:: jinja
+
+    {% block preview_tab %}
+        <div class="col-lg-10">
+            {% from "simpletext/_simpletext.html" import render_simpletext %}
+            {{ render_simpletext(value) }}
+            <br>
+            <a href="{{ url_for('.app_xml', app_id = app_id) }}">App URL</a>
+        </div>
+    {% endblock %}
+
+This way, the code is centralized in a single file, being imported in both. In some 
+situations, if the file is too complex or includes more contents, it could be added 
+through an iframe from the edit tab. For example, we could create a new template
+called ``simpletext.html`` with only the import:
+
+.. code-block:: jinja
+
+    {% from "simpletext/_simpletext.html" import render_simpletext %}
+    {{ render_simpletext(value) }}
+
+Add a route for it: 
+
+.. code-block:: python
+
+    @adaptor.route('/export/<app_id>/index.html')
+    def index_html(app_id):
+        data = adaptor.load_data(app_id)
+        return render_template("simpletext/simpletext.html",
+                                    value = data['simple_text'])
+
+And in the ``preview_tab`` of the ``edit.html`` file include the iframe:
+
+.. code-block:: jinja
+
+    {% block preview_tab %}
+    <div class="col-lg-10">
+        <iframe src="{{ url_for('.index_html', app_id = app_id) }}"
+            width="750" height="590" frameborder="1px solid gray"
+            scrolling="no"></iframe>
+        <br>
+        <a href="{{ url_for('.app_xml', app_id = app_id) }}">App URL</a>
+    </div>
+    {% endblock %}
 
 Examples
 ^^^^^^^^
