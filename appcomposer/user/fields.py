@@ -1,20 +1,28 @@
 # TAKEN STRAIGHT FROM WEBLAB-DEUSTO
 
-from flask.ext.wtf import TextField, PasswordField, HTMLString, PasswordInput, Select
+import threading
 
 from flask.ext.admin.contrib.sqla.fields import QuerySelectField
+from wtforms import TextField, PasswordField
+from wtforms.widgets import PasswordInput
 
 from appcomposer.babel import lazy_gettext
 
-import threading
+from flask.ext.admin.contrib.sqlamodel.fields import QuerySelectField
 
 local_data = threading.local()
+
+
+# TODO: This whole file needs some cleanup. I think there are some issues and
+# some classes are actually unused.
+
 
 class DisabledTextField(TextField):
     def __call__(self, *args, **kwargs):
         new_kwargs = kwargs.copy()
         new_kwargs['readonly'] = 'true'
         return super(DisabledTextField, self).__call__(*args, **new_kwargs)
+
 
 class VisiblePasswordWidget(PasswordInput):
     def __call__(self, field, *args, **kwargs):
@@ -35,11 +43,13 @@ class VisiblePasswordWidget(PasswordInput):
         resulting_input += '<br/><label class="checkbox"><input type="checkbox" onclick="javascript:flipInputVisibility(this);" %s>%s</input></label>' % (('checked' if visible else ''), lazy_gettext("Show"))
         return resulting_input
 
+
 def register_self(self):
     if not hasattr(local_data, 'fields'):
-        local_data.fields = [ self ]
+        local_data.fields = [self]
     else:
         local_data.fields.append(self)
+
 
 class VisiblePasswordField(PasswordField):
 
@@ -49,6 +59,7 @@ class VisiblePasswordField(PasswordField):
         instance = super(VisiblePasswordField, self).__new__(self, *args, **kwargs)
         register_self(instance)
         return instance
+
 
 class RecordingQuerySelectField(QuerySelectField):
     def __new__(self, *args, **kwargs):

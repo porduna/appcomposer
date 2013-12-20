@@ -1,18 +1,17 @@
 from collections import defaultdict
-import os
-import random
 import time
+import babel
 
 from flask import Blueprint, render_template, flash, redirect, url_for, request, json, jsonify
-from babel import Locale
 
 from appcomposer import db
-from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, add_var, remove_var
+from appcomposer.appstorage.api import create_app, get_app, update_app_data, set_var, add_var, remove_var, get_app_by_name
 from appcomposer.models import AppVar, App
 from appcomposer.babel import lazy_gettext
 from forms import UrlForm, LangselectForm
 
-
+# Note: PyCharm detects the following import as not needed, but, at the moment of writing this, IT IS.
+from appcomposer.login import current_user
 
 info = {
     'blueprint': 'translate',
@@ -28,13 +27,24 @@ info = {
 
 translate_blueprint = Blueprint(info['blueprint'], __name__)
 
+# Maximum number of Apps that can have the same name.
+# Note that strictly speaking the name is never the same.
+# Repeated Apps have a (#number) appended to their name.
+CFG_SAME_NAME_LIMIT = 30
+
 
 # This import NEEDS to be after the translate_blueprint assignment due to
 # importing and cyclic dependencies issues.
 import backend
 
+
 @translate_blueprint.route("/merge_existing", methods=["GET", "POST"])
 def translate_merge_existing():
+    """
+    Provides the logic for one of the merging features. This merging method
+    was implemented before the "proposals" system, which is superior.
+    Should probably be adapted or removed in the future.
+    """
     appid = request.values.get("appid")
     if appid is None:
         # An appid is required.
@@ -108,15 +118,6 @@ def _db_get_owner_app(spec):
     return ownerApp
 
 
-def _db_get_children_apps(spec):
-    """
-    Gets from the database the Apps that are NOT the owner.
-    @param spec: String to the app's original XML.
-    @return: The children for the App. None if no children are found.
-    """
-    raise NotImplemented
-
-
 #----------------------------------------
 # other pages 
 #----------------------------------------
@@ -125,10 +126,11 @@ def _db_get_children_apps(spec):
 def _db_get_proposals(app):
     return AppVar.query.filter_by(name="proposal", app=app).all()
 
+
 @translate_blueprint.route("/get_proposal", methods=["GET"])
 def get_proposal():
     """
-    API to get the contents of a Proposal var.
+    JSON API to get the contents of a Proposal var.
     As of now it does no checks. Lets you retrieve any proposal var as
     long as you know its IP.
     @return: JSON string containing the data.
@@ -166,18 +168,56 @@ def get_proposal():
     return jsonify(**result)
 
 
+def _find_unique_name_for_app(base_name):
+    """
+    Generates a unique (for the current user) name for the app, using a base name.
+    Because two apps for the same user cannot have the same name, if the base_name that the user chose
+    exists already then we append (#num) to it.
+
+    @param base_name: Name to use as base. If it's not unique (for the user) then we will append the counter.
+    @return: The generated name, guaranteed to be unique for the current user, or None, if it was not possible
+    to obtain the unique name. The failure would most likely be that the limit of apps with the same name has
+    been reached. This limit is specified through the CFG_SAME_NAME_LIMIT variable.
+    """
+    if base_name is None:
+        return None
+
+    if get_app_by_name(base_name) is None:
+        return base_name
+    else:
+        app_name_counter = 1
+        while True:
+            # Just in case, enforce a limit.
+            if app_name_counter > CFG_SAME_NAME_LIMIT:
+                return None
+            composed_app_name = "%s (%d)" % (base_name, app_name_counter)
+            if get_app_by_name(composed_app_name) is not None:
+                app_name_counter += 1
+            else:
+                # Success. We found a unique name.
+                return composed_app_name
+
+
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])
 def translate_selectlang():
     """ Source language & target language selection."""
 
-    # TODO: This approach has many flaws, should be changed eventually.
     # Note: The name pcode refers to the fact that the codes we deal with here are partial (do not include
     # the group).
-    targetlangs_codes = ["es_ALL", "eu_ALL", "ca_ALL", "en_ALL", "de_ALL", "fr_ALL", "pt_ALL"]
+
+    # We will build a list of possible languages using the babel library.
+    languages = babel.core.Locale("en", "US").languages.items()
+    languages.sort(key=lambda it: it[1])
+    # TODO: Currently, we filter languages which contain "_" in their code so as to simplify.
+    # Because we use _ throughout the composer as a separator character, trouble is caused otherwise.
+    # Eventually we should consider whether we need to support special languages with _
+    # on its code.
+    targetlangs_codes = [lang[0] + "_ALL" for lang in languages if "_" not in lang[0]]
+
     targetlangs_list = [{"pcode": code, "repr": backend.BundleManager.get_locale_english_name(
         *backend.BundleManager.get_locale_info_from_code(code))} for code in targetlangs_codes]
+
     full_groups_list = [("ALL", "ALL"), ("10-13", "Preadolescence (age 10-13)"), ("14-18", "Adolescence (age 14-18)")]
-    # TODO: For now we will solve the above by only showing the DEFAULT in the source groups list.
 
     # As of now (may change in the future) if it is a POST we are creating the app for the first time.
     # Hence, we will need to carry out a full spec retrieval.
@@ -189,18 +229,30 @@ def translate_selectlang():
             flash("An application URL is required", "error")
             return redirect(url_for("translate.translate_index"))
 
-        # Get all the existing bundles.
-        # TODO: Use a specific purpose ctor here.
-        bm = backend.BundleManager()
-        bm.load_full_spec(appurl)
+        base_appname = request.values.get("appname")
+        if base_appname is None:
+            return render_template("composers/errors.html", message="An appname was not specified")
+
+        # Generates a unique (for the current user) name for the App,
+        # based on the base name that the user himself chose. Note that
+        # this method can actually return None under certain conditions.
+        appname = _find_unique_name_for_app(base_appname)
+        if appname is None:
+            return render_template("composers/errors.html",
+                                   message="Too many Apps with the same name. Please, choose another.")
+
+        # Create a fully new App. It will be automatically generated from a XML.
+        try:
+            bm = backend.BundleManager.create_new_app(appurl)
+        except backend.InvalidXMLFileException:
+            return render_template("composers/errors.html",
+                                   message="Invalid XML in either the XML specification file or the XML translation bundles that it links to")
+
         spec = bm.get_gadget_spec()  # For later
+
 
         # Build JSON data
         js = bm.to_json()
-
-        # Generate a name for the app.
-        # TODO: Eventually, this name should probably be given explicitly by the user.
-        appname = os.path.basename(appurl) + "_%d" % random.randint(0, 9999)
 
         # Create a new App from the specified XML
         app = create_app(appname, "translate", js)
@@ -221,7 +273,7 @@ def translate_selectlang():
             flash("You are not the owner of this App, so the owner's translations have been merged", "success")
 
         # Find out which locales does the app provide (for now).
-        locales = bm.get_locales_list()
+        translated_langs = bm.get_locales_list()
 
     # This was a GET, the app should exist already somehow, we will try to retrieve it.
     elif request.method == "GET":
@@ -240,7 +292,7 @@ def translate_selectlang():
 
         spec = bm.get_gadget_spec()
 
-        locales = bm.get_locales_list()
+        translated_langs = bm.get_locales_list()
 
 
     # The following is again common for both GET (view) and POST (edit).
@@ -263,22 +315,27 @@ def translate_selectlang():
 
     # Build a dictionary. For each source lang, a list of source groups.
     src_groups_dict = defaultdict(list)
-    for loc in locales:
+    for loc in translated_langs:
         src_groups_dict[loc["pcode"]].append(loc["group"])
 
-
-    locales_codes = [tlang["pcode"] for tlang in locales]
+    locales_codes = [tlang["pcode"] for tlang in translated_langs]
 
     # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
     # because those will be added to the targetlangs by default.
-    targetlangs_list_filtered = [elem for elem in targetlangs_list if elem["pcode"] not in locales_codes]
+    suggested_target_langs = [elem for elem in targetlangs_list if elem["pcode"] not in locales_codes]
 
-    return render_template("composers/translate/selectlang.html", target_langs=targetlangs_list_filtered,
-                           source_groups_json=json.dumps(src_groups_dict), app=app,
-                           full_groups_json=json.dumps(full_groups_list),
-                           target_groups=full_groups_list,
-                           Locale=Locale, locales=locales, is_owner=is_owner, owner=owner,
-                           proposal_num=proposal_num)
+    # We pass some parameters as JSON strings because they are generated dynamically
+    # through JavaScript in the template.
+    return render_template("composers/translate/selectlang.html",
+                           app=app, # Current app object.
+                           suggested_target_langs=suggested_target_langs, # Suggested (not already translated) langs
+                           source_groups_json=json.dumps(src_groups_dict), # Source groups in a JSON string
+                           full_groups_json=json.dumps(full_groups_list), # (To find names etc)
+                           target_groups=full_groups_list, # Target groups in a JSON string
+                           translated_langs=translated_langs, # Already translated langs
+                           is_owner=is_owner, # Whether the loaded app has the "Owner" status
+                           owner=owner, # Reference to the Owner
+                           proposal_num=proposal_num)  # Number of pending translation proposals
 
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
@@ -295,7 +352,7 @@ def translate_edit():
     # Retrieve the application we want to view or edit.
     app = get_app(appid)
     if app is None:
-        return "500: App not found", 500
+        return render_template("composers/errors.html", message="App not found")
 
     bm = backend.BundleManager.create_from_existing_app(app.data)
     spec = bm.get_gadget_spec()
@@ -369,6 +426,24 @@ def translate_about():
     return render_template("composers/translate/about.html")
 
 
+@translate_blueprint.route("/publish")
+def translate_publish():
+    """
+    Show in a somewhat pretty way a link to an XML for a specific translation.
+    """
+    appid = request.values.get("appid")
+    if appid is None:
+        return render_template("composers/errors.html", message="appid not provided"), 500
+
+    group = request.values.get("group")
+    if group is None:
+        return render_template("composers/errors.html", message="group not provided"), 500
+
+    link = url_for('.app_xml', appid=appid, group=group, _external=True)
+
+    return render_template("composers/translate/publish.html", link=link)
+
+
 @translate_blueprint.route("/proposed_list", methods=["POST", "GET"])
 def translate_proposed_list():
     """
@@ -384,90 +459,67 @@ def translate_proposed_list():
     # Ensure that only the app owner can carry out these operations.
     owner_app = _db_get_owner_app(appdata["spec"])
     if app != owner_app:
-        return "Not Authorized: You don't seem to be the owner of this app", 401
-
+        return render_template("composers/errors.html",
+                               message="Not Authorized: You don't seem to be the owner of this app")
 
     # Get the list of proposed translations.
-    vars = _db_get_proposals(app)
-    props = []
-    for prop in vars:
+    proposal_vars = _db_get_proposals(app)
+    proposed_translations = []
+    for prop in proposal_vars:
         propdata = json.loads(prop.value)
         propdata["id"] = str(prop.var_id)
-        props.append(propdata)
+        proposed_translations.append(propdata)
 
+    # If we received a POST with acceptButton set then we will need to merge the
+    # proposal.
     if request.method == "POST" and request.values.get("acceptButton") is not None:
         proposal_id = request.values.get("proposals")
         if proposal_id is None:
-            return "Proposal not selected", 500
+            return render_template("composers/errors.html", message="Proposal not selected")
 
         merge_data = request.values.get("data")
         if merge_data is None:
-            return "Merge data was not provided", 500
+            return render_template("composers/errors.html", message="Merge data was not provided")
         merge_data = json.loads(merge_data)
 
-        # TODO: Consider creating API for this.
         # TODO: Optimize this. We already have the vars.
         proposal = AppVar.query.filter_by(app=app, var_id=proposal_id).first()
         if proposal is None:
-            return "Proposal not found", 500
-
-        flash("Proposal loaded: " + proposal.value)
+            return render_template("composers/errors.html", message="Proposals not found")
 
         data = json.loads(proposal.value)
         bundle_code = data["bundle_code"]
 
         proposed_bundle = backend.Bundle.from_messages(merge_data, bundle_code)
 
-        # TODO: Improve this code.
         bm = backend.BundleManager.create_from_existing_app(app.data)
-        base_bundle = bm.get_bundle(bundle_code)
-        if base_bundle is None:
-            # The bundle doesn't exist, so no actual merge is needed.
-            bm._bundles[bundle_code] = proposed_bundle
-        else:
-            # Merge the proposed Bundle with our Bundle.
-            merged_bundle = backend.Bundle.merge(base_bundle, proposed_bundle)
-            bm._bundles[bundle_code] = merged_bundle
+        bm.merge_bundle(bundle_code, proposed_bundle)
 
         update_app_data(app, bm.to_json())
 
         flash("Merge done.", "success")
 
-
         # Remove the proposal from the DB.
         remove_var(proposal)
 
         # Remove it from our current proposal list as well, so that it isn't displayed anymore.
-        props = [prop for prop in props if prop["id"] != proposal_id]
+        proposed_translations = [prop for prop in proposed_translations if prop["id"] != proposal_id]
 
+    # The DENY button was pressed. We have to discard the whole proposal.
     elif request.method == "POST" and request.values.get("denyButton") is not None:
         proposal_id = request.values.get("proposals")
         if proposal_id is None:
-            return "Proposal not selected", 500
+            return render_template("composers/errors.html", message="Proposal not selected")
 
         proposal = AppVar.query.filter_by(app=app, var_id=proposal_id).first()
         if proposal is None:
-            return "Proposal not found", 500
+            return render_template("composers/errors.html", message="Proposal not found")
 
         remove_var(proposal)
 
         # Remove it from our current proposal list as well, so that it isn't displayed anymore.
-        props = [prop for prop in props if prop["id"] != proposal_id]
+        proposed_translations = [prop for prop in proposed_translations if prop["id"] != proposal_id]
 
-    return render_template("composers/translate/proposed_list.html", app=app, proposals=props)
+    return render_template("composers/translate/proposed_list.html", app=app, proposals=proposed_translations)
 
-
-@translate_blueprint.route('/wip', methods=['GET', 'POST'])
-def translate_wip():
-    """Work in progress..."""
-
-    relatedAppsIds = db.session.query(AppVar.app_id).filter_by(name="spec",
-                                                               value="https://raw.github.com/ORNGatUCSF/Gadgets/master/test-opensocial-0.8.xml").subquery()
-
-    ownerAppId = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
-                                                        AppVar.app_id.in_(relatedAppsIds)).first()
-
-    ownerApp = App.query.filter_by(id=ownerAppId[0]).first()
-
-    return "OWN " + str(ownerApp)
 
