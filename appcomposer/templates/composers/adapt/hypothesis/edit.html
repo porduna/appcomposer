@@ -1,0 +1,63 @@
+{% set title = "Edit the app content" %}
+{% set adaptor_type = "Hypothesis" %}
+{% set current_link = "home" %}
+{% extends 'composers/adapt/edit.html' %}
+
+
+{% block edit_tab %}
+<div class="col-lg-10">
+
+    <!--
+           * Concept mapper & Hypothesis tools: form input.
+           Variables to fill: domain = "concepts" of the concept mapper, and "elements" (conditionals+inputs/outputs) of the hypothesis tool, respectively.
+    -->
+    <form class="form-horizontal" method="POST" action=".">
+
+    <!-- The previous block and this one are used by the Hypothesis tool -->
+        <div class="form-group">
+            <label for="conditionals" class="col-lg-2 control-label">Conditionals:</label>
+            <div class="col-lg-10">
+                <input type="text" name="conditionals" class="form-control" value="{{ conditionals }}" data-role="tagsinput">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="inputs" class="col-lg-2 control-label">Inputs:</label>
+            <div class="col-lg-10">
+                <input type="text" name="inputs"  value="{{ inputs }}" data-role="tagsinput">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label for="outputs" class="col-lg-2 control-label">Outputs:</label>
+            <div class="col-lg-10">
+                <input type="text" name="outputs"  value="{{ outputs }}" data-role="tagsinput">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <div class="col-lg-10 col-lg-offset-2">
+                <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_index') }}">« Go back to adaptor index</a>
+                <input type="hidden" name="app_id" value="{{ app_id }}">
+                <input type="submit" value="Save" class="btn btn-success">
+            </div>
+        </div>
+    </form>
+
+</div>
+
+{% endblock %}
+
+{% block preview_tab %}
+<iframe src="{{ url_for('.hypothesis_index', app_id = app_id) }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+<div>
+    <a href="{{ url_for('.hypothesis_widget', app_id = app_id) }}">[+] Widget link</a>
+</div>
+{% endblock %}
+
+{% block scripts %}
+{{ super() }}
+<script src="{{ url_for('static', filename='initializr/js/vendor/bootstrap-tagsinput.min.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='initializr/js/vendor/typeahead.min.js') }}" type="text/javascript"></script>
+
+{% endblock scripts %}

@@ -1,15 +1,13 @@
-from flask import redirect, request, flash, session, render_template_string, url_for
-from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
-from flask.ext.wtf import TextField, Form, PasswordField, NumberRange, DateTimeField
-from appcomposer.models import App
+from flask import redirect, request, url_for
+from flask.ext.admin import Admin, BaseView, expose
+from flask.ext.wtf import TextField, Form, PasswordField
 from .fields import DisabledTextField
 
-from appcomposer import models, db
+from appcomposer import db
 from appcomposer.login import current_user
 from appcomposer.babel import lazy_gettext
 from appcomposer.views import RedirectView
-
-from sqlalchemy.orm import scoped_session, sessionmaker
+from appcomposer.appstorage import api as appstorage
 
 # List of all available composers
 from appcomposer.application import COMPOSERS, COMPOSERS_DICT
@@ -20,10 +18,9 @@ def initialize_user_component(app):
     # URL describes through which address we access the page.
     # Endpoint enables us to do url_for('userp') to yield the URL
     url = '/user'
-    admin = Admin(index_view=HomeView(url=url, endpoint='user', name=lazy_gettext("Home view")), name=lazy_gettext("User Profile"), url=url, endpoint="home-user")
+    admin = Admin(index_view=HomeView(url=url, endpoint='user', name=lazy_gettext("Home")), name=lazy_gettext("User Profile"), url=url, endpoint="home-user")
     admin.add_view(ProfileEditView(name=lazy_gettext("Profile"), url='profile', endpoint='user.profile'))
     admin.add_view(AppsView(name=lazy_gettext("Apps"), url="apps", endpoint='user.apps'))
-    admin.add_view(RedirectView('index', name=lazy_gettext("Back"), url="back", endpoint='user.back'))
     admin.init_app(app)
 
 
@@ -92,7 +89,7 @@ class AppsView(UserBaseView):
     @expose('/')
     def index(self):
         # Retrieve the apps
-        apps = App.query.filter_by(owner_id=self._current_user.id).all()
+        apps = appstorage.get_my_apps()
 
         def build_edit_link(app):
             endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]

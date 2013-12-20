@@ -25,16 +25,25 @@
         <div class="navbar-inner">
 
           {% block brand %}
-          <span class="brand">{{ admin_view.admin.name }}</span>
+          <a class="brand" href="{{ url_for('index') }}">App Composer</a>
           {% endblock %}
           <ul class="nav">
             {{ layout.menu() }}
+            <li class="dropdown">
+                <a href="#" class="dropdown-toggle" data-toggle="dropdown">Composers <b class="caret"></b></a>
+                <ul class="dropdown-menu">
+                    {% for composer in config['COMPOSERS'] %}
+                    <li><a href="{{ url_for(composer['new_endpoint']) }}">{{ composer['name'] }}</a></li>
+                    {% endfor %}
+                </ul>
+            </li>
+
           </ul>
 
-        <div class="pull-right">
-            <i>{{ session.name }}</i>&nbsp;&nbsp;
-            <a href="{{ url_for('logout') }}" class="btn btn-primary">{{ gettext("Log out") }}</a>
-        </div>
+        <ul class="nav pull-right">
+            <li><a href="{{ url_for('user.profile.index') }}"><i>{{ session.name }}</i></a></li>
+            <li><a href="{{ url_for('logout') }}">{{ gettext("Log out") }}</a></li>
+        </ul>
 
         </div>
       </div>
@@ -42,6 +51,13 @@
 
     <div class="container">
       {% block body %}{% endblock %}
+    </div>
+
+    <div class="container">
+      <hr>
+        <footer>         
+            <p style="text-align: center; font-style: italic; font-size: 10px">AppComposer, {{ gettext('the %(link)s application creator for teachers', link = '<a href="http://www.go-lab-project.eu/">Go-Lab</a>'|safe) }}.</p>
+        </footer>
     </div>
 
     {% endblock %}
