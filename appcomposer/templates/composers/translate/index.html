@@ -16,16 +16,25 @@
                   <div class="well">
                         <form class="form-horizontal" id="geturl" name="geturl" action="{{ url_for('translate.translate_selectlang') }}" method="POST">
                         <fieldset>
-                            <legend>Step 1</legend>
+                            <legend>Step 1 - App creation</legend>
+
                             <div class="form-group">
                                 <label for="appurl" class="col-lg-2 control-label">URL</label>
                                 <div class="col-lg-10">
                                     <input type="text" id="appurl" name="appurl" class="form-control" placeholder="URL of the app">
-                                    <span class="help-block">Enter the URL of the app you want to translate.</span>                      
+                                    <span class="help-block">Enter the URL of the XML for the app you want to translate.</span>
                                 </div>
                             </div>
 
+                            <div class="form-group">
+                                <label for="appname" class="col-lg-2 control-label">Name</label>
+                                <div class="col-lg-10">
+                                    <input type="text" id="appname" name="appname" class="form-control" placeholder="Name of the app">
+                                    <span class="help-block">Enter the name of the new app that will be created.</span>
+                                </div>
+                            </div>
 
+                            {#
                             <div class="form-group">
                                 <div class="col-lg-10 col-lg-offset-2">                            
                                     <label class="control-label" for="searchapp">Or you can search the app on the Go-Lab portal</label>
@@ -80,6 +89,7 @@
                                     </div>
                                 </div>                            
                             </div>
+                            #}
 
                             <hr>                        
                             
