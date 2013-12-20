@@ -185,20 +185,21 @@ This should populate your database and output information about different revisi
    
       * I am in the "app" virtualenv (The commandline should show an ```(app)``` before every command).
       * The "alembic" tool can be found (Should have been installed through the previous "pip install -r requirements.txt" step).
-      * The MySQL database and user that you have chosen match those specified in the config.py file.
-      * You have a config.py file in the appcomposer folder, which is where you have applied your configuration.
-      * You are not confusing config.py.dist (which shouldn't have been edited at all) with the config.py file.
-      * The Python version that you can run from commandline is 2.7.X (check through "python --version").
+      * The MySQL database and user that I have chosen match those specified in the config.py file.
+      * I have a config.py file in the appcomposer folder, which is where I have applied my configuration.
+      * I am not confusing config.py.dist (which shouldn't have been edited at all) with the config.py file.
+      * The Python version that I can run from commandline is 2.7.X (check through "python --version").
 
 
 Configuring Apache
 ..................
 
-The AppComposer has been designed to run in the Apache web server, though actually any server capable of running
+The AppComposer has been designed to run through the Apache web server, though actually any server capable of running
 python web services should be able to run the WSGI. In this guide we will assume that Apache is your chosen server,
 but it should be relatively easy to adapt it for different ones.
 
-For instance, an "appcomp" account.
+Before configuring the AppComposer, please make sure that you have mod_wsgi enabled in Apache. You might have to install and/or enable that module separatedly.
+
 
 Open the Apache configuration ( httpd.conf under most systems ) and append the following settings:
 
@@ -212,13 +213,13 @@ Open the Apache configuration ( httpd.conf under most systems ) and append the f
 Note that in the snippet above we make several assumptions, which may or may not be true in your case:
    
    * That the user you want to run the AppComposer from, and that you have been using throughout this guide, is named "appcomp".
-   * That you want to access the appcomposer from http://<yoururl>/appcomposer
+   * That you want to access the appcomposer from ``http://<yoururl>/appcomposer``
    * That your appcomposer root folder is located at /home/appcomp/appcomposer
 
 If any of these don't apply, then you will need to adapt your configuration accordingly.
 
 
-With this done, once you restart Apache you should be able to see the AppComposer at: http://<your-url>/appcomposer
+With this done, once you restart Apache you should be able to see the AppComposer running at: ``http://<your-url>/appcomposer``
 
 
 
