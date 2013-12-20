@@ -4,7 +4,7 @@ from xml.dom import minidom
 import StringIO
 
 from babel import Locale, UnknownLocaleError
-from flask import make_response, url_for
+from flask import make_response, url_for, render_template
 
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
@@ -61,6 +61,16 @@ SERVE_APP()
  "Bundle code" or "locale code" refers generally to the "es_ALL_ALL"-like string.
 
  """
+
+
+class InvalidXMLFileException(Exception):
+    """
+    Exception to be thrown when the XML spec of the App can't be parsed, most likely because
+    it contains invalid XML.
+    """
+
+    def __init__(self, message=None):
+        self.message = message
 
 
 class NoDefaultLanguageException(Exception):
@@ -138,6 +148,19 @@ class BundleManager(object):
         return self.original_spec_file
 
     @staticmethod
+    def create_new_app(app_spec_url):
+        """
+        Handles the creation of a completely new App from a standard OpenSocial XML specification.
+        This operation needs to request the external XML and in some cases external XMLs referred by it.
+        As such, it can take a while to complete, and there are potential security issues.
+
+        @param app_spec_url: URL of the XML to use to construct the App.
+        """
+        bm = BundleManager()
+        bm.load_full_spec(app_spec_url)
+        return bm
+
+    @staticmethod
     def create_from_existing_app(app_data):
         """
         Acts as a CTOR. Creates a BundleManager for managing an App that exists already.
@@ -191,7 +214,8 @@ class BundleManager(object):
                 country = ""
             return Locale(lang, country).english_name
         except UnknownLocaleError:
-            return None
+            return Locale("en", "US").languages.get(lang)
+
 
     @staticmethod
     def fullcode_to_partialcode(code):
@@ -218,7 +242,6 @@ class BundleManager(object):
     # TODO: Add support for non-standard xml specs. For instance, if the lang contains "es_ES" we should probably try
     # to fail gracefully. (Or actually to ignore the pack).
     # TODO: Careful when it fails so that no partially-created App remains.
-
     def get_locales_list(self):
         """
         get_locales_list()
@@ -264,10 +287,18 @@ class BundleManager(object):
         locales = self._extract_locales_from_xml(xml_str)
 
         for lang, country, bundle_url in locales:
-            bundle_xml = self._retrieve_url(bundle_url)
-            bundle = Bundle.from_xml(bundle_xml, lang, country, "ALL")
-            name = Bundle.get_standard_code_string(lang, country, "ALL")
-            self._bundles[name] = bundle
+            try:
+                bundle_xml = self._retrieve_url(bundle_url)
+                bundle = Bundle.from_xml(bundle_xml, lang, country, "ALL")
+                name = Bundle.get_standard_code_string(lang, country, "ALL")
+                self._bundles[name] = bundle
+            except:
+                # TODO: For now, we do not really handle errors, we simply ignore those locales which cause exceptions.
+                # In the future, we should probably analyze which kind of exceptions can occur, and decide what
+                # we must do in each case. For instance, sometimes we might wanna ignore the Bundle but sometimes we
+                # might wanna notify the user, etc. Also, there may be some cases of invalid bundles in which no
+                # exception occurs but which are somewhat invalid nonetheless.
+                pass
 
     def to_json(self):
         """
@@ -330,22 +361,27 @@ class BundleManager(object):
         @note: The XML format is specified by Google and does not support the concept of "groups".
         """
         locales = []
-        xmldoc = minidom.parseString(xml_str)
-        itemlist = xmldoc.getElementsByTagName("Locale")
-        for elem in itemlist:
-            messages_file = elem.attributes["messages"].nodeValue
 
-            try:
-                lang = elem.attributes["lang"].nodeValue
-            except KeyError:
-                lang = "all"
+        try:
+            xmldoc = minidom.parseString(xml_str)
+            itemlist = xmldoc.getElementsByTagName("Locale")
+            for elem in itemlist:
+                messages_file = elem.attributes["messages"].nodeValue
 
-            try:
-                country = elem.attributes["country"].nodeValue
-            except KeyError:
-                country = "ALL"
+                try:
+                    lang = elem.attributes["lang"].nodeValue
+                except KeyError:
+                    lang = "all"
 
-            locales.append((lang, country, messages_file))
+                try:
+                    country = elem.attributes["country"].nodeValue
+                except KeyError:
+                    country = "ALL"
+
+                locales.append((lang, country, messages_file))
+        except:
+            raise InvalidXMLFileException("Could not parse XML file")
+
         return locales
 
     def _inject_locales_into_spec(self, appid, xml_str, respect_default=True, group=None):
@@ -409,7 +445,6 @@ class BundleManager(object):
                 if bundle.group != group:
                     continue
 
-
             locale = xmldoc.createElement("Locale")
 
             # Build our locales to inject. We modify the case to respect the standard. It shouldn't be necessary
@@ -465,6 +500,27 @@ class BundleManager(object):
         xmlspec = self._retrieve_url(self.original_spec_file)
         output_xml = self._inject_locales_into_spec(appid, xmlspec, True, group)
         return output_xml
+
+    def merge_bundle(self, base_bundle_code, proposed_bundle):
+        """
+        Merges two bundles. Messages in the proposed_bundle will replace those messages
+        with the same name in the base bundle.
+
+        @param base_bundle_code: The code of the bundle to use as base. If it exists, it
+        will be found within this manager. Otherwise the merge will be trivial, because
+        a new bundle for that code will simply be created with the proposed_bundle's contents.
+
+        @param proposed_bundle: The proposed bundle. This should be a Bundle object.
+        """
+        base_bundle = self.get_bundle(base_bundle_code)
+
+        if base_bundle is None:
+            # The bundle doesn't exist, so no actual merge is needed.
+            self._bundles[base_bundle_code] = proposed_bundle
+        else:
+            # Merge the proposed Bundle with our Bundle.
+            merged_bundle = Bundle.merge(base_bundle, proposed_bundle)
+            self._bundles[base_bundle_code] = merged_bundle
 
 
 class Bundle(object):
@@ -595,11 +651,14 @@ class Bundle(object):
         """
         Creates a new Bundle from XML.
         """
-        bundle = Bundle(lang, country, group)
-        xmldoc = minidom.parseString(xml_str)
-        itemlist = xmldoc.getElementsByTagName("msg")
-        for elem in itemlist:
-            bundle.add_msg(elem.attributes["name"].nodeValue, elem.firstChild.nodeValue.strip())
+        try:
+            bundle = Bundle(lang, country, group)
+            xmldoc = minidom.parseString(xml_str)
+            itemlist = xmldoc.getElementsByTagName("msg")
+            for elem in itemlist:
+                bundle.add_msg(elem.attributes["name"].nodeValue, elem.firstChild.nodeValue.strip())
+        except:
+            raise InvalidXMLFileException("Could not load an XML translation")
         return bundle
 
     def to_xml(self):
@@ -643,11 +702,12 @@ def app_xml(appid):
     app = get_app(appid)
 
     if app is None:
-        return "Error 404: App doesn't exist", 404
+        return render_template("composers/errors.html", message="Error 404: App doesn't exist"), 404
 
     # The composer MUST be 'translate'
     if app.composer != "translate":
-        return "Error 500: The composer for the specified App is not Translate", 500
+        return render_template("composers/errors.html",
+                               message="Error 500: The composer for the specified App is not Translate"), 500
 
     bm = BundleManager.create_from_existing_app(app.data)
     output_xml = bm.do_render_app_xml(appid)
@@ -655,6 +715,7 @@ def app_xml(appid):
     response = make_response(output_xml)
     response.mimetype = "application/xml"
     return response
+
 
 @translate_blueprint.route('/app/<appid>/<group>/app.xml')
 def app_xml(appid, group):
@@ -675,11 +736,12 @@ def app_xml(appid, group):
     app = get_app(appid)
 
     if app is None:
-        return "Error 404: App doesn't exist", 404
+        return render_template("composers/errors.html", message="Error 404: App doesn't exist"), 404
 
     # The composer MUST be 'translate'
     if app.composer != "translate":
-        return "Error 500: The composer for the specified App is not Translate", 500
+        return render_template("composers/errors.html",
+                               message="Error 500: The composer for the specified App is not Translate"), 500
 
     bm = BundleManager.create_from_existing_app(app.data)
     output_xml = bm.do_render_app_xml(appid, group)
@@ -706,11 +768,12 @@ def app_langfile(appid, langfile):
     app = get_app(appid)
 
     if app is None:
-        return "Error 404: App doesn't exist", 404
+        return render_template("composers/errors.html", message="Error 404: App doesn't exist."), 404
 
     # The composer MUST be 'translate'
     if app.composer != "translate":
-        return "Error 500: The composer for the specified App is not Translate", 500
+        return render_template("composers/errors.html",
+                               message="Error 500: The composer for the specified App is not a Translate composer."), 500
 
     # Parse the appdata
     appdata = json.loads(app.data)
@@ -718,7 +781,8 @@ def app_langfile(appid, langfile):
     bundles = appdata["bundles"]
     if langfile not in bundles:
         dbg_info = str(bundles.keys())
-        return "Error 404: Could not find such language for the specified app. Available keys are: " + dbg_info, 404
+        return render_template("composers/errors.html",
+                               message="Error 404: Could not find such language for the specified app. Available keys are: " + dbg_info), 404
 
     bundle = Bundle.from_jsonable(bundles[langfile])
 
