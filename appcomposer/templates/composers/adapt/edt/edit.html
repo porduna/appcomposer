@@ -3,13 +3,12 @@
 {% set current_link = "home" %}
 {% extends 'composers/adapt/layout.html' %}
 
+{% block styles %}
+    {{ super() }}
+    <link rel="stylesheet" href="{{ url_for('static', filename='initializr/js/vendor/bootstrap-select/bootstrap-select.min.css') }}">
+{% endblock styles %}
 
-    {% block styles %}           
-        {{ super() }}
-        <link rel="stylesheet" href="{{ url_for('static', filename='initializr/css/bootstrap-tagsinput.css') }}">                             
-    {% endblock styles %}
-
-    {% block body_content %}
+{% block body_content %}
         <div id="adaptblock">
             <div class="row">
                 <div class="col-lg-12">
@@ -37,40 +36,34 @@
             <div class="well">
                 <div class="row">
                     <div class="col-lg-12"> 
-
-                    {# Showing the main form by adaptor type #}
-
-                    {# TODO: The content in the disabled tabs must be removed. Disabled tab != Content not available. #}
-                    
-                    {% if  adaptor_type == 'experiment_design' %}
-                            
+                        
                         <!-- Tabs & Tables (WCAG 2.0 usability) for the EDT variables  
                         ================================================== --> 
                         
                         <div class="wrap">
                             <ul class="nav nav-tabs nav-justified" style="margin-bottom: 15px;">
 
-                                {# States of the tab menu #}
+                                {# States of the tab menu - No content is shown when a tab is disabled. #}
                                 {% if n_trows == 4 %}                                
-                                <li class="active"><a href="#domain-one" data-toggle="tab">Domain - 1 of 2</a></li>
-                                <li class="disabled"><a>Domain - 2 of 2</a></li>   
+                                <li class="active"><a href="#domain-one" data-toggle="tab">Domain <span class="badge">1 of 2</span></a></li>
+                                <li class="disabled"><a>Domain <span class="badge">1 of 2</span></a></li>                                    
                                 <li class="disabled"><a>Experiment</a></li>                                                              
                                 <li class="disabled"><a>Preview</a></li>
                                 {% elif n_trows == 15 %}
-                                <li><a href="#domain-one" data-toggle="tab">Domain - 1 of 2</a></li>
-                                <li class="active"><a href="#domain-two" data-toggle="tab">Domain - 2 of 2</a></li>   
-                                <li class="disabled"><a>Experiment</a></li>                                                              
-                                <li class="disabled"><a>Preview</a></li>                                
+                                <li><a href="#domain-one" data-toggle="tab">Domain <span class="badge">1 of 2</span></a></li>
+                                <li class="active"><a href="#domain-two" data-toggle="tab">Domain <span class="badge">2 of 2</span></a></li>
+                                <li class="disabled"><a>Experiment</a></li>
+                                <li class="disabled"><a>Preview</a></li>
                                 {% elif n_trows == 20 %}
-                                <li class="disabled"><a href="#domain-one" data-toggle="tab">Domain - 1 of 2</a></li>
-                                <li class="active"><a href="#domain-two" data-toggle="tab">Domain - 2 of 2</a></li>   
-                                <li class="disabled"><a href="#experiment" data-toggle="tab">Experiment</a></li>                                                              
+                                <li class="disabled"><a href="#domain-one" data-toggle="tab">Domain <span class="badge">1 of 2</span></a></li>
+                                <li><a href="#domain-two" data-toggle="tab">Domain <span class="badge">2 of 2</span></a></li>
+                                <li class="disabled"><a href="#experiment" data-toggle="tab">Experiment</a></li>
                                 <li class="disabled"><a href="#preview" data-toggle="tab">Preview</a></li>
                                 {% else %}
-                                <li><a href="#domain-one" data-toggle="tab">Domain - 1 of 2</a></li>
-                                <li><a href="#domain-two" data-toggle="tab">Domain - 2 of 2</a></li>   
-                                <li><a href="#experiment" data-toggle="tab">Experiment</a></li>                                                              
-                                <li class="active"><a href="#preview" data-toggle="tab">Preview</a></li>                                                                
+                                <li><a href="#domain-one" data-toggle="tab">Domain <span class="badge">1 of 2</span></a></li>
+                                <li><a href="#domain-two" data-toggle="tab">Domain <span class="badge">2 of 2</span></a></li>
+                                <li class="active"><a href="#experiment" data-toggle="tab">Experiment</a></li>                                                              
+                                <li><a href="#preview" data-toggle="tab">Preview</a></li>                                                                
                                 {% endif %} 
                             </ul>              
                             
@@ -86,12 +79,12 @@
                                                 <!-- Begin Table :: Object properties -->
                                                 <div class="table-responsive">                                                                                              
                                                     
-                                                    <table class="table table-striped table-hover">
+                                                    <table class="table table-striped table-hover" id="tproperties">
                                                     <caption>Object properties</caption>
                                                         
                                                     <thead>
                                                         <tr>
-                                                            <th>#</th><th>Name</th><th>Type</th><th>On?</th><th>Symbol</th><th>Unit</th><th>Values</th>                              
+                                                            <th>Name</th><th>Type</th><th>Symbol</th><th>Unit</th><th>Values</th>                              
                                                         </tr>
                                                     </thead>
                                                         
@@ -99,24 +92,36 @@
                                                     {# We show a table with emtpycontent_trows if no data is available. Otherwise, the JSON appdata is loaded. #}
                                                     {% if n_trows == 4 %}  
                                                         {% for item in emptycontent_trows %}
-                                                        <tr id="row-{{item}}">
-                                                            <td><span class="label label-default">{{item}}</span></td>
+                                                        <tr id="prop-{{item}}">                                                            
                                                             <td><input type="text" name="objprop_name" id="" class="form-control" placeholder=""></td>
-                                                            <td><div class="checkbox"><input type="checkbox" name="objprop_type" value="{{ true }}"></div></td>
-                                                            <td><div class="checkbox"><input type="checkbox" name="objprop_av" value="{{ true }}"></div></td>                                             
+                                                            <td><div class="checkbox"><input type="checkbox" name="objprop_type" value="multitude--{{item}}"></div></td>                                             
                                                             <td><input type="text" name="objprop_symbol" class="form-control" placeholder=""></td>
                                                             <td><input type="text" name="objprop_unit" class="form-control" placeholder=""></td>
                                                             <td><input type="text" name="objprop_value" class="form-control" placeholder=""></td>                               
                                                         </tr>                                                                                                                
                                                         {%endfor %}
                                                             
-                                                    {% else %}                                                    
-                                                        <tr><td>Leido de Database</td></tr>
-                                                    {% endif %}
+                                                    {% else %}                                           
+                                                             
+                                                        {% for item in object_properties %}                                                            
+                                                        <tr id="prop-{{ loop.index0+1 }}">
+                                                            <td><input type="text" name="objprop_name" id="" class="form-control" placeholder="" value="{{ item[0] }}"></td>
+                                                            <td><div class="checkbox"><input type="checkbox" name="objprop_type" value="multitude--{{item[0]}}"></div></td>                                             
+                                                            <td><input type="text" name="objprop_symbol" class="form-control" placeholder="" value="{{ item[2] }}"></td>
+                                                            <td><input type="text" name="objprop_unit" class="form-control" placeholder="" value="{{ item[3] }}"></td>
+                                                            <td><input type="text" name="objprop_value" class="form-control" placeholder="" value="{{ item[4] }}"></td>                               
+                                                        </tr>                                                                                                                          
+                                                        {% endfor %}                                                     
+                                                        
+                                                    {% endif %}                                                    
                                                     </tbody>                                                
-                                                    
                                                     </table>
 
+                                                    <p class="text-right">
+                                                    <button type="button" class="btn btn-primary btn-xs" id="propmore-rows">+ Add row</button>
+                                                    <span> | </span>
+                                                    <button type="button" class="btn btn-danger btn-xs" id="propless-rows">- Remove row</button>                                                 
+                                                    </p>
 
                                                 </div><!-- /endtable1 -->
                                             
@@ -129,18 +134,17 @@
                                                         
                                                     <thead>
                                                         <tr>
-                                                            <th>#</th><th>Name</th><th>Type</th><th>Symbol</th><th>Unit</th><th>Values</th>                             
+                                                            <th>Name</th><th>Type</th><th>Symbol</th><th>Unit</th><th>Values</th>                             
                                                         </tr>
                                                     </thead>
                                                         
                                                     <tbody>
                                                     {# We show a table with emtpycontent_trows if no data is available. Otherwise, the JSON appdata is loaded. #}
                                                     {% if n_trows == 4 %}  
-                                                        {% for item in emptycontent_trows %} 
-                                                            <tr>
-                                                                <td><span class="label label-default">1</span></td>
+                                                        {% for item in emptycontent_trows %}
+                                                            <tr id="sysrow-{{ loop.index0+1 }}">
                                                                 <td><input type="text" name="sysprop_name" id="" class="form-control" placeholder=""></td>
-                                                                <td><div class="checkbox"><input type="checkbox" name="sysprop_type" value="{{ true }}"></div></td>
+                                                                <td><div class="checkbox"><input type="checkbox" name="sysprop_type" value="multitude--{{item}}"></div></td>
                                                                 <td><input type="text" name="sysprop_symbol" class="form-control" placeholder=""></td>
                                                                 <td><input type="text" name="sysprop_unit" class="form-control" placeholder=""></td>
                                                                 <td><input type="text" name="sysprop_value" class="form-control" placeholder=""></td>                               
@@ -148,22 +152,86 @@
                                                         {%endfor %}
                                                             
                                                     {% else %}                                                    
-                                                        <tr><td>Leido de Database - System prop</td></tr>
+
+                                                        {% for item in system_properties %}
+                                                            <tr id="sysrow-{{ loop.index0+1 }}">
+                                                                <td><input type="text" name="sysprop_name" id="" class="form-control" placeholder="" value="{{ item[0] }}"></td>
+                                                                <td><div class="checkbox"><input type="checkbox" name="sysprop_type" value="multitude--{{item[0]}}"></div></td>
+                                                                <td><input type="text" name="sysprop_symbol" class="form-control" placeholder="" value="{{ item[2] }}"></td>
+                                                                <td><input type="text" name="sysprop_unit" class="form-control" placeholder="" value="{{ item[3] }}"></td>
+                                                                <td><input type="text" name="sysprop_value" class="form-control" placeholder="" value="{{ item[4] }}"></td>                               
+                                                            </tr>                                                                                                                          
+                                                        {% endfor %}
+
                                                     {% endif %}                                                                                                              
                                                     </tbody>
                                                     
                                                     </table>
+
+                                                    <p class="text-right">
+                                                    <button type="button" class="btn btn-primary btn-xs" id="sysmore-rows">+ Add row</button>
+                                                    <span> | </span>
+                                                    <button type="button" class="btn btn-danger btn-xs" id="sysless-rows">- Remove row</button>                                                  
+                                                    </p>
                                                     
                                                 </div><!-- /endtable2 -->
+
+                                                <!-- Begin Table :: Object measures -->
+
+                                                <div id="object-measures"  class="table-responsive">
+                                                    
+                                                    <table class="table table-striped table-hover">
+                                                    <caption>Object measures</caption>
+                                                        
+                                                    <thead>
+                                                        <tr>
+                                                            <th>Name</th><th>Type</th><th>Values</th><th>Unit</th>
+                                                        </tr>
+                                                    </thead>
+                                                        
+                                                    <tbody>
+
+                                                        {% if n_trows == 15 %}  {# If there are no measures in the storage, we show empty fields and the option lists from the previous data #}
+                                                            {% for item in emptycontent_trows %} 
+                                                            <tr id="measrow-{{ loop.index0+1 }}">
+                                                                <td><input type="text" name="measure_name" class="form-control" placeholder=""></td>
+                                                                <td><div class="checkbox"><input type="checkbox" name="measure_type" value="multitude--{{item}}"></div></td>
+                                                                <td><input type="text" name="measure_values" class="form-control" placeholder=""></td>
+                                                                <td><input type="text" name="measure_unit" class="form-control" placeholder=""></td>
+                                                            </tr>
+                                                            {%endfor %}
+                                                                
+                                                        {% else %}  {# Otherwise, both option lists and measures are loaded from the database #}
+                                                            {% for item in object_measures %}
+                                                            <tr id="measrow-{{ loop.index0+1 }}">                                           
+                                                                <td><input type="text" name="measure_name" class="form-control" placeholder="" value="{{ item[0] }}"></td>
+                                                                <td><div class="checkbox"><input type="checkbox" name="measure_type" value="multitude--{{item}}"></div></td>
+                                                                <td><input type="text" name="measure_values" class="form-control" placeholder="" value="{{ item[2] }}"></td>
+                                                                <td><input type="text" name="measure_unit" class="form-control" placeholder="" value="{{ item[3] }}"></td>
+                                                            </tr>
+                                                            {%endfor %}
+                                                        {% endif %}
+
+                                                    </tbody>
+                                                    
+                                                    </table>
+                                                    <p class="text-right">
+                                                    <button type="button" class="btn btn-primary btn-xs" id="measmore-rows">+ Add row</button>
+                                                    <span> | </span>
+                                                    <button type="button" class="btn btn-danger btn-xs" id="measless-rows">- Remove row</button>                                                    
+                                                    </p>
+
+                                                    
+                                                </div><!-- /endtable3 -->
 
                                             </fieldset>
                                                                                     
                                             
                                             <div class="form-group">
                                                 <div class="col-lg-10 col-lg-offset-2">
-                                                    <a class="btn btn-default" id="adaptcreate" href="#">« Go back to list </a> <!-- WE NEED TO BUILD WITH app_id or not show this at all or go to INDEX -->
+                                                    <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_index') }}">« Go back to adaptor index</a>
                                                     <input type="hidden" name="app_id" value="{{ app_id }}">                                  
-                                                    <input type="submit" value="Save properties" class="btn btn-success">  
+                                                    <input type="submit" value="Save properties" class="btn btn-success">                                                    
                                                 </div>
                                             </div>                                                                                          
 
@@ -172,126 +240,142 @@
                                     </div><!-- end collg-12 -->
                                 </div><!-- /endtab1 -->
 
-                                {% if n_trows >= 15 %}                                               
-                                <div class="tab-pane fade" id="domain-two">                                
+                                {% if n_trows == 21 %}
+                                <div class="tab-pane fade" id="domain-two">
+                                    <form class="form-horizontal" id="vardeps" action="." method="POST">
 
-                                    <form class="form-horizontal" id="object-relations-measures" action="#" method="POST">
+                                    <!-- Fourth step : Defining the object measures and Dependencies  -->
 
-                                    <!-- Second step of Domain editing- IF some_var exists then... ->
+                                    <fieldset>
+                                        <legend>Relations and Dependencies</legend>
+
                                     <!-- Begin Table :: Object relations -->
 
 
                                     <div id="object-relations"  class="table-responsive">
-                                        
+
                                         <table class="table table-striped table-hover">
                                         <caption>Object relations</caption>
                                             
                                         <thead>
                                             <tr>
-                                                <th>#</th><th>Variable name</th><th>Relation</th>                              
-                                            </tr>
-                                        </thead>
-                                            
-                                        <tbody>                                            
-                                            {% if n_trows == 15 %}  {# If it is equal to 15, we show empty fields and the option list from the previous data #}
-                                                {% for item in emptycontent_trows %} 
-                                                <tr>
-                                                    <td><span class="label label-default">{{ item }}</span></td>
-                                                    <td><select class="form-control" name="objprop_relname"><option value="d">density</option><option value="m">mass</option><option value="v">volume</option></select></td>
-                                                    <td><input type="text" name="objprop_relation" class="form-control" placeholder=""></td>                              
-                                                </tr>                                                                                                               
-                                                {%endfor %}
-                                                    
-                                            {% else %}  {# Otherwise, both option list and relations are loaded from the database #}                                                  
-                                                <tr><td>Leido de Database - Relations</td></tr>
-                                            {% endif %}                                                                                         
-                                        </tbody>
-                                        
-                                        </table>
-                                        
-                                    </div><!-- /endtable3 -->
-
-
-                                    <!-- Begin Table :: Object measures -->
-
-                                    <div id="object-measures"  class="table-responsive">
-                                        
-                                        <table class="table table-striped table-hover">
-                                        <caption>Object measures</caption>
-                                            
-                                        <thead>
-                                            <tr>
-                                                <th>#</th><th>Name</th><th>Type</th><th>Unit</th><th>Depends on</th>                                        
+                                                <th>Name</th><th>Relation</th>                              
                                             </tr>
                                         </thead>
                                             
                                         <tbody>
-
-                                            {% if n_trows == 15 %}  {# If there is no measures in the storage, we show empty fields and the option lists from the previous data #}
-                                                {% for item in emptycontent_trows %} 
-                                                <tr>
-                                                    <td><span class="label label-default">{{ item }}</span></td>                                           
-                                                    <td><input type="text" name="measure_name" class="form-control" placeholder=""></td>
-                                                    <td><div class="checkbox"><input type="checkbox" name="measure_type" value="{{ true }}"></div></td>                                             
-                                                    <td><input type="text" name="measure_unit" class="form-control" placeholder=""></td>
-                                                    <td><select multiple="" class="form-control" name="measure_dependencies"><option value="multi1">multi1</option><option value="multi2">multi2</option></select></td>                              
-                                                </tr>                                                                                                               
+                                            {% if n_trows == 15 %}  {# If it is equal to 15, we show empty fields and the option list from the previous data (object_properties names) #}
+                                            
+                                                {% for item in object_properties %}
+                                                <tr id="relrow-{{ loop.index0+1 }}">
+                                                    <td>{{ item[0] }}</td>
+                                                    <td><input type="text" name="objprop_relation" class="form-control" placeholder=""></td>
+                                                </tr>
                                                 {%endfor %}
                                                     
-                                            {% else %}  {# Otherwise, both option lists and measures are loaded from the database #}                                                  
-                                                <tr><td>Leido de Database - Measures</td></tr>
-                                            {% endif %}                                                        
-
+                                            {% else %}  {# Otherwise, the lists of object properties and relations are loaded from the database #}
+                                                {% for item in object_relations %}
+                                                <tr id="relrow-{{ loop.index0+1 }}">
+                                                    <td>{{ item[0] }}</td>
+                                                    <td><input type="text" name="objprop_relation" class="form-control" placeholder="" value="{{ item[1] }}"></td>
+                                                </tr>
+                                                {% endfor %}
+                                            {% endif %}
                                         </tbody>
                                         
                                         </table>
                                         
+                                        <p class="text-right">
+                                        <button type="button" class="btn btn-primary btn-xs" id="relsmore-rows">+ Add row</button>
+                                        <span> | </span>
+                                        <button type="button" class="btn btn-danger btn-xs" id="relsless-rows">- Remove row</button>                                                  
+                                        </p>                                        
+                                        
                                     </div><!-- /endtable4 -->
+                                        
+                                    </fieldset>
                                     
+                                    <fieldset>
+                                        <legend>Dependencies</legend>
+
+                                    <!-- Begin Table :: Object property and system dependencies of variables -->
+                                    <div id="object-deps"  class="table-responsive">
+                                        
+                                        <table class="table table-striped table-hover">
+                                        <caption>Object and system dependencies</caption>
+                                            
+                                        <thead>
+                                            <tr>
+                                                <th>Variable name</th><th>Object dependencies</th><th>System dependencies</th>
+                                            </tr>
+                                        </thead>
+                                           
+                                        <tbody>
+                                                {% for item in object_measures_names %}
+                                                <tr id="depsrow-{{ loop.index0+1 }}">
+                                                    <td>{{ item }}</td>
+                                                    <td><select multiple="" class="form-control selectpicker" name="measure_dependencies_obj" id="measure_dependencies_obj">{% for item in object_properties %}<option value="{{ item[0] }}">{{ item[0] }}</option>{% endfor %}</select></td>
+                                                    <td><select multiple="" class="form-control selectpicker" name="measure_dependencies_sys" id="measure_dependencies_sys">{% for item in system_properties %}<option value="{{ item[0] }}">{{ item[0] }}</option>{% endfor %}</select></td>
+                                                </tr>
+                                                {%endfor %}
+                                        </tbody>
+                                        
+                                        </table>
+                                        
+                                        <p class="text-right">
+                                        <button type="button" class="btn btn-primary btn-xs" id="depsmore-rows">+ Add row</button>
+                                        <span> | </span>
+                                        <button type="button" class="btn btn-danger btn-xs" id="depsless-rows">- Remove row</button>                                                  
+                                        </p>
+                                                                                            
+                                    </div><!-- /endtable5 -->
+
+                                    
+                                    </fieldset>
+
                                     <div class="form-group">
                                         <div class="col-lg-10 col-lg-offset-2">
-                                            <a class="btn btn-default" id="adaptindex" href="#">« Go back to properties</a>
-                                            <input type="hidden" name="app_id" value="{{ app_id }}">                                  
-                                            <input type="submit" value="Save measures and relations" class="btn btn-success">  
+                                            <input type="hidden" name="app_id" value="{{ app_id }}">
+                                            <input type="submit" value="Save relations and dependencies" class="btn btn-success">
                                         </div>
-                                    </div>                                      
+                                    </div>
 
-
-                                    </form><!-- /form edt-tab2 --> 
+                                    </form><!-- /form edt-tab3 --> 
                                                                                                             
-                                </div><!-- /endtab2 -->                          
-                                {% endif %}                                
+                                </div><!-- /endtab3 -->
+                                {% endif %}
+
 
                                 {% if n_trows == 21 %}
                                 <div class="tab-pane fade" id="experiment">
-                                    <form class="form-horizontal" id="object-properties-specs" action="#" method="POST">
+                                    <form class="form-horizontal" id="object-properties-specs" action="." method="POST">
 
-                                    <!-- Third step : Editing the Experiment...  -->
+                                    <!-- Fourth step : Editing the Experiment...  -->
                                     
                                     <fieldset>
-                                        <legend>General</legend>                                        
+                                        <legend>General</legend>
                                         
                                         <div class="form-group">
                                             <label for="experiment_name" class="col-lg-2 control-label">Title:</label>
                                             <div class="col-lg-4">
-                                                <input type="text" name="experiment_name"class="form-control"  value="">
+                                                <input type="text" name="experiment_name" class="form-control"  value="{{ experiment_name }}">
                                             </div>
                                         </div>
 
                                         <div class="form-group">
                                             <label for="experiment_description" class="col-lg-2 control-label">Description:</label>
                                             <div class="col-lg-4">
-                                                <input type="text" name="experiment_description" class="form-control" value="">
+                                                <input type="text" name="experiment_description" class="form-control" value="{{ experiment_description }}">
                                             </div>
                                         </div>
                                         
                                         <div class="form-group">
                                             <label for="associated_domain" class="col-lg-2 control-label">Associated domain:</label>
                                             <div class="col-lg-4">
-                                                <select class="form-control" disabled=""><option>buoyancy</option></select>
+                                                <select class="form-control" disabled="" name="experiment_domain"><option>{{ experiment_domain }}</option></select>
                                             </div>
                                         </div>
-                                    </fieldset>                                                                            
+                                    </fieldset>
 
                                     <fieldset>
                                         <legend>Selections</legend>
@@ -299,9 +383,16 @@
                                         <div class="form-group">
                                             <label for="objprops_selection" class="col-lg-2 control-label">Object properties:</label>
                                             <div class="col-lg-4">
-                                                <select name="objprops_selection" multiple="" class="form-control">
-                                                    <option value="mass">mass</option>
-                                                    <option value="volume">volume</option>
+                                                <select name="objprops_selection" id="objprops_selection" multiple="" class="form-control selectpicker">
+                                                {% if n_trows == 21 %}
+                                                    {% for item in object_properties %}
+                                                    <option value="{{ item[0] }}">{{ item[0] }}</option>
+                                                    {%endfor %}                                                
+                                                {% else %}
+                                                    {% for item in object_property_selection %}
+                                                    <option value="{{ item }}">{{ item }}</option>
+                                                    {%endfor %}
+                                                {% endif %}
                                                 </select>
                                             </div>
                                         </div>
@@ -309,9 +400,16 @@
                                         <div class="form-group">
                                             <label for="measures_selection" class="col-lg-2 control-label">Object measures:</label>
                                             <div class="col-lg-4">
-                                                <select name="measures_selection" multiple="" class="form-control">
-                                                    <option value="sink">sink_or_float</option>
-                                                    <option value="water">water_displacement</option>
+                                                <select name="measures_selection" id="measures_selection" multiple="" class="form-control selectpicker">
+                                                {% if n_trows == 21 %}
+                                                    {% for item in object_measures %}
+                                                    <option value="{{ item[0] }}">{{ item[0] }}</option>
+                                                    {%endfor %}
+                                                {% else %}
+                                                    {% for item in object_measure_selection %}
+                                                    <option value="{{ item }}">{{ item }}</option>
+                                                    {%endfor %}
+                                                {% endif %}
                                                 </select>
                                             </div>
                                         </div>
@@ -319,16 +417,23 @@
                                         <div class="form-group">
                                             <label for="sysprops_selection" class="col-lg-2 control-label">System properties:</label>
                                             <div class="col-lg-4">
-                                                <select name="sysprops_selection" multiple="" class="form-control">
-                                                    <option value="fluid_aq">fluid_aquarium</option>
-                                                    <option value="other">other</option>                                                
+                                                <select name="sysprops_selection" id="sysprops_selection" multiple="" class="form-control selectpicker">
+                                                {% if n_trows == 21 %}
+                                                    {% for item in system_properties %}
+                                                    <option value="{{ item[0] }}">{{ item[0] }}</option>
+                                                    {%endfor %}
+                                                {% else %}
+                                                    {% for item in system_property_selection %}
+                                                    <option value="{{ item }}">{{ item }}</option>
+                                                    {%endfor %}
+                                                {% endif %}
                                                 </select>
                                             </div>
-                                        </div>                                    
+                                        </div>
                                     </fieldset>
 
                                     <fieldset>
-                                        <legend>Properties</legend>
+                                        <legend>Properties</legend> {# *Only* the selected properties will be saved #}
 
                                     <!-- Begin Table :: Object property specifications -->
                                     <div id="object-specs"  class="table-responsive">
@@ -338,26 +443,33 @@
                                             
                                         <thead>
                                             <tr>
-                                                <th>#</th>
-                                                <th>Object property</th><th>Unit</th><th>Initial</th><th>Values</th><th>Min</th><th>Max</th>                                                                             
+                                                <th>Object property</th><th>Initial</th><th>Unit</th><th>Min</th><th>Max</th><th>Increment</th><th>Values</th>
                                             </tr>
                                         </thead>
                                            
                                         <tbody>
-                                                <tr>
-                                                    <td><span class="label label-default">1</span></td>
-                                                    <td><select name="exp_property" class="form-control"><option>1</option><option>2</option><option>3</option></select></td>
-                                                    <td><input type="text" name="exprop_unit" class="form-control" placeholder=""></td>                              
-                                                    <td><input type="text" name="exprop_initial" class="form-control" placeholder=""></td> 
-                                                    <td><input type="text" name="exprop_value" class="form-control" placeholder=""></td> 
-                                                    <td><input type="text" name="exprop_min" class="form-control" placeholder=""></td> 
-                                                    <td><input type="text" name="exprop_max" class="form-control" placeholder=""></td>                                                                                                                                                                                                                 
+                                                {% for item in object_property_specification %}                                            
+                                                <tr id="specrow-{{ loop.index0+1 }}">
+                                                    <td><input type="text" name="exp_property" class="form-control" placeholder="" value="{{ item[0] }}"></td>
+                                                    <td><input type="text" name="exprop_initial" class="form-control" placeholder="" value="{{ item[1] }}"></td>
+                                                    <td><input type="text" name="exprop_unit" class="form-control" placeholder="" value="{{ item[2] }}"></td>
+                                                    <td><input type="text" name="exprop_min" class="form-control" placeholder="" value="{{ item[3] }}"></td>
+                                                    <td><input type="text" name="exprop_max" class="form-control" placeholder="" value="{{ item[4] }}"></td>
+                                                    <td><input type="text" name="exprop_increment" class="form-control" placeholder="" value="{{ item[5] }}"></td>
+                                                    <td><input type="text" name="exprop_value" class="form-control" placeholder="" value="{{ item[6] }}"></td>
                                                 </tr>
+                                                {%endfor %}
                                         </tbody>
                                         
                                         </table>
+
+                                        <p class="text-right">
+                                        <button type="button" class="btn btn-primary btn-xs" id="specmore-rows">+ Add row</button>
+                                        <span> | </span>
+                                        <button type="button" class="btn btn-danger btn-xs" id="specless-rows">- Remove row</button>                                                  
+                                        </p>
                                         
-                                    </div><!-- /endtable5 -->
+                                    </div><!-- /endtable6 -->
 
                                     <!-- Begin Table :: System property values -->
 
@@ -368,133 +480,94 @@
                                             
                                         <thead>
                                             <tr>
-                                                <th>#</th>
                                                 <th>Property</th>
-                                                <th>Value</th>                                        
+                                                <th>Value</th>
                                             </tr>
                                         </thead>
                                             
                                         <tbody>
-                                                <tr id="row1">
-                                                    <td id="col1"><span class="label label-default">1</span></td>                                           
-                                                    <td><select class="form-control"><option>1</option><option>2</option><option>3</option></select></td>                                              
-                                                    <td id="col5"><input type="text" name="unit-1" class="form-control" placeholder="kg"></td>                            
+                                                {% for item in system_property_values %}
+                                                <tr id="sysvalrow-{{ loop.index0+1 }}">
+                                                    <td><input type="text" name="exp_sysprop" class="form-control" placeholder="" value="{{ item[0] }}"></td>
+                                                    <td><input type="text" name="exp_sysprop_value" class="form-control" placeholder="kg" value="{{ item[1] }}"></td>
                                                 </tr>
-                                                <tr>
-                                                    <td><span class="label label-default">2</span></td>
-                                                    <td><select class="form-control"><option>1</option><option>2</option><option>3</option></select></td> 
-                                                    <td><input type="text" name="unit-2" class="form-control" placeholder="m^3"></td>                                                                        
-                                              </tr>
+                                                {%endfor %}
                                         </tbody>
                                         
                                         </table>
+
+                                        <p class="text-right">
+                                        <button type="button" class="btn btn-primary btn-xs" id="valuemore-rows">+ Add row</button>
+                                        <span> | </span>
+                                        <button type="button" class="btn btn-danger btn-xs" id="valueless-rows">- Remove row</button>                                                  
+                                        </p>
                                         
-                                    </div><!-- /endtable6 -->
+                                    </div><!-- /endtable7 -->
                                     
                                     </fieldset>  
 
                                     <div class="form-group">
                                         <div class="col-lg-10 col-lg-offset-2">
-                                            <a class="btn btn-default" id="adaptmeasures" href="#">« Go back to measures</a>
                                             <input type="hidden" name="app_id" value="{{ app_id }}">                                  
                                             <input type="submit" value="Save experiment" class="btn btn-success">  
                                         </div>
                                     </div>
                                             
 
-                                    </form><!-- /form edt-tab3 --> 
+                                    </form><!-- /form edt-tab4 --> 
                                                                                                             
-                                </div><!-- /endtab3 -->                     
-                               {% endif %}
-                            </div><!-- /end tabs content-->                                        
-                            
-                        </div><!-- end wrap edt tables -->
-                                                                                                                                
-                    {% else %}
+                                </div><!-- /endtab4 -->
+                                {% endif %}
 
-                        <!-- Tabs & Form for the Concept Mapper variables
-                        ================================================== --> 
 
-                        <div class="wrap">
-                            <ul class="nav nav-tabs" style="margin-bottom: 15px;">
-                                <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
-                                <li><a href="#preview" data-toggle="tab">Preview</a></li>
-                            </ul>              
-                            
-                            <div id="tabadapt" class="tab-content">                  
-                                <div class="tab-pane fade active in" id="edit">
-                                    <div class="col-lg-10">
-                                        
-                                        <!--  
-                                               * Concept mapper & Hypothesis tools: form input.  
-                                               Variables to fill: domain = "concepts" of the concept mapper, and "elements" (conditionals+inputs/outputs) of the hypothesis tool, respectively.
-                                        -->
-                                        <form class="form-horizontal" method="POST" action=".">                                                                                                                                  
-
-                                        {% if adaptor_type == 'concept_map' %}
-                                        <!-- Block for the Concept map-->
-                                            <div class="form-group">
-                                                <label for="concepts" class="col-lg-2 control-label">Concepts:</label>
-                                                <div class="col-lg-10">
-                                                    <input type="text" name="concepts" value="{{ concepts|replace('[', '')|replace(']', '')|replace('"', '') }}" data-role="tagsinput">
-                                                </div>
-                                            </div>                                          
-                                        {% endif %}                    
-
-                                        {% if adaptor_type == 'hypothesis' %}
-                                        <!-- The previous block and this one are used by the Hypothesis tool -->
-                                            <div class="form-group">
-                                                <label for="conditionals" class="col-lg-2 control-label">Conditionals:</label>
-                                                <div class="col-lg-10">
-                                                    <input type="text" name="conditionals" class="form-control" value="{{ conditionals|replace('[', '')|replace(']', '')|replace('"', '') }}" data-role="tagsinput">
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="form-group">
-                                                <label for="inputs" class="col-lg-2 control-label">Inputs:</label>
-                                                <div class="col-lg-10">
-                                                    <input type="text" name="inputs"  value="{{ inputs|replace('[', '')|replace(']', '')|replace("'", '') }}" data-role="tagsinput">
-                                                </div>
-                                            </div>
-                                            
-                                            <div class="form-group">
-                                                <label for="outputs" class="col-lg-2 control-label">Outputs:</label>
-                                                <div class="col-lg-10">
-                                                    <input type="text" name="outputs"  value="{{ outputs|replace('[', '')|replace(']', '')|replace('"', '') }}" data-role="tagsinput">
-                                                </div>
-                                            </div>  
-                                            {% endif %}
-
-                                            <div class="form-group">
-                                                <div class="col-lg-10 col-lg-offset-2">
-                                                    <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_index') }}">« Go back to adaptor index</a>
-                                                    <input type="hidden" name="app_id" value="{{ app_id }}">                                  
-                                                    <input type="submit" value="Save" class="btn btn-success"> 
-                                                </div>
-                                            </div>                                            
-                                        </form>
-                                        
+                                <div class="tab-pane fade" id="preview">
+                                    <iframe src="{{ url_for('.edt_index', app_id = app_id) }}" width="998" height="1300" frameborder="0" scrolling="no"></iframe>
+                                    <div>
+                                        <a href="{{ url_for('.edt_widget', app_id = app_id) }}">[+] Widget link</a>
                                     </div>
-                                </div>
-                        
-                                               
-                            </div>                                          
-                        </div><!-- end wrap concept forms-->  
-
-
-                    {% endif %}                                        
-
-                                
-                    </div>                    
-                </div>                                
+                                </div><!-- /endtab5 -->
+                                                                                          
+                            </div><!-- /end tabs content-->
+                        </div><!-- end wrap edt tables -->
+                                            
+                    </div>
+                </div>
             </div>
+{% endblock %}
+{% block scripts %}
+<script src="{{ url_for('static', filename='initializr/js/vendor/jquery-1.10.1.min.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='initializr/js/vendor/bootstrap.min.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='initializr/js/vendor/bootstrap-select/bootstrap-select.min.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='initializr/js/table-number.js') }}" type="text/javascript"></script>
 
-        
-    {% endblock %}
+<script>
+jQuery(document).ready(function($) {
+    $('.collapse').collapse();
+    $('.selectpicker').selectpicker();
+    $('.table').tableAddCounter();         
 
-    {% block scripts %}
-    {{ super() }}
-    <script src="{{ url_for('static', filename='initializr/js/vendor/bootstrap-tagsinput.min.js') }}" type="text/javascript"></script>
-    <script src="{{ url_for('static', filename='initializr/js/vendor/typeahead.min.js') }}" type="text/javascript"></script>
-  
-    {% endblock scripts %}
+    $("button#propless-rows").click(function() {
+        var rowCount = $('table#tproperties  tr:last').index() + 1;
+        if (rowCount > 1) {
+            var clonedRow = $("table#tproperties tbody tr:last").remove();
+        } else {
+            alert("The first row cannot be removed.");
+        }
+    });
+    
+    var i = $("table#tproperties tbody tr").length;
+    $("button#propmore-rows").click(function() {
+        var rowCount = $('table#tproperties  tr:last').index() + 1;
+        var clonedRow = $("table#tproperties tbody tr:last").clone();
+        i++;
+        $("table#tproperties").append(clonedRow);
+        var $span = $("table#tproperties tbody tr:last span:last");
+        var $rowid = $("table#tproperties tbody tr:last");                
+        //alert($span.text());
+        $span.text(Number($span.text()) + 1);
+        cindex = 99;
+        $clonedRow.attr('id', 'prop'+(cindex) ); //update row id        
+    });
+});
+</script>
+{% endblock scripts %}

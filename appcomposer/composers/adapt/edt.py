@@ -1,177 +1,65 @@
 import json
-from flask import render_template, flash
-from appcomposer.composers.adapt import adapt_blueprint
+from collections import OrderedDict, Counter
+from flask import render_template, request, flash
 import appcomposer.appstorage.api as appstorage
 
+from appcomposer.composers.adapt import adapt_blueprint
+
 def edt_load(app, app_id, name, data):
-    # Steps for the experiment design editor    
-    # If the app data is empty (basic JSON schema), we are editing a new app. Otherwise, the data values are loaded from the database.
-    if len(data) == 4:       
+    
+    # Uncomment these lines for normal behavior. TODO
+    #If appdata has four items, we are editing an empty experiment design    
+    # if len(data) == 4:
+    #    return render_template("composers/adapt/edt/edit.html", app=app, app_id = app_id, n_trows = 4, emptycontent_trows = [1,2,3], nstep = 2)
 
-        # 1st step: Domain 1 of 2
-        # Template values to retrieve: Object properties & System properties
-        objprop_names = request.form.getlist('objprop_name')             
-        objprop_symbols = request.form.getlist('objprop_symbol')                        
-        objprop_units = request.form.getlist('objprop_unit')
-        objprop_values = request.form.getlist('objprop_value')                     
 
-        ### MISSING CHECKBOXES ###########
-        #objprop_types = request.form.getlist('objprop_type')
-        #objprop_avs = request.form.getlist('objprop_av')                                                      
-
-        sysprop_names = request.form.getlist('sysprop_name') 
-
-        ### MISSING CHECKBOXES ###########
-        #sysprop_types = request.form.getlist('sysprop_type')
-
-        sysprop_symbols = request.form.getlist('sysprop_symbol') 
-        sysprop_units = request.form.getlist('sysprop_unit')                
-        sysprop_values = request.form.getlist('sysprop_value') 
-
-        # Build the JSON of the current experiment design (1st step). [!] name = domain name  
-
-        data = {
-            'adaptor_version': '1',
-            'name': name,
-            'description': app_description,
-            'adaptor_type': adaptor_type,
-            'objprop_names': objprop_names,             
-            'objprop_symbols': objprop_symbols,                        
-            'objprop_units': objprop_units,
-            'objprop_values': objprop_values,
-            #'objprop_types': objprop_types,
-            #'objprop_avs': objprop_avs,
-            'sysprop_names': sysprop_names,
-            #'sysprop_types': sysprop_types,
-            'sysprop_symbols': sysprop_symbols, 
-            'sysprop_units': sysprop_units,      
-            'sysprop_values': sysprop_values                                                       
-        } #new data length = 15
-
-        appstorage.update_app_data(app, data)
-        flash("Domain properties saved successfully", "success")
-        # flash(objprop_names, "success")
+    #Otherwise, the data values are loaded from the database.
+    columns_objprops = {"name":["mass", "volume", "density","material", "shape"], "type": ["n", "n", "n", "y", "y"], "symbol": ["m", "V", "rho","",""], "unit": ["kg", "m^3", "kg / m^3","",""], "allvalues": ["", "", "","*","*"]}
+    columns_sysprops = {"name":["fluid_aquarium", "fluid_density", "fluid_column"], "type": ["y", "y", "y"], "symbol": ["", "rho", "h"], "unit": ["", "kg / m^3", "m"], "allvalues": ["*", "", ""]}            
                     
-        return render_template("composers/adapt/edit.html", app=app, app_id = app_id, adaptor_type = adaptor_type, nstep = 2)     
+    object_properties = zip(columns_objprops["name"], columns_objprops["type"], columns_objprops["symbol"], columns_objprops["unit"], columns_objprops["allvalues"])
+    system_properties = zip(columns_sysprops["name"], columns_sysprops["type"], columns_sysprops["symbol"], columns_sysprops["unit"], columns_sysprops["allvalues"])
 
-    elif len(data) == 15: 
+    #Original: object_relations = [{"name": "density", "object_properties": [ "density", "mass", "volume" ], "relation": "density = mass / volume"}]
+    columns_objrels = {"name":["mass","volume","density","material","shape"], "relation": ["","","mass / volume","",""]}
+    object_relations = zip(columns_objrels["name"], columns_objrels["relation"])
+        
+    object_measures_formatted = [
+            {"name": "water_displacement", "type": "magnitude", "unit": "m^3", "depends_on": { "object_properties": ["mass"], "system_properties": ["fluid_density"]}},
+            {"name": "sink_or_float", "type": "multitude", "values": ["sinks", "floats"], "depends_on": { "object_properties": ["density"], "system_properties": ["fluid_density"]}}
+    ] 
+    
+    columns_objmeasu = {"name":["water_displacement", "sink_or_float"], "type": ["n", "n"], "values": ["", "sinks, floats"], "unit": ["m^3", ""]}   
+    #putada: en object measures se puede asignar una misma system property o object property a dos medidas diferentes. Permitimos guardar vaues separados por comas    
+    object_measures = zip(columns_objmeasu['name'], columns_objmeasu['type'], columns_objmeasu['values'], columns_objmeasu['unit'])    
 
-        data = json.loads(app.data)
-        objprop_names = data["objprop_names"]
-        # 2nd step: Domain 2 of 2
-        # Template values to retrieve: Object relations & Object measures. [!] objprop_relname must be one of the objprop_names
-        objprop_relnames = request.form.getlist('objprop_relname')
-        objprop_relations = request.form.getlist('objprop_relation')                    
+    object_measures_names = ["water_displacement","sink_or_float"]
 
-        ### MISSING CHECKBOXES ###########
-        #objproptype_list = request.form.getlist('objprop_type')
-        #objpropavail_list = request.form.getlist('objprop_avail')                                                      
+    #Experiment data
+    experiment_name = "Archimedes" #campo propio en el json
+    experiment_description = "Simulation-based version of the buoyancy experiment" #idem
+    experiment_domain = "buoyancy" #experiment_domain = name (domain)
 
+    object_property_selection = ["mass", "volume", "shape"]
+    object_measure_selection = ["sink_or_float", "water_displacement"]
+    system_property_selection = ["fluid_aquarium"]
+    
+    # We will show all object properties and discard fields with empty values (initial = "")
+    columns_objprops_spec ={"property_name": ["mass", "volume", "shape"], "initial": ["300", "200", "sphere"], "unit": ["gram", "cm_3", ""], "minimum": [ "50", "50", ""], "maximum": ["500", "500", ""], "increment": ["50", "50", ""], "values": ["", "", "sphere, cube"]}
+    object_property_specification = zip(columns_objprops_spec["property_name"], columns_objprops_spec["initial"], columns_objprops_spec["unit"], 
+                                                            columns_objprops_spec["minimum"], columns_objprops_spec["maximum"], columns_objprops_spec["increment"], columns_objprops_spec["values"])
 
-        # Build the JSON of the current experiment design (2nd step).
-
-        ############ MIRAR COMO SE AGREGAN CAMPOS NUEVOS CONSERVANDO LO ANTERIOR EN APPSTORAGE API
-        data = {
-            'adaptor_version': '1',
-            'name': name,
-            'description': app_description,
-            'adaptor_type': adaptor_type,
-            'objprop_names': objprop_names,             
-            'objprop_symbols': objprop_symbols,                        
-            'objprop_units': objprop_units,
-            'objprop_values': objprop_values,
-            #'objprop_types': objprop_types,
-            #'objprop_avs': objprop_avs,
-            'sysprop_names': sysprop_names,
-            #'sysprop_types': sysprop_types,
-            'sysprop_symbols': sysprop_symbols, 
-            'sysprop_units': sysprop_units,      
-            'sysprop_values': sysprop_values,
-            
-            'objprop_relnames':objprop_relnames,
-            'objprop_relations':objprop_relations,
-            
-            'measure_names': measure_names, 
-            'measure_types': measure_types,
-            'measure_units': measure_units,
-            'measure_dependencies': measure_dependencies                       
-        } #new data length = 21
-
-        appstorage.update_app_data(app, data)
-        flash("Domain properties [2] saved successfully", "success")
-        # flash(objprop_names, "success")
-                    
-        return render_template("composers/adapt/edit.html", app=app, app_id = app_id, adaptor_type = adaptor_type, nstep = 3)      
-
-    elif len(data) == 21:
-
-        data = json.loads(app.data)
-
-        # 3rd step: Experiment
-        # Template values to retrieve: Experiment values. [!] An experiment must be associated with a domain
-        objprop_relnames = request.form.getlist('objprop_relname')
-        objprop_relations = request.form.getlist('objprop_relation')                    
-
-        ### MISSING CHECKBOXES ###########
-        #objproptype_list = request.form.getlist('objprop_type')
-        #objpropavail_list = request.form.getlist('objprop_avail')                                                      
-
-
-        # Build the JSON of the current experiment design (3rd step).
-
-        ############ Figure out how to send only the new keys to the appstorage API
-        data = {
-            'adaptor_version': '1',
-            'name': name,
-            'description': app_description,
-            'adaptor_type': adaptor_type,
-            'objprop_names': objprop_names,             
-            'objprop_symbols': objprop_symbols,                        
-            'objprop_units': objprop_units,
-            'objprop_values': objprop_values,
-            #'objprop_types': objprop_types,
-            #'objprop_avs': objprop_avs,
-            'sysprop_names': sysprop_names,
-            #'sysprop_types': sysprop_types,
-            'sysprop_symbols': sysprop_symbols, 
-            'sysprop_units': sysprop_units,      
-            'sysprop_values': sysprop_values,
-            
-            'objprop_relnames':objprop_relnames,
-            'objprop_relations':objprop_relations,
-            
-            'measure_names': measure_names, 
-            'measure_types': measure_types,
-            'measure_units': measure_units,
-            'measure_dependencies': measure_dependencies
-            
-            ### EXPERIMENT DATA - Unique?
-            'experiment_name': experiment_name,
-            'experiment_description': experiment_description,
-            'associated_domain': associated_domain,
-            'objprops_selection': objprops_selection,
-            'measures_selection': measures_selection,
-            'sysprops_selection': sysprops_selection,
-            
-            'exp_properties':exp_properties,
-            'exp_objprop_units':exp_objprop_units,
-            'exp_objprop_initials':exp_objprop_initials, 
-            'exp_objprop_values':exp_objprop_values, 
-            'exp_objprop_mins':exp_objprop_mins, 
-            'exp_objprop_maxs':exp_objprop_maxs,                                                                                                     
-            'exp_objprop_increments':exp_objprop_increments, 
-            'exp_sysprops':exp_sysprops,                                                                
-            'exp_syspropsvalues':exp_syspropsvalues,                    
-        } #new data length = 36
-
-        appstorage.update_app_data(app, data)
-        flash("Experiment values saved successfully", "success")
-        # flash(experiment_name, "success")
-                    
-        return render_template("composers/adapt/edit.html", app=app, app_id = app_id, adaptor_type = adaptor_type, nstep = 4)      
-
-    else:
-        return "Error"                     
+    columns_sysprop_values = {"property_name": ["fluid_aquarium", "density"], "value": ["water", "1.0"]}
+    system_property_values = zip(columns_sysprop_values["property_name"], columns_sysprop_values["value"])
+    
+    #aaaaand, it's done. Next: validation and verifying that the user enters duplicated values (when it's not allowed)
+    
+    return render_template("composers/adapt/edt/edit.html", app=app, app_id = app_id, name = name, 
+            object_properties = object_properties, system_properties = system_properties, object_measures = object_measures, object_relations = object_relations,
+            experiment_name = experiment_name, experiment_description = experiment_description,  experiment_domain = experiment_domain,
+            object_property_selection = object_property_selection, object_measure_selection = object_measure_selection, object_measures_names = object_measures_names, 
+            system_property_selection = system_property_selection, object_property_specification = object_property_specification, 
+            system_property_values = system_property_values, n_trows = 21)    
 
 
 def edt_edit(app, app_id, name, data):
@@ -198,14 +86,119 @@ def edt_edit(app, app_id, name, data):
         'system_property_values': [ {'property': str(), 'value': str()} ]
     }
     '''
-                           
-    emptycontent_trows = {1,2} 
+                               
+    # Steps for the experiment design editor    
+    # If the app data is empty (basic JSON schema), we are editing a new app. Otherwise, the data values are loaded from the database.
+    if len(data) == 4:       
 
-    # Default number of rows for the experiment design
-    appstorage.update_app_data(app, data)
-    flash("Experiment design saved successfully", "success")
+        # 1st step: Domain 1 of 2
+        # Template values to retrieve: Object properties & System properties
+        objprop_names = request.form.getlist('objprop_name')             
+        objprop_symbols = request.form.getlist('objprop_symbol')                        
+        objprop_units = request.form.getlist('objprop_unit')
+        objprop_values = request.form.getlist('objprop_value')                     
 
-    return render_template("composers/adapt/edt/edit.html", app=app, app_id = app_id, n_trows = 5)
+        ### MISSING CHECKBOXES ###########
+        #objprop_types = request.form.getlist('objprop_type')
+        #objprop_avs = request.form.getlist('objprop_av')                                                      
+
+        sysprop_names = request.form.getlist('sysprop_name') 
+
+        ### MISSING CHECKBOXES ###########
+        #sysprop_types = request.form.getlist('sysprop_type')
+
+        sysprop_symbols = request.form.getlist('sysprop_symbol') 
+        sysprop_units = request.form.getlist('sysprop_unit')                
+        sysprop_values = request.form.getlist('sysprop_value') 
+
+        #multimulti = request.form.getlist('measures_selection')        
+        multimulti = request.form.getlist('objprop_type')   
+
+        # Build the JSON of the current experiment design (1st step). [!] name = domain name  
+
+        print multimulti
+
+        return "ok"
+        #return render_template("composers/adapt/edit.html", app=app, app_id = app_id, nstep = 2) 
+
+    elif len(data) == 15: 
+
+        data = json.loads(app.data) # IS THIS NECESSARY?
+        objprop_names = data["objprop_names"]
+        # 2nd step: Domain 2 of 2
+        # Template values to retrieve: Object relations & Object measures. [!] objprop_relname must be one of the objprop_names
+        objprop_relnames = request.form.getlist('objprop_relname')
+        objprop_relations = request.form.getlist('objprop_relation')                    
+
+        ### MISSING CHECKBOXES ###########
+        #objproptype_list = request.form.getlist('objprop_type')
+        #objpropavail_list = request.form.getlist('objprop_avail')                                                      
+
+
+        # Build the JSON of the current experiment design (2nd step).
+
+        ############ Verify how to keep previous fields before updating with the appstorage API
+        data.update({        
+            'objprop_relnames':objprop_relnames,
+            'objprop_relations':objprop_relations,
+            
+            'measure_names': measure_names, 
+            'measure_types': measure_types,
+            'measure_units': measure_units,
+            'measure_dependencies': measure_dependencies                       
+        }) #new data length = 21
+
+        appstorage.update_app_data(app, data)
+        flash("Domain properties [2] saved successfully", "success")
+        # flash(objprop_names, "success")
+                    
+        return render_template("composers/adapt/edit.html", app=app, app_id = app_id, nstep = 3)      
+
+    elif len(data) == 21:
+
+        data = json.loads(app.data)
+
+        # 3rd step: Experiment
+        # Template values to retrieve: Experiment values. [!] An experiment must be associated with a domain
+        objprop_relnames = request.form.getlist('objprop_relname')
+        objprop_relations = request.form.getlist('objprop_relation')                    
+
+        ### MISSING CHECKBOXES ###########
+        #objproptype_list = request.form.getlist('objprop_type')
+        #objpropavail_list = request.form.getlist('objprop_avail')                                                      
+
+
+        # Build the JSON of the current experiment design (3rd step).
+
+        ############ Figure out how to send only the new keys to the appstorage API
+        data.update({             
+            ### EXPERIMENT DATA - Unique?
+            'experiment_name': experiment_name,
+            'experiment_description': experiment_description,
+            'associated_domain': associated_domain,
+            'objprops_selection': objprops_selection,
+            'measures_selection': measures_selection,
+            'sysprops_selection': sysprops_selection,
+            
+            'exp_properties':exp_properties,
+            'exp_objprop_units':exp_objprop_units,
+            'exp_objprop_initials':exp_objprop_initials, 
+            'exp_objprop_values':exp_objprop_values, 
+            'exp_objprop_mins':exp_objprop_mins, 
+            'exp_objprop_maxs':exp_objprop_maxs,                                                                                                     
+            'exp_objprop_increments':exp_objprop_increments, 
+            'exp_sysprops':exp_sysprops,                                                                
+            'exp_syspropsvalues':exp_syspropsvalues,                    
+        }) #new data length = 36
+
+        appstorage.update_app_data(app, data)
+        flash("Experiment values saved successfully", "success")
+        # flash(experiment_name, "success")
+                    
+        return render_template("composers/adapt/edt/edit.html", app=app, app_id = app_id, nstep = 4)      
+
+    else:
+        return "Error"                     
 
 
 #
@@ -215,7 +208,7 @@ def edt_edit(app, app_id, name, data):
 @adapt_blueprint.route("/export/<app_id>/edt/edt.html")
 def edt_index(app_id):
     """
-    hypothesis_index(app_id)
+    edt_index(app_id)
     This function points to the experiment design tool instance.
 
     @param app_id: Identifier of the application. It will be unique within the list of user's apps.
