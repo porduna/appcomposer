@@ -6,11 +6,14 @@
 {% block edit_tab %}
 <div class="col-lg-10">
 
-<form class="form-horizontal" method="POST" action=".">
+<p class="small  col-lg-offset-2">Please type the terms or comma-separated values you wish to save. (Hint: copy &amp; paste concepts supported).</p>
+<form id="conceptsform" class="form-horizontal" method="POST" action=".">
     <div class="form-group">
-        <label for="concepts" class="col-lg-2 control-label">Concepts:</label>
+        <label for="concepts" class="col-lg-2 control-label">List of Concepts:</label>
         <div class="col-lg-10">
-            <input type="text" name="concepts" value="{{ concepts|replace('[', '')|replace(']', '')|replace('"', '') }}" data-role="tagsinput">
+            
+            <input type="text" name="concepts" id="concepts" placeholder="Type the concept and hit enter or tab" value="{{ concepts|replace('[', '')|replace(']', '')|replace('"', '') }}" class="form-control tokenfield input-lg" required="required">
+            <span class="help-block"></span>
         </div>
     </div>
 
@@ -19,7 +22,7 @@
         <div class="col-lg-10 col-lg-offset-2">
             <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_index') }}">« Go back to adaptor index</a>
             <input type="hidden" name="app_id" value="{{ app_id }}">
-            <input type="submit" value="Save" class="btn btn-success">
+            <input type="submit" value="Save" class="btn btn-success" id="submitbtn">
         </div>
     </div>
 </form>
@@ -37,7 +40,60 @@
 
 {% block scripts %}
 {{ super() }}
-<script src="{{ url_for('static', filename='initializr/js/vendor/bootstrap-tagsinput.min.js') }}" type="text/javascript"></script>
-<script src="{{ url_for('static', filename='initializr/js/vendor/typeahead.min.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='initializr/js/vendor/bootstrap-tokenfield/bootstrap-tokenfield.min.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='initializr/js/vendor/typeahead/typeahead.min.js') }}" type="text/javascript"></script>
+<script src="{{ url_for('static', filename='initializr/js/vendor/validators/jquery-validation/jquery.validate.min.js') }}" type="text/javascript"></script>
+<script>
+if (jQuery.validator) {
+  jQuery.validator.setDefaults({
+    debug: false,
+    errorClass: 'has-error',
+    validClass: 'has-success',
+    ignore: "",
+    highlight: function (element, errorClass, validClass) {
+      $(element).closest('.form-group').removeClass('has-success').addClass('has-error');
+    },
+    unhighlight: function (element, errorClass, validClass) {
+      $(element).closest('.form-group').removeClass('has-error').addClass('has-success');
+      $(element).closest('.form-group').find('.help-block').text('');
+    },
+    errorPlacement: function (error, element) {
+      $(element).closest('.form-group').find('.help-block').text(error.text());
+    },
+    submitHandler: function (form) {
+      if ($(form).valid()) {
+        form.submit();
+      }
+    }
+  });
+}
+</script>
 
+<script>     
+$(document).ready(function () {
+    $('#concepts').tokenfield();
+
+    var concepts = $("#concepts");
+    var conceptsform = $('#conceptsform');
+    var submitbtn = $('#submitbtn');
+    conceptsform.validate();
+ 
+    concepts.rules("add", {
+      required: true,
+      rangelength: [2, 500],
+      messages: {
+        required: "You must provide the concept list.",
+        rangelength: "The concept must be between 2 and 20 characters in length."
+      }
+    });
+ 
+    $('#conceptsform').submit(function () {
+      if ($(this).valid()) {
+        $('#submitbtn').prop('disabled', true);
+        return true;
+      }
+      return false;
+    });    
+}); 
+</script>
 {% endblock scripts %}

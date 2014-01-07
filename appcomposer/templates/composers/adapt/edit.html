@@ -4,7 +4,8 @@
 
 {% block styles %}
     {{ super() }}
-    <link rel="stylesheet" href="{{ url_for('static', filename='initializr/css/bootstrap-tagsinput.css') }}">
+    <link href="{{ url_for('static', filename='initializr/js/vendor/bootstrap-tokenfield/tokenfield-typeahead.min.css') }}" type="text/css" rel="stylesheet">
+    <link href="{{ url_for('static', filename='initializr/js/vendor/bootstrap-tokenfield/bootstrap-tokenfield.min.css') }}" type="text/css" rel="stylesheet">
 {% endblock styles %}
 
 {% block body_content %}
@@ -12,7 +13,7 @@
         <div class="row">
             <div class="col-lg-12">
                 <div class="page-header">
-                    <h1 id="apptitle">Adapt a guidance app - {{ adaptor_type }} - {{ name }} {{ n_rows }} </h1>
+                    <h1 id="apptitle">Adapt a guidance app - {{ adaptor_type }} - {{ name }}</h1>
                 </div>
             </div>
         </div>
