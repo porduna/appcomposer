@@ -1,0 +1,8 @@
+@charset "utf-8";
+
+@font-face {
+   font-family: 'Titillium Web';
+   font-style: normal;
+   font-weight: 400;
+   src: local('Titillium Web'), local('TitilliumWeb-Regular'), url(titilliumWeb400.woff) format('woff');
+}

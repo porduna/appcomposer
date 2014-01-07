@@ -4,7 +4,7 @@
    </ModulePrefs>
     <Content type="html" view="home,canvas">
      <![CDATA[
-{% from "composers/adapt/conceptmapper/_conceptmapper.html" import render_conceptmapper %}
+{% from "conceptmapper/_conceptmapper.html" import render_conceptmapper %}
 {{ render_conceptmapper(app_id = app_id) }}
 ]]>
 </Content>
