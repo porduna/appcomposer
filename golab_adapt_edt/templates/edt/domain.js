@@ -27,3 +27,15 @@ golab.experiment = golab.experiment || {};
 
 golab.experiment.{{ experiment_name }} = {{ experiment }} 
 
+
+function start_lab() {
+  if (typeof(console) === 'undefined') {
+    console = {};
+    console.log = function () {};
+  }
+  edt.start({ domain: golab.domain.{{ domain_name }} ,
+              experiment: golab.experiment.{{ experiment_name }} ,
+	      confirm_flags: false
+	   });
+}
+window.onload = function() { start_lab(); }

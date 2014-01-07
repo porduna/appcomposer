@@ -567,7 +567,7 @@
                                            
                                         <tbody>
                                         {% if n_trows == 10 %}
-                                                {% for item in object_property_selection %}  {# SOBRAAA EL ELSE #}                                          
+                                                {% for item in object_property_selection %}                                           
                                                 <tr id="specrow-{{ loop.index0+1 }}">
                                                     <td><input type="text" name="exp_property" class="form-control" placeholder="" value='{{ item }}' required="required"></td>
                                                     <td><input type="text" name="exprop_initial" class="form-control" placeholder="" value="" required="required"></td>

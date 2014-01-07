@@ -305,7 +305,7 @@ def edit(app_id):
             flash("Experiment *1 of 2* saved successfully", "success")
                         
             return render_template("edt/edit.html", app_id = app_id, experiment_name = experiment_name, experiment_description = experiment_description,
-                                                    objprops_selection = objprops_selection, measures_selection = measures_selection, system_property_selection = sysprops_selection, n_trows = len(data))      
+                                                    object_property_selection = objprops_selection, measures_selection = measures_selection, system_property_selection = sysprops_selection, n_trows = len(data))      
 
         elif len(data) == 10:
 
