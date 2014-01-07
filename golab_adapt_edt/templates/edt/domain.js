@@ -21,9 +21,9 @@ var golab = golab || {};
 
 golab.domain = golab.domain || {};
 
-golab.domain.buoyancy = {{ domain }} 
+golab.domain.{{ domain_name }} = {{ domain }} 
 
 golab.experiment = golab.experiment || {};
 
-golab.experiment.Archimedes = {{ experiment }} 
+golab.experiment.{{ experiment_name }} = {{ experiment }} 
 
