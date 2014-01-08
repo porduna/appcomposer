@@ -10,3 +10,6 @@ USE_PYMYSQL = False
 # Graasp will not be able to access it).
 GRAASP_LOGIN_APP = 'https://graasp.epfl.ch/#url=appcomposer_pablo'
 SHOW_LOGIN_APP_CREATION = False
+
+# Adaptor plug-ins (the defaults are loaded by default)
+ADAPT_PLUGINS = []

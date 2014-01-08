@@ -8,8 +8,6 @@ from wtforms.widgets import PasswordInput
 
 from appcomposer.babel import lazy_gettext
 
-from flask.ext.admin.contrib.sqlamodel.fields import QuerySelectField
-
 local_data = threading.local()
 
 

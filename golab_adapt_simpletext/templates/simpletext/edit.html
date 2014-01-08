@@ -1,0 +1,20 @@
+{% set title = "Edit the app content" %}
+{% set adaptor_type = "Simple text" %}
+{% extends 'composers/adapt/edit.html' %}
+
+{% block edit_tab %}
+    <div class="col-lg-10">
+        <form class="form" action="." method="POST" >
+            <input type="text" name="simple_text" value="{{ value }}"/>
+            <input type="submit" class="btn btn-primary" value="Submit"/>
+        </form>
+    </div>
+{% endblock %}
+
+{% block preview_tab %}
+    <div class="col-lg-10">
+        <iframe src="{{ url_for('.index_html', app_id = app_id) }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+        <br>
+        <a href="{{ url_for('.app_xml', app_id = app_id) }}">App URL</a>
+    </div>
+{% endblock %}
