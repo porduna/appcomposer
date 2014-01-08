@@ -148,6 +148,8 @@ class BasicAdminAppsView(AdminModelView):
     Basic Admin Apps View. Basic entry view which lets us manage the applications located at the system.
     We will be able to create, edit, and delete apps.
     """
+    
+    can_create = False
 
     column_list = ('owner', 'unique_id', 'name', 'composer', 'creation_date', 'modification_date', 'last_access_date')
     column_labels = dict(owner = lazy_gettext('Owner'), unique_id = lazy_gettext('ID'), name = lazy_gettext('Name'), composer = lazy_gettext('Composer'), creation_date = lazy_gettext('Creation Date'), modification_date = lazy_gettext('Modification Date'), last_access_date = lazy_gettext('Last Access Date'))
