@@ -27,7 +27,7 @@ def initialize_admin_component(app):
     url = '/admin'
     admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name=lazy_gettext('Admin Profile'), endpoint = "home-admin")
     admin.add_view(UsersView(name=lazy_gettext('Users'), url = 'users', endpoint = 'admin.users'))
-    #admin.add_view(BasicAdminAppsView(name=lazy_gettext('Basic App View'), url = 'basic-apps-admin', endpoint = 'admin.basic-admin-apps'))    
+    admin.add_view(BasicAdminAppsView(name=lazy_gettext('Basic App View'), url = 'basic-apps-admin', endpoint = 'admin.basic-admin-apps'))    
     admin.add_view(AdvancedAdminAppsView(name=lazy_gettext('Apps View'), url = 'advanced-apps-admin', endpoint = 'admin.advanced-admin-apps'))   
     admin.add_view(ProfileView(name=lazy_gettext('My Profile'), url = 'profile', endpoint = 'admin.profile'))
     admin.add_view(BackView(name=lazy_gettext('Back'), url = 'back', endpoint = 'admin.back'))     
@@ -149,13 +149,13 @@ class BasicAdminAppsView(AdminModelView):
     We will be able to create, edit, and delete apps.
     """
 
-    column_list = ('owner_id', 'unique_id', 'name', 'composer', 'creation_date', 'modification_date', 'last_access_date')
-    column_labels = dict(owner_id = lazy_gettext('Owner'), unique_id = lazy_gettext('ID'), name = lazy_gettext('Name'), composer = lazy_gettext('Composer'), creation_date = lazy_gettext('Creation Date'), modification_date = lazy_gettext('Modification Date'), last_access_date = lazy_gettext('Last Access Date'))
+    column_list = ('owner', 'unique_id', 'name', 'composer', 'creation_date', 'modification_date', 'last_access_date')
+    column_labels = dict(owner = lazy_gettext('Owner'), unique_id = lazy_gettext('ID'), name = lazy_gettext('Name'), composer = lazy_gettext('Composer'), creation_date = lazy_gettext('Creation Date'), modification_date = lazy_gettext('Modification Date'), last_access_date = lazy_gettext('Last Access Date'))
     column_sortable_list = ('unique_id', 'name', 'composer')
     column_searchable_list = ('unique_id', 'name', 'composer')
    
     # Information needed when creating a new composer
-    form_columns = ('owner_id', 'name', 'composer') 
+    form_columns = ('owner', 'name', 'composer') 
     sel_choices = [(level, level.title()) for level in (lazy_gettext('translate'), lazy_gettext('adapt'),lazy_gettext('dummy'))] # TODO: find where this is registered
     form_overrides = dict(composer=wtf.SelectField)
     form_args = dict(composer=dict(choices=sel_choices))   
