@@ -86,52 +86,46 @@ def edit(app_id):
         elif len(data) == 9:
             
             # Viewing empty Experiment 1 of 2. Domain 2 of 2 data is loaded from the DB.
-            objrels_names = []; objrels_relations = [];
+            objrels_names = []; objrels_varlist = []; objrels_relations = [];
             for item in data["object_relations"]:
                 objrels_names.append(item["name"])
+                objrels_varlist.append(item["object_properties"])
                 objrels_relations.append(item["relation"])
-                # objrels_varlist.append(item["object_properties"])
 
-                object_relations = zip(objrels_names, objrels_relations)            
+            object_relations = zip(objrels_names, objrels_varlist, objrels_relations)
 
-                dependencies = [
-                        {"name": "water_displacement", "depends_on": { "object_properties": ["mass","density"], "system_properties": ["fluid_density"]}},
-                        {"name": "sink_or_float", "depends_on": { "object_properties": ["density"], "system_properties": ["fluid_density"]}}
-                    ]
+            sysprops_names = []
+            for item in data["system_properties"]:
+                sysprops_names.append(item["name"])
 
-                #Comparison: list of all object/system properties with the selected by the user
-                #dependencies_selected = [""] - with set : get selected and not selected
-                # if the user has nothing selected in a row: validation - you must select one           
+            dependencies = data["object_system_dependencies"]
 
-            print data["object_measures"]
+            print sysprops_names
 
-            return render_template("edt/edit.html", app_id = app_id, n_trows = len(data), emptycontent_trows = [1,2,3],  object_relations = object_relations,
-                                                    object_properties = data["object_properties"], object_measures = data["object_measures"], system_properties = data["system_properties"],)
+            return render_template("edt/edit.html", app_id = app_id, n_trows = len(data), emptycontent_trows = [1,2,3],  object_relations = object_relations, dependencies = dependencies, objrels_names = objrels_names, sysprops_names = sysprops_names,
+                                                    object_properties = data["object_properties"], object_measures = data["object_measures"], system_properties = data["system_properties"])
         
         elif len(data) == 10:
             # Viewing Empty Experiment 2 of 2. Experiment 1 of 2 is loaded from the DB.
             
             experiment_name = data["exp-0"]["name"]
             experiment_description = data["exp-0"]["description"]
-
-            #object_property_selection = ["mass", "volume", "shape"]
-            #object_measure_selection = ["sink_or_float", "water_displacement"]    ** FIXXX!!! GENERATE SELECTED + NOT SELECTED OPTIONS FROM THE LISTS
-            #system_property_selection = ["fluid_aquarium"]
+            hypothesis = data["exp-0"]["hypothesis"]
             
-            return render_template("edt/edit.html", app_id = app_id, n_trows = len(data), experiment_name = experiment_name, experiment_description = experiment_description,
-                                                        object_property_selection = data["exp-0"]["object_property_selection"], system_property_selection = data["exp-0"]["system_property_selection"],
-                                                        object_measure_selection = data["exp-0"]["object_measure_selection"])
+            return render_template("edt/edit.html", app_id = app_id, n_trows = len(data), experiment_name = experiment_name, experiment_description = experiment_description, system_properties = data["system_properties"],
+                                                        hypothesis = hypothesis, object_property_selection = data["exp-0"]["object_property_selection"], object_properties = data["object_properties"], object_measures = data["object_measures"],
+                                                        system_property_selection = data["exp-0"]["system_property_selection"], object_measure_selection = data["exp-0"]["object_measure_selection"])
         
         elif len(data) == 11:
             # Q&A: Do we load all data variables? There are dependencies between tabs...
             experiment_name = data["exp-0"]["name"]
             experiment_description = data["exp-0"]["description"]
-            print data
+            #print data
             
-            return render_template("edt/edit.html", app_id = app_id, n_trows = len(data), experiment_name = experiment_name, experiment_description = experiment_description,
-                                                    object_property_selection = data["exp-0"]["object_property_selection"], system_property_selection = data["exp-0"]["system_property_selection"], 
-                                                    object_property_specification = data["exp-0"]["object_property_specification"], system_property_values = data["exp-0"]["system_property_values"],
-                                                    object_measure_selection = data["exp-0"]["object_measure_selection"])
+            return render_template("edt/edit.html", app_id = app_id, n_trows = len(data), experiment_name = experiment_name, experiment_description = experiment_description, object_properties = data["object_properties"],
+                                                    object_property_selection = data["exp-0"]["object_property_selection"], system_property_selection = data["exp-0"]["system_property_selection"], object_measures = data["object_measures"],
+                                                    object_property_specification = data["exp-0"]["object_property_specification"], system_property_values = data["exp-0"]["system_property_values"], system_properties = data["system_properties"],
+                                                    object_measure_selection = data["exp-0"]["object_measure_selection"], hypothesis = data["exp-0"]["hypothesis"])
 
         else:
             return "Error"
@@ -172,11 +166,6 @@ def edit(app_id):
             for element in range(len(sysprop_names)):
                 result_sys = {"name":sysprop_names[element], "type": sysprop_types[element], "symbol": sysprop_symbols[element], "unit": sysprop_units[element], "values": sysprop_values[element]}
                 system_properties.append(result_sys)
-
-            #"object_measures": [
-            #    {"name": "water_displacement", "type": "magnitude", "unit": "m^3"},
-            #    {"name": "sink_or_float", "type": "multitude", "values": ["sinks", "floats"]}
-            #]
             
             result_measu = {}; object_measures = [];
 
@@ -187,7 +176,7 @@ def edit(app_id):
 
             #Build the object_measures data field
             for element in range(len(objmeasu_names)):
-                #result_measu = {"values": objvalues[element]}  #AAARGGGGH VALUES IS LIST
+                #result_measu = {"values": objvalues[element]} - values is a list
                 result_measu = {"name":objmeasu_names[element], "type": objmeasu_types[element], "unit": objmeasu_units[element], "values": objvalues[element]}
                 object_measures.append(result_measu)
 
@@ -249,7 +238,7 @@ def edit(app_id):
             result_objsys = {}; object_system_dependencies = [];
             
             for element in range(len(object_measures)):
-                result_objsys = {"name":object_measures[element], "dependson": { "object_properties": objprop_deps[element], "system_properties": sysprop_deps[element] }}
+                result_objsys = {"name":object_measures[element]["name"], "dependson": { "object_properties": objprop_deps[element], "system_properties": sysprop_deps[element] }}
                 object_system_dependencies.append(result_objsys)
 
             # Build the JSON of the current experiment design (2nd step).
@@ -260,21 +249,35 @@ def edit(app_id):
 
             adaptor.save_data(app_id, data)
             
-            flash("Domain properties *2 of 2* saved successfully", "success")     
+            flash("Domain properties *2 of 2* saved successfully", "success")
+
+            objrels_names = []; objrels_varlist = []; objrels_relations = [];
+            for item in data["object_relations"]:
+                objrels_names.append(item["name"])
+                objrels_varlist.append(item["object_properties"])
+                objrels_relations.append(item["relation"])
+
+            sysprops_names = []
+            for item in data["system_properties"]:
+                sysprops_names.append(item["name"])
+
+            object_relations = zip(objrels_names, objrels_varlist, objrels_relations)
 
             # Template values
-            measu_names = []
-            for item in object_measures:
-                measu_names.append(item["name"])        
+            #measu_names = []
+            #for item in object_measures:
+            #   measu_names.append(item["name"])        
             
-            columns_rels = {"name": objprop_relnames, "dependson": objprop_vars, "relation": objprop_relations}
-            columns_deps = {"name":measu_names, "obj_deps": objprop_deps, "sys_deps": sysprop_deps}
+            #columns_rels = {"name": objprop_relnames, "dependson": objprop_vars, "relation": objprop_relations}
+            #columns_deps = {"name":measu_names, "obj_deps": objprop_deps, "sys_deps": sysprop_deps}
             
-            rels_tabbed = zip(columns_rels["name"], columns_rels["dependson"], columns_rels["relation"])
-            deps_tabbed = zip(columns_deps["name"], columns_deps["obj_deps"], columns_deps["sys_deps"])       
+            #rels_tabbed = zip(columns_rels["name"], columns_rels["dependson"], columns_rels["relation"])
+            #deps_tabbed = zip(columns_deps["name"], columns_deps["obj_deps"], columns_deps["sys_deps"])       object_relations = rels_tabbed, 
 
-            return render_template("edt/edit.html", app_id = app_id, object_measures = object_measures, object_relations = rels_tabbed, 
-                                                        object_properties = data["object_properties"], system_properties = data["system_properties"], dependencies = deps_tabbed, n_trows = len(data)) 
+            #print object_system_dependencies 
+
+            return render_template("edt/edit.html", app_id = app_id, object_measures = object_measures, object_relations = object_relations, objrels_names = objrels_names, sysprops_names = sysprops_names,
+                                                        object_properties = data["object_properties"], system_properties = data["system_properties"], dependencies = data["object_system_dependencies"], n_trows = len(data)) 
 
         elif len(data) == 9:
 
@@ -283,6 +286,7 @@ def edit(app_id):
 
             experiment_name = request.form["experiment_name"]
             experiment_description = request.form["experiment_description"]
+            hypothesis = request.form["hypothesis"]
             experiment_domain = data["name"] # Hidden for now. Do we need a system to manage them?
             objprops_selection = request.form.getlist('objprops_selection')
             measures_selection = request.form.getlist('measures_selection')
@@ -294,6 +298,7 @@ def edit(app_id):
                     # This variable stores all the information required for the experiment
                     'name': experiment_name,
                     'description': experiment_description,
+                    'hypothesis': hypothesis,
                     'domain': experiment_domain,
                     'object_property_selection': objprops_selection,
                     'object_measure_selection': measures_selection,
@@ -301,11 +306,22 @@ def edit(app_id):
                 }
             }) #new data length = 10
 
+            #Older variables
+            objrels_names = []; objrels_varlist = []; objrels_relations = [];
+            for item in data["object_relations"]:
+                objrels_names.append(item["name"])
+                objrels_varlist.append(item["object_properties"])
+                objrels_relations.append(item["relation"])
+
+            object_relations = zip(objrels_names, objrels_varlist, objrels_relations)            
+
             adaptor.save_data(app_id, data)
             flash("Experiment *1 of 2* saved successfully", "success")
                         
-            return render_template("edt/edit.html", app_id = app_id, experiment_name = experiment_name, experiment_description = experiment_description,
-                                                    object_property_selection = objprops_selection, measures_selection = measures_selection, system_property_selection = sysprops_selection, n_trows = len(data))      
+            return render_template("edt/edit.html", app_id = app_id, experiment_name = experiment_name, experiment_description = experiment_description, hypothesis = hypothesis, dependencies = data["object_system_dependencies"],
+                                                    object_properties = data["object_properties"], system_properties = data["system_properties"], object_measures = data["object_measures"], object_relations = object_relations,
+                                                    object_property_selection = objprops_selection, measures_selection = measures_selection, system_property_selection = sysprops_selection,
+                                                    n_trows = len(data))      
 
         elif len(data) == 10:
 
@@ -316,6 +332,7 @@ def edit(app_id):
             
             experiment_name = data["exp-0"]["name"] ### FIXX THIS!!!
             experiment_description = data["exp-0"]["description"]
+            hypothesis = data["exp-0"]["hypothesis"]
             experiment_domain = data["exp-0"]["domain"]
             
             # Object property values
@@ -351,6 +368,7 @@ def edit(app_id):
                     # This variable stores all the information required for the experiment
                     'name': experiment_name,
                     'description': experiment_description,
+                    'hypothesis': hypothesis,
                     'domain': experiment_domain,
                     'object_property_selection': object_property_selection,
                     'object_measure_selection': object_measure_selection,
@@ -365,8 +383,10 @@ def edit(app_id):
             adaptor.save_data(app_id, data)
             flash("Experiment *2 of 2* saved successfully", "success")
 
-            return render_template("edt/edit.html", app_id = app_id, n_trows = len(data), object_property_selection = object_property_selection, system_property_selection = system_property_selection,
-                                                    object_property_specification = object_property_specification, system_property_values = system_property_values, experiment_name = experiment_name, experiment_description = experiment_description)
+            return render_template("edt/edit.html", app_id = app_id, n_trows = len(data), experiment_name = experiment_name, experiment_description = experiment_description,
+                                                    object_properties = data["object_properties"], system_properties = data["system_properties"], object_measures = data["object_measures"],
+                                                    object_property_selection = object_property_selection, system_property_selection = system_property_selection,
+                                                    object_property_specification = object_property_specification, system_property_values = system_property_values, hypothesis = hypothesis)
 
         elif len(data) == 11: # Pending task: What can the user edit in the final EDT? The code of the last tab could be merged with the previous block.
             
@@ -416,6 +436,22 @@ def edt_widget(app_id):
 
     return render_template("edt/widget.xml", app_id = app_id)
 
+@adaptor.route("/export/<app_id>/edt/messages.js")
+def edt_messages(app_id):
+    """
+    edt_hypothesis(app_id)
+    This function points to the javascript file associated with an instance of the experiment design tool.
+
+    @param app_id: Identifier of the application. It will be unique within the list of user's apps.
+    @return: The javascript file with all its contents filled. Those contents are stored in the database.
+    """
+
+    # Selected experiment = data["exp-0"]...
+
+    data = adaptor.load_data(app_id)
+
+    return render_template("edt/messages.js", hypothesis = data['exp-0']['hypothesis'], domain_name = data['name'])
+    #return render_template("edt/messages.js", hypothesis = "If the density of an object is greater than the density of the fluid the object will float. YEAH!")
 
 @adaptor.route("/export/<app_id>/edt/domain.js")
 def edt_domain(app_id):
@@ -453,10 +489,11 @@ def edt_domain(app_id):
 	    'system_property_values': data['exp-0']['system_property_values']
     }
 
-    aloha = json.dumps(experiment, indent = 4)
-    print aloha
+    #output_check = json.dumps(experiment, indent = 4)
+    #print output_check
 
     return render_template("edt/domain.js", domain = json.dumps(domain, indent = 4, sort_keys=True), experiment = json.dumps(experiment, indent = 4, sort_keys=True),
                                             domain_name = data['name'], experiment_name = data['exp-0']['name'])
+
 
 

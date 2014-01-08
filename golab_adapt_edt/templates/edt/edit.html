@@ -14,7 +14,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="page-header">
-                        <h1 id="apptitle">Adapt a guidance app - {{ adaptor_type }} - {{ name }} </h1>
+                        <h1 id="apptitle">Adapt a guidance app - {{ adaptor_type }} - {{ name }}  </h1>
                     </div>
                 </div>
             </div>
@@ -324,7 +324,7 @@
                                                         <input name="objprop_relname" class="form-control" value="{{ item[0] }}" readonly="readonly">
                                                     </td>
                                                     <td>
-                                                        <select multiple="" name="objprop_var-{{ loop.index0+1 }}" class="selectpicker">
+                                                        <select multiple="" name="objprop_var-{{ loop.index0+1 }}" class="selectpicker">  
                                                             {% for item in object_properties %}
                                                             <option>{{ item[0] }}</option>
                                                             {% endfor %}
@@ -334,8 +334,8 @@
                                                 </tr>
                                                     {% endfor %}
                                                     
-                                            {% else %}  {# FIXXXX!!!!!!!!!!!!! - SELECTED + NOT SELECTED #}
-                                                {% for item in object_relations %}
+                                            {% else %}
+                                                {% for rel in object_relations %}
                                                 <tr>
                                                     <td>
                                                         <div class="input-group">
@@ -344,16 +344,20 @@
                                                         </div>
                                                     </td>                                                    
                                                     <td>
-                                                        <input name="objprop_relname" class="form-control" value="{{ item[0] }}" readonly="readonly">
+                                                        <input name="objprop_relname" class="form-control" value="{{ rel[0] }}" readonly="readonly">
                                                     </td>
                                                     <td>
                                                         <select multiple="" name="objprop_var-{{ loop.index0+1 }}" class="selectpicker">
-                                                            {% for objprop_var in item[1] %}
-                                                            <option selected>{{ objprop_var }}</option>
+                                                            {% for element in objrels_names %}
+                                                                {% if element in rel[1] %}
+                                                                    <option selected>{{ element }}</option>
+                                                                {% else %}
+                                                                    <option>{{ element }}</option>
+                                                                {% endif %}
                                                             {% endfor %}
                                                         </select>
                                                     </td>
-                                                    <td><input type="text" name="objprop_relation-{{ loop.index0+1 }}" class="form-control" placeholder="" value="{{ item[2] }}" required="required"></td>                                                     
+                                                    <td><input type="text" name="objprop_relation-{{ loop.index0+1 }}" class="form-control" placeholder="" value="{{rel[2] }}" required="required"></td>                                                     
                                                 </tr>
                                                 {% endfor %}
                                             {% endif %}
@@ -404,22 +408,30 @@
                                                 </tr>
                                                 {% endfor %}
                                         {% else %}
-                                                {% for item in dependencies %} {# MSSING: NOT SELECTED IN SELECT MULTIS #}
+                                                {% for dep in dependencies %}
                                                 <tr>
                                                     <td>
-                                                        <input name="objmeasu_set"  class="form-control" value="{{ item[0] }}" readonly="readonly">
+                                                        <input name="objmeasu_set"  class="form-control" value="{{dep['name'] }}" readonly="readonly">
                                                     </td>
-                                                    <td>
+                                                    <td>                                                        
                                                         <select multiple="" name="objprop_dep-{{ loop.index0+1 }}" class="selectpicker">
-                                                            {% for objprop in item[1] %}
-                                                            <option selected>{{ objprop }}</option> <!-- THIS IS THE ONLY ONE THAT PARTIALLY WORKS!!!  -->
-                                                            {%endfor %}
+                                                        {% for objprop in objrels_names %}
+                                                            {% if objprop in dep["dependson"]["object_properties"] %}
+                                                            <option selected>{{ objprop }}</option>
+                                                            {% else %}
+                                                            <option>{{ objprop }}</option>
+                                                            {% endif %}
+                                                        {%endfor %}     
                                                         </select>
                                                     </td>
-                                                    <td>
+                                                    <td>                                                       
                                                         <select multiple="" name="sysprop_dep-{{ loop.index0+1 }}"  class="form-control selectpicker">
-                                                            {% for sysprop in item[2] %}
-                                                            <option selected>{{ sysprop }}</option>
+                                                            {% for sysprop in sysprops_names %}
+                                                                {% if sysprop in dep["dependson"]["system_properties"] %}
+                                                                <option selected>{{ sysprop }}</option>
+                                                                {% else %}
+                                                                <option>{{ sysprop }}</option>
+                                                                {% endif %}
                                                             {%endfor %}
                                                         </select>
                                                     </td>                                                    
@@ -471,6 +483,13 @@
                                             </div>
                                         </div>
 
+                                        <div class="form-group">
+                                            <label for="hypoyhesis" class="col-lg-2 control-label">Hypothesis:</label>
+                                            <div class="col-lg-4">
+                                                <textarea name="hypothesis" class="form-control" rows="3" required="required">{{ hypothesis }}</textarea>
+                                            </div>
+                                        </div>
+
                                     </fieldset>
 
                                     <fieldset>
@@ -485,8 +504,12 @@
                                                     <option>{{ item["name"] }}</option>
                                                     {%endfor %}                                                
                                                 {% else %}
-                                                    {% for item in object_property_selection %}
-                                                    <option selected>{{ item }}</option>
+                                                    {% for item in object_properties %}
+                                                        {% if item["name"] in object_property_selection %}
+                                                        <option selected>{{ item["name"] }}</option>
+                                                        {% else %}
+                                                        <option>{{ item["name"] }}</option>
+                                                        {% endif %}
                                                     {%endfor %}
                                                 {% endif %}
                                                 </select>
@@ -502,8 +525,12 @@
                                                     <option>{{ item["name"] }}</option>
                                                     {%endfor %}
                                                 {% else %}
-                                                    {% for item in object_measure_selection %}
-                                                    <option selected>{{ item }}</option>
+                                                    {% for item in object_measures %}
+                                                        {% if item["name"] in object_measure_selection %}
+                                                        <option selected>{{ item["name"] }}</option>
+                                                        {% else %}
+                                                        <option>{{ item["name"] }}</option>
+                                                        {% endif %}
                                                     {%endfor %}
                                                 {% endif %}
                                                 </select>
@@ -519,8 +546,12 @@
                                                     <option>{{ item["name"] }}</option>
                                                     {%endfor %}
                                                 {% else %}
-                                                    {% for item in system_property_selection %}
-                                                    <option selected>{{ item }}</option>
+                                                    {% for item in system_properties %}
+                                                        {% if item["name"] in system_property_selection %}
+                                                        <option selected>{{ item["name"] }}</option>
+                                                        {% else %}
+                                                        <option>{{ item["name"] }}</option>
+                                                        {% endif %}
                                                     {%endfor %}
                                                 {% endif %}
                                                 </select>
@@ -709,7 +740,7 @@ jQuery(document).ready(function($) {
         }
     });    
 
-    /* FIX THIS!!!! Generic code: search all table IDs in webpage and add buttons.
+    /* Clean up & generic code: search all table IDs in webpage and add buttons.
         Missing top limit for creating new rows?
         - And disable remove button when lower limit is reached (removes an unnecessary alert) */
     var i = $("table#object-properties tbody tr").length;
