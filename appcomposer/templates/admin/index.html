@@ -5,9 +5,11 @@
     <div class="container">
 
         <div class="hero-unit">
-            <h1>Welcome to the Administrator panel: {{session.login}}</h1>
-            <p>This is the Admin View of the App Composer. You can use this panel too to manage users and applications.</p>
-            <p><a href="#" class="btn btn-primary btn-large">Learn more &raquo;</a></p>
+            <h1>{{ gettext("Welcome %(user)s!", user = session.name) }}</h1>
+            <p>{{ gettext("This is the Admin View of the App Composer. You can use this panel to manage users and applications.") }}</p>
+            <p>
+                <a href="#" class="btn btn-primary btn-large">{{ gettext("Learn more") }} &raquo;</a>
+            </p>
         </div>
     </div>
 {% endblock %}

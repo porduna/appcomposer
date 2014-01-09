@@ -65,7 +65,7 @@ class AppVersion(db.Model):
 
     app = relation("App", backref="app_versions")
 
-    def __init__(self, version_id, app):
+    def __init__(self, version_id=None, app=None):
         self.version_id = version_id
         self.app = app
         self.creation_date = datetime.datetime.now()
@@ -96,7 +96,7 @@ class App(db.Model):
     def __repr__(self):
         return self.to_json()
 
-    def __init__(self, name, owner, composer):
+    def __init__(self, name=None, owner=None, composer=None):
         self.name = name
         self.owner = owner
         self.composer = composer
@@ -147,7 +147,7 @@ class AppVar(db.Model):
     app_id = db.Column(db.Integer, ForeignKey("Apps.id"), nullable=False)
     app = relation("App", backref=backref("appvars"))
 
-    def __init__(self, name, value):
+    def __init__(self, name=None, value=None):
         self.value = value
         self.name = name
 
