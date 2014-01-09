@@ -111,9 +111,6 @@ class UsersView(AdminModelView):
     column_list = ('login', 'name', 'email', 'organization', 'role')
 
     column_labels = dict(login = lazy_gettext('Login'), name = lazy_gettext('Full Name'), email = lazy_gettext('E-mail'), organization = lazy_gettext('Organization'), role = lazy_gettext('Role'))
-    
-    column_filters = None # Filters are disable at the moment    
-    #column_filters = ('login', 'name', 'email', 'organization', 'role')
           
     column_descriptions = dict(login=lazy_gettext('Username (all letters, dots and numbers)'),
                                name=lazy_gettext('First and Last name'),
@@ -153,8 +150,8 @@ class AdminAppsView(AdminModelView):
     # The creation mode is disabled
     can_create = False
 
-    column_list = ('owner', 'unique_id', 'name', 'composer', 'creation_date', 'modification_date', 'last_access_date')
-    column_labels = dict(owner = lazy_gettext('Owner'), unique_id = lazy_gettext('ID'), name = lazy_gettext('Name'), composer = lazy_gettext('Composer'), creation_date = lazy_gettext('Creation Date'), modification_date = lazy_gettext('Modification Date'), last_access_date = lazy_gettext('Last Access Date'))
+    column_list = ('owner', 'unique_id', 'name', 'composer')
+    column_labels = dict(owner = lazy_gettext('Owner'), unique_id = lazy_gettext('ID'), name = lazy_gettext('Name'), composer = lazy_gettext('Composer'))
     column_sortable_list = ('unique_id', 'name', 'composer')
     column_searchable_list = ('unique_id', 'name', 'composer')
    
