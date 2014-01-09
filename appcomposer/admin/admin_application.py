@@ -27,8 +27,7 @@ def initialize_admin_component(app):
     url = '/admin'
     admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name=lazy_gettext('Admin Profile'), endpoint = "home-admin")
     admin.add_view(UsersView(name=lazy_gettext('Users'), url = 'users', endpoint = 'admin.users'))
-    admin.add_view(BasicAdminAppsView(name=lazy_gettext('Basic App View'), url = 'basic-apps-admin', endpoint = 'admin.basic-admin-apps'))    
-    admin.add_view(AdvancedAdminAppsView(name=lazy_gettext('Apps View'), url = 'advanced-apps-admin', endpoint = 'admin.advanced-admin-apps'))   
+    admin.add_view(AdminAppsView(name=lazy_gettext('Apps'), url = 'apps-admin', endpoint = 'admin.admin-apps'))      
     admin.add_view(ProfileView(name=lazy_gettext('My Profile'), url = 'profile', endpoint = 'admin.profile'))
     admin.add_view(BackView(name=lazy_gettext('Back'), url = 'back', endpoint = 'admin.back'))     
     admin.init_app(app)
@@ -108,12 +107,14 @@ class UsersView(AdminModelView):
     """
     Users View. Entry view which lets us manage the users in the system.
     """
-    
+   
     column_list = ('login', 'name', 'email', 'organization', 'role')
 
     column_labels = dict(login = lazy_gettext('Login'), name = lazy_gettext('Full Name'), email = lazy_gettext('E-mail'), organization = lazy_gettext('Organization'), role = lazy_gettext('Role'))
-    column_filters = ('login', 'name', 'email', 'organization', 'role')
-
+    
+    column_filters = None # Filters are disable at the moment    
+    #column_filters = ('login', 'name', 'email', 'organization', 'role')
+          
     column_descriptions = dict(login=lazy_gettext('Username (all letters, dots and numbers)'),
                                name=lazy_gettext('First and Last name'),
                                email=lazy_gettext('Valid e-mail address'))
@@ -143,12 +144,13 @@ class UsersView(AdminModelView):
         model.last_access_date = datetime.datetime.now()
         
 
-class BasicAdminAppsView(AdminModelView):
+class AdminAppsView(AdminModelView):
     """
-    Basic Admin Apps View. Basic entry view which lets us manage the applications located at the system.
-    We will be able to create, edit, and delete apps.
+    Admin Apps View. Basic entry view which lets us manage the applications located at the system.
+    We will be able to filter, edit, and delete apps. The creation mode is disabled.
     """
     
+    # The creation mode is disabled
     can_create = False
 
     column_list = ('owner', 'unique_id', 'name', 'composer', 'creation_date', 'modification_date', 'last_access_date')
@@ -156,37 +158,14 @@ class BasicAdminAppsView(AdminModelView):
     column_sortable_list = ('unique_id', 'name', 'composer')
     column_searchable_list = ('unique_id', 'name', 'composer')
    
-    # Information needed when creating a new composer
+    # Information needed when creating a new composer (not used at the moment)
     form_columns = ('owner', 'name', 'composer') 
-    sel_choices = [(level, level.title()) for level in (lazy_gettext('translate'), lazy_gettext('adapt'),lazy_gettext('dummy'))] # TODO: find where this is registered
+    sel_choices = [(level, level.title()) for level in (lazy_gettext('translate'), lazy_gettext('adapt'),lazy_gettext('dummy'))] # TODO: find where this is registered in case of activate the creation mode
     form_overrides = dict(composer=wtf.SelectField)
     form_args = dict(composer=dict(choices=sel_choices))   
    
     def __init__(self, **kwargs):
-        super(BasicAdminAppsView, self).__init__(models.App, db.session, **kwargs)
-
-
-class AdvancedAdminAppsView(AdminBaseView):
-    """
-    Advanced Admin Apps View. Advanced entry view which lets us manage the applications located at the system. 
-    We will be able to create, edit, and delete apps.
-    """
-
-    @expose('/')
-    def index(self):
-        # Retrieve the apps
-        apps = db.session.query(models.App).all()
-        
-        def build_edit_link(app):
-            endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]
-            return url_for(endpoint, appid=app.unique_id)
-
-        def build_delete_link(app):
-            endpoint = COMPOSERS_DICT[app.composer]["delete_endpoint"]
-            return url_for(endpoint, appid=app.unique_id)
-
-        return self.render('admin/advanced-admin-apps.html', composers=COMPOSERS, apps=apps, build_edit_link=build_edit_link,
-                           build_delete_link=build_delete_link)
+        super(AdminAppsView, self).__init__(models.App, db.session, **kwargs)
 
 
 class ProfileView(AdminBaseView):
