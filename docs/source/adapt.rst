@@ -1,8 +1,9 @@
 .. _adapt:
 
 Adapt Composer
-===========
+==============
 
+.. contents:: Table of Contents
 
 Do you want to customize your concept maps or hypotheses? In this section, 
 we will learn to adapt these tools with our own set of elements. As you will see
@@ -16,8 +17,20 @@ can be found there. Click on the button on the right side of the screen:
    :width: 640 px      
    :align: center
 
+.. note::
+    
+    The following adaptations are adaptations of existing tools developed by
+    third parties. In each section it will be clearly displayed who are the
+    authors of those tools.
+
 Creating a Concept Map adaption
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+
+    The Concept Mapper is an adaptation of the amazing `Concept Mapper <http://go-lab.gw.utwente.nl/sources/tools/conceptmap/src/main/webapp/conceptmap0.6.html>`_
+    developed in the University of Twente.
+
 
 A concept map may have multiple variations. If we want to add our own concepts,
 we will start by selecting this type of tool in the list: 
@@ -59,9 +72,13 @@ students can do:
    :width: 640 px      
    :align: center
 
-
 Creating a Hypothesis adaption
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+
+    The Hypothesis is an adaptation of the amazing `Hypothesis tool <http://go-lab.gw.utwente.nl/sources/tools/hypothesis/src/main/webapp/hypothesis0.9.html>`_
+    developed in the University of Twente.
 
 Teachers may be interested in generating a specific set of conditions for the
 hypothesis tool. In that case, they can select this type of tool in the adaptor: 
@@ -96,7 +113,12 @@ To import this Hypothesis instance into your Graasp space or ILS, simply copy
 and paste the "Widget link". 
 
 Creating a Experiment Design adaption
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+.. note::
+
+    The EDT is an adaptation of the amazing `Experiment Design Tool <http://go-lab.gw.utwente.nl/sources/tools/edt/edt.html>`_
+    developed in the University of Twente.
 
 How can students test an hypothesis and know if it is valid? The tool that is  
 described in this block may help with such question. Let's create a experiment

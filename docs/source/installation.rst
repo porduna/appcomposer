@@ -3,6 +3,8 @@
 Installation
 ------------
 
+.. contents:: Table of Contents
+
 This section covers the installation and deployment of a custom AppComposer server.
 
 
