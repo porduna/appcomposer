@@ -1,0 +1,166 @@
+{% macro render_edt(app_id) %}
+<html>
+<head>
+<meta charset="UTF-8">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+<link rel="shortcut icon" href="{{ url_for('edt.static', filename='commons/images/favicon.ico') }}" type="image/vnd.microsoft.icon" />
+
+<title class="edt_translate">experimental_design_tool</title>
+<link rel="stylesheet" type="text/css" href="{{ url_for('edt.static', filename='libs/css/jquery.ui.all.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('edt.static', filename='commons/css/golabJqueryUi.css') }}">
+<link rel="stylesheet" type="text/css" href="{{ url_for('edt.static', filename='libs/fonts/titilliumWeb400.css') }}">
+<!-- Additional files have been included. JQuery.ui.all.css default theme (smoothness) and a specific font (titilliumWeb400.woff) are stored locally. -->
+<link rel="stylesheet" type="text/css" href="{{ url_for('edt.static', filename='edt.css') }}">
+
+<script type="text/javascript" charset="utf-8" src="{{ url_for('edt.static', filename='libs/js/jquery-min.js') }}"></script>
+<script type="text/javascript" charset="utf-8" src="{{ url_for('edt.static', filename='libs/js/jquery-ui.custom.min.js') }}"></script>
+<script type="text/javascript" charset="utf-8" src="{{ url_for('edt.static', filename='libs/js/jquery.ui.touch-punch.js') }}"></script>
+<script type="text/javascript" charset="utf-8" src="{{ url_for('edt.static', filename='libs/js/flot/excanvas.min.js') }}"></script>
+<script type="text/javascript" charset="utf-8" src="{{ url_for('edt.static', filename='libs/js/flot/jquery.flot.js') }}"></script>
+<script type="text/javascript" charset="utf-8" src="{{ url_for('edt.static', filename='libs/js/flot/jquery.flot.symbol.js') }}"></script>
+<script type="text/javascript" charset="utf-8" src="{{ url_for('edt.static', filename='goodies.js') }}"></script>
+<script type="text/javascript" charset="utf-8" src="{{ url_for('edt.static', filename='edt.js') }}"></script>
+<script type="text/javascript" charset="utf-8" src="{{ url_for('.edt_messages', app_id = app_id) }}"></script>
+<script type="text/javascript" charset="utf-8" src="{{ url_for('.edt_domain', app_id = app_id) }}"></script>
+<!--<script src="vbl.js"></script>-->
+</head>
+
+
+
+<body>
+<h1 class="edt_translate">experiment_design_buoyancy</h1>
+
+<table>
+<tr valign="top">
+<td style="width: 40%">
+<div id="edt_container_instructions">
+  <div class="edt_translate areaLabel">instructions</div>
+  <div id="edt_content_instructions">
+   <p>These are the instructions.</p>
+  </div>
+</div>
+
+<div id="edt_container_heuristics">
+  <div class="edt_translate areaLabel">heuristics</div>
+  <div id="edt_content_heuristics"><p>Change will come.</p></div>
+</div>
+
+<div id="edt_container_lab">
+  <div class="edt_translate areaLabel">lab</div>
+  <div id="edt_content_lab"><p>Lab is closed.</p></div>
+</div>
+
+</td>
+
+<td>
+
+<div id="edt_container_experiment">
+  <div class="edt_translate areaLabel">experiment_design</div>
+  <div id="edt_content_experiment">
+
+    <div id="edt_tabs">
+      <ul>
+	<li class="edt_button_plan">
+	  <a class="edt_translate" href="#edt_article_plan_experiment">plan</a>
+	</li>
+	<li class="edt_button_design">
+	  <a class="edt_translate" href="#edt_article_design_experiment">design</a>
+	</li>
+	<li class="edt_button_run">
+	  <a class="edt_translate" href="#edt_article_run_experiment">run</a>
+	</li>
+<!--	<li class="edt_button_analyse">
+	  <a class="edt_translate" href="#edt_article_analyse_experiment">analyse</a>
+	</li>
+-->    </ul>
+
+      <article id="edt_article_plan_experiment">
+      <div id="edt_div_plan" class="edt_div_main">
+	<table id="edt_table_plan">
+	  <tr>
+	    <td class="edt_td_experiment" valign="top">
+	      <b class="edt_translate">design_experiment</b>
+	      <div id="edt_div_plan_experiment" class="edt_div_sub">
+	      </div>
+	    </td>
+	    <td class="edt_td_selection" valign="top">
+	      <b class="edt_translate">select_variables</b>
+	      <div id="edt_div_plan_selection" class="edt_div_sub">
+	      </div>
+	    </td>
+	  </tr>
+	</table>
+      </div>
+    </article>
+
+    <article id="edt_article_design_experiment">
+      <div id="edt_div_design" class="edt_div_main">
+	<table id="edt_table_design">
+	  <tr>
+	    <td>
+	      <div id="edt_div_design_experiment" class="edt_div_sub">
+	      </div>
+	      <div><button id="edt_button_add_experimental_row"></button></div>
+	    </td>
+	  </tr>
+	</table>
+      </div>
+    </article>
+
+    <article id="edt_article_run_experiment" hidden="true">
+      <div id="edt_div_run" class="edt_div_main">
+	<table id="edt_table_run">
+	  <tr>
+	    <td>
+	      <div id="edt_div_run_experiment" class="edt_div_sub">
+	      </div>
+	    </td>
+	  </tr>
+	</table>
+      </div>
+    </article>
+
+<!--
+    <article id="edt_article_analyse_experiment" hidden="true">
+      <div id="edt_div_analyse" class="edt_div_main">
+	<table id="edt_table_analyse">
+	  <tr>
+	    <td>
+	      <div id="edt_div_analyse_experiment" class="edt_div_sub">
+	      </div>
+	    </td>
+	  </tr>
+	</table>
+      </div>
+    </article>
+-->
+    </div>
+  </div>
+</div>
+
+<div id="edt_container_hypothesis">
+  <div class="edt_translate areaLabel">hypothesis</div>
+  <div id="edt_content_hypothesis">
+   <p>This is the current hypothesis.</p>
+  </div>
+</div>
+
+</td>
+</tr>
+</table>
+
+<p>
+[ <span id="edt_button_language_en">English</span>
+| <span id="edt_button_language_nl">Nederlands</span>
+]
+</p>
+
+	<!-- Placeholders for dialogs -->
+<div id="edt_dialog_warning"></div>
+<div id="edt_dialog_specify_value"></div>
+
+</body>
+
+</html>
+
+{% endmacro %}
