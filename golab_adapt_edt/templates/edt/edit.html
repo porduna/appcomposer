@@ -135,9 +135,9 @@
                                                     </table>
 
                                                     <p class="text-right">
-                                                    <button type="button" class="btn btn-primary btn-xs" id="propmore-rows">+ Add row</button>
+                                                    <button type="button" class="btn btn-primary btn-xs" id="propmore-rows">+ Add object prop.</button>
                                                     <span> | </span>
-                                                    <button type="button" class="btn btn-danger btn-xs" id="propless-rows">- Remove row</button>                                                 
+                                                    <button type="button" class="btn btn-danger btn-xs" id="propless-rows">- Remove last object prop.</button>                                                 
                                                     </p>
 
                                                 </div><!-- /endtable1 -->
@@ -200,9 +200,9 @@
                                                     </table>
 
                                                     <p class="text-right">
-                                                    <button type="button" class="btn btn-primary btn-xs" id="sysmore-rows">+ Add row</button>
+                                                    <button type="button" class="btn btn-primary btn-xs" id="sysmore-rows">+ Add system prop.</button>
                                                     <span> | </span>
-                                                    <button type="button" class="btn btn-danger btn-xs" id="sysless-rows">- Remove row</button>                                                  
+                                                    <button type="button" class="btn btn-danger btn-xs" id="sysless-rows">- Remove last system prop.</button>                                                  
                                                     </p>
                                                     
                                                 </div><!-- /endtable2 -->
@@ -261,9 +261,9 @@
                                                     
                                                     </table>
                                                     <p class="text-right">
-                                                    <button type="button" class="btn btn-primary btn-xs" id="measumore-rows">+ Add row</button>
+                                                    <button type="button" class="btn btn-primary btn-xs" id="measumore-rows">+ Add measure</button>
                                                     <span> | </span>
-                                                    <button type="button" class="btn btn-danger btn-xs" id="measuless-rows">- Remove row</button>                                                    
+                                                    <button type="button" class="btn btn-danger btn-xs" id="measuless-rows">- Remove last measure</button>                                                    
                                                     </p>
 
                                                     
@@ -275,8 +275,9 @@
                                             <div class="form-group">
                                                 <div class="col-lg-10 col-lg-offset-2">
                                                     <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_index') }}">« Go back to adaptor index</a>
-                                                    <input type="hidden" name="app_id" value="{{ app_id }}">                                  
-                                                    <input type="submit" value="Save properties" class="btn btn-success">                                                    
+                                                    <input type="hidden" name="app_id" value="{{ app_id }}">                                                                                    
+                                                    {% if n_trows == 4  %}<input type="submit" value="Save properties" class="btn btn-success">
+                                                    {% else %}<input type="submit" value="Save properties" class="btn btn-success disabled">{% endif %}                                                    
                                                 </div>
                                             </div>                                                                                          
 
@@ -450,7 +451,8 @@
                                     <div class="form-group">
                                         <div class="col-lg-10 col-lg-offset-2">
                                             <input type="hidden" name="app_id" value="{{ app_id }}">
-                                            <input type="submit" value="Save relations and dependencies" class="btn btn-success">
+                                            {% if n_trows == 7  %}<input type="submit" value="Save relations and dependencies" class="btn btn-success">
+                                            {% else %}<input type="submit" value="Save relations and dependencies" class="btn btn-success disabled">{% endif %}
                                         </div>
                                     </div>
 
@@ -562,8 +564,9 @@
 
                                     <div class="form-group">
                                         <div class="col-lg-10 col-lg-offset-2">
-                                            <input type="hidden" name="app_id" value="{{ app_id }}">                                  
-                                            <input type="submit" value="Save selections for experiment" class="btn btn-success">  
+                                            <input type="hidden" name="app_id" value="{{ app_id }}">
+                                            {% if n_trows == 9  %}<input type="submit" value="Save selections for experiment" class="btn btn-success">
+                                            {% else %}<input type="submit" value="Save selections for experiment" class="btn btn-success disabled">{% endif %}                                              
                                         </div>
                                     </div>
                                             
@@ -606,7 +609,7 @@
                                                     <td><input type="text" name="exprop_min" class="form-control" placeholder="" value="" required="required"></td>
                                                     <td><input type="text" name="exprop_max" class="form-control" placeholder="" value="" required="required"></td>
                                                     <td><input type="text" name="exprop_increment" class="form-control" placeholder="" value="" required="required"></td>
-                                                    <td><input type="text" name="exprop_value" class="form-control" placeholder="" value="" required="required"></td>
+                                                    <td><input type="text" name="exprop_value" class="form-control" placeholder="" value="*" required="required" readonly="readonly"></td> {# Needs Improvement #}
                                                 </tr>
                                                 {%endfor %} 
                                         {% else %}
@@ -619,7 +622,7 @@
                                                     <td><input type="text" name="exprop_min" class="form-control" placeholder="" value="{{ object_property_specification[loop.index0]['range']['minimum'] }}" required="required"></td>
                                                     <td><input type="text" name="exprop_max" class="form-control" placeholder="" value="{{ object_property_specification[loop.index0]['range']['maximum'] }}" required="required"></td>
                                                     <td><input type="text" name="exprop_increment" class="form-control" placeholder="" value="{{ object_property_specification[loop.index0]['range']['increment'] }}" required="required"></td>
-                                                    <td><input type="text" name="exprop_value" class="form-control" placeholder="" value="{{ object_property_specification[loop.index0]['values'] }}"></td>
+                                                    <td><input type="text" name="exprop_value" class="form-control" placeholder="" value="*"  readonly="readonly"></td>
                                                 </tr>
                                                 {%endfor %}
                                         {% endif %}
@@ -668,8 +671,9 @@
 
                                     <div class="form-group">
                                         <div class="col-lg-10 col-lg-offset-2">
-                                            <input type="hidden" name="app_id" value="{{ app_id }}">                                  
-                                            <input type="submit" value="Save experiment values" class="btn btn-success">  
+                                            <input type="hidden" name="app_id" value="{{ app_id }}">
+                                            {% if n_trows == 10  %}<input type="submit" value="Save experiment values" class="btn btn-success">
+                                            {% else %}<input type="submit" value="Save experiment values" class="btn btn-success disabled">{% endif %}                                            
                                         </div>
                                     </div>
                                             
