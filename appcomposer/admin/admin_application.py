@@ -1,6 +1,6 @@
 import datetime
 
-from flask import redirect, request, flash, session, render_template_string, url_for
+from flask import redirect, request, url_for
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from flask.ext.admin.contrib.sqla import ModelView
 
@@ -10,10 +10,7 @@ from wtforms.validators import Email, Regexp
 
 from appcomposer import models, db
 from appcomposer.login import current_user
-from appcomposer.babel import lazy_gettext, gettext
-
-# List of all available composers
-from appcomposer.application import COMPOSERS, COMPOSERS_DICT
+from appcomposer.babel import lazy_gettext
 
 ##########################################################
 #
