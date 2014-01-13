@@ -120,8 +120,8 @@ Creating a Experiment Design adaption
     The EDT is an adaptation of the amazing `Experiment Design Tool <http://go-lab.gw.utwente.nl/sources/tools/edt/edt.html>`_
     developed in the University of Twente.
 
-How can students test an hypothesis and know if it is valid? The tool that is  
-described in this block may help with such question. Let's create a experiment
+How can students test a hypothesis and know if it is valid? The tool that is  
+described in this block may help with such question. Let's create an experiment
 design with a specific set of variables.
 
 .. image:: /_static/edt-00.png
@@ -137,7 +137,7 @@ provide a description. Now we can begin to build the design.
    :target: /_static/edt-01.png
    :align: center 
 
-The process for achieving our goal requires to complete four steps with their
+The process for achieving our goal requires completing four steps with their
 corresponding tabs: two for the domain and other two for the experiment contents.
 In the first tab there are three tables: object properties, system properties and
 measures. Magnitude and adimensional are the two types of variables.
@@ -150,7 +150,7 @@ table. Once you have finished, save the changes and proceed to the next step.
    :align: center 
 
 If the experiment does not include a set of expressions, it would not be possible to
-analyse the results. Mathematical relations or dependencies between the previous
+analyze the results. Mathematical relations or dependencies between the previous
 variables have their right place in the second tab of the domain.
 
 .. image:: /_static/edt-03.png
@@ -160,7 +160,7 @@ variables have their right place in the second tab of the domain.
 
 It is time to give a name to your experiment. And we cannot forget about the main
 purpose of this tool: the hypothesis that must be verified later in the laboratory. In the
-bottom of the page there are also three selecion menus. Please choose the set of
+bottom of the page there are also three selection menus. Please choose the set of
 variables from the stored domain.
 
 .. image:: /_static/edt-04.png
