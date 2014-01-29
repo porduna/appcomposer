@@ -100,22 +100,7 @@ def translate_index():
     return render_template('composers/translate/index.html', form=form)
 
 
-def _db_get_owner_app(spec):
-    """
-    Gets from the database the App that is considered the Owner for a given spec.
-    @param spec: String to the App's original XML.
-    @return: The owner for the App. None if no owner is found.
-    """
-    relatedAppsIds = db.session.query(AppVar.app_id).filter_by(name="spec",
-                                                               value=spec).subquery()
-    ownerAppId = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
-                                                        AppVar.app_id.in_(relatedAppsIds)).first()
 
-    if ownerAppId is None:
-        return None
-
-    ownerApp = App.query.filter_by(id=ownerAppId[0]).first()
-    return ownerApp
 
 
 #----------------------------------------
@@ -262,7 +247,7 @@ def translate_selectlang():
         set_var(app, "spec", appurl)
 
         # Locate the owner of the App
-        ownerApp = _db_get_owner_app(appurl)
+        ownerApp = backend._db_get_owner_app(appurl)
 
         # If there isn't already an owner, declare ourselves as the owner.
         if ownerApp is None:
@@ -298,7 +283,7 @@ def translate_selectlang():
     # The following is again common for both GET (view) and POST (edit).
 
     # Check ownership.
-    ownerApp = _db_get_owner_app(spec)
+    ownerApp = backend._db_get_owner_app(spec)
     if ownerApp == app:
         is_owner = True
     else:
@@ -374,7 +359,7 @@ def translate_edit():
 
 
     # Get the owner app.
-    owner_app = _db_get_owner_app(spec)
+    owner_app = backend._db_get_owner_app(spec)
     is_owner = owner_app == app
 
     # This is a GET request. We are essentially viewing-only.
@@ -457,7 +442,7 @@ def translate_proposed_list():
     appdata = json.loads(app.data)
 
     # Ensure that only the app owner can carry out these operations.
-    owner_app = _db_get_owner_app(appdata["spec"])
+    owner_app = backend._db_get_owner_app(appdata["spec"])
     if app != owner_app:
         return render_template("composers/errors.html",
                                message="Not Authorized: You don't seem to be the owner of this app")

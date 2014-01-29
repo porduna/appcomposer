@@ -4,10 +4,12 @@ from xml.dom import minidom
 import StringIO
 
 from babel import Locale, UnknownLocaleError
-from flask import make_response, url_for, render_template
+from flask import make_response, url_for, render_template, request
+from appcomposer import db
 
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
+from appcomposer.models import AppVar, App
 
 
 """
@@ -685,6 +687,24 @@ class Bundle(object):
         return bundle
 
 
+def _db_get_owner_app(spec):
+    """
+    Gets from the database the App that is considered the Owner for a given spec.
+    @param spec: String to the App's original XML.
+    @return: The owner for the App. None if no owner is found.
+    """
+    relatedAppsIds = db.session.query(AppVar.app_id).filter_by(name="spec",
+                                                               value=spec).subquery()
+    ownerAppId = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
+                                                        AppVar.app_id.in_(relatedAppsIds)).first()
+
+    if ownerAppId is None:
+        return None
+
+    ownerApp = App.query.filter_by(id=ownerAppId[0]).first()
+    return ownerApp
+
+
 @translate_blueprint.route('/app/<appid>/app.xml')
 def app_xml(appid):
     """
@@ -751,6 +771,55 @@ def app_xml(appid, group):
     return response
 
 
+@translate_blueprint.route('/serve')
+def app_translation_serve():
+    """
+    Serves a translation.
+    GET parameters expected:
+        app_url
+        lang
+        target
+    """
+    app_xml = request.values.get("app_url")
+    if app_xml is None:
+        return render_template("composers/errors.html", message="Error 400: Bad Request: Parameter app_url is missing."), 400
+
+    lang = request.values.get("lang")
+    if lang is None:
+        return render_template("composers/errors.html", message="Error 400: Bad Request: Parameter lang is missing."), 400
+
+    target = request.values.get("target")
+    if target is None:
+        return render_template("composers/errors.html", message="Error 400: Bad Request: Parameter target is missing."), 400
+
+    # Retrieves the owner app from the DB.
+    owner_app = _db_get_owner_app(app_xml)
+    if owner_app is None:
+        return render_template("composers/errors.html", message="Error 404: App not found."), 404
+
+    # Parse the app's data.
+    bm = BundleManager.create_from_existing_app(owner_app.data)
+
+    # Build the name to request.
+    bundle_name = "%s_%s" % (lang, target)
+    bundle = bm.get_bundle(bundle_name)
+
+    if bundle is None:
+        dbg_info = str(bm._bundles.keys())
+        return render_template("composers/errors.html",
+                              message="Error 404: Could not find such language for the specified app. Available keys are: " + dbg_info), 404
+
+
+    output_xml = bundle.to_xml()
+
+    response = make_response(output_xml)
+    response.mimetype = "application/xml"
+    return response
+
+
+
+
+
 @translate_blueprint.route('/app/<appid>/i18n/<langfile>.xml')
 def app_langfile(appid, langfile):
     """
@@ -791,3 +860,5 @@ def app_langfile(appid, langfile):
     response = make_response(output_xml)
     response.mimetype = "application/xml"
     return response
+
+
