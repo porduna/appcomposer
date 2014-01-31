@@ -31,7 +31,8 @@
 {% endblock %}
 
 {% block preview_tab %}
-<iframe src="{{ url_for('.conceptmapper_index', app_id = app_id) }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+<div>
+<iframe src="{{ url_for('.conceptmapper_index', app_id = app_id) }}" width="800" height="650" frameborder="1px solid gray" scrolling="no"></iframe>
 <div>
     <a href="{{ url_for('.conceptmapper_widget', app_id = app_id) }}">[+] Widget link</a>
 </div>

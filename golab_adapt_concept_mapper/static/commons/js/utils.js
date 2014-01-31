@@ -131,3 +131,18 @@ ut.commons.utils.getCommonsImagesDataSourcesPath = function () {
 }
 
 ut.commons.utils.commonsImagesDataSourcesPath = ut.commons.utils.getCommonsImagesDataSourcesPath();
+
+// automatically calls "gadgetResize" if the window size changes
+// please call it only once...
+/*
+ // this function breaks in Graasp
+ ut.commons.utils.gadgetAutoResize = function() {
+ window.onresize = function(event) {
+ window.clearTimeout(this.resizeTimeoutId);
+ return this.resizeTimeoutId = setTimeout((function() {
+ return ut.commons.utils.gadgetResize();
+ }), 500);
+ };
+ ut.commons.utils.gadgetResize();
+ }
+ */

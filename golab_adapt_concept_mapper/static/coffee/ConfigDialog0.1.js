@@ -135,7 +135,7 @@
       label: "Available concepts",
       description: "A list with pre-defined concepts to select from in the combobox.",
       type: "array",
-      value: {{domain}},
+      value: ["luminous intensity"],
       configurable: "true"
     },
     relations: {
