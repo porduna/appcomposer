@@ -5,7 +5,8 @@ from flask import render_template, request, flash
 from appcomposer.composers.adapt import create_adaptor
 
 adaptor = create_adaptor('Concept Mapper', {
-        'concepts' : ''
+        'concepts' : '',
+        'relations' : ''
    })
 
 
@@ -15,18 +16,20 @@ def edit(app_id):
     concepts = data["concepts"]
 
     if request.method == 'POST':
-        # Retrieve the list of concepts and convert it to the format supported by the app.
+        # Retrieve the lists of concepts and relations and convert them to the format supported by the app.
         # Request-- concepts: "a,b,c"  -> Concepts  (str): "a,b,c"
         concepts = ', '.join(list(OrderedDict.fromkeys([ s.strip() for s in request.form["concepts"].split(',') ])))
+        relations = ', '.join(list(OrderedDict.fromkeys([ s.strip() for s in request.form["relations"].split(',') ])))
 
         # Build the JSON of the current concept map.
         data.update({
-            "concepts": concepts})
+            "concepts": concepts,
+            "relations": relations})
 
         adaptor.save_data(app_id, data)
         flash("Concept map saved successfully", "success")
 
-    return render_template("conceptmapper/edit.html", app_id = app_id, concepts = data["concepts"])
+    return render_template("conceptmapper/edit.html", app_id = app_id, concepts = data["concepts"], relations = data["relations"])
 
 
 # Auxiliar routes
@@ -53,7 +56,7 @@ def conceptmapper_widget(app_id):
     This function points to the concept map instance.
 
     @param app_id: Identifier of the application. It will be unique within the list of user's apps.
-    @return: The webpage of a concept map.
+    @return: The opensocial gadget of a concept map.
     """
 
     # In the templates, conceptmapper.html points to {{ url_for('adapt.conceptmapper_domain', app_id = app_id) }}
@@ -77,7 +80,8 @@ def conceptmapper_domain(app_id):
 
     data = adaptor.load_data(app_id)
 
-    domain = json.dumps([ s.strip() for s in data["concepts"].split(',') ])
+    concepts = json.dumps([ s.strip() for s in data["concepts"].split(',') ])
+    relations = json.dumps([ s.strip() for s in data["relations"].split(',') ])
 
-    return render_template("conceptmapper/domain.js", domain = domain)
+    return render_template("conceptmapper/domain.js", concepts = concepts, relations = relations)
 

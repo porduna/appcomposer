@@ -3,6 +3,15 @@
 {% set current_link = "home" %}
 {% extends 'composers/adapt/edit.html' %}
 
+{% block tab_links %}
+    {% if not inputs %}
+    <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
+    <li class="disabled"><a>Preview</a></li>
+    {% else %}
+    <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
+    <li><a href="#preview" data-toggle="tab">Preview</a></li>
+    {% endif %}
+{% endblock %}
 
 {% block edit_tab %}
 <div class="col-lg-10">

@@ -135,14 +135,14 @@
       label: "Available concepts",
       description: "A list with pre-defined concepts to select from in the combobox.",
       type: "array",
-      value: {{domain}},
+      value: {{concepts}},
       configurable: "true"
     },
     relations: {
       label: "Available relations",
       description: "A list with pre-defined relations to select from.",
       type: "array",
-      value: ["is a", "is part of", "has", "leads to", "influences", "increases", "decreases"],
+      value: {{ relations }},
       configurable: "true"
     }
   };
