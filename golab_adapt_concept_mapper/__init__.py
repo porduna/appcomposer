@@ -1,8 +1,11 @@
 import json
 from collections import OrderedDict
-from flask import render_template, request, flash
+from flask import abort, make_response, render_template, request, flash
 
 from appcomposer.composers.adapt import create_adaptor
+
+#This is required by the config web service (check if app_id exists). Can we use the url_for('.edit') method without repeating code?
+import appcomposer.appstorage.api as appstorage
 
 adaptor = create_adaptor('Concept Mapper', {
         'concepts' : '',
@@ -14,6 +17,7 @@ adaptor = create_adaptor('Concept Mapper', {
 def edit(app_id):
     data = adaptor.load_data(app_id)
     concepts = data["concepts"]
+    relations = data["relations"]    
 
     if request.method == 'POST':
         # Retrieve the lists of concepts and relations and convert them to the format supported by the app.
@@ -85,3 +89,86 @@ def conceptmapper_domain(app_id):
 
     return render_template("conceptmapper/domain.js", concepts = concepts, relations = relations)
 
+
+@adaptor.route("/config/<app_id>", methods = ['GET'])
+def load_configuration(app_id):
+    """
+    load_configuration(app_id)
+    This function provides the configuration of a concept map.
+
+    @param app_id: Identifier of the application. It will be unique within the list of user's apps.
+    @return: The JSON response with the current values stored in the configuration (concepts, relations)
+    """
+
+    # This block contains analogous checks implemented for the def wrapper(appid) method in the AdaptorPlugin class.
+    # Responses are JSON-encoded data.
+    if not app_id:
+        error_message = {
+            'status': 400,
+            'message': 'App id not provided: ' + request.url,
+        }
+        response = make_response(json.dumps(error_message, indent=True))
+        response.mimetype = "application/json" 
+        response.status_code = 400
+        return response
+
+    app = appstorage.get_app(app_id)
+    if app is None:
+        error_message = {
+            'status': 404,
+            'message': 'Concept map not found: ' + request.url,
+        }
+        response = make_response(json.dumps(error_message, indent=True))
+        response.mimetype = "application/json"        
+        response.status_code = 404
+        return response
+
+    data = adaptor.load_data(app_id)
+    if data['adaptor_type'] != 'concept_mapper':
+        error_message = {
+            'status': 500,
+            'message': 'This is not a Concept Map: ' + request.url,
+        }
+        response = make_response(json.dumps(error_message, indent=True))
+        response.mimetype = "application/json" 
+        response.status_code = 500
+        return response
+    else:
+        data = adaptor.load_data(app_id)
+        concepts = data["concepts"]
+        relations = data["relations"]
+        config_output = {'concepts' : [concepts], 'relations': [relations]}
+
+        response = make_response(json.dumps(config_output, indent=True))
+        response.mimetype = "application/json"        
+        return response
+
+
+@adaptor.route("/config", methods = ['PUT', 'POST'])
+def update_configuration(app_id):
+    """
+    update_configuration(app_id)
+    This function stores new values in the configuration of a existing concept map.
+
+    @param app_id: Identifier of the application. It will be unique within the list of user's apps.
+    @param space_id: Identifier of the space. It will be used to verify the owner.    
+    @return: The JSON response with the new configuration (concepts, relations)
+    """
+    if not request.json or not 'app_id' in request.json:
+        abort(400)
+    # Update the JSON config of the selected concept map.
+    #TODO: sync adaptor.edit_route & adaptor.config_route configs to work with a unique schema
+    #What is recommended? request.json vs request.get_json
+    concepts = request.json['concepts']
+    relations = request.json['relations']
+    data.update({
+        "concepts": concepts,
+        "relations": relations
+    })
+    adaptor.save_data(app_id, data)
+    
+    config_output = {'concepts' : [concepts], 'relations': [relations]}
+
+    response = make_response(json.dumps(config_output, indent=True))
+    response.mimetype = "application/json"        
+    return response #201 status?
