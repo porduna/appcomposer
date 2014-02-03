@@ -2,7 +2,8 @@ from flask import request, json, render_template, flash
 from appcomposer.appstorage import remove_var
 from appcomposer.appstorage.api import get_app, update_app_data
 from appcomposer.composers.translate import translate_blueprint, backend
-from appcomposer.composers.translate.helpers import _db_get_proposals
+from appcomposer.composers.translate.bundles import BundleManager, Bundle
+from appcomposer.composers.translate.helpers import _db_get_proposals, _db_get_owner_app
 from appcomposer.models import AppVar
 
 
@@ -19,7 +20,7 @@ def translate_proposed_list():
     appdata = json.loads(app.data)
 
     # Ensure that only the app owner can carry out these operations.
-    owner_app = backend._db_get_owner_app(appdata["spec"])
+    owner_app = _db_get_owner_app(appdata["spec"])
     if app != owner_app:
         return render_template("composers/errors.html",
                                message="Not Authorized: You don't seem to be the owner of this app")
@@ -52,9 +53,9 @@ def translate_proposed_list():
         data = json.loads(proposal.value)
         bundle_code = data["bundle_code"]
 
-        proposed_bundle = backend.Bundle.from_messages(merge_data, bundle_code)
+        proposed_bundle = Bundle.from_messages(merge_data, bundle_code)
 
-        bm = backend.BundleManager.create_from_existing_app(app.data)
+        bm = BundleManager.create_from_existing_app(app.data)
         bm.merge_bundle(bundle_code, proposed_bundle)
 
         update_app_data(app, bm.to_json())

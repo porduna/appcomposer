@@ -1,9 +1,9 @@
 from flask import request, jsonify, json, render_template
+from appcomposer import db
 from appcomposer.appstorage.api import get_app_by_name
-from appcomposer.composers.translate import translate_blueprint, backend, CFG_SAME_NAME_LIMIT
-from appcomposer.models import AppVar
-
-__author__ = 'lrg'
+from appcomposer.composers.translate import translate_blueprint, CFG_SAME_NAME_LIMIT
+from appcomposer.composers.translate.bundles import BundleManager
+from appcomposer.models import AppVar, App
 
 
 def _db_get_proposals(app):
@@ -40,7 +40,7 @@ def get_proposal():
 
     # Add the parent's application bundle to the response, so that it can be compared
     # more easily.
-    bm = backend.BundleManager.create_from_existing_app(prop.app.data)
+    bm = BundleManager.create_from_existing_app(prop.app.data)
     bundle = bm.get_bundle(contents["bundle_code"])
     if bundle:
         result["original"] = bundle.to_jsonable()["messages"]
@@ -85,3 +85,21 @@ def _find_unique_name_for_app(base_name):
 def translate_about():
     """Information about the translator application."""
     return render_template("composers/translate/about.html")
+
+
+def _db_get_owner_app(spec):
+    """
+    Gets from the database the App that is considered the Owner for a given spec.
+    @param spec: String to the App's original XML.
+    @return: The owner for the App. None if no owner is found.
+    """
+    relatedAppsIds = db.session.query(AppVar.app_id).filter_by(name="spec",
+                                                               value=spec).subquery()
+    ownerAppId = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
+                                                        AppVar.app_id.in_(relatedAppsIds)).first()
+
+    if ownerAppId is None:
+        return None
+
+    ownerApp = App.query.filter_by(id=ownerAppId[0]).first()
+    return ownerApp

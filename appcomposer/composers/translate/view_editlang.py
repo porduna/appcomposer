@@ -2,6 +2,8 @@ from flask import request, render_template, flash, json, url_for, redirect
 import time
 from appcomposer.appstorage.api import get_app, update_app_data, add_var
 from appcomposer.composers.translate import translate_blueprint
+from appcomposer.composers.translate.bundles import BundleManager, Bundle
+from appcomposer.composers.translate.helpers import _db_get_owner_app
 
 import backend
 
@@ -25,12 +27,12 @@ def translate_edit():
 
 
 
-    bm = backend.BundleManager.create_from_existing_app(app.data)
+    bm = BundleManager.create_from_existing_app(app.data)
     spec = bm.get_gadget_spec()
 
     # Retrieve the bundles for our lang. For this, we build the code from the info we have.
-    srcbundle_code = backend.BundleManager.partialcode_to_fullcode(srclang, srcgroup)
-    targetbundle_code = backend.BundleManager.partialcode_to_fullcode(targetlang, targetgroup)
+    srcbundle_code = BundleManager.partialcode_to_fullcode(srclang, srcgroup)
+    targetbundle_code = BundleManager.partialcode_to_fullcode(targetlang, targetgroup)
 
     srcbundle = bm.get_bundle(srcbundle_code)
     targetbundle = bm.get_bundle(targetbundle_code)
@@ -40,12 +42,12 @@ def translate_edit():
         splits = targetlang.split("_")
         if len(splits) == 2:
             lang, country = splits
-            targetbundle = backend.Bundle(lang, country, targetgroup)
+            targetbundle = Bundle(lang, country, targetgroup)
             bm.add_bundle(targetbundle_code, targetbundle)
 
 
     # Get the owner app.
-    owner_app = backend._db_get_owner_app(spec)
+    owner_app = _db_get_owner_app(spec)
     is_owner = owner_app == app
 
     # This is a GET request. We are essentially viewing-only.

@@ -4,7 +4,8 @@ from flask import request, flash, redirect, url_for, render_template, json
 from appcomposer.appstorage import create_app, set_var
 from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint, backend
-from appcomposer.composers.translate.helpers import _db_get_proposals, _find_unique_name_for_app
+from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException
+from appcomposer.composers.translate.helpers import _db_get_proposals, _find_unique_name_for_app, _db_get_owner_app
 
 
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])
@@ -23,8 +24,8 @@ def translate_selectlang():
     # on its code.
     targetlangs_codes = [lang[0] + "_ALL" for lang in languages if "_" not in lang[0]]
 
-    targetlangs_list = [{"pcode": code, "repr": backend.BundleManager.get_locale_english_name(
-        *backend.BundleManager.get_locale_info_from_code(code))} for code in targetlangs_codes]
+    targetlangs_list = [{"pcode": code, "repr": BundleManager.get_locale_english_name(
+        *BundleManager.get_locale_info_from_code(code))} for code in targetlangs_codes]
 
     full_groups_list = [("ALL", "ALL"), ("10-13", "Preadolescence (age 10-13)"), ("14-18", "Adolescence (age 14-18)")]
 
@@ -52,8 +53,8 @@ def translate_selectlang():
 
         # Create a fully new App. It will be automatically generated from a XML.
         try:
-            bm = backend.BundleManager.create_new_app(appurl)
-        except backend.InvalidXMLFileException:
+            bm = BundleManager.create_new_app(appurl)
+        except InvalidXMLFileException:
             return render_template("composers/errors.html",
                                    message="Invalid XML in either the XML specification file or the XML translation bundles that it links to")
 
@@ -71,7 +72,7 @@ def translate_selectlang():
         set_var(app, "spec", appurl)
 
         # Locate the owner of the App
-        ownerApp = backend._db_get_owner_app(appurl)
+        ownerApp = _db_get_owner_app(appurl)
 
         # If there isn't already an owner, declare ourselves as the owner.
         if ownerApp is None:
@@ -97,7 +98,7 @@ def translate_selectlang():
         app = get_app(appid)
 
         # Load a BundleManager from the app data.
-        bm = backend.BundleManager.create_from_existing_app(app.data)
+        bm = BundleManager.create_from_existing_app(app.data)
 
         spec = bm.get_gadget_spec()
 
@@ -107,7 +108,7 @@ def translate_selectlang():
     # The following is again common for both GET (view) and POST (edit).
 
     # Check ownership.
-    ownerApp = backend._db_get_owner_app(spec)
+    ownerApp = _db_get_owner_app(spec)
     if ownerApp == app:
         is_owner = True
     else:
