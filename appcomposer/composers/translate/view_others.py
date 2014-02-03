@@ -1,8 +1,6 @@
 from flask import render_template
 from appcomposer.composers.translate import translate_blueprint
 
-__author__ = 'lrg'
-
 
 @translate_blueprint.route("/about")
 def translate_about():

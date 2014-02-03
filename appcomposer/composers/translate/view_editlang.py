@@ -5,8 +5,6 @@ from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
 from appcomposer.composers.translate.db_helpers import _db_get_owner_app
 
-import backend
-
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
 def translate_edit():
@@ -23,9 +21,6 @@ def translate_edit():
     app = get_app(appid)
     if app is None:
         return render_template("composers/errors.html", message="App not found")
-
-
-
 
     bm = BundleManager.create_from_existing_app(app.data)
     spec = bm.get_gadget_spec()
@@ -44,7 +39,6 @@ def translate_edit():
             lang, country = splits
             targetbundle = Bundle(lang, country, targetgroup)
             bm.add_bundle(targetbundle_code, targetbundle)
-
 
     # Get the owner app.
     owner_app = _db_get_owner_app(spec)
@@ -76,12 +70,13 @@ def translate_edit():
             # We need to propose this Bundle to the owner.
             # Note: May be confusing: app.owner.login refers to the generic owner of the App, and not the owner
             # we are talking about in the specific Translate composer.
-            proposalData = {"from": app.owner.login, "timestamp": time.time(), "bundle_code": targetbundle_code,
-                            "bundle_contents": targetbundle.to_jsonable()}
-            proposalJson = json.dumps(proposalData)
+            proposal_data = {"from": app.owner.login, "timestamp": time.time(), "bundle_code": targetbundle_code,
+                             "bundle_contents": targetbundle.to_jsonable()}
+
+            proposal_json = json.dumps(proposal_data)
 
             # Link the proposal with the Owner app.
-            add_var(owner_app, "proposal", proposalJson)
+            add_var(owner_app, "proposal", proposal_json)
 
             flash("Changes have been proposed to the owner")
 

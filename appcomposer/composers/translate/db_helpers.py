@@ -10,16 +10,16 @@ def _db_get_owner_app(spec):
     @param spec: String to the App's original XML.
     @return: The owner for the App. None if no owner is found.
     """
-    relatedAppsIds = db.session.query(AppVar.app_id).filter_by(name="spec",
-                                                               value=spec).subquery()
-    ownerAppId = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
-                                                        AppVar.app_id.in_(relatedAppsIds)).first()
+    related_apps_ids = db.session.query(AppVar.app_id).filter_by(name="spec",
+                                                                 value=spec).subquery()
+    owner_app_id = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
+                                                          AppVar.app_id.in_(related_apps_ids)).first()
 
-    if ownerAppId is None:
+    if owner_app_id is None:
         return None
 
-    ownerApp = App.query.filter_by(id=ownerAppId[0]).first()
-    return ownerApp
+    owner_app = App.query.filter_by(id=owner_app_id[0]).first()
+    return owner_app
 
 
 def _find_unique_name_for_app(base_name):

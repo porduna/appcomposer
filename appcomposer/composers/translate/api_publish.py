@@ -8,52 +8,10 @@ from appcomposer.composers.translate.db_helpers import _db_get_owner_app
 from appcomposer.models import AppVar
 
 
-@translate_blueprint.route('/app/<appid>/i18n/<langfile>.xml')
-def app_langfile(appid, langfile):
-    """
-    app_langfile(appid, langfile, age)
-
-    Provided for end-users. This is the function that provides hosting for the
-    langfiles for a specified App. The langfiles are actually dynamically
-    generated (the information is extracted from the Translate-specific information).
-
-    @param appid: Appid of the App whose langfile to generate.
-    @param langfile: Name of the langfile. Must follow the standard: ca_ES_ALL
-    @return: Google OpenSocial compatible XML, or an HTTP error code
-    if an error occurs.
-    """
-    app = get_app(appid)
-
-    if app is None:
-        return render_template("composers/errors.html", message="Error 404: App doesn't exist."), 404
-
-    # The composer MUST be 'translate'
-    if app.composer != "translate":
-        return render_template("composers/errors.html",
-                               message="Error 500: The composer for the specified App is not a Translate composer."), 500
-
-    # Parse the appdata
-    appdata = json.loads(app.data)
-
-    bundles = appdata["bundles"]
-    if langfile not in bundles:
-        dbg_info = str(bundles.keys())
-        return render_template("composers/errors.html",
-                               message="Error 404: Could not find such language for the specified app. Available keys are: " + dbg_info), 404
-
-    bundle = Bundle.from_jsonable(bundles[langfile])
-
-    output_xml = bundle.to_xml()
-
-    response = make_response(output_xml)
-    response.mimetype = "application/xml"
-    return response
-
-
 @translate_blueprint.route('/serve')
 def app_translation_serve():
     """
-    Serves a translation.
+    Serves a translation through the API that SHINDIG expects.
     GET parameters expected:
         app_url
         lang
@@ -102,6 +60,7 @@ def app_translation_serve():
 def app_translation_serve_list():
     """
     Serves a list of translated apps, so that a cache can be updated.
+    Aims to be SHINDIG-compatible, though it doesn't implement this feature yet.
     """
 
     # Get a list of distinct XMLs.
@@ -122,6 +81,48 @@ def app_translation_serve_list():
 
     response = make_response(json.dumps(output, indent=True))
     response.mimetype = "application/json"
+    return response
+
+
+@translate_blueprint.route('/app/<appid>/i18n/<langfile>.xml')
+def app_langfile(appid, langfile):
+    """
+    app_langfile(appid, langfile, age)
+
+    Provided for end-users. This is the function that provides hosting for the
+    langfiles for a specified App. The langfiles are actually dynamically
+    generated (the information is extracted from the Translate-specific information).
+
+    @param appid: Appid of the App whose langfile to generate.
+    @param langfile: Name of the langfile. Must follow the standard: ca_ES_ALL
+    @return: Google OpenSocial compatible XML, or an HTTP error code
+    if an error occurs.
+    """
+    app = get_app(appid)
+
+    if app is None:
+        return render_template("composers/errors.html", message="Error 404: App doesn't exist."), 404
+
+    # The composer MUST be 'translate'
+    if app.composer != "translate":
+        return render_template("composers/errors.html",
+                               message="Error 500: The composer for the specified App is not a Translate composer."), 500
+
+    # Parse the appdata
+    appdata = json.loads(app.data)
+
+    bundles = appdata["bundles"]
+    if langfile not in bundles:
+        dbg_info = str(bundles.keys())
+        return render_template("composers/errors.html",
+                               message="Error 404: Could not find such language for the specified app. Available keys are: " + dbg_info), 404
+
+    bundle = Bundle.from_jsonable(bundles[langfile])
+
+    output_xml = bundle.to_xml()
+
+    response = make_response(output_xml)
+    response.mimetype = "application/xml"
     return response
 
 

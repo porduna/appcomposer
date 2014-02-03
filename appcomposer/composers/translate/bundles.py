@@ -99,7 +99,6 @@ class BundleManager(object):
         except UnknownLocaleError:
             return Locale("en", "US").languages.get(lang)
 
-
     @staticmethod
     def fullcode_to_partialcode(code):
         """

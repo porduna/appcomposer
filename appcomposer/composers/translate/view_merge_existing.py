@@ -1,6 +1,6 @@
 from flask import request, redirect, url_for, json, render_template, flash
 from appcomposer.appstorage.api import get_app, update_app_data
-from appcomposer.composers.translate import translate_blueprint, backend
+from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager
 from appcomposer.models import AppVar
 
@@ -40,7 +40,6 @@ def translate_merge_existing():
             # The srcapp is required.
             return redirect(url_for("user.apps.index"))
         srcapp = get_app(srcapp_id)
-
 
         # Load our own app
         bm = BundleManager.create_from_existing_app(app.data)

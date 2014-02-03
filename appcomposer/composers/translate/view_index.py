@@ -1,8 +1,6 @@
 from flask import request, render_template
 from appcomposer.composers.translate import translate_blueprint, UrlForm
 
-__author__ = 'lrg'
-
 
 @translate_blueprint.route('/', methods=['GET', 'POST'])
 def translate_index():
