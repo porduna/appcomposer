@@ -3,7 +3,7 @@ import time
 from appcomposer.appstorage.api import get_app, update_app_data, add_var
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
-from appcomposer.composers.translate.db_helpers import _db_get_owner_app
+from appcomposer.composers.translate.db_helpers import _db_get_owner_app, _db_get_lowner_app, _db_declare_lownership
 
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
@@ -43,6 +43,18 @@ def translate_edit():
     # Get the owner app.
     owner_app = _db_get_owner_app(spec)
     is_owner = owner_app == app
+
+    # Get the owner for this target language.
+    lowner_app = _db_get_lowner_app(spec, targetlang)
+
+    # If the language has no owner, we declare ourselves as owners.
+    if lowner_app is None:
+        _db_declare_lownership(app, targetlang)
+        lowner_app = app
+
+    # We override the standard Ownership's system is_owner.
+    # TODO: Verify that this doesn't break anything.
+    is_owner = lowner_app == app
 
     # This is a GET request. We are essentially viewing-only.
     if request.method == "GET":

@@ -11,6 +11,11 @@
                         <h1 id="apptitle">Translate</h1>
                         <h2 id="appfullname">{{ app.name }}</h2>
 
+                        {% if is_owner %}
+                        <h3 id="ownership_status" class="alert alert-success">You are the owner of the translation for this language</h3>
+                        {% else %}
+                        <h3 id="ownership_status" class="alert alert-warning">You are not the owner of this translation</h3>
+                        {% endif %}
 
                         <h5>You may access the translation for this language:</h5>
                         <!--<a href="{{ url_for('.app_xml', appid=app.unique_id, group=request.values["targetgroup"], _external=True) }}">-->

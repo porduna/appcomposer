@@ -36,3 +36,4 @@ import view_proposed_list
 import view_publish
 import view_index
 import view_others
+import api_publish
