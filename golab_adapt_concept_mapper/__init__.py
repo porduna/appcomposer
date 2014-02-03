@@ -8,6 +8,12 @@ from appcomposer.composers.adapt import create_adaptor
 import appcomposer.appstorage.api as appstorage
 
 adaptor = create_adaptor('Concept Mapper', {
+        'debug' : 'true',
+        'actionlogging' : 'consoleShort',
+        'show_prompts' : 'true',
+        'textarea_concepts' : 'true',
+        'combobox_concepts' : 'true',
+        'drop_external' : 'true',
         'concepts' : '',
         'relations' : ''
    })
@@ -84,10 +90,19 @@ def conceptmapper_domain(app_id):
 
     data = adaptor.load_data(app_id)
 
+    debug = json.dumps(data["debug"])
+    actionlogging = json.dumps(data["actionlogging"])
+    show_prompts = json.dumps(data["show_prompts"])
+    textarea_concepts = json.dumps(data["textarea_concepts"])
+    combobox_concepts = json.dumps(data["combobox_concepts"])
+    drop_external = json.dumps(data["drop_external"])
+
     concepts = json.dumps([ s.strip() for s in data["concepts"].split(',') ])
     relations = json.dumps([ s.strip() for s in data["relations"].split(',') ])
 
-    return render_template("conceptmapper/domain.js", concepts = concepts, relations = relations)
+    return render_template("conceptmapper/domain.js", debug = debug, actionlogging = actionlogging, show_prompts = show_prompts,
+                                            textarea_concepts = textarea_concepts, combobox_concepts = combobox_concepts, drop_external = drop_external,
+                                            concepts = concepts, relations = relations)
 
 
 @adaptor.route("/config/<app_id>", methods = ['GET'])
@@ -135,9 +150,19 @@ def load_configuration(app_id):
         return response
     else:
         data = adaptor.load_data(app_id)
+
+        debug = data["debug"]
+        actionlogging = data["actionlogging"]
+        show_prompts = data["show_prompts"]
+        textarea_concepts = data["textarea_concepts"]
+        combobox_concepts = data["combobox_concepts"]
+        drop_external = data["drop_external"]
         concepts = data["concepts"]
         relations = data["relations"]
-        config_output = {'concepts' : [concepts], 'relations': [relations]}
+        
+        config_output = {'debug': debug, 'actionlogging': actionlogging, 'show_prompts': show_prompts,
+                                    'textarea_concepts': textarea_concepts, 'combobox_concepts': combobox_concepts, 'drop_external': drop_external,
+                                    'concepts': [concepts], 'relations': [relations]}
 
         response = make_response(json.dumps(config_output, indent=True))
         response.mimetype = "application/json"        
@@ -157,18 +182,75 @@ def update_configuration(app_id):
     if not request.json or not 'app_id' in request.json:
         abort(400)
     # Update the JSON config of the selected concept map.
-    #TODO: sync adaptor.edit_route & adaptor.config_route configs to work with a unique schema
-    #What is recommended? request.json vs request.get_json
+    #What is recommended for testing? request.json vs request.get_json
+    debug = request.json['debug']
+    actionlogging = request.json['actionlogging']
+    show_prompts = request.json['show_prompts']
+    textarea_concepts = request.json['textarea_concepts']
+    combobox_concepts = request.json['combobox_concepts']
+    drop_external = request.json['drop_external']    
     concepts = request.json['concepts']
     relations = request.json['relations']
+    
     data.update({
         "concepts": concepts,
         "relations": relations
     })
     adaptor.save_data(app_id, data)
     
-    config_output = {'concepts' : [concepts], 'relations': [relations]}
+    config_output = {'debug': debug, 'actionlogging': actionlogging, 'show_prompts': show_prompts, 'textarea_concepts': textarea_concepts,
+                                'combobox_concepts':combobox_concepts, 'drop_external':drop_external, 'concepts' : [concepts], 'relations': [relations]}
 
     response = make_response(json.dumps(config_output, indent=True))
-    response.mimetype = "application/json"        
+    response.mimetype = "application/json"
+    #TODO: CORS variable in the AppComposer general configuration with a list of domains
+    #response.headers['Access-Control-Allow-Origin'] = 'http://graasp.epfl.ch'
+    
     return response #201 status?
+
+"""
+#Wrapper fucntions for CORS
+# Usage: Specify origin and headers with @crossdomain(origin='http://localhost',headers='authorization')
+
+from datetime import timedelta
+from functools import update_wrapper
+ 
+def crossdomain(origin=None, methods=None, headers=None,
+                            max_age=21600, attach_to_all=True, automatic_options=True):
+    if methods is not None:
+        methods = ', '.join(sorted(x.upper() for x in methods))
+    if headers is not None and not isinstance(headers, basestring):
+        headers = ', '.join(x.upper() for x in headers)
+    if not isinstance(origin, basestring):
+        origin = ', '.join(origin)
+    if isinstance(max_age, timedelta):
+        max_age = max_age.total_seconds()
+ 
+    def get_methods():
+        if methods is not None:
+            return methods
+ 
+        options_resp = current_app.make_default_options_response()
+        return options_resp.headers['allow']
+ 
+def decorator(f):
+    def wrapped_function(*args, **kwargs):
+        if automatic_options and request.method == 'OPTIONS':
+            resp = current_app.make_default_options_response()
+        else:
+            resp = make_response(f(*args, **kwargs))
+        if not attach_to_all and request.method != 'OPTIONS':
+            return resp
+        h = resp.headers
+        h['Access-Control-Allow-Origin'] = origin
+        h['Access-Control-Allow-Methods'] = get_methods()
+        h['Access-Control-Max-Age'] = str(max_age)
+        if headers is not None:
+            h['Access-Control-Allow-Headers'] = headers
+        return resp
+ 
+    f.provide_automatic_options = False
+    f.required_methods = ['OPTIONS']
+    return update_wrapper(wrapped_function, f)
+return decorator
+"""

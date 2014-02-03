@@ -93,42 +93,42 @@
       label: "Debug mode?",
       description: "Turns on/off verbose console messages.",
       type: "boolean",
-      value: "true",
+      value: {{ debug }},
       configurable: "true"
     },
     actionlogging: {
       label: "actionlogging",
       description: "Configures the action logging target.",
       type: "string",
-      value: "consoleShort",
+      value: {{ actionlogging }},
       configurable: "true"
     },
     show_prompts: {
       label: "Show prompts?",
       description: "Are incoming prompts and notifications shown as a pop-up message?",
       type: "boolean",
-      value: "true",
+      value: {{ show_prompts }},
       configurable: "true"
     },
     textarea_concepts: {
       label: "Show text input?",
       description: "Is the user allowed to freely create and edit new concepts?",
       type: "boolean",
-      value: "true",
+      value: {{ textarea_concepts }},
       configurable: "true"
     },
     combobox_concepts: {
       label: "Show combobox input?",
       description: "Is the combobox node with pre-defined concepts available?",
       type: "boolean",
-      value: "true",
+      value: {{ combobox_concepts}},
       configurable: "true"
     },
     drop_external: {
       label: "Drag'n'drop external concepts?",
       description: "Is it possible to drag highlighted text as new concepts from other applications?",
       type: "boolean",
-      value: "true",
+      value: {{ drop_external }},
       configurable: "true"
     },
     concepts: {
