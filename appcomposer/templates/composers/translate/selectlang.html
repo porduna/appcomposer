@@ -20,9 +20,9 @@
                 {% endif %}
 
                 {% if is_owner %}
-                    <h5>You are the owner of this app.</h5>
+                    <h4 class="alert alert-success">You are the owner of this App's default translation.</h4>
                 {% else %}
-                    <h5>This app belongs to {{ owner.name }} ({{ owner.login }}).</h5>
+                    <h4 class="alert alert-warning">This App's default translation belongs to {{ owner.name }} ({{ owner.login }}).</h4>
                 {% endif %}
 
 

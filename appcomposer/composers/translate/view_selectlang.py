@@ -5,7 +5,7 @@ from appcomposer.appstorage import create_app, set_var
 from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint, backend
 from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException
-from appcomposer.composers.translate.db_helpers import _db_get_owner_app, _find_unique_name_for_app, _db_get_proposals
+from appcomposer.composers.translate.db_helpers import _db_get_owner_app, _find_unique_name_for_app, _db_get_proposals, _db_get_lowner_app, _db_declare_lownership
 
 
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])
@@ -82,6 +82,15 @@ def translate_selectlang():
             update_app_data(app, bm.to_json())
             flash("You are not the owner of this App, so the owner's translations have been merged", "success")
 
+        # Locate the LOWNER for the App's DEFAULT language.
+        lownerApp = _db_get_lowner_app(appurl, "all_ALL")
+
+        # If there isn't already an owner for the default languages, we declare ourselves
+        # as the owner for this App's default language.
+        if lownerApp is None:
+            _db_declare_lownership(app, "all_ALL")
+            lownerApp = app
+
         # Find out which locales does the app provide (for now).
         translated_langs = bm.get_locales_list()
 
@@ -117,6 +126,18 @@ def translate_selectlang():
     owner = ownerApp.owner
     if not is_owner and owner is None:
         flash("Error: Owner is None", "error")
+
+    # Check LOWNERSHIP. Probably eventually we will remove the ownership check above.
+    lownerApp = _db_get_lowner_app(spec, "all_ALL")
+    if lownerApp == app:
+        is_owner = True
+    else:
+        is_owner = False
+
+    owner = lownerApp.owner
+    if not is_owner and owner is None:
+        # TODO: Improve this error handling. This should NEVER happen.
+        flash("Error: Language Owner is None", "error")
 
     proposal_num = 0
     if is_owner:
