@@ -6,8 +6,6 @@ from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint, backend
 from appcomposer.composers.translate.helpers import _db_get_proposals, _find_unique_name_for_app
 
-__author__ = 'lrg'
-
 
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])
 def translate_selectlang():

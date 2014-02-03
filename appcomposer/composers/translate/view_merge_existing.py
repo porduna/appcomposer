@@ -3,8 +3,6 @@ from appcomposer.appstorage.api import get_app, update_app_data
 from appcomposer.composers.translate import translate_blueprint, backend
 from appcomposer.models import AppVar
 
-__author__ = 'lrg'
-
 
 @translate_blueprint.route("/merge_existing", methods=["GET", "POST"])
 def translate_merge_existing():

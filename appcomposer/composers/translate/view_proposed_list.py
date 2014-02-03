@@ -5,8 +5,6 @@ from appcomposer.composers.translate import translate_blueprint, backend
 from appcomposer.composers.translate.helpers import _db_get_proposals
 from appcomposer.models import AppVar
 
-__author__ = 'lrg'
-
 
 @translate_blueprint.route("/proposed_list", methods=["POST", "GET"])
 def translate_proposed_list():

@@ -22,6 +22,9 @@ def translate_edit():
     if app is None:
         return render_template("composers/errors.html", message="App not found")
 
+
+
+
     bm = backend.BundleManager.create_from_existing_app(app.data)
     spec = bm.get_gadget_spec()
 
