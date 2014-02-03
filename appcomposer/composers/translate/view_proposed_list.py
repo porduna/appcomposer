@@ -3,7 +3,7 @@ from appcomposer.appstorage import remove_var
 from appcomposer.appstorage.api import get_app, update_app_data
 from appcomposer.composers.translate import translate_blueprint, backend
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
-from appcomposer.composers.translate.helpers import _db_get_proposals, _db_get_owner_app
+from appcomposer.composers.translate.db_helpers import _db_get_owner_app, _db_get_proposals
 from appcomposer.models import AppVar
 
 
