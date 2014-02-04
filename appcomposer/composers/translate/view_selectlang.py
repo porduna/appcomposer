@@ -94,6 +94,10 @@ def translate_selectlang():
         # Find out which locales does the app provide (for now).
         translated_langs = bm.get_locales_list()
 
+        # We do a redirect rather than rendering in the POST. This way we can get proper
+        # URL.
+        return redirect(url_for('translate.translate_selectlang', appid=app.unique_id))
+
     # This was a GET, the app should exist already somehow, we will try to retrieve it.
     elif request.method == "GET":
 
