@@ -139,12 +139,9 @@ def translate_selectlang():
         # TODO: Improve this error handling. This should NEVER happen.
         flash("Error: Language Owner is None", "error")
 
-    is_owner = True
-    # TODO: Force ownership. REMOVE THIS when the lownership system works properly.
     proposal_num = 0
-    if is_owner:
-        # Just for the count of proposals
-        proposal_num = len(_db_get_proposals(app))
+    # Just for the count of proposals
+    proposal_num = len(_db_get_proposals(app))
 
     # Build a dictionary. For each source lang, a list of source groups.
     src_groups_dict = defaultdict(list)
