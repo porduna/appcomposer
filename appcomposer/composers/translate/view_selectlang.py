@@ -139,6 +139,8 @@ def translate_selectlang():
         # TODO: Improve this error handling. This should NEVER happen.
         flash("Error: Language Owner is None", "error")
 
+    is_owner = True
+    # TODO: Force ownership. REMOVE THIS when the lownership system works properly.
     proposal_num = 0
     if is_owner:
         # Just for the count of proposals
