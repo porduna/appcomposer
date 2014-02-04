@@ -1,5 +1,7 @@
 # Configuration example
 
+import os
+
 SQLALCHEMY_DATABASE_URI = 'sqlite:////%s/database.db' % os.getcwd()
 USE_PYMYSQL = False
 
