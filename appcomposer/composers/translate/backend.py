@@ -1,5 +1,6 @@
 import json
 import urllib
+import urlparse
 from xml.dom import minidom
 import StringIO
 
@@ -266,6 +267,8 @@ class BundleManager(object):
         @param url: URL to retrieve.
         @return: Contents of the URL.
         """
+        if not url.startswith(('http://', 'https://')):
+            raise Exception("Relative URLs are not accepted.")
         handle = urllib.urlopen(url)
         contents = handle.read()
         return contents
@@ -286,7 +289,7 @@ class BundleManager(object):
         xml_str = self._retrieve_url(url)
 
         # Extract the locales from the XML.
-        locales = self._extract_locales_from_xml(xml_str)
+        locales = self._extract_locales_from_xml(xml_str, url)
 
         for lang, country, bundle_url in locales:
             try:
@@ -295,6 +298,8 @@ class BundleManager(object):
                 name = Bundle.get_standard_code_string(lang, country, "ALL")
                 self._bundles[name] = bundle
             except:
+                import traceback
+                traceback.print_exc()
                 # TODO: For now, we do not really handle errors, we simply ignore those locales which cause exceptions.
                 # In the future, we should probably analyze which kind of exceptions can occur, and decide what
                 # we must do in each case. For instance, sometimes we might wanna ignore the Bundle but sometimes we
@@ -353,9 +358,9 @@ class BundleManager(object):
                 self._bundles[name] = bundle
 
     @staticmethod
-    def _extract_locales_from_xml(xml_str):
+    def _extract_locales_from_xml(xml_str, url):
         """
-        _extract_locales_from_xml(xml_str)
+        _extract_locales_from_xml(xml_str, url)
         Extracts the Locale nodes info from an xml_str (a gadget spec).
         @param xml_str: String containing the XML of a locale file.
         @return: A list of tuples: (lang, country, message_file)
@@ -369,6 +374,17 @@ class BundleManager(object):
             itemlist = xmldoc.getElementsByTagName("Locale")
             for elem in itemlist:
                 messages_file = elem.attributes["messages"].nodeValue
+
+                if not messages_file.startswith(('http://', 'https://')):
+                    parsed = urlparse.urlparse(url)
+                    new_path = parsed.path
+                    # Go to the last directory
+                    if '/' in new_path:
+                        new_path = new_path[:new_path.rfind('/')+1]
+                    # Add the messages_file
+                    new_path += messages_file
+                    messages_file_parsed = urlparse.ParseResult(scheme = parsed.scheme, netloc = parsed.netloc, path = new_path, params = '', query = '', fragment = '')
+                    messages_file = messages_file_parsed.geturl()
 
                 try:
                     lang = elem.attributes["lang"].nodeValue
