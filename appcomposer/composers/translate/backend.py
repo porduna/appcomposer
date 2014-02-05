@@ -1,3 +1,4 @@
+import re
 import json
 import urllib
 import urlparse
@@ -125,20 +126,20 @@ class BundleExistsAlreadyException(Exception):
     def __init__(self, message=None):
         self.message = message
 
-def _make_url_absolute(relative_path, url):
-    if relative_path.startswith(('http://', 'https://')):
-        return relative_path
-
+def _extract_base_url(url):
     parsed = urlparse.urlparse(url)
     new_path = parsed.path
     # Go to the last directory
     if '/' in new_path:
         new_path = new_path[:new_path.rfind('/')+1]
-    # Add the messages_file
-    new_path += relative_path
     messages_file_parsed = urlparse.ParseResult(scheme = parsed.scheme, netloc = parsed.netloc, path = new_path, params = '', query = '', fragment = '')
     return messages_file_parsed.geturl()
+    
 
+def _make_url_absolute(relative_path, url):
+    if relative_path.startswith(('http://', 'https://')):
+        return relative_path
+    return _extract_base_url(url) + relative_path
 
 class BundleManager(object):
     """
@@ -526,7 +527,13 @@ class BundleManager(object):
         """
         xmlspec = self._retrieve_url(self.original_spec_file)
         output_xml = self._inject_locales_into_spec(appid, xmlspec, self.original_spec_file, True, group)
+        output_xml = self._inject_absolute_urls(output_xml, self.original_spec_file)
         return output_xml
+
+    def _inject_absolute_urls(self, output_xml, url):
+        base_url = _extract_base_url(url)
+        exp = re.compile(r"""(\s(src|href)\s*=\s*"?)(?!http://|https://|#|"|"#| )""")
+        return exp.sub(r"\1%s" % base_url, output_xml)
 
     def merge_bundle(self, base_bundle_code, proposed_bundle):
         """
