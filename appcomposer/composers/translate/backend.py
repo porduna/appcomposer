@@ -125,6 +125,20 @@ class BundleExistsAlreadyException(Exception):
     def __init__(self, message=None):
         self.message = message
 
+def _make_url_absolute(relative_path, url):
+    if relative_path.startswith(('http://', 'https://')):
+        return relative_path
+
+    parsed = urlparse.urlparse(url)
+    new_path = parsed.path
+    # Go to the last directory
+    if '/' in new_path:
+        new_path = new_path[:new_path.rfind('/')+1]
+    # Add the messages_file
+    new_path += relative_path
+    messages_file_parsed = urlparse.ParseResult(scheme = parsed.scheme, netloc = parsed.netloc, path = new_path, params = '', query = '', fragment = '')
+    return messages_file_parsed.geturl()
+
 
 class BundleManager(object):
     """
@@ -374,17 +388,8 @@ class BundleManager(object):
             itemlist = xmldoc.getElementsByTagName("Locale")
             for elem in itemlist:
                 messages_file = elem.attributes["messages"].nodeValue
-
-                if not messages_file.startswith(('http://', 'https://')):
-                    parsed = urlparse.urlparse(url)
-                    new_path = parsed.path
-                    # Go to the last directory
-                    if '/' in new_path:
-                        new_path = new_path[:new_path.rfind('/')+1]
-                    # Add the messages_file
-                    new_path += messages_file
-                    messages_file_parsed = urlparse.ParseResult(scheme = parsed.scheme, netloc = parsed.netloc, path = new_path, params = '', query = '', fragment = '')
-                    messages_file = messages_file_parsed.geturl()
+                
+                messages_file = _make_url_absolute(messages_file, url)
 
                 try:
                     lang = elem.attributes["lang"].nodeValue
@@ -402,7 +407,7 @@ class BundleManager(object):
 
         return locales
 
-    def _inject_locales_into_spec(self, appid, xml_str, respect_default=True, group=None):
+    def _inject_locales_into_spec(self, appid, xml_str, url, respect_default=True, group=None):
         """
         _inject_locales_into_spec(appid, xml_str)
 
@@ -435,6 +440,10 @@ class BundleManager(object):
                 # This is indeed the default node. Go on to next iteration without removing the locale.
                 if "lang" not in loc.attributes.keys() and "country" not in loc.attributes.keys():
                     default_locale_found = True
+                    messages_url = loc.getAttribute("messages")
+                    new_messages_url = _make_url_absolute(messages_url, url)
+                    if new_messages_url != messages_url:
+                        loc.setAttribute("messages", new_messages_url)
                     continue
 
             # Remove the node.
@@ -516,7 +525,7 @@ class BundleManager(object):
         @param group Optional. If set, the bundles to print will be filtered by group.
         """
         xmlspec = self._retrieve_url(self.original_spec_file)
-        output_xml = self._inject_locales_into_spec(appid, xmlspec, True, group)
+        output_xml = self._inject_locales_into_spec(appid, xmlspec, self.original_spec_file, True, group)
         return output_xml
 
     def merge_bundle(self, base_bundle_code, proposed_bundle):
