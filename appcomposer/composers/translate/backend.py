@@ -491,6 +491,17 @@ class BundleManager(object):
             locale.appendChild(xmldoc.createTextNode(""))
             module_prefs.appendChild(locale)
 
+        contents = xmldoc.getElementsByTagName("Content")
+        for content in contents:
+            text_node = xmldoc.createCDATASection("""
+            <script>
+                if (typeof gadgets !== "undefined" && gadgets !== null) {
+                    gadgets.util.getUrlParameters().url = "%s";
+                }
+            </script>
+            """ % url)
+            content.insertBefore(text_node, content.firstChild)
+
         return xmldoc.toprettyxml()
 
     def get_bundle(self, bundle_code):
