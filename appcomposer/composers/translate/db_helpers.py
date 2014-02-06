@@ -1,5 +1,5 @@
 from appcomposer import db
-from appcomposer.appstorage.api import get_app_by_name, set_var
+from appcomposer.appstorage.api import get_app_by_name, add_var
 from appcomposer.composers.translate import CFG_SAME_NAME_LIMIT
 from appcomposer.models import AppVar, App
 
@@ -48,7 +48,7 @@ def _db_declare_lownership(owner_app, lang_code):
     @param lang_code: Language code to own.
     @return: None.
     """
-    set_var(owner_app, "lownership", lang_code)
+    add_var(owner_app, "lownership", lang_code)
 
 
 def _db_get_owner_app(spec):
