@@ -75,7 +75,7 @@
                             </select>
                         </div>
 
-                        <button type="submit" class="btn btn-primary" style="margin-bottom:20px">
+                        <button id="editSelectedSourceButton" name="editSelectedSourceButton" type="submit" class="btn btn-primary" style="margin-bottom:20px">
                             Edit selected source on its own
                         </button>
 
@@ -191,6 +191,10 @@
     {
         console.log("On ready");
 
+        // We need to take a different action if we want to edit the selected source language.
+        // We intercept the click.
+        interceptEditSelectedSourceLanguageButton();
+
         // Initialize the mode switch.
         modeSwitch = $("#editModeSwitch").bootstrapSwitch();
         modeSwitch.bootstrapSwitch("setOnLabel", "Yes");
@@ -215,6 +219,17 @@
         console.log("Setting size");
         $("select").attr("size", 8);
     });
+
+
+    //! Function to intercept the edit selected language button so that
+    //! we can direct the user to the standard page but after setting
+    //! the target language to be equal than the source language ourselves.
+    function interceptEditSelectedSourceLanguageButton() {
+        $("#editSelectedSourceButton").click(function() {
+            $("#targetlang").val($("#srclang").val());
+            $("#targetgroup").val($("#srcgroup").val());
+        });
+    }
 
     //! Initializes the tooltips and popovers.
     function initializeTooltips()
