@@ -368,8 +368,6 @@
 
         // Request the information through AJAX.
         $.getJSON(request_url, undefined, function(data, status, jqXHR) {
-            console.log("DBG: Data received: " + data);
-            dbgData = data;
 
             if(data["result"] != "success")
             {
@@ -378,17 +376,15 @@
                 return;
             }
 
-            owners = data["owners"];
+            var $owners = data["owners"];
 
             for(var owned_lang in owners) {
                 if(owners.hasOwnProperty(owned_lang)) {
-                    owner = owners[owned_lang];
+                    var $owner = owners[owned_lang];
 
-                    $opt = $("#targetlang,#srclang").find("option[value=" + owned_lang + "]");
+                    var $opt = $("#targetlang,#srclang").find("option[value=" + owned_lang + "]");
 
-                    console.log($opt);
-
-                    owner_app = owner["owner_app"];
+                    var $owner_app = owner["owner_app"];
                     if(owner_app == {{ app.id }}) {
                         $opt.append(" [you own this language]");
                     } else {
