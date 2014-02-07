@@ -7,6 +7,7 @@
 
     <div class="translateblock">
 
+
     <div class="row">
 
         <div class="col-lg-12">
@@ -60,6 +61,7 @@
 
                         <div class="form-group">
                             <label class="control-label" for="srclang">Select source language</label>
+
                             <select id="srclang" multiple="" name="srclang" class="form-control"
                                     onchange="onSrcLangChanged()">
                                 <option selected="selected" value="all_ALL">DEFAULT</option>
@@ -72,6 +74,11 @@
                                 {% endfor %}
                             </select>
                         </div>
+
+                        <button type="submit" class="btn btn-primary" style="margin-bottom:20px">
+                            Edit selected source on its own
+                        </button>
+
                         <div class="form-group">
                             <label class="control-label" for="targetlang">Select target language</label>
                             <select id="targetlang" multiple="" name="targetlang" class="form-control">
@@ -113,6 +120,12 @@
                                 <!-- These are dynamically filled through JavaScript -->
                             </select>
                         </div>
+
+                            <!-- Placeholder button so that the layout doesn't get messed up -->
+                            <button class="PLACEHOLDER btn btn-primary" style="visibility:hidden; margin-bottom:20px">
+                                PLACEHOLDER
+                            </button>
+
                         <div class="form-group">
                             <label class="control-label" for="targetgroup">Select target group</label>
                             <select id="targetgroup" multiple="" name="targetgroup" class="form-control">
@@ -177,6 +190,12 @@
     $(document).ready(function()
     {
         console.log("On ready");
+
+        // Initialize the mode switch.
+        modeSwitch = $("#editModeSwitch").bootstrapSwitch();
+        modeSwitch.bootstrapSwitch("setOnLabel", "Yes");
+        modeSwitch.bootstrapSwitch("setOffLabel", "No");
+
         loadSourceGroups();
 
         displayOwnershipInformation();
