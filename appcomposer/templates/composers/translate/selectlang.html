@@ -384,8 +384,7 @@
                 if(owners.hasOwnProperty(owned_lang)) {
                     owner = owners[owned_lang];
 
-                    $query = "#targetlang option[value=" + owned_lang + "]";
-                    $opt = $($query);
+                    $opt = $("#targetlang,#srclang").find("option[value=" + owned_lang + "]");
 
                     console.log($opt);
 
