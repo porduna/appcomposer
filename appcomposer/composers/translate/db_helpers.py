@@ -15,6 +15,22 @@ major changes are required.
 """
 
 
+def _db_get_lownerships(spec):
+    """
+    Gets every single lownership for a spec.
+    @param spec: The spec whose lownerships to retrieve.
+    @return: List of lownerships.
+    """
+    related_apps_ids = db.session.query(AppVar.app_id).filter_by(name="spec",
+                                                                 value=spec).subquery()
+
+    # Among those AppVars for our Spec, we try to locate a lownership AppVar.
+    owner_apps = db.session.query(AppVar).filter(AppVar.name == "lownership",
+                                                 AppVar.app_id.in_(related_apps_ids)).all()
+
+    return owner_apps
+
+
 def _db_get_lowner_app(spec, lang_code):
     """
     Gets from the database the App that is considered the Owner for a given spec and language.

@@ -4,7 +4,9 @@
 
 
 {% block body_content %}
+
     <div class="translateblock">
+
 
     <div class="row">
 
@@ -59,6 +61,7 @@
 
                         <div class="form-group">
                             <label class="control-label" for="srclang">Select source language</label>
+
                             <select id="srclang" multiple="" name="srclang" class="form-control"
                                     onchange="onSrcLangChanged()">
                                 <option selected="selected" value="all_ALL">DEFAULT</option>
@@ -71,6 +74,11 @@
                                 {% endfor %}
                             </select>
                         </div>
+
+                        <button id="editSelectedSourceButton" name="editSelectedSourceButton" type="submit" class="btn btn-primary" style="margin-bottom:20px">
+                            Edit selected <b>source</b> on its own
+                        </button>
+
                         <div class="form-group">
                             <label class="control-label" for="targetlang">Select target language</label>
                             <select id="targetlang" multiple="" name="targetlang" class="form-control">
@@ -112,6 +120,12 @@
                                 <!-- These are dynamically filled through JavaScript -->
                             </select>
                         </div>
+
+                            <!-- Placeholder button so that the layout doesn't get messed up -->
+                            <button class="PLACEHOLDER btn btn-primary" style="visibility:hidden; margin-bottom:20px">
+                                PLACEHOLDER
+                            </button>
+
                         <div class="form-group">
                             <label class="control-label" for="targetgroup">Select target group</label>
                             <select id="targetgroup" multiple="" name="targetgroup" class="form-control">
@@ -155,6 +169,8 @@
         </div>
     </div>
 
+    </div>
+
 
 
 
@@ -174,7 +190,19 @@
     $(document).ready(function()
     {
         console.log("On ready");
+
+        // We need to take a different action if we want to edit the selected source language.
+        // We intercept the click.
+        interceptEditSelectedSourceLanguageButton();
+
+        // Initialize the mode switch.
+        modeSwitch = $("#editModeSwitch").bootstrapSwitch();
+        modeSwitch.bootstrapSwitch("setOnLabel", "Yes");
+        modeSwitch.bootstrapSwitch("setOffLabel", "No");
+
         loadSourceGroups();
+
+        displayOwnershipInformation();
 
         // Add handlers to every Select element.
         $("select").on("change", function(event) {
@@ -191,6 +219,17 @@
         console.log("Setting size");
         $("select").attr("size", 8);
     });
+
+
+    //! Function to intercept the edit selected language button so that
+    //! we can direct the user to the standard page but after setting
+    //! the target language to be equal than the source language ourselves.
+    function interceptEditSelectedSourceLanguageButton() {
+        $("#editSelectedSourceButton").click(function() {
+            $("#targetlang").val($("#srclang").val());
+            $("#targetgroup").val($("#srcgroup").val());
+        });
+    }
 
     //! Initializes the tooltips and popovers.
     function initializeTooltips()
@@ -318,8 +357,44 @@
         // Initialize the selection.
         var srcGroupSelect = srcGroup[0].options[0];
         srcGroupSelect.setAttribute("selected", "selected");
-
     }
+
+
+    //! To display some ownership information next to the target languages.
+    //!
+    function displayOwnershipInformation() {
+
+        var request_url = "{{ url_for(".get_ownership_list", xmlspec=xmlspec) }}";
+
+        // Request the information through AJAX.
+        $.getJSON(request_url, undefined, function(data, status, jqXHR) {
+
+            if(data["result"] != "success")
+            {
+                console.error("Error while trying to retrieve ownership information. It seems to be invalid:");
+                console.error(data);
+                return;
+            }
+
+            var $owners = data["owners"];
+
+            for(var owned_lang in owners) {
+                if(owners.hasOwnProperty(owned_lang)) {
+                    var $owner = owners[owned_lang];
+
+                    var $opt = $("#targetlang,#srclang").find("option[value=" + owned_lang + "]");
+
+                    var $owner_app = owner["owner_app"];
+                    if(owner_app == {{ app.id }}) {
+                        $opt.append(" [you own this language]");
+                    } else {
+                        $opt.append(" [owner: " + owner["owner_login"] + "]");
+                    }
+                }
+            }
+        });
+    }
+
 </script>
 
 {% endblock %}

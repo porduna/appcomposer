@@ -1,6 +1,7 @@
 from flask import request, jsonify, json
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager
+from appcomposer.composers.translate.db_helpers import _db_get_lownerships
 from appcomposer.models import AppVar
 
 
@@ -41,5 +42,34 @@ def get_proposal():
     else:
         # If the bundle doesn't exist, the original messages dict should be empty.
         result["original"] = {}
+
+    return jsonify(**result)
+
+
+@translate_blueprint.route("/get_ownership_list", methods=["GET"])
+def get_ownership_list():
+    """
+    JSON API to get a list of every translated language for the specified
+    APP, and the Username and UserID of its owner.
+    @return: JSON string containing the data.
+    """
+    result = {}
+    xmlspec = request.values.get("xmlspec")
+    if xmlspec is None:
+        result["result"] = "error"
+        result["message"] = "xmlspec not provided"
+        return jsonify(**result)
+
+    # Retrieve every single "owned" App for that xmlspec.
+    lownerships = _db_get_lownerships(xmlspec)
+
+    # Parse the contents
+    result["result"] = "success"
+    result["owners"] = {}
+
+    for lownership in lownerships:
+        language = lownership.value
+        owner = lownership.app.owner
+        result["owners"][language] = {"owner_id": owner.id, "owner_login": owner.login, "owner_app": lownership.app.id}
 
     return jsonify(**result)
