@@ -155,6 +155,8 @@
         </div>
     </div>
 
+    </div>
+
 
 
 
@@ -175,6 +177,9 @@
     {
         console.log("On ready");
         loadSourceGroups();
+
+
+        displayOwnershipInformation();
 
         // Add handlers to every Select element.
         $("select").on("change", function(event) {
@@ -318,8 +323,47 @@
         // Initialize the selection.
         var srcGroupSelect = srcGroup[0].options[0];
         srcGroupSelect.setAttribute("selected", "selected");
-
     }
+
+
+        function displayOwnershipInformation() {
+
+            var request_url = "{{ url_for(".get_ownership_list", xmlspec=xmlspec) }}";
+
+            // Request the information through AJAX.
+            $.getJSON(request_url, undefined, function(data, status, jqXHR) {
+                console.log("DBG: Data received: " + data);
+                dbgData = data;
+
+                if(data["result"] != "success")
+                {
+                    console.error("Error while trying to retrieve ownership information. It seems to be invalid:");
+                    console.error(data);
+                    return;
+                }
+
+                owners = data["owners"];
+
+                for(var owned_lang in owners) {
+                    if(owners.hasOwnProperty(owned_lang)) {
+                        owner = owners[owned_lang];
+
+                        $query = "#targetlang option[value=" + owned_lang + "]";
+                        $opt = $($query);
+
+                        console.log($opt);
+
+                        owner_app = owner["owner_app"];
+                        if(owner_app == {{ app.id }}) {
+                            $opt.append(" [you own this language]");
+                        } else {
+                            $opt.append(" [owner: " + owner["owner_login"] + "]");
+                        }
+                    }
+                }
+            });
+        }
+
 </script>
 
 {% endblock %}
