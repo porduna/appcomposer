@@ -3,10 +3,11 @@ from appcomposer.appstorage import remove_var
 from appcomposer.appstorage.api import get_app, update_app_data
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
-from appcomposer.composers.translate.db_helpers import _db_get_owner_app, _db_get_proposals
+from appcomposer.composers.translate.db_helpers import _db_get_proposals
 from appcomposer.models import AppVar
 
 
+# TODO: CHECK THAT THIS WHOLE METHOD REMAINS SECURE & RELEVANT AFTER THE OWNERSHIP REVAMP.
 @translate_blueprint.route("/proposed_list", methods=["POST", "GET"])
 def translate_proposed_list():
     """
@@ -19,11 +20,13 @@ def translate_proposed_list():
 
     appdata = json.loads(app.data)
 
+    # TODO: !!!!! THIS IS MISSING AND IS IMPORTANT !!!!!
+
     # Ensure that only the app owner can carry out these operations.
-    owner_app = _db_get_owner_app(appdata["spec"])
-    if app != owner_app:
-        return render_template("composers/errors.html",
-                               message="Not Authorized: You don't seem to be the owner of this app")
+    # owner_app = _db_get_owner_app(appdata["spec"])
+    # if app != owner_app:
+    #    return render_template("composers/errors.html",
+    #                           message="Not Authorized: You don't seem to be the owner of this app")
 
     # Get the list of proposed translations.
     proposal_vars = _db_get_proposals(app)

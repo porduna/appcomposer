@@ -4,7 +4,7 @@ from appcomposer import db
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import Bundle, BundleManager
-from appcomposer.composers.translate.db_helpers import _db_get_owner_app
+from appcomposer.composers.translate.db_helpers import _db_get_lowner_app
 from appcomposer.models import AppVar
 
 
@@ -32,10 +32,19 @@ def app_translation_serve():
         return render_template("composers/errors.html",
                                message="Error 400: Bad Request: Parameter target is missing."), 400
 
+    # TODO: !!!! CHECK THIS AS WELL. HAS CHANGED WITH THE OWNERSHIP SYSTEM. !!!!
+
+
     # Retrieves the owner app from the DB.
-    owner_app = _db_get_owner_app(app_xml)
+    # owner_app = _db_get_owner_app(app_xml)
+    # if owner_app is None:
+    #    return render_template("composers/errors.html", message="Error 404: App not found."), 404
+
+    # TODO: The above is temporarily replaced with:
+    owner_app = _db_get_lowner_app(app_xml, "all_ALL")
     if owner_app is None:
         return render_template("composers/errors.html", message="Error 404: App not found."), 404
+
 
     # Parse the app's data.
     bm = BundleManager.create_from_existing_app(owner_app.data)
@@ -70,7 +79,10 @@ def app_translation_serve_list():
 
     for spec_tuple in specs:
         spec = spec_tuple[0]
-        owner = _db_get_owner_app(spec)
+
+        # TODO: !!!! AGAIN, THIS NEEDS TO BE ADAPTED TO THE NEW SYSTEM !!!!
+
+        owner = _db_get_lowner_app(spec, "all_ALL")
         # TODO: Handle error.
 
         bm = BundleManager.create_from_existing_app(owner.data)

@@ -55,7 +55,7 @@ def _db_get_lowner_app(spec, lang_code):
     return owner_app
 
 
-def _db_declare_lownership(owner_app, lang_code):
+def _db_declare_ownership(owner_app, lang_code):
     """
     Declares lownership over a given Spec and Langcode. The CALLER is responsible of ensuring
     that no other owner for that spec and lang code exists before invoking this method.
@@ -65,24 +65,6 @@ def _db_declare_lownership(owner_app, lang_code):
     @return: None.
     """
     add_var(owner_app, "lownership", lang_code)
-
-
-def _db_get_owner_app(spec):
-    """
-    Gets from the database the App that is considered the Owner for a given spec.
-    @param spec: String to the App's original XML.
-    @return: The owner for the App. None if no owner is found.
-    """
-    related_apps_ids = db.session.query(AppVar.app_id).filter_by(name="spec",
-                                                                 value=spec).subquery()
-    owner_app_id = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
-                                                          AppVar.app_id.in_(related_apps_ids)).first()
-
-    if owner_app_id is None:
-        return None
-
-    owner_app = App.query.filter_by(id=owner_app_id[0]).first()
-    return owner_app
 
 
 def _find_unique_name_for_app(base_name):

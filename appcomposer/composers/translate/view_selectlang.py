@@ -5,17 +5,24 @@ from appcomposer.appstorage import create_app, set_var
 from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint, backend
 from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException
-from appcomposer.composers.translate.db_helpers import _db_get_owner_app, _find_unique_name_for_app, _db_get_proposals, _db_get_lowner_app, _db_declare_lownership, _db_get_lownerships
+from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, _db_get_lowner_app, _db_declare_ownership, _db_get_lownerships
 
 
 def do_languages_initial_merge(app, bm):
-    # Retrieve every single "owned" App for that xmlspec.
-    lownerships = _db_get_lownerships(bm.get_gadget_spec())
+    """
+    Carries out an initial merge. Bundles from the language-owners are merged into the
+    app.
+    @param app: Target app. App into which the bundles of each language owner are merged.
+    @param bm: Target BundleManager. Bundle manager into which the bundles of each language owner are merged.
+    @note: The App's data is updated automatically to reflect the new merge.
+    """
 
-    for lownership in lownerships:
-        language = lownership.value
-        ownerapp = lownership.app
-        print "MERGING LANGUAGE: " + language
+    # Retrieve every single "owned" App for that xmlspec.
+    ownerships = _db_get_lownerships(bm.get_gadget_spec())
+
+    for ownership in ownerships:
+        language = ownership.value
+        ownerapp = ownership.app
         bm.merge_language(language, ownerapp)
 
     update_app_data(app, bm.to_json())
@@ -85,13 +92,13 @@ def translate_selectlang():
         set_var(app, "spec", appurl)
 
         # Locate the LOWNER for the App's DEFAULT language.
-        lownerApp = _db_get_lowner_app(appurl, "all_ALL")
+        ownerApp = _db_get_lowner_app(appurl, "all_ALL")
 
         # If there isn't already an owner for the default languages, we declare ourselves
         # as the owner for this App's default language.
-        if lownerApp is None:
-            _db_declare_lownership(app, "all_ALL")
-            lownerApp = app
+        if ownerApp is None:
+            _db_declare_ownership(app, "all_ALL")
+            ownerApp = app
 
         # Advanced merge. Merge owner languages into our bundles.
         do_languages_initial_merge(app, bm)
@@ -126,13 +133,13 @@ def translate_selectlang():
     # The following is again common for both GET (view) and POST (edit).
 
     # Check LOWNERSHIP. Probably eventually we will remove the ownership check above.
-    lownerApp = _db_get_lowner_app(spec, "all_ALL")
-    if lownerApp == app:
+    ownerApp = _db_get_lowner_app(spec, "all_ALL")
+    if ownerApp == app:
         is_owner = True
     else:
         is_owner = False
 
-    owner = lownerApp.owner
+    owner = ownerApp.owner
     if not is_owner and owner is None:
         # TODO: Improve this error handling. This should NEVER happen.
         flash("Error: Language Owner is None", "error")
