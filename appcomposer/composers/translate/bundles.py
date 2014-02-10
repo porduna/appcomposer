@@ -421,8 +421,11 @@ class BundleManager(object):
             partialcode = BundleManager.fullcode_to_partialcode(bundle_name)
             if partialcode == language_partial_code:
                 # We found a bundle we must merge.
+                print "MERGING: " + bundle_name
                 proposed_bundle = from_bm.get_bundle(bundle_name)
                 self.merge_bundle(bundle_name, proposed_bundle)
+            else:
+                print "NOT MERGING: " + bundle_name
 
 
 class Bundle(object):

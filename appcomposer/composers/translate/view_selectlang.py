@@ -18,6 +18,7 @@ def do_languages_initial_merge(app, bm):
         print "MERGING LANGUAGE: " + language
         bm.merge_language(language, ownerapp)
 
+    update_app_data(app, bm.to_json())
 
 
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])
@@ -83,17 +84,6 @@ def translate_selectlang():
         # certain advanced features.
         set_var(app, "spec", appurl)
 
-        # Locate the owner of the App
-        ownerApp = _db_get_owner_app(appurl)
-
-        # If there isn't already an owner, declare ourselves as the owner.
-        # if ownerApp is None:
-        #    set_var(app, "ownership", "")
-        #else:
-        #    bm.merge_json(ownerApp.data)
-        #    update_app_data(app, bm.to_json())
-        #    flash("You are not the owner of this App, so the owner's translations have been merged", "success")
-
         # Locate the LOWNER for the App's DEFAULT language.
         lownerApp = _db_get_lowner_app(appurl, "all_ALL")
 
@@ -134,17 +124,6 @@ def translate_selectlang():
 
 
     # The following is again common for both GET (view) and POST (edit).
-
-    # Check ownership.
-    ownerApp = _db_get_owner_app(spec)
-    if ownerApp == app:
-        is_owner = True
-    else:
-        is_owner = False
-
-    owner = ownerApp.owner
-    if not is_owner and owner is None:
-        flash("Error: Owner is None", "error")
 
     # Check LOWNERSHIP. Probably eventually we will remove the ownership check above.
     lownerApp = _db_get_lowner_app(spec, "all_ALL")
