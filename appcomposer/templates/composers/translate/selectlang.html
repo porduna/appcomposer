@@ -376,15 +376,15 @@
                 return;
             }
 
-            var $owners = data["owners"];
+            var owners = data["owners"];
 
             for(var owned_lang in owners) {
                 if(owners.hasOwnProperty(owned_lang)) {
-                    var $owner = owners[owned_lang];
+                    var owner = owners[owned_lang];
 
                     var $opt = $("#targetlang,#srclang").find("option[value=" + owned_lang + "]");
 
-                    var $owner_app = owner["owner_app"];
+                    var owner_app = owner["owner_app"];
                     if(owner_app == {{ app.id }}) {
                         $opt.append(" [you own this language]");
                     } else {
