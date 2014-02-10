@@ -5,7 +5,19 @@ from appcomposer.appstorage import create_app, set_var
 from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint, backend
 from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException
-from appcomposer.composers.translate.db_helpers import _db_get_owner_app, _find_unique_name_for_app, _db_get_proposals, _db_get_lowner_app, _db_declare_lownership
+from appcomposer.composers.translate.db_helpers import _db_get_owner_app, _find_unique_name_for_app, _db_get_proposals, _db_get_lowner_app, _db_declare_lownership, _db_get_lownerships
+
+
+def do_languages_initial_merge(app, bm):
+    # Retrieve every single "owned" App for that xmlspec.
+    lownerships = _db_get_lownerships(bm.get_gadget_spec())
+
+    for lownership in lownerships:
+        language = lownership.value
+        ownerapp = lownership.app
+        print "MERGING LANGUAGE: " + language
+        bm.merge_language(language, ownerapp)
+
 
 
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])
@@ -75,12 +87,12 @@ def translate_selectlang():
         ownerApp = _db_get_owner_app(appurl)
 
         # If there isn't already an owner, declare ourselves as the owner.
-        if ownerApp is None:
-            set_var(app, "ownership", "")
-        else:
-            bm.merge_json(ownerApp.data)
-            update_app_data(app, bm.to_json())
-            flash("You are not the owner of this App, so the owner's translations have been merged", "success")
+        # if ownerApp is None:
+        #    set_var(app, "ownership", "")
+        #else:
+        #    bm.merge_json(ownerApp.data)
+        #    update_app_data(app, bm.to_json())
+        #    flash("You are not the owner of this App, so the owner's translations have been merged", "success")
 
         # Locate the LOWNER for the App's DEFAULT language.
         lownerApp = _db_get_lowner_app(appurl, "all_ALL")
@@ -90,6 +102,9 @@ def translate_selectlang():
         if lownerApp is None:
             _db_declare_lownership(app, "all_ALL")
             lownerApp = app
+
+        # Advanced merge. Merge owner languages into our bundles.
+        do_languages_initial_merge(app, bm)
 
         # Find out which locales does the app provide (for now).
         translated_langs = bm.get_locales_list()
