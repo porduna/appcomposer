@@ -11,6 +11,28 @@
                         <h1 id="apptitle">Translate</h1>
                         <h2 id="appfullname">{{ app.name }}</h2>
 
+                        {% if is_owner %}
+                        <div name="ownership_status" class="alert alert-success">
+                            <h3>
+                                You are the owner of this translation
+                            </h3>
+                            <p>
+                                Your translation is the <b>standard</b> for this App and language, and the one which will be globally used by default for this App.
+                                Other translators may propose changes, which you can accept, modify, or deny.
+                            </p>
+                        </div>
+                        {% else %}
+                        <div name="ownership_status" class="alert alert-warning">
+                            <h3>
+                                You are not the owner of this translation
+                            </h3>
+                            <p>
+                                Your changes will apply only to your App instance. If you want them to be applied
+                                to the global translation for this App and language, you will need to send a proposal
+                                to the language's owner (this can be done automatically).
+                            </p>
+                        </div>
+                        {% endif %}
 
                         <h5>You may access the translation for this language:</h5>
                         <!--<a href="{{ url_for('.app_xml', appid=app.unique_id, group=request.values["targetgroup"], _external=True) }}">-->
@@ -38,7 +60,7 @@
                 <div class="tab-pane fade active in" id="edit">
 
                   <div class="col-lg-12">
-                      <form class="bs-example form-horizontal" method="POST" target="#">
+                      <form class="bs-example form-horizontal" method="POST" action="#">
 
                         <input type="hidden" name="appid" value="{{ request.values["appid"] }}"/>
                         <input type="hidden" name="srclang" value="{{ request.values["srclang"] }}"/>
@@ -52,7 +74,7 @@
 
                             {% for src_name, src_text in srcbundle.get_msgs().items() %}
                             <div class="form-group">
-                                <label for="field_{{ loop.index }}" class="col-lg-2 control-label">[{{ src_name }}] {{ src_text }}</label>
+                                <label for="field_{{ loop.index }}" class="col-lg-2 control-label"><span class="badge small" style="float:left">{{ src_name }}</span> {{ src_text }}</label>
                                 <div class="col-lg-10">
                                     {# TODO: Find a better way to submit them. This is particularly ugly. #}
                                     <input type="text" class="form-control" id="field_{{ loop.index }}" name="_message_{{ src_name }}" placeholder="{{ src_text }}" value="{{ targetbundle.get_msg(src_name) or '' }}">

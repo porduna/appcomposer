@@ -1,102 +1,10 @@
-
-import re
+import StringIO
 import json
 import urllib
-import urlparse
 from xml.dom import minidom
-import StringIO
-
 from babel import Locale, UnknownLocaleError
-from flask import make_response, url_for, render_template, request
-from appcomposer import db
+from flask import url_for
 
-from appcomposer.appstorage.api import get_app
-from appcomposer.composers.translate import translate_blueprint
-from appcomposer.models import AppVar, App
-
-
-"""
- NOTE ABOUT THE REQUIREMENTS ON THE APP TO BE TRANSLATED:
- The App to be translated should be already internationalized and should contain at least a reference to one Bundle,
- the Default language Bundle. This is a Locale node on the spec, with NO lang attribute and NO country attribute.
- (If this entry does not exist the App can't be translated).
-
-
- FILE NAMING CONVENTIONS:
-
- The convention we will try to use here is the following:
-
- Example: ca_ES_ALL.xml (for language files)
-
- ca would be the language.
- ES would be the country.
- ANY would be the group (the default).
-
- If any is not set, then it will be replaced with "all", in the right case. For instance,
- if lang is not specified it will be all_ES. Or if the country isn't, es_ALL.
-
- The default language is always all_ALL_ALL and should always be present.
-
-
- OTHER CONVENTIONS / GLOSSARY:
-
- "Bundle code" or "locale code" refers generally to the "es_ALL_ALL"-like string.
- """
-
-
-class ExternalFileRetrievalException(Exception):
-    """
-    Exception to be thrown when an operation failed because it was not possible to retrieve a file
-    from an external host.
-    """
-
-    def __init__(self, message=None):
-        self.message = message
-
-
-class UnexpectedTranslateDataException(Exception):
-    """
-    Exception thrown when the format of the internally stored translate data does not seem
-    to be as expected.
-    """
-
-    def __init__(self, message=None):
-        self.message = message
-
-
-class UnrecognizedLocaleCodeException(Exception):
-    """
-    Exception thrown when the format of a locale code does not seem to be
-    as expected.
-    """
-
-    def __init__(self, message=None):
-        self.message = message
-
-
-class BundleExistsAlreadyException(Exception):
-    """
-    Exception thrown when an attempt to add a bundle to the manager exists but
-    a bundle with that code exists already.
-    """
-
-    def __init__(self, message=None):
-        self.message = message
-
-def _extract_base_url(url):
-    parsed = urlparse.urlparse(url)
-    new_path = parsed.path
-    # Go to the last directory
-    if '/' in new_path:
-        new_path = new_path[:new_path.rfind('/')+1]
-    messages_file_parsed = urlparse.ParseResult(scheme = parsed.scheme, netloc = parsed.netloc, path = new_path, params = '', query = '', fragment = '')
-    return messages_file_parsed.geturl()
-    
-
-def _make_url_absolute(relative_path, url):
-    if relative_path.startswith(('http://', 'https://')):
-        return relative_path
-    return _extract_base_url(url) + relative_path
 
 class BundleManager(object):
     """
@@ -191,7 +99,6 @@ class BundleManager(object):
         except UnknownLocaleError:
             return Locale("en", "US").languages.get(lang)
 
-
     @staticmethod
     def fullcode_to_partialcode(code):
         """
@@ -239,8 +146,6 @@ class BundleManager(object):
         @param url: URL to retrieve.
         @return: Contents of the URL.
         """
-        if not url.startswith(('http://', 'https://')):
-            raise Exception("Relative URLs are not accepted.")
         handle = urllib.urlopen(url)
         contents = handle.read()
         return contents
@@ -261,7 +166,7 @@ class BundleManager(object):
         xml_str = self._retrieve_url(url)
 
         # Extract the locales from the XML.
-        locales = self._extract_locales_from_xml(xml_str, url)
+        locales = self._extract_locales_from_xml(xml_str)
 
         for lang, country, bundle_url in locales:
             try:
@@ -270,8 +175,6 @@ class BundleManager(object):
                 name = Bundle.get_standard_code_string(lang, country, "ALL")
                 self._bundles[name] = bundle
             except:
-                import traceback
-                traceback.print_exc()
                 # TODO: For now, we do not really handle errors, we simply ignore those locales which cause exceptions.
                 # In the future, we should probably analyze which kind of exceptions can occur, and decide what
                 # we must do in each case. For instance, sometimes we might wanna ignore the Bundle but sometimes we
@@ -330,9 +233,9 @@ class BundleManager(object):
                 self._bundles[name] = bundle
 
     @staticmethod
-    def _extract_locales_from_xml(xml_str, url):
+    def _extract_locales_from_xml(xml_str):
         """
-        _extract_locales_from_xml(xml_str, url)
+        _extract_locales_from_xml(xml_str)
         Extracts the Locale nodes info from an xml_str (a gadget spec).
         @param xml_str: String containing the XML of a locale file.
         @return: A list of tuples: (lang, country, message_file)
@@ -346,8 +249,6 @@ class BundleManager(object):
             itemlist = xmldoc.getElementsByTagName("Locale")
             for elem in itemlist:
                 messages_file = elem.attributes["messages"].nodeValue
-                
-                messages_file = _make_url_absolute(messages_file, url)
 
                 try:
                     lang = elem.attributes["lang"].nodeValue
@@ -365,7 +266,7 @@ class BundleManager(object):
 
         return locales
 
-    def _inject_locales_into_spec(self, appid, xml_str, url, respect_default=True, group=None):
+    def _inject_locales_into_spec(self, appid, xml_str, respect_default=True, group=None):
         """
         _inject_locales_into_spec(appid, xml_str)
 
@@ -398,10 +299,6 @@ class BundleManager(object):
                 # This is indeed the default node. Go on to next iteration without removing the locale.
                 if "lang" not in loc.attributes.keys() and "country" not in loc.attributes.keys():
                     default_locale_found = True
-                    messages_url = loc.getAttribute("messages")
-                    new_messages_url = _make_url_absolute(messages_url, url)
-                    if new_messages_url != messages_url:
-                        loc.setAttribute("messages", new_messages_url)
                     continue
 
             # Remove the node.
@@ -448,17 +345,6 @@ class BundleManager(object):
             locale.appendChild(xmldoc.createTextNode(""))
             module_prefs.appendChild(locale)
 
-        contents = xmldoc.getElementsByTagName("Content")
-        for content in contents:
-            text_node = xmldoc.createCDATASection("""
-            <script>
-                if (typeof gadgets !== "undefined" && gadgets !== null) {
-                    gadgets.util.getUrlParameters().url = "%s";
-                }
-            </script>
-            """ % url)
-            content.insertBefore(text_node, content.firstChild)
-
         return xmldoc.toprettyxml()
 
     def get_bundle(self, bundle_code):
@@ -494,14 +380,8 @@ class BundleManager(object):
         @param group Optional. If set, the bundles to print will be filtered by group.
         """
         xmlspec = self._retrieve_url(self.original_spec_file)
-        output_xml = self._inject_locales_into_spec(appid, xmlspec, self.original_spec_file, True, group)
-        output_xml = self._inject_absolute_urls(output_xml, self.original_spec_file)
+        output_xml = self._inject_locales_into_spec(appid, xmlspec, True, group)
         return output_xml
-
-    def _inject_absolute_urls(self, output_xml, url):
-        base_url = _extract_base_url(url)
-        exp = re.compile(r"""(\s(src|href)\s*=\s*"?)(?!http://|https://|#|"|"#| )""")
-        return exp.sub(r"\1%s" % base_url, output_xml)
 
     def merge_bundle(self, base_bundle_code, proposed_bundle):
         """
@@ -687,203 +567,41 @@ class Bundle(object):
         return bundle
 
 
-def _db_get_owner_app(spec):
+class UnrecognizedLocaleCodeException(Exception):
     """
-    Gets from the database the App that is considered the Owner for a given spec.
-    @param spec: String to the App's original XML.
-    @return: The owner for the App. None if no owner is found.
-    """
-    relatedAppsIds = db.session.query(AppVar.app_id).filter_by(name="spec",
-                                                               value=spec).subquery()
-    ownerAppId = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
-                                                        AppVar.app_id.in_(relatedAppsIds)).first()
-
-    if ownerAppId is None:
-        return None
-
-    ownerApp = App.query.filter_by(id=ownerAppId[0]).first()
-    return ownerApp
-
-
-@translate_blueprint.route('/app/<appid>/app.xml')
-def app_xml(appid):
-    """
-    app_xml(appid)
-
-    Provided for end-users. This is the function that provides hosting for the
-    gadget specs for a specified App. The gadget specs are actually dynamically
-    generated, as every time a request is made the original XML is obtained and
-    modified.
-
-    @param appid: Identifier of the App.
-    @return: XML of the modified Gadget Spec with the Locales injected, or an HTTP error code
-    if an error occurs.
-    """
-    app = get_app(appid)
-
-    if app is None:
-        return render_template("composers/errors.html", message="Error 404: App doesn't exist"), 404
-
-    # The composer MUST be 'translate'
-    if app.composer != "translate":
-        return render_template("composers/errors.html",
-                               message="Error 500: The composer for the specified App is not Translate"), 500
-
-    bm = BundleManager.create_from_existing_app(app.data)
-    output_xml = bm.do_render_app_xml(appid)
-
-    response = make_response(output_xml)
-    response.mimetype = "application/xml"
-    return response
-
-
-@translate_blueprint.route('/app/<appid>/<group>/app.xml')
-def app_xml(appid, group):
-    """
-    app_xml(appid, group)
-
-    Provided for end-users. This is the function that provides hosting for the
-    gadget specs for a specified App. The gadget specs are actually dynamically
-    generated, as every time a request is made the original XML is obtained and
-    modified.
-
-    @param appid: Identifier of the App.
-    @param group: Group that will act as a filter. If, for instance, it is set to 14-18, then only
-    Bundles that belong to that group will be shown.
-    @return: XML of the modified Gadget Spec with the Locales injected, or an HTTP error code
-    if an error occurs.
-    """
-    app = get_app(appid)
-
-    if app is None:
-        return render_template("composers/errors.html", message="Error 404: App doesn't exist"), 404
-
-    # The composer MUST be 'translate'
-    if app.composer != "translate":
-        return render_template("composers/errors.html",
-                               message="Error 500: The composer for the specified App is not Translate"), 500
-
-    bm = BundleManager.create_from_existing_app(app.data)
-    output_xml = bm.do_render_app_xml(appid, group)
-
-    response = make_response(output_xml)
-    response.mimetype = "application/xml"
-    return response
-
-
-@translate_blueprint.route('/serve_list')
-def app_translation_serve_list():
-    """
-    Serves a list of translated apps, so that a cache can be updated.
+    Exception thrown when the format of a locale code does not seem to be
+    as expected.
     """
 
-    # Get a list of distinct XMLs.
-    specs = db.session.query(AppVar.value).filter(AppVar.name == "spec").distinct()
-
-    output = {}
-
-    for spec_tuple in specs:
-        spec = spec_tuple[0]
-        owner = _db_get_owner_app(spec)
-        # TODO: Handle error.
-
-        bm = BundleManager.create_from_existing_app(owner.data)
-        bundles = bm._bundles.keys()
-        etag = str(owner.modification_date)
-
-        output[spec] = {"bundles": bundles, "etag": etag}
-
-    response = make_response(json.dumps(output, indent=True))
-    response.mimetype = "application/json"
-    return response
+    def __init__(self, message=None):
+        self.message = message
 
 
-@translate_blueprint.route('/serve')
-def app_translation_serve():
+class InvalidXMLFileException(Exception):
     """
-    Serves a translation.
-    GET parameters expected:
-        app_url
-        lang
-        target
+    Exception to be thrown when the XML spec of the App can't be parsed, most likely because
+    it contains invalid XML.
     """
-    app_xml = request.values.get("app_url")
-    if app_xml is None:
-        return render_template("composers/errors.html",
-                               message="Error 400: Bad Request: Parameter app_url is missing."), 400
 
-    lang = request.values.get("lang")
-    if lang is None:
-        return render_template("composers/errors.html",
-                               message="Error 400: Bad Request: Parameter lang is missing."), 400
-
-    target = request.values.get("target")
-    if target is None:
-        return render_template("composers/errors.html",
-                               message="Error 400: Bad Request: Parameter target is missing."), 400
-
-    # Retrieves the owner app from the DB.
-    owner_app = _db_get_owner_app(app_xml)
-    if owner_app is None:
-        return render_template("composers/errors.html", message="Error 404: App not found."), 404
-
-    # Parse the app's data.
-    bm = BundleManager.create_from_existing_app(owner_app.data)
-
-    # Build the name to request.
-    bundle_name = "%s_%s" % (lang, target)
-    bundle = bm.get_bundle(bundle_name)
-
-    if bundle is None:
-        dbg_info = str(bm._bundles.keys())
-        return render_template("composers/errors.html",
-                               message="Error 404: Could not find such language for the specified app. Available keys are: " + dbg_info), 404
-
-    output_xml = bundle.to_xml()
-
-    response = make_response(output_xml)
-    response.mimetype = "application/xml"
-    return response
+    def __init__(self, message=None):
+        self.message = message
 
 
-@translate_blueprint.route('/app/<appid>/i18n/<langfile>.xml')
-def app_langfile(appid, langfile):
+class NoDefaultLanguageException(Exception):
     """
-    app_langfile(appid, langfile, age)
-
-    Provided for end-users. This is the function that provides hosting for the
-    langfiles for a specified App. The langfiles are actually dynamically
-    generated (the information is extracted from the Translate-specific information).
-
-    @param appid: Appid of the App whose langfile to generate.
-    @param langfile: Name of the langfile. Must follow the standard: ca_ES_ALL
-    @return: Google OpenSocial compatible XML, or an HTTP error code
-    if an error occurs.
+    Exception to be thrown when an App specified to be translated does not have a default translation.
+    (And hence it is probably not ready to be translated).
     """
-    app = get_app(appid)
 
-    if app is None:
-        return render_template("composers/errors.html", message="Error 404: App doesn't exist."), 404
+    def __init__(self, message=None):
+        self.message = message
 
-    # The composer MUST be 'translate'
-    if app.composer != "translate":
-        return render_template("composers/errors.html",
-                               message="Error 500: The composer for the specified App is not a Translate composer."), 500
 
-    # Parse the appdata
-    appdata = json.loads(app.data)
+class BundleExistsAlreadyException(Exception):
+    """
+    Exception thrown when an attempt to add a bundle to the manager exists but
+    a bundle with that code exists already.
+    """
 
-    bundles = appdata["bundles"]
-    if langfile not in bundles:
-        dbg_info = str(bundles.keys())
-        return render_template("composers/errors.html",
-                               message="Error 404: Could not find such language for the specified app. Available keys are: " + dbg_info), 404
-
-    bundle = Bundle.from_jsonable(bundles[langfile])
-
-    output_xml = bundle.to_xml()
-
-    response = make_response(output_xml)
-    response.mimetype = "application/xml"
-    return response
-
+    def __init__(self, message=None):
+        self.message = message
