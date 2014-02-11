@@ -1,0 +1,143 @@
+@charset "utf-8";
+.unselectable {
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.textSelectable {
+  -moz-user-select: -moz-text;
+  -khtml-user-select: text;
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  -o-user-select: text;
+  user-select: text;
+}
+/* this works on iOS, not on android */
+.preventLongPress {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+/* Component containers
+----------------------------------*/
+.ui-widget {
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 1.1em;
+}
+/*.ui-widget .ui-widget {*/
+/*font-size: 1.1em;*/
+/*}*/
+/*.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {*/
+/*font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;*/
+/*font-size: 1em;*/
+/*}*/
+.ui-widget-content {
+  border: 1px solid #faa519;
+  /*background: #eeeeee url(images/ui-bg_highlight-soft_100_eeeeee_1x100.png) 50% top repeat-x;*/
+
+  background: #ffffff;
+  color: #3f3f3f;
+}
+/*.ui-widget-content a {*/
+/*color: #333333;*/
+/*}*/
+.ui-widget-header {
+  border: 1px solid #faa519;
+  /*background: #f6a828 url(images/ui-bg_gloss-wave_35_f6a828_500x100.png) 50% 50% repeat-x;*/
+
+  background: #92d6e3;
+  color: #ffffff;
+  font-weight: bold;
+}
+.ui-widget-header a {
+  color: #ffffff;
+}
+/* Interaction states
+----------------------------------*/
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default {
+  border: 1px solid 1px solid #faa519;
+  /*background: #f6f6f6 url(images/ui-bg_glass_100_f6f6f6_1x400.png) 50% 50% repeat-x;*/
+
+  background: #92d6e3;
+  font-weight: bold;
+  /*color: #fff;*/
+
+}
+.ui-state-default a,
+.ui-state-default a:link,
+.ui-state-default a:visited {
+  color: #3f3f3f;
+  text-decoration: none;
+}
+.ui-state-hover,
+.ui-widget-content .ui-state-hover,
+.ui-widget-header .ui-state-hover,
+.ui-state-focus,
+.ui-widget-content .ui-state-focus,
+.ui-widget-header .ui-state-focus {
+  border: 1px solid #faa519;
+  /*background: #fdf5ce url(images/ui-bg_glass_100_fdf5ce_1x400.png) 50% 50% repeat-x;*/
+
+  background: #00bacc;
+  font-weight: bold;
+  color: #ffffff;
+}
+.ui-state-hover a,
+.ui-state-hover a:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active {
+  border: 1px solid #faa519;
+  /*background: #ffffff url(images/ui-bg_glass_65_ffffff_1x400.png) 50% 50% repeat-x;*/
+
+  background: #faa519;
+  font-weight: bold;
+  color: #3f3f3f;
+}
+.ui-state-active a,
+.ui-state-active a:link,
+.ui-state-active a:visited {
+  color: #3f3f3f;
+  text-decoration: none;
+}
+.ui-widget :active {
+  outline: none;
+}
+.ui-slider-handle {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.ui-tabs-nav {
+  background: #f5f5f5;
+}
+ul.ui-tabs-nav li.ui-tabs-active {
+  background: #ffffff;
+}
+.ui-tabs .ui-tabs-nav li a {
+  float: left;
+  padding: .25em 1em;
+  text-decoration: none;
+}
+.ui-tabs .ui-state-active a {
+  float: left;
+  padding: .25em 1em;
+  text-decoration: none;
+  background: #ffffff;
+}
+.ui-helper-reset {
+  line-height: 1;
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 14px;
+}
+.ui-dialog-titlebar {
+  background: #00bacc;
+}

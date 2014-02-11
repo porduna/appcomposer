@@ -42,7 +42,7 @@
 }
 #tiptip_content {
   font-size: smaller;
-  color: #565656;
+  color: #3f3f3f;
   padding: 4px 8px;
   border: 1px solid #faa519;
   background-color: #92d6e3;
@@ -81,22 +81,22 @@
 #tiptip_holder.tip_top #tiptip_arrow_inner {
   margin-top: -7px;
   margin-left: -6px;
-  border-top-color: #565656;
+  border-top-color: #3f3f3f;
 }
 #tiptip_holder.tip_bottom #tiptip_arrow_inner {
   margin-top: -5px;
   margin-left: -6px;
-  border-bottom-color: #565656;
+  border-bottom-color: #3f3f3f;
 }
 #tiptip_holder.tip_right #tiptip_arrow_inner {
   margin-top: -6px;
   margin-left: -5px;
-  border-right-color: #565656;
+  border-right-color: #3f3f3f;
 }
 #tiptip_holder.tip_left #tiptip_arrow_inner {
   margin-top: -6px;
   margin-left: -7px;
-  border-left-color: #565656;
+  border-left-color: #3f3f3f;
 }
 @media screen and (-webkit-min-device-pixel-ratio: 0) {
   #tiptip_content {
@@ -104,9 +104,9 @@
     background-color: #92d6e3;
   }
   #tiptip_holder.tip_bottom #tiptip_arrow_inner {
-    border-bottom-color: #565656;
+    border-bottom-color: #3f3f3f;
   }
   #tiptip_holder.tip_top #tiptip_arrow_inner {
-    border-top-color: #565656;
+    border-top-color: #3f3f3f;
   }
 }
