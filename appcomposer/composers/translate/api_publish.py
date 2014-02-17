@@ -4,7 +4,7 @@ from appcomposer import db
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import Bundle, BundleManager
-from appcomposer.composers.translate.db_helpers import _db_get_lowner_app, _db_get_ownerships
+from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_get_ownerships
 from appcomposer.models import AppVar
 
 
@@ -32,7 +32,7 @@ def app_translation_serve():
         return render_template("composers/errors.html",
                                message="Error 400: Bad Request: Parameter target is missing."), 400
 
-    owner_app = _db_get_lowner_app(app_xml, lang)
+    owner_app = _db_get_lang_owner_app(app_xml, lang)
 
     if owner_app is None:
         return render_template("composers/errors.html", message="Error 404: App not found."), 404
@@ -63,7 +63,7 @@ def app_translation_serve_list():
     Serves a list of translated apps, so that a cache can be updated.
     Aims to be SHINDIG-compatible, though it doesn't implement this feature yet.
 
-    This is the new version (for the new lownership system). It is somewhat inefficient
+    This is the new version (for the new ownership system). It is somewhat inefficient
     and the current etag scheme doesn't make much sense anymore.
     """
 
@@ -75,7 +75,7 @@ def app_translation_serve_list():
     for spec_tuple in specs:
         spec = spec_tuple[0]
 
-        # For each spec we get the lownerships.
+        # For each spec we get the ownerships.
         ownerships = _db_get_ownerships(spec)
 
         bundles = []

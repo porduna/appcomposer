@@ -3,7 +3,7 @@ import time
 from appcomposer.appstorage.api import get_app, update_app_data, add_var
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
-from appcomposer.composers.translate.db_helpers import _db_get_lowner_app, _db_declare_ownership
+from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_declare_ownership
 
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
@@ -41,7 +41,7 @@ def translate_edit():
             bm.add_bundle(targetbundle_code, targetbundle)
 
     # Get the owner for this target language.
-    owner_app = _db_get_lowner_app(spec, targetlang)
+    owner_app = _db_get_lang_owner_app(spec, targetlang)
 
     # If the language has no owner, we declare ourselves as owners.
     if owner_app is None:

@@ -5,7 +5,7 @@ from appcomposer.appstorage import create_app, set_var
 from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint, backend
 from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException
-from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, _db_get_lowner_app, _db_declare_ownership, _db_get_ownerships
+from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships
 
 
 def do_languages_initial_merge(app, bm):
@@ -91,8 +91,8 @@ def translate_selectlang():
         # certain advanced features.
         set_var(app, "spec", appurl)
 
-        # Locate the LOWNER for the App's DEFAULT language.
-        ownerApp = _db_get_lowner_app(appurl, "all_ALL")
+        # Locate the owner for the App's DEFAULT language.
+        ownerApp = _db_get_lang_owner_app(appurl, "all_ALL")
 
         # If there isn't already an owner for the default languages, we declare ourselves
         # as the owner for this App's default language.
@@ -132,8 +132,8 @@ def translate_selectlang():
 
     # The following is again common for both GET (view) and POST (edit).
 
-    # Check LOWNERSHIP. Probably eventually we will remove the ownership check above.
-    ownerApp = _db_get_lowner_app(spec, "all_ALL")
+    # Check OWNERSHIP. Probably eventually we will remove the ownership check above.
+    ownerApp = _db_get_lang_owner_app(spec, "all_ALL")
     if ownerApp == app:
         is_owner = True
     else:

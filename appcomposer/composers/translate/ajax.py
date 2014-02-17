@@ -61,15 +61,15 @@ def get_ownership_list():
         return jsonify(**result)
 
     # Retrieve every single "owned" App for that xmlspec.
-    lownerships = _db_get_ownerships(xmlspec)
+    ownerships = _db_get_ownerships(xmlspec)
 
     # Parse the contents
     result["result"] = "success"
     result["owners"] = {}
 
-    for lownership in lownerships:
-        language = lownership.value
-        owner = lownership.app.owner
-        result["owners"][language] = {"owner_id": owner.id, "owner_login": owner.login, "owner_app": lownership.app.id}
+    for ownership in ownerships:
+        language = ownership.value
+        owner = ownership.app.owner
+        result["owners"][language] = {"owner_id": owner.id, "owner_login": owner.login, "owner_app": ownership.app.id}
 
     return jsonify(**result)
