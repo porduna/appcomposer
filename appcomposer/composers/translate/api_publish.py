@@ -81,9 +81,12 @@ def app_translation_serve_list():
         bundles = []
 
         for ownership in ownerships:
-            key = ownership.value
+            lang = ownership.value
+            bm = BundleManager.create_from_existing_app(ownership.app.data)
+            keys = [key for key in bm._bundles.keys() if BundleManager.fullcode_to_partialcode(key) == lang]
+
             etag = str(ownership.app.modification_date)
-            bundles.append({"key": key, "etag": etag})
+            bundles.append({"keys": keys, "etag": etag})
 
         output[spec] = {"bundles": bundles}
 
