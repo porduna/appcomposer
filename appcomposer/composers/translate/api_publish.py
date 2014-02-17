@@ -4,7 +4,7 @@ from appcomposer import db
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import Bundle, BundleManager
-from appcomposer.composers.translate.db_helpers import _db_get_lowner_app
+from appcomposer.composers.translate.db_helpers import _db_get_lowner_app, _db_get_lownerships
 from appcomposer.models import AppVar
 
 
@@ -32,16 +32,8 @@ def app_translation_serve():
         return render_template("composers/errors.html",
                                message="Error 400: Bad Request: Parameter target is missing."), 400
 
-    # TODO: !!!! CHECK THIS AS WELL. HAS CHANGED WITH THE OWNERSHIP SYSTEM. !!!!
+    owner_app = _db_get_lowner_app(app_xml, lang)
 
-
-    # Retrieves the owner app from the DB.
-    # owner_app = _db_get_owner_app(app_xml)
-    # if owner_app is None:
-    #    return render_template("composers/errors.html", message="Error 404: App not found."), 404
-
-    # TODO: The above is temporarily replaced with:
-    owner_app = _db_get_lowner_app(app_xml, "all_ALL")
     if owner_app is None:
         return render_template("composers/errors.html", message="Error 404: App not found."), 404
 
@@ -70,6 +62,9 @@ def app_translation_serve_list():
     """
     Serves a list of translated apps, so that a cache can be updated.
     Aims to be SHINDIG-compatible, though it doesn't implement this feature yet.
+
+    This is the new version (for the new lownership system). It is somewhat inefficient
+    and the current etag scheme doesn't make much sense anymore.
     """
 
     # Get a list of distinct XMLs.
@@ -80,16 +75,17 @@ def app_translation_serve_list():
     for spec_tuple in specs:
         spec = spec_tuple[0]
 
-        # TODO: !!!! AGAIN, THIS NEEDS TO BE ADAPTED TO THE NEW SYSTEM !!!!
+        # For each spec we get the lownerships.
+        ownerships = _db_get_lownerships(spec)
 
-        owner = _db_get_lowner_app(spec, "all_ALL")
-        # TODO: Handle error.
+        bundles = []
 
-        bm = BundleManager.create_from_existing_app(owner.data)
-        bundles = bm._bundles.keys()
-        etag = str(owner.modification_date)
+        for ownership in ownerships:
+            key = ownership.value
+            etag = str(ownership.app.modification_date)
+            bundles.append({"key": key, "etag": etag})
 
-        output[spec] = {"bundles": bundles, "etag": etag}
+        output[spec] = {"bundles": bundles}
 
     response = make_response(json.dumps(output, indent=True))
     response.mimetype = "application/json"
