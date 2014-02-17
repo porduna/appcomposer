@@ -121,6 +121,9 @@ def translate_selectlang():
             return redirect(url_for("user.apps.index"))
 
         app = get_app(appid)
+        if app is None:
+            return render_template("composers/errors.html",
+                                   message="Specified App doesn't exist"), 404
 
         # Load a BundleManager from the app data.
         bm = BundleManager.create_from_existing_app(app.data)
@@ -132,7 +135,7 @@ def translate_selectlang():
 
     # The following is again common for both GET (view) and POST (edit).
 
-    # Check OWNERSHIP. Probably eventually we will remove the ownership check above.
+    # Check ownership. Probably eventually we will remove the ownership check above.
     ownerApp = _db_get_lang_owner_app(spec, "all_ALL")
     if ownerApp == app:
         is_owner = True
@@ -143,8 +146,9 @@ def translate_selectlang():
     if not is_owner and owner is None:
         # TODO: Improve this error handling. This should NEVER happen.
         flash("Error: Language Owner is None", "error")
+        return render_template("composers/errors.html", message="Internal Error: Language owner is None"), 500
 
-    proposal_num = 0
+
     # Just for the count of proposals
     proposal_num = len(_db_get_proposals(app))
 
