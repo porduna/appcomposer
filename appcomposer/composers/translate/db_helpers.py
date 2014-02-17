@@ -15,7 +15,7 @@ major changes are required.
 """
 
 
-def _db_get_lownerships(spec):
+def _db_get_ownerships(spec):
     """
     Gets every single lownership for a spec.
     @param spec: The spec whose lownerships to retrieve.

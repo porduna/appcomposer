@@ -4,7 +4,7 @@ from appcomposer import db
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import Bundle, BundleManager
-from appcomposer.composers.translate.db_helpers import _db_get_lowner_app, _db_get_lownerships
+from appcomposer.composers.translate.db_helpers import _db_get_lowner_app, _db_get_ownerships
 from appcomposer.models import AppVar
 
 
@@ -76,7 +76,7 @@ def app_translation_serve_list():
         spec = spec_tuple[0]
 
         # For each spec we get the lownerships.
-        ownerships = _db_get_lownerships(spec)
+        ownerships = _db_get_ownerships(spec)
 
         bundles = []
 

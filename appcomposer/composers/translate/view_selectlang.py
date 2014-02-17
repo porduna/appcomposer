@@ -5,7 +5,7 @@ from appcomposer.appstorage import create_app, set_var
 from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint, backend
 from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException
-from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, _db_get_lowner_app, _db_declare_ownership, _db_get_lownerships
+from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, _db_get_lowner_app, _db_declare_ownership, _db_get_ownerships
 
 
 def do_languages_initial_merge(app, bm):
@@ -18,7 +18,7 @@ def do_languages_initial_merge(app, bm):
     """
 
     # Retrieve every single "owned" App for that xmlspec.
-    ownerships = _db_get_lownerships(bm.get_gadget_spec())
+    ownerships = _db_get_ownerships(bm.get_gadget_spec())
 
     for ownership in ownerships:
         language = ownership.value

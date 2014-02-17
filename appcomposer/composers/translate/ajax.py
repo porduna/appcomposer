@@ -1,7 +1,7 @@
 from flask import request, jsonify, json
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager
-from appcomposer.composers.translate.db_helpers import _db_get_lownerships
+from appcomposer.composers.translate.db_helpers import _db_get_ownerships
 from appcomposer.models import AppVar
 
 
@@ -61,7 +61,7 @@ def get_ownership_list():
         return jsonify(**result)
 
     # Retrieve every single "owned" App for that xmlspec.
-    lownerships = _db_get_lownerships(xmlspec)
+    lownerships = _db_get_ownerships(xmlspec)
 
     # Parse the contents
     result["result"] = "success"
