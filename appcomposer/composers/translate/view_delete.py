@@ -36,3 +36,4 @@ def translate_delete():
         flash(gettext("App successfully deleted."), "success")
 
         return redirect(url_for("user.apps.index"))
+
