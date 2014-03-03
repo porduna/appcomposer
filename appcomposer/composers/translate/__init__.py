@@ -4,15 +4,13 @@ from appcomposer.babel import lazy_gettext
 from forms import UrlForm, LangselectForm
 
 
-# Note: PyCharm detects the following import as not needed, but, at the moment of writing this, IT IS.
-
 info = {
     'blueprint': 'translate',
     'url': '/composers/translate',
 
     'new_endpoint': 'translate.translate_index',
     'edit_endpoint': 'translate.translate_selectlang',
-    'delete_endpoint': 'dummy.delete',
+    'delete_endpoint': 'translate.translate_delete',
 
     'name': lazy_gettext('Translate Composer'),
     'description': lazy_gettext('Translate an existing app.')
@@ -35,6 +33,7 @@ import view_merge_existing
 import view_proposed_list
 import view_publish
 import view_index
+import view_delete
 import view_others
 import ajax
 import api_publish
