@@ -404,6 +404,29 @@ class BundleManager(object):
             merged_bundle = Bundle.merge(base_bundle, proposed_bundle)
             self._bundles[base_bundle_code] = merged_bundle
 
+    def merge_language(self, language_partial_code, from_app):
+        """
+        Merges a full language within from_app into the BundleManager.
+
+        @param language_partial_code: A partial code identifying the language to merge,
+        such as ca_ES. Every bundle for that language (all groups) will be merged.
+
+        @note: Any value which exists already in the calling BundleManager will be replaced
+        if a value with the same name is in from_app and satisfies the merging conditions.
+        """
+        from_bm = BundleManager.create_from_existing_app(from_app.data)
+
+        # Find those bundles we must merge (all groups for the specified language).
+        for bundle_name in from_bm._bundles.keys():
+            partialcode = BundleManager.fullcode_to_partialcode(bundle_name)
+            if partialcode == language_partial_code:
+                # We found a bundle we must merge.
+                print "MERGING: " + bundle_name
+                proposed_bundle = from_bm.get_bundle(bundle_name)
+                self.merge_bundle(bundle_name, proposed_bundle)
+            else:
+                print "NOT MERGING: " + bundle_name
+
 
 class Bundle(object):
     """
