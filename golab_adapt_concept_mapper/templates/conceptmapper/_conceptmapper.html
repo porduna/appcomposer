@@ -1,43 +1,16 @@
 {% macro render_conceptmapper(app_id) %}
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01//EN" "http://www.w3.org/TR/html4/strict.dtd">
 <html lang="en">
 <head>
-    <title>Go-Lab - Concept Mapper 0.6</title>
-
-    <link rel="stylesheet" type="text/css" href="{{ url_for('concept_mapper.static', filename='css/conceptmap.css') }}" />
-    <link type="text/css" rel="stylesheet" href="{{ url_for('concept_mapper.static', filename='libs/fonts/titilliumWeb400.css') }}" media="all"/> 
-    <link rel="stylesheet" type="text/css" href="{{ url_for('concept_mapper.static', filename='commons/css/golabTiptip.css') }}"/> 
-
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='commons/js/jsChecker.js') }}"></script>
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='commons/js/utils.js') }}"></script> 
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='libs/js/jquery-min.js') }}"></script>
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='libs/js/jquery-ui.custom.min.js') }}"></script>
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='libs/js/jquery.ui.touch-punch.js') }}"></script>
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='libs/js/jquery.autogrow-textarea.js') }}"></script>
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='libs/js/jquery.jsPlumb-1.4.1-all-fixed.js') }}"></script>
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='libs/js/apprise-v2.min.js') }}"></script>
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='libs/js/jquery.tipTip.minified.js') }}"></script> 
-
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='commons/js/ActionLogger.js') }}"></script>
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='commons/js/PersistencyUtils.js') }}"></script> 
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='commons/js/MetadataUtils.js') }}"></script>
-
-    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='coffee/ConceptMapper0.6.js') }}"></script>
-
-    <!-- Editable concepts from the Adapter app -->
-    <script type="text/javascript" src="{{ url_for('concept_mapper.conceptmapper_domain', app_id = app_id) }}"></script>
-
-    <script type="text/javascript">
-        function init() {
-            var actionLogger = new ut.commons.actionlogging.ActionLogger();
-            // actionLogger.setLoggingTarget(dufftownLogging);
-            // actionLogger.setLoggingTarget(actionLogger.consoleLogging);
-            //actionLogger.setLoggingTarget(actionLogger.dufftownLogging);
-            
-            //the "concepts" parameter is REQUIRED (otherwise the default values are loaded from commons/MetadataUtils.js)
-            new window.ut.tools.conceptmapper.ConceptMapper(actionLogger, concepts);
-        }
-    </script>
+    <title>Go-Lab - Concept Mapper 0.9</title>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('concept_mapper.static', filename='css/conceptmap0.9.css') }}" />
+    <link type="text/css" rel="stylesheet" href="{{ url_for('concept_mapper.static', filename='libs/fonts/titilliumWeb400.css') }}" media="all"/>
+    <link rel="stylesheet" type="text/css" href="{{ url_for('concept_mapper.static', filename='commons/css/golabTiptip.css') }}"/>
+    <link rel="stylesheet" href="http://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('concept_mapper.static', filename='libs/font-awesome/less/font-awesome-shindig-workaround.css') }}">    
 </head>
+
+
 
 <body onload="init()">
     <table id="ut_tools_conceptmapper_root">
@@ -46,30 +19,76 @@
                 <div class="areaLabel">Toolbar</div>
                 <div id="ut_tools_conceptmapper_toolbar">
                     <ul id="ut_tools_conceptmapper_toolbar_list">
-                        <!--<li><div id="ut_tools_conceptmapper_linkButton" class="ut_tools_conceptmapper_button ut_tools_conceptmapper_highlightOnHover"></div></li>-->
-                        <li><img alt="Activate to create/delete relations." title="Activate to create/delete relations. Delete a relation by creating it again." src="{{ url_for('concept_mapper.static', filename='commons/images/arrow.png') }}" id="ut_tools_conceptmapper_linkButton" class="tiptip activeButton ut_tools_conceptmapper_button"/></li>
-                        <li><img alt="Drag a concept to delete or click to delete all." title="Drag a concept to delete or click to delete all." src="{{ url_for('concept_mapper.static', filename='commons/images/trash.png') }}" id="ut_tools_conceptmapper_trashcan" class="tiptip activeButton ut_tools_conceptmapper_button"/></li>
-                        <!--<li><div id="ut_tools_conceptmapper_linkDeleteButton" class="ut_tools_conceptmapper_button ut_tools_conceptmapper_highlightOnHover"></div></li>-->
                         <li><div title="Drag me to the concept map." class="tiptip ut_tools_conceptmapper_concept ut_tools_conceptmapper_conceptTextarea ut_tools_conceptmapper_template"><p>concept</p></div></li>
                         <li><div title="Drag me to the concept map." class="tiptip ut_tools_conceptmapper_concept ut_tools_conceptmapper_conceptSelector ut_tools_conceptmapper_template"><p>select or type</p></div></li>
-                        <li>
-                            <img alt="Load concept map." title="Load concept map." id="ut_tools_conceptmapper_retrieve" class="tiptip activeButton ut_tools_conceptmapper_button" src="{{ url_for('concept_mapper.static', filename='commons/images/load.png') }}" />
-                            <img alt="Save concept map." title="Save concept map." id="ut_tools_conceptmapper_store" class="tiptip activeButton ut_tools_conceptmapper_button" src="{{ url_for('concept_mapper.static', filename='commons/images/save.png') }}" />
-                        </li>
+                        <hr/>
+                        <li><h2><i title='Activate to create/delete relations..' id="ut_tools_conceptmapper_linkButton" class="tiptip icon-long-arrow-right ut_tools_conceptmapper_icon activeButton"></i></h2></li>
+                        <li><h2><i title='Drag a concept to delete or click to delete all.' id="ut_tools_conceptmapper_trashcan" class="tiptip icon-trash ut_tools_conceptmapper_icon activeButton"></i></h2></li>
+                        <hr/>
+                        <li><h2><i title='Load concept map.' id="ut_tools_conceptmapper_retrieve" class="tiptip icon-upload-alt ut_tools_conceptmapper_icon activeButton"></i></h2></li>
+                        <li><h2><i title='Save concept map.' id="ut_tools_conceptmapper_store" class="tiptip icon-download-alt ut_tools_conceptmapper_icon activeButton"></i></h2></li>
+                        <hr/>
+                        <li><h2><i title='Test notification.' id="ut_tools_conceptmapper_notification" class="tiptip ut_tools_conceptmapper_icon icon-exclamation-sign activeButton"></i></h2></li>
+                        <li><h2><i title='Settings.' id="ut_tools_conceptmapper_settings" class="tiptip ut_tools_conceptmapper_icon icon-gear activeButton"></i></h2></li>
                     </ul>
                     <div id="ut_tools_conceptmapper_logoContainer">
-                        <img alt="go-lab logo" src="{{ url_for('concept_mapper.static', filename='commons/images/golabLogo100_89.png') }}"/>
+                        <img alt="go-lab logo" src="{{ url_for('concept_mapper.static', filename='commons/images/golabLogo65_58.png') }}"/>
                     </div>
                 </div>
             </td>
             <!--<td id="ut_tools_conceptmapper_map"></td>-->
             <td valign="top" id="ut_tools_conceptmapper_map">
                 <div class="areaLabel">Concept Map</div>
-                <!--<div id="ut_tools_conceptmapper_map"></div>-->
             </td>
         </tr>
     </table>
     <div id="ut_tools_conceptmapper_dialog"></div>
+
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='commons/js/jsChecker.js') }}"></script>
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='commons/js/utils.js') }}"></script>
+    <script type="text/javascript" charset="utf-8" src="http://code.jquery.com/jquery-1.10.2.min.js"></script>
+    <script type="text/javascript" charset="utf-8" src="http://code.jquery.com/ui/1.10.3/jquery-ui.js"></script>
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='libs/js/jquery.ui.touch-punch.js') }}"></script>
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='libs/js/jquery.autogrow-textarea.js') }}"></script>
+    <!--<script type="text/javascript" charset="utf-8" src="../../../../../libs/js/jquery.jsPlumb-1.3.16-all-fixed.js"></script>-->
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='libs/js/jquery.jsPlumb-1.4.1-all-fixed.js') }}"></script>
+    <!--<script type="text/javascript" charset="utf-8" src="../../../../../libs/js/jquery.jsPlumb-1.5.0-fixed.js"></script>-->
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='libs/js/jquery.tipTip.minified.js') }}"></script>
+
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='commons/js/ActionLogger.09.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='commons/js/PersistencyUtils.js') }}"></script> 
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='commons/js/MetadataUtils.js') }}"></script>
+
+    <!--
+    <script type="text/javascript" charset="utf-8" src="http://192.168.120.117:8899/socket.io/socket.io.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../../../../../server/LABackend/public_html/js/SocketIOFeedback.js"></script>
+    <script type='text/javascript' src="../../../../../web/ilsPrototype1/js/ICanHaz.js"></script>
+    <script type='text/javascript' src="../../../../../web/ilsPrototype1/js/notification.ui.js"></script>
+    <script type="text/javascript" charset="utf-8" src="../../../../../commons/js/NotificationClient.js"></script>
+    -->
+
+    <script type="text/javascript" charset="utf-8" src="http://go-lab.collide.info/socket.io/socket.io.js"></script>-
+    <!--<script type="text/javascript" charset="utf-8" src="../../libs/js/socket.io.js"></script>-->
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='commons/js/notificationClient.js') }}"></script> 
+
+    <!-- Editable concepts from the Adapter app (overwrites ConfigDialog) -->
+    <script type="text/javascript" src="{{ url_for('concept_mapper.conceptmapper_domain', app_id = app_id) }}"></script>    
+    <!-- <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='coffee/ConfigDialog0.1.js') }}"></script>  -->
+    
+    <script type="text/javascript" charset="utf-8" src="{{ url_for('concept_mapper.static', filename='coffee/ConceptMapper0.9.js') }}"></script> 
+
+    
+    <script type="text/javascript" src="{{ url_for('concept_mapper.conceptmapper_domain', app_id = app_id) }}"></script>
+
+    <script type="text/javascript">
+        function init() {
+            // sessionId is used by ConceptMapper to configure the actionlogger
+            // and to configure the notification client
+            window.sessionId = ut.commons.utils.generateUUID();
+            window.notificationClient = new ude.commons.NotificationClient(window.sessionId)
+            new window.ut.tools.conceptmapper.ConceptMapper();
+        }
+    </script>
 </body>
 </html>
 {% endmacro %}

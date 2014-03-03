@@ -93,56 +93,56 @@
       label: "Debug mode?",
       description: "Turns on/off verbose console messages.",
       type: "boolean",
-      value: {{ debug }},
+      value: "true",
       configurable: "true"
     },
     actionlogging: {
       label: "actionlogging",
       description: "Configures the action logging target.",
       type: "string",
-      value: {{ actionlogging }},
+      value: "consoleShort",
       configurable: "true"
     },
     show_prompts: {
       label: "Show prompts?",
       description: "Are incoming prompts and notifications shown as a pop-up message?",
       type: "boolean",
-      value: {{ show_prompts }},
+      value: "true",
       configurable: "true"
     },
     textarea_concepts: {
       label: "Show text input?",
       description: "Is the user allowed to freely create and edit new concepts?",
       type: "boolean",
-      value: {{ textarea_concepts }},
+      value: "true",
       configurable: "true"
     },
     combobox_concepts: {
       label: "Show combobox input?",
       description: "Is the combobox node with pre-defined concepts available?",
       type: "boolean",
-      value: {{ combobox_concepts}},
+      value: "true",
       configurable: "true"
     },
     drop_external: {
       label: "Drag'n'drop external concepts?",
       description: "Is it possible to drag highlighted text as new concepts from other applications?",
       type: "boolean",
-      value: {{ drop_external }},
+      value: "true",
       configurable: "true"
     },
     concepts: {
       label: "Available concepts",
       description: "A list with pre-defined concepts to select from in the combobox.",
       type: "array",
-      value: {{concepts}},
+      value: ["luminous intensity"],
       configurable: "true"
     },
     relations: {
       label: "Available relations",
       description: "A list with pre-defined relations to select from.",
       type: "array",
-      value: {{ relations }},
+      value: ["is a", "is part of", "has", "leads to", "influences", "increases", "decreases"],
       configurable: "true"
     }
   };
