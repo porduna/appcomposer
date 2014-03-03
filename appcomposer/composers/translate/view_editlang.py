@@ -55,7 +55,7 @@ def translate_edit():
     # This is a GET request. We are essentially viewing-only.
     if request.method == "GET":
         return render_template("composers/translate/edit.html", is_owner=is_owner, app=app, srcbundle=srcbundle,
-                               targetbundle=targetbundle)
+                               targetbundle=targetbundle, spec=spec)
 
     # This is a POST request. We need to save the entries.
     else:
@@ -93,4 +93,4 @@ def translate_edit():
             return redirect(url_for("user.apps.index"))
 
         return render_template("composers/translate/edit.html", is_owner=is_owner, app=app, srcbundle=srcbundle,
-                               targetbundle=targetbundle)
+                               targetbundle=targetbundle, spec=spec)
