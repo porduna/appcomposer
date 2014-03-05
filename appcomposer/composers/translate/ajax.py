@@ -1,8 +1,10 @@
 from flask import request, jsonify, json
+import time
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager
 from appcomposer.composers.translate.db_helpers import _db_get_ownerships
 from appcomposer.models import AppVar
+from appcomposer.composers.translate.tasks import extract_opensocial_app
 
 
 @translate_blueprint.route("/get_proposal", methods=["GET"])
@@ -73,3 +75,12 @@ def get_ownership_list():
         result["owners"][language] = {"owner_id": owner.id, "owner_login": owner.login, "owner_app": ownership.app.id}
 
     return jsonify(**result)
+
+
+@translate_blueprint.route("/test")
+def test():
+    ar = extract_opensocial_app.delay("http://www.google.com")
+    time.sleep(1)
+    if ar.result is not None:
+        print "RESULT: " + ar.result
+    return "HELLO"

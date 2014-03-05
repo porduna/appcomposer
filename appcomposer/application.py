@@ -1,6 +1,23 @@
+from celery import Celery
 from flask import Flask, request
 from flask import escape
 import os
+
+
+# To build the celery_app from the flask_app. This is supposed to be all
+# the integration that is required.
+def make_celery(app):
+    celery = Celery(app.import_name, backend=app.config['CELERY_RESULT_BACKEND'], broker=app.config['CELERY_BROKER_URL'])
+    celery.conf.update(app.config)
+    TaskBase = celery.Task
+    class ContextTask(TaskBase):
+        abstract = True
+        def __call__(self, *args, **kwargs):
+            with app.app_context():
+                return TaskBase.__call__(self, *args, **kwargs)
+    celery.Task = ContextTask
+    return celery
+
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(32)
@@ -8,6 +25,14 @@ app.config['SESSION_COOKIE_NAME'] = 'appcompsession'
 app.config['SQLALCHEMY_NATIVE_UNICODE'] = True
 app.config['SQLALCHEMY_POOL_RECYCLE'] = 3600
 app.config.from_object('config')
+
+
+app.config.update(
+    CELERY_BROKER_URL='redis://localhost:6379',
+    CELERY_RESULT_BACKEND='redis://localhost:6379'
+)
+celery_app = make_celery(app)
+
 
 # Support old deployments
 if not app.config.get('SQLALCHEMY_DATABASE_URI', False):
