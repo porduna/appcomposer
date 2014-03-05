@@ -1,8 +1,5 @@
-
 import appcomposer
-import tempfile
-import os
-from appcomposer.appstorage import create_app
+import nose.tools as nt
 
 
 class TestAppstorage:
@@ -15,6 +12,6 @@ class TestAppstorage:
     def tearDown(self):
         pass
 
-    def test_create(self):
-        print "DONE: " + str(self.app.get("/").data)
-        pass
+    def test_root_page(self):
+        rootResponse = self.app.get("/").data
+        nt.assert_true("Use it!" in rootResponse)
