@@ -91,14 +91,16 @@ def translate_selectlang():
         # certain advanced features.
         set_var(app, "spec", appurl)
 
+
+        # Handle Ownership-related logic here.
         # Locate the owner for the App's DEFAULT language.
         ownerApp = _db_get_lang_owner_app(appurl, "all_ALL")
-
         # If there isn't already an owner for the default languages, we declare ourselves
         # as the owner for this App's default language.
         if ownerApp is None:
             _db_declare_ownership(app, "all_ALL")
             ownerApp = app
+
 
         # Advanced merge. Merge owner languages into our bundles.
         do_languages_initial_merge(app, bm)
@@ -129,6 +131,17 @@ def translate_selectlang():
         bm = BundleManager.create_from_existing_app(app.data)
 
         spec = bm.get_gadget_spec()
+
+        # Check whether an owner exists. If it doesn't, it means the original owner was deleted.
+        # In that case, we make ourselves a new owner.
+        # Locate the owner for the App's DEFAULT language.
+        ownerApp = _db_get_lang_owner_app(spec, "all_ALL")
+        # If there isn't already an owner for the default languages, we declare ourselves
+        # as the owner for this App's default language.
+        if ownerApp is None:
+            _db_declare_ownership(app, "all_ALL")
+            ownerApp = app
+
 
         translated_langs = bm.get_locales_list()
 
