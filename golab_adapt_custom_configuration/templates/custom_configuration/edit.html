@@ -1,0 +1,28 @@
+{% set title = "Edit the app content" %}
+{% set adaptor_type = "Custom Configuration" %}
+{% extends 'composers/adapt/edit.html' %}
+
+{% block tab_links %}
+    {% if not value or value == 'No text'  %}
+    <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
+    <li class="disabled"><a>Preview</a></li>
+    {% else %}
+    <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
+    <li><a href="#preview" data-toggle="tab">Preview</a></li>
+    {% endif %}
+{% endblock %}
+
+{% block edit_tab %}
+    <div class="col-lg-10">
+        <form class="form" action="." method="POST" >
+            <input type="text" name="config_value" value="{{ value }}"/>
+            <input type="submit" class="btn btn-primary" value="Submit"/>
+        </form>
+    </div>
+{% endblock %}
+
+{% block preview_tab %}
+    <div class="col-lg-10">
+        The teacher said: {{ value }}
+    </div>
+{% endblock %}
