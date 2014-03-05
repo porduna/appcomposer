@@ -150,13 +150,16 @@ class BundleManager(object):
         contents = handle.read()
         return contents
 
-    def load_full_spec(self, url):
+    def load_full_spec(self, url, progress_callback=None):
         """
         Fully loads the specified Gadget Spec.
         This is meant to be used when first loading a new App, so that all existing languages are taken into account.
         Google default i18n mechanism doesn't support groups. Hence, all "imported" bundles will be created for the
         group "ALL", which is the default one for us.
         @param url:  URL to the XML Gadget Spec.
+        @param progress_callback: This function may take a long time. If other than None, will receive notifications when progress is made.
+        The callback should be a function with three arguments: function callback(tasks_done, total_tasks, update_message). Total tasks may be None if they
+        are not known.
         @return: Nothing. The bundles are internally stored once parsed.
         """
         # Store the specified URL as the gadget spec.
@@ -165,15 +168,30 @@ class BundleManager(object):
         # Retrieve the original spec. This may take a while.
         xml_str = self._retrieve_url(url)
 
+        # For progress reporting.
+        tasks_done = 0
+        total_tasks = None
+
         # Extract the locales from the XML.
         locales = self._extract_locales_from_xml(xml_str)
 
+        tasks_done += 1
+        update_message = "Retrieved base XML specification file"
+        if progress_callback is not None:
+            progress_callback(tasks_done, total_tasks, update_message)
+
+        total_tasks = len(locales)+1
         for lang, country, bundle_url in locales:
             try:
                 bundle_xml = self._retrieve_url(bundle_url)
                 bundle = Bundle.from_xml(bundle_xml, lang, country, "ALL")
                 name = Bundle.get_standard_code_string(lang, country, "ALL")
                 self._bundles[name] = bundle
+
+                tasks_done += 1  # For progress reporting.
+                update_message = "Extracted bundle for " + name
+                if progress_callback is not None:
+                    progress_callback(tasks_done, total_tasks, update_message)
             except:
                 # TODO: For now, we do not really handle errors, we simply ignore those locales which cause exceptions.
                 # In the future, we should probably analyze which kind of exceptions can occur, and decide what
