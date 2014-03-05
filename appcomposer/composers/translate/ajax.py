@@ -77,10 +77,33 @@ def get_ownership_list():
     return jsonify(**result)
 
 
+@translate_blueprint.route("/app_extraction")
+def app_extraction():
+    appurl = request.values.get("appurl")
+    if appurl is None:
+        return jsonify({"result": "error", "message": "App URL not specified"})
+
+    ar = extract_opensocial_app.apply_async((appurl,))
+    task_id = ar.task_id
+
+    return jsonify({"result": "success", "task_id": task_id})
+
+
+@translate_blueprint.route("/app_extraction_progress")
+def app_extracction_progress():
+    taskid = request.values.get("taskid")
+    if taskid is None:
+        return jsonify({"result": "error", "message": "Task ID not specified"})
+
+    ar = extract_opensocial_app.AsyncResult(taskid)
+
+    return ar.state + str(ar.result)
+
+
 @translate_blueprint.route("/test")
 def test():
     ar = extract_opensocial_app.delay("http://www.google.com")
     time.sleep(1)
     if ar.result is not None:
-        print "RESULT: " + ar.result
+        print "RESULT: " + str(ar.result)
     return "HELLO"

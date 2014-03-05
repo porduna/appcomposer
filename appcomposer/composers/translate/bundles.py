@@ -31,16 +31,17 @@ class BundleManager(object):
         return self.original_spec_file
 
     @staticmethod
-    def create_new_app(app_spec_url):
+    def create_new_app(app_spec_url, progress_callback=None):
         """
         Handles the creation of a completely new App from a standard OpenSocial XML specification.
         This operation needs to request the external XML and in some cases external XMLs referred by it.
         As such, it can take a while to complete, and there are potential security issues.
 
         @param app_spec_url: URL of the XML to use to construct the App.
+        @param progress_callback: Optional callback to receive progress updates.
         """
         bm = BundleManager()
-        bm.load_full_spec(app_spec_url)
+        bm.load_full_spec(app_spec_url, progress_callback)
         return bm
 
     @staticmethod
