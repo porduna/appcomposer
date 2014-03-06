@@ -12,6 +12,7 @@ from appcomposer import models, db
 from appcomposer.login import current_user
 from appcomposer.babel import lazy_gettext
 
+
 ##########################################################
 #
 # Initialization
@@ -163,6 +164,13 @@ class AdminAppsView(AdminModelView):
     def __init__(self, **kwargs):
         super(AdminAppsView, self).__init__(models.App, db.session, **kwargs)
 
+    # This function is used when deleting an app in the system    
+    def on_model_delete(self, model):                
+        # Delete every AppVar for that App
+        print "App Id: " + model.unique_id
+        app = models.App.query.filter_by(unique_id=model.unique_id).first()        
+        models.AppVar.query.filter_by(app=app).delete()
+    
 
 class ProfileView(AdminBaseView):
     """
