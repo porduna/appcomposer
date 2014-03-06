@@ -167,7 +167,7 @@ class AdminAppsView(AdminModelView):
     # This function is used when deleting an app in the system    
     def on_model_delete(self, model):                
         # Delete every AppVar for that App
-        print "App Id: " + model.unique_id
+        #print "App Id: " + model.unique_id
         app = models.App.query.filter_by(unique_id=model.unique_id).first()        
         models.AppVar.query.filter_by(app=app).delete()
     
