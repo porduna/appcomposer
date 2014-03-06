@@ -108,7 +108,7 @@
                                     <label class="control-label" for="selectlang"></label>
                                     <div class="controls">
 
-                                        <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">Step 2 - Select language »</button>
+                                        <button type="submit" id="createbutton" name="sendurl" class="btn btn-success">Step 2 - Select language »</button>
 
                                         <!--
                                         <a class="btn btn-success" id="sendurlbtn" href="{{ url_for('translate.translate_selectlang') }}">Step 2 - Select language »</a>
@@ -120,6 +120,111 @@
                         </form>
                     </div>
                 </div>
+
+                <div class="col-lg-6">
+                    <div class="well" id="progress-form" hidden>
+                        <fieldset>
+                            <legend>Creating app, please wait...</legend>
+
+                            <div class="progress progress-striped">
+                                <div class="progress-bar" role="progressbar" aria-valuenow="0"
+                                     aria-valuemin="0" aria-valuemax="100" style="width: 0$%;">
+                                    <span class="sr-only"></span>
+                                </div>
+                            </div>
+
+                            <ul class="list-group">
+                                <!--<li class="list-group-item"></li>-->
+                            </ul>
+
+                        </fieldset>
+
+
+                    </div>
+                </div>
+
             </div>            
         
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+
+    <script type="text/javascript">
+
+    $(function(){
+
+        $("form").submit( function(ev) {
+            // TODO: Verify that the form is filled etc.
+            ev.preventDefault();
+
+            var appurl = $("#appurl").val();
+            var appname = $("#appname").val();
+
+            var start_url = $SCRIPT_ROOT + "/composers/translate/app_extract_start";
+            $.get(start_url, {"appurl": appurl})
+                    .done(function(data) {
+                        // TODO: Verify that it was indeed a success.
+                        if(data["result"] != "success");
+
+                        var task_id = data["task_id"];
+
+                        // Increase transition time so that it's more smooth.
+                        $(".progress-bar").css("-webkit-transition", "width 3s ease");
+                        $(".progress-bar").css("transition", "width 3s ease");
+
+                        $("#progress-form").show();
+                        $("#progress-form")
+
+                        var state_updater = window.setInterval(function() {
+                            // Every once in a while request an update.
+
+                            $(".progress").addClass("active");
+
+                            var progress_url = $SCRIPT_ROOT + "/composers/translate/app_extract_progress";
+                            $.get(progress_url, { "taskid" : task_id })
+                                    .done( function(data) {
+
+                                        if(data["state"] == "PROGRESS") {
+                                            var done = data["return"]["done"];
+                                            var total = data["return"]["total"];
+                                            var message = data["return"]["message"];
+
+                                            $(".progress-bar").css("width", (100 * done/total).toString() + "%");
+                                            $("#progress-form ul").append('<li class="list-group-item">' + message + '</li>');
+                                        }
+
+                                        else if(data["state"] == "SUCCESS") {
+                                            $(".progress-bar").css("width", "100%");
+                                            $("#progress-form ul").append('<li class="list-group-item">DONE</li>');
+
+                                            $(".progress").removeClass("active");
+                                            window.clearInterval(state_updater);
+                                        }
+
+                                        else {
+                                            window.clearInterval(state_updater);
+                                        }
+
+                                    })
+                                    .fail( function() {
+                                        window.clearInterval(state_updater);
+                                    });
+
+
+                        }, 1000);
+
+                    }) //! done
+                    .fail(function() {
+                        console.error("GET failed");
+                    });
+
+        });
+
+        $("#progress-form").show();
+    });
+
+    </script>
+
 {% endblock %}
