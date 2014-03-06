@@ -77,8 +77,11 @@ def get_ownership_list():
     return jsonify(**result)
 
 
-@translate_blueprint.route("/app_extraction")
-def app_extraction():
+@translate_blueprint.route("/app_extract_start")
+def app_extract_start():
+    """
+    Starts loading a new App and all of its languages from a remote server.
+    """
     appurl = request.values.get("appurl")
     if appurl is None:
         return jsonify({"result": "error", "message": "App URL not specified"})
@@ -89,15 +92,18 @@ def app_extraction():
     return jsonify({"result": "success", "task_id": task_id})
 
 
-@translate_blueprint.route("/app_extraction_progress")
-def app_extracction_progress():
+@translate_blueprint.route("/app_extract_progress")
+def app_extract_progress():
+    """
+    Checks the status of a loading App.
+    """
     taskid = request.values.get("taskid")
     if taskid is None:
         return jsonify({"result": "error", "message": "Task ID not specified"})
 
     ar = extract_opensocial_app.AsyncResult(taskid)
 
-    return ar.state + str(ar.result)
+    return jsonify({"result": "success", "state": ar.state, "return": ar.result})
 
 
 @translate_blueprint.route("/test")
