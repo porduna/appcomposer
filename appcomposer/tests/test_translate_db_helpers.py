@@ -2,6 +2,8 @@ import json
 from appcomposer.appstorage import create_app
 from appcomposer.appstorage.api import delete_app, get_app
 
+import appcomposer
+
 
 class TestTranslateDbHelpers:
 
