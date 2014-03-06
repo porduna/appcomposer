@@ -201,6 +201,15 @@
 
                                             $(".progress").removeClass("active");
                                             window.clearInterval(state_updater);
+
+
+                                            // The task has finished. Time to POST so that the app is really
+                                            // created.
+                                            var form = $('<form method="POST" action="{{ url_for('translate.translate_selectlang') }}">' +
+                                                '<input type="hidden" name="taskid" value="' + task_id + '"/>' +
+                                                '<input type="hidden" name="appname" value="' + appname + '"/></form>');
+
+                                            form.submit();
                                         }
 
                                         else {

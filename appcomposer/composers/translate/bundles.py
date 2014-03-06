@@ -227,6 +227,8 @@ class BundleManager(object):
         for name, bundledata in bundles.items():
             bundle = Bundle.from_jsonable(bundledata)
             self._bundles[name] = bundle
+
+        self.original_spec_file = appdata["spec"]
         return
 
     def merge_json(self, json_data):
