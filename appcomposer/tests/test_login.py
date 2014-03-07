@@ -56,3 +56,8 @@ class TestLogin:
         rv = self.login("testuser", "wrongpassword", False)
         assert rv.status_code != 302
         assert rv.location != "http://localhost/user/"
+
+    def test_logout(self):
+        rv = self.login("testuser", "password")
+        rv = self.logout()
+        assert "logged_in" not in session or not session["logged_in"]

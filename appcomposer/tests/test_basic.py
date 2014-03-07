@@ -2,7 +2,7 @@ import appcomposer
 import nose.tools as nt
 
 
-class TestAppstorage:
+class TestBasic:
 
     def setUp(self):
         appcomposer.app.config['DEBUG'] = True

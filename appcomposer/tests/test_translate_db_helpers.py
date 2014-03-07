@@ -5,14 +5,20 @@ from appcomposer.appstorage.api import delete_app, get_app
 import appcomposer
 
 
-class TestTranslateDbHelpers:
+class DONOTTESTTHISYETTestTranslateDbHelpers:
 
     def __init__(self):
-        self.app = None
+        self.flask_app = None
 
     def setUp(self):
-        appdata = {"spec": "test.xml"}
-        self.app = create_app("TestApp", "translate", json.dumps(appdata))
+        appcomposer.app.config['DEBUG'] = True
+        appcomposer.app.config['TESTING'] = True
+        appcomposer.app.config['CSRF_ENABLED'] = False
+        appcomposer.app.config["SECRET_KEY"] = 'secret'
+        self.flask_app = appcomposer.app.test_client()
+
+        # appdata = {"spec": "test.xml"}
+        # self.app = create_app("TestApp", "translate", json.dumps(appdata))
 
     def tearDown(self):
         delete_app(self.app)
