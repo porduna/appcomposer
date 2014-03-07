@@ -5,6 +5,8 @@ from appcomposer.appstorage import create_app
 
 import appcomposer.application
 
+from flask import session
+
 class TestAppstorage:
 
     def login(self, username, password):
@@ -19,31 +21,40 @@ class TestAppstorage:
     def setUp(self):
         print "SETTINGUP"
         appcomposer.app.config['DEBUG'] = True
+        appcomposer.app.config['TESTING'] = True
+        appcomposer.app.config['CSRF_ENABLED'] = False
         appcomposer.app.config["SECRET_KEY"] = 'secret'
         self.flask_app = appcomposer.app.test_client()
 
-        print "ABOUTTOLOGIN"
-        rv = self.login("testuser", "password")
-        print self.flask_app.get("/user/", follow_redirects=True).data
+        with self.flask_app:
+            print "ABOUTTOLOGIN"
+            rvw = self.login("aatestuser", "password")
+            rvr = self.login("testuser", "password")
 
-        from flask import session
-        print session
+            # import readline # optional, will allow Up/Down/History in the console
+            # import code
+            # vars = globals().copy()
+            # vars.update(locals())
+            # shell = code.InteractiveConsole(vars)
+            # shell.interact()
 
-        with appcomposer.app.test_request_context("/"):
-
-            from flask import session
+            print "LENGTH: %d %d" % (len(rvw.data), len(rvr.data))
             print session
 
-            from appcomposer.login import current_user
-            print "USER: " + current_user()
+            rv = self.login("testuser", "password")
+            print "SESSION: "
+            print session
+
+                # from appcomposer.login import current_user
+                # print "USER: " + current_user()
 
     def tearDown(self):
         pass
 
     def test_create(self):
         with appcomposer.app.test_request_context("/"):
-            appdata = {"spec": "test.xml"}
-            self.app = create_app("TestApp", "dummy", json.dumps(appdata))
+            # appdata = {"spec": "test.xml"}
+            # self.app = create_app("TestApp", "dummy", json.dumps(appdata))
             pass
 
     def core_request(self):
