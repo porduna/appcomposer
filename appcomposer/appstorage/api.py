@@ -230,12 +230,15 @@ def add_var(app, name, value):
     @param app: App to which to add the variable (unique_id or App object).
     @param name: Name of the variable.
     @param value: Value for the variable.
+
+    @return: The variable that was just added.
     """
     app = _get_app_obj(app)
     var = AppVar(name, value)
     var.app = app
     db.session.add(var)
     db.session.commit()
+    return var
 
 
 def get_all_vars(app):
@@ -243,7 +246,7 @@ def get_all_vars(app):
     Gets every AppVars for an App.
 
     @param app: App's unique_id or object.
-    @return: List of every appvar.
+    @return: List of every appvar. It returns a list of AppVar objects.
     """
     app = _get_app_obj(app)
     vars = AppVar.query.filter_by(app=app).all()
@@ -287,7 +290,7 @@ def update_var(appvar):
 
 def remove_var(appvar):
     """
-    Removes an AppVar from the Database.
+    Removes an AppVar from the Database. Note that this does NOT work with an appvar name as a parameter.
     @param appvar: AppVar object to remove.
     """
     if type(appvar) is not AppVar:
