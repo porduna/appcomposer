@@ -101,7 +101,7 @@ def translate_selectlang():
 
         # Register our appurl as the "spec" in an app-specific variable in the DB. This will let us search later, for
         # certain advanced features.
-        set_var(app, "spec", appurl)
+        set_var(app, "spec", spec)
 
 
         # Handle Ownership-related logic here.
