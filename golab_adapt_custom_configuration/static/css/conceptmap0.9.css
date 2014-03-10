@@ -1,0 +1,396 @@
+@charset "utf-8";
+@font-face {
+  font-family: 'Titillium Web';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Titillium Web'), local('TitilliumWeb-Regular'), url(http://go-lab.gw.utwente.nl/sources/tools/conceptmap/src/main/libs/fonts/titilliumWeb400.woff) format('woff');
+}
+body,
+td,
+th,
+select,
+input,
+textarea {
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 15px;
+  color: #3f3f3f;
+}
+h1 {
+  font-weight: normal;
+}
+.workAreaContainer {
+  background: #f5f5f5;
+  border: 2px solid #faa519;
+  border-radius: 3px;
+}
+.toolAreaContainer {
+  background: #f5f5f5;
+  border: 2px solid #faa519;
+  border-radius: 3px;
+}
+.toolArea {
+  padding: 5px;
+}
+.areaLabel {
+  width: 100%;
+  background: #00bacc;
+  color: #ffffff;
+  font-size: 16px;
+  text-align: center;
+  height: 25px;
+}
+.activeButton {
+  border: 1px solid #939597;
+  border-radius: 2px;
+  background-color: #92d6e3;
+  background-size: contain;
+}
+.activeButton:hover {
+  background-color: #00bacc;
+  background-size: contain;
+}
+.activeButton:active {
+  background-color: #faa519;
+  background-size: contain;
+}
+.pressedButton,
+.pressedButton:active,
+.pressedButton:hover {
+  background-color: #faa519;
+  background-size: contain;
+}
+.pressedButton:hover {
+  background-color: #faa519;
+  background-size: contain;
+}
+.pressedButton:active {
+  background-color: #faa519;
+}
+.disabledButton,
+.disabledButton:hover,
+.disabledButton:active {
+  background-color: #f5f5f5;
+  color: #939597;
+}
+.fontAweSomeButton {
+  padding: 4px;
+  margin: 2px;
+  margin-bottom: 5px;
+  font-size: 23px;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.fontAweSomeButtonSmall {
+  padding: 2px;
+  margin: 2px;
+  margin-bottom: 2px;
+  font-size: 17px;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.fontAweSomeButtonLarge {
+  padding: 6px;
+  margin: 2px;
+  margin-bottom: 5px;
+  font-size: 29px;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.golabDroppable {
+  border: 2px dotted #faa519 !important;
+}
+.dropObjectOutSideDropArea {
+  opacity: 0.35;
+}
+/* Component containers
+----------------------------------*/
+.ui-widget {
+  font-family: Verdana, Geneva, sans-serif;
+  font-size: 1.1em;
+}
+/*.ui-widget .ui-widget {*/
+/*font-size: 1.1em;*/
+/*}*/
+/*.ui-widget input, .ui-widget select, .ui-widget textarea, .ui-widget button {*/
+/*font-family: Trebuchet MS, Tahoma, Verdana, Arial, sans-serif;*/
+/*font-size: 1em;*/
+/*}*/
+.ui-widget-content {
+  border: 1px solid #faa519;
+  /*background: #eeeeee url(images/ui-bg_highlight-soft_100_eeeeee_1x100.png) 50% top repeat-x;*/
+
+  background: #ffffff;
+  color: #3f3f3f;
+}
+/*.ui-widget-content a {*/
+/*color: #333333;*/
+/*}*/
+.ui-widget-header {
+  border: 1px solid #faa519;
+  /*background: #f6a828 url(images/ui-bg_gloss-wave_35_f6a828_500x100.png) 50% 50% repeat-x;*/
+
+  background: #92d6e3;
+  color: #ffffff;
+  font-weight: bold;
+}
+.ui-widget-header a {
+  color: #ffffff;
+}
+/* Interaction states
+----------------------------------*/
+.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default {
+  border: 1px solid 1px solid #faa519;
+  /*background: #f6f6f6 url(images/ui-bg_glass_100_f6f6f6_1x400.png) 50% 50% repeat-x;*/
+
+  background: #92d6e3;
+  font-weight: bold;
+  /*color: #fff;*/
+
+}
+.ui-state-default a,
+.ui-state-default a:link,
+.ui-state-default a:visited {
+  color: #3f3f3f;
+  text-decoration: none;
+}
+.ui-state-hover,
+.ui-widget-content .ui-state-hover,
+.ui-widget-header .ui-state-hover,
+.ui-state-focus,
+.ui-widget-content .ui-state-focus,
+.ui-widget-header .ui-state-focus {
+  border: 1px solid #faa519;
+  /*background: #fdf5ce url(images/ui-bg_glass_100_fdf5ce_1x400.png) 50% 50% repeat-x;*/
+
+  background: #00bacc;
+  font-weight: bold;
+  color: #ffffff;
+}
+.ui-state-hover a,
+.ui-state-hover a:hover {
+  color: #ffffff;
+  text-decoration: none;
+}
+.ui-state-active,
+.ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active {
+  border: 1px solid #faa519;
+  /*background: #ffffff url(images/ui-bg_glass_65_ffffff_1x400.png) 50% 50% repeat-x;*/
+
+  background: #faa519;
+  font-weight: bold;
+  color: #3f3f3f;
+}
+.ui-state-active a,
+.ui-state-active a:link,
+.ui-state-active a:visited {
+  color: #3f3f3f;
+  text-decoration: none;
+}
+.ui-widget :active {
+  outline: none;
+}
+.ui-slider-handle {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.ui-tabs-nav {
+  background: #f5f5f5;
+}
+ul.ui-tabs-nav li.ui-tabs-active {
+  background: #ffffff;
+}
+.ui-tabs .ui-tabs-nav li a {
+  float: left;
+  padding: .25em 1em;
+  text-decoration: none;
+}
+.ui-tabs .ui-state-active a {
+  float: left;
+  padding: .25em 1em;
+  text-decoration: none;
+  background: #ffffff;
+}
+.ui-helper-reset {
+  line-height: 1;
+  font-family: 'Titillium Web', sans-serif;
+  font-size: 15px;
+}
+.ui-dialog-titlebar {
+  background: #00bacc;
+}
+.unselectable {
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.textSelectable {
+  -moz-user-select: -moz-text;
+  -khtml-user-select: text;
+  -webkit-user-select: text;
+  -ms-user-select: text;
+  -o-user-select: text;
+  user-select: text;
+}
+/* this works on iOS, not on android */
+.preventLongPress {
+  -webkit-touch-callout: none !important;
+  -webkit-user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+html,
+body {
+  height: 100%;
+}
+.ut_tools_conceptmapper_dialog {
+  z-index: 5000;
+}
+.ut_tools_conceptmapper_dialog .ui-dialog-titlebar-close {
+  display: none;
+}
+#ut_tools_conceptmapper_root {
+  height: 100%;
+}
+#ut_tools_conceptmapper_toolbar_container {
+  background: #f5f5f5;
+  border: 2px solid #faa519;
+  border-radius: 3px;
+}
+#ut_tools_conceptmapper_toolbar {
+  padding: 5px;
+  min-width: 120px;
+  margin: auto;
+  height: 200px;
+}
+#ut_tools_conceptmapper_toolbar_list {
+  list-style-type: none;
+  padding: 0px;
+  text-align: center;
+}
+.ut_tools_conceptmapper_icon {
+  padding: 7px 7px 7px 7px;
+}
+#ut_tools_conceptmapper_logoContainer {
+  position: absolute;
+  bottom: 10px;
+  padding-left: 22px;
+  padding-bottom: 8px;
+}
+#ut_tools_conceptmapper_map {
+  background: #f5f5f5;
+  border: 2px solid #faa519;
+  border-radius: 3px;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+  height: 100%;
+  width: 100%;
+}
+/* the buttons */
+/*-------------*/
+.ut_tools_conceptmapper_button {
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: 25px;
+  margin-top: 25px;
+  background-size: contain;
+  width: 40px;
+  height: 40px;
+  display: block;
+}
+.ut_tools_conceptmapper_icon {
+  padding: 7px 7px 7px 7px;
+}
+/* the concepts */
+/*--------------*/
+.ut_tools_conceptmapper_template {
+  margin-top: 25px;
+  margin-bottom: 25px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.ut_tools_conceptmapper_concept {
+  text-align: center;
+  border: solid 2px #00bacc;
+  background: #92d6e3;
+  box-shadow: 2px 2px 19px #939597;
+  z-index: 1;
+  overflow: hidden;
+}
+.highlight_concept {
+  background: #faa519;
+  box-shadow: 2px 2px 19px #faa519;
+}
+.ut_tools_conceptmapper_concept * {
+  margin: 0;
+  padding: 0.5em;
+}
+.ut_tools_conceptmapper_concept textarea {
+  background: #92d6e3;
+  width: 100%;
+  height: 100%;
+  margin: 0;
+  border: 0;
+}
+.ut_tools_conceptmapper_concept input {
+  font-size: medium;
+  margin: 0;
+  padding: 0.25em;
+  background: #92d6e3;
+}
+.ut_tools_conceptmapper_conceptTextarea {
+  border-radius: 2px;
+}
+.ut_tools_conceptmapper_conceptSelector {
+  border-radius: 2px;
+}
+.ui-autocomplete {
+  position: absolute;
+  top: 0;
+  left: 0;
+  cursor: default;
+  z-index: 100;
+  list-style: none;
+  padding: 2px;
+  margin: 0;
+  display: block;
+  outline: none;
+  border: 1px solid #00bacc;
+  background: #f5f5f5;
+  color: golabTextColor;
+  border-top-left-radius: 4px;
+}
+/* jsPlumb edge layout */
+/*---------------------*/
+._jsPlumb_overlay {
+  text-align: center;
+  padding: 0.3em;
+  border: solid 1px #00bacc;
+  border-radius: 0.5em;
+  background: rgba(253, 191, 100, 0.8);
+  box-shadow: 2px 2px 19px #939597;
+  -o-box-shadow: 2px 2px 19px #939597;
+  -webkit-box-shadow: 2px 2px 19px #939597;
+  -moz-box-shadow: 2px 2px 19px #939597;
+}
