@@ -13,33 +13,46 @@
 {% endblock %}
 
 {% block edit_tab %}
-<div class="col-lg-10">
+    {% if appurl|count == 0 %}    
+    <div class="col-lg-10">
 
-<p class="small  col-lg-offset-2">Please type the address where the tool is hosted.</p>
-<form id="appurlform" class="form-horizontal" method="POST" action=".">
-    <div class="form-group">
-        <label for="appurl" class="col-lg-2 control-label">URL of the app:</label>
-        <div class="col-lg-10">
-            
-            <input type="text" name="appurl" id="appurl" placeholder="Type the absolute path and press the open button" value="{{ appurl }}" class="form-control input-lg" required="required">
-            <span class="help-block"></span>
+    <p class="small  col-lg-offset-2">Please type the address where the tool is hosted.</p>
+    <form id="appurlform" class="form-horizontal" method="POST" action=".">
+        <div class="form-group">
+            <label for="appurl" class="col-lg-2 control-label">URL of the app:</label>
+            <div class="col-lg-10">
+                
+                <input type="text" name="appurl" id="appurl" placeholder="Type the absolute path and press the open button" value="{{ appurl }}" class="form-control input-lg" required="required">
+                <span class="help-block"></span>
+            </div>
         </div>
+
+        <div class="form-group">
+            <div class="col-lg-10 col-lg-offset-2">
+                <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_index') }}">« Go back to adaptor index</a>
+                <!-- <input type="hidden" name="app_id" value="{{ app_id }}"> -->
+                <input type="submit" value="Open »" class="btn btn-success" id="submitbtn">
+            </div>
+        </div>
+    </form>
+
     </div>
 
-    <div class="form-group">
-        <div class="col-lg-10 col-lg-offset-2">
-            <a class="btn btn-default" id="adaptindex" href="{{ url_for('adapt.adapt_index') }}">« Go back to adaptor index</a>
-            <!-- <input type="hidden" name="app_id" value="{{ app_id }}"> -->
-            <input type="submit" value="Open »" class="btn btn-success" id="submitbtn">
-        </div>
-    </div>
-</form>
+    {% else %}
 
-</div>    
+    <div class="col-lg-10">
+
+    <p class="small  col-lg-offset-2">Adjust the configuration with your own set of parameters.</p>
+    
+    <iframe src="{{ url_for('.configeditor', app_id = app_id) }}" width="800" height="650" frameborder="1px solid gray" scrolling="no"></iframe>
+    </div>
+    {% endif %}
+    
 {% endblock %}
 
 {% block preview_tab %}
     <div class="col-lg-10">
-        The teacher said: {{ value }}
+        <p class="small  col-lg-offset-2">Add or remove concepts with the "select" button.</p>
+        <iframe src="{{ url_for('.configeditor', app_id = app_id) }}" width="800" height="650" frameborder="1px solid gray" scrolling="no"></iframe>
     </div>
 {% endblock %}
