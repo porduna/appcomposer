@@ -1,0 +1,29 @@
+{% set title = "Edit the app content" %}
+{% set adaptor_type = "JS Config" %}
+{% extends 'composers/adapt/edit.html' %}
+
+{% block edit_tab %}
+    <div class="col-lg-10">
+        <form class="form" action="." method="POST" >
+            URL: <input type="text" name="url" size="100" value="{{ url }}"/> <input type="submit" class="btn btn-primary" value="Save"/>
+            <div id='ut_tools_conceptmapper_ConfigDialog'/>
+        </form>
+    </div>
+{% endblock %}
+
+{% block preview_tab %}
+    <div class="col-lg-10">
+        <iframe src="{{ url_for('.index_html', app_id = app_id) }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+        <br>
+        <a href="{{ url_for('.app_xml', app_id = app_id) }}">App URL</a>
+    </div>
+{% endblock %}
+
+{% block scripts %}
+    {{ super() }}
+    {% if definition_script %}
+        <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js" type="text/javascript"></script>
+        <script src="{{ definition_script }}" type="text/javascript"></script>
+        <script src="{{ url_for('jsconfig.static', filename='ConfigDialog0.1.js') }}" type="text/javascript"></script>
+    {% endif %}
+{% endblock %}
