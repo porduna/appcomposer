@@ -68,7 +68,7 @@ def _find_unique_name_for_app(base_name):
     """
     Generates a unique (for the current user) name for the app, using a base name.
     Because two apps for the same user cannot have the same name, if the base_name that the user chose
-    exists already then we append (#num) to it.
+    exists already then we append (#num) to it. The number starts at 1.
 
     @param base_name: Name to use as base. If it's not unique (for the user) then we will append the counter.
     @return: The generated name, guaranteed to be unique for the current user, or None, if it was not possible
