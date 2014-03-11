@@ -171,7 +171,7 @@ def app_xml_group(appid, group):
     return response
 
 
-@translate_blueprint.route('/app/<appid>/app.xml')
+#@translate_blueprint.route('/app/<appid>/app.xml')
 def app_xml(appid):
     """
     app_xml(appid)
