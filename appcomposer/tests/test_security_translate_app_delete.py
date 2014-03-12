@@ -102,3 +102,8 @@ class TestSecurityAppDelete:
             rv = self.login("utuser2", "password")
             rv = self.flask_app.post("/composers/translate/delete", data={"appid": "13414-doesnt-exist", "delete": "Delete"}, follow_redirects=True)
             assert rv.status_code == 404  # Make sure attempting to delete a non-existing app results in a 404.
+
+        with self.flask_app:
+            rv = self.login("utuser2", "password")
+            rv = self.flask_app.get("/composers/translate/delete", data={"appid": "13414-doesnt-exist", "delete": "Delete"}, follow_redirects=True)
+            assert rv.status_code == 404  # Make sure attempting to delete a non-existing app results in a 404.
