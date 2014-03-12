@@ -3,10 +3,11 @@ import appcomposer
 import appcomposer.application
 
 from appcomposer.appstorage import api
+from appcomposer.appstorage.api import get_app_by_name
 from appcomposer.composers.translate.bundles import BundleManager
 
 
-class TestTranslateDbHelpers:
+class TestTranslateAppCreation:
     def __init__(self):
         self.flask_app = None
         self.tapp = None
@@ -94,3 +95,29 @@ class TestTranslateDbHelpers:
             assert defaultBundle is not None
             assert len(defaultBundle.get_msgs()) > 6
 
+    def test_translate_app_delete_confirmation(self):
+        with self.flask_app:
+            rv = self.login("testuser", "password")
+            app = api.create_app("UTApp", "translate", "{'spec':'http://justatest.com'}")
+            api.add_var(app, "spec", "http://justatest.com")
+
+            # Test that a confirmation appears.
+            rv = self.flask_app.get("/composers/translate/delete?appid="+app.unique_id)
+            assert rv.status_code == 200
+            assert "sure" in rv.data
+            assert "Delete" in rv.data
+
+    def test_translate_app_delete(self):
+        with self.flask_app:
+            rv = self.login("testuser", "password")
+            app = api.create_app("UTApp", "translate", "{'spec':'http://justatest.com'}")
+            api.add_var(app, "spec", "http://justatest.com")
+
+            # Test that cancel works.
+            rv = self.flask_app.post("/composers/translate/delete", data={"appid": app.unique_id, "cancel": "Cancel"}, follow_redirects=True)
+            assert rv.status_code == 200
+            assert get_app_by_name("UTApp") is not None  # Make sure it still exists.
+
+            rv = self.flask_app.post("/composers/translate/delete", data={"appid": app.unique_id, "delete": "Delete"}, follow_redirects=True)
+            assert rv.status_code == 200
+            assert get_app_by_name("UTApp") is None  # Make sure it no longer exists.
