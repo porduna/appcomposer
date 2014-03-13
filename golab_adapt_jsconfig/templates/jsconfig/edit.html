@@ -6,16 +6,17 @@
     <div class="col-lg-10">
         <form class="form" action="." method="POST" >
             URL: <input type="text" name="url" size="100" value="{{ url }}"/> <input type="submit" class="btn btn-primary" value="Save"/>
-            <div id='ut_tools_conceptmapper_ConfigDialog'/>
+            <div id='ut_tools_conceptmapper_ConfigDialog'>
+            </div>
         </form>
     </div>
 {% endblock %}
 
 {% block preview_tab %}
     <div class="col-lg-10">
-        <iframe src="{{ url_for('.index_html', app_id = app_id) }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+        <iframe src="{{ preview_url }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
         <br>
-        <a href="{{ url_for('.app_xml', app_id = app_id) }}">App URL</a>
+        <a href="{{ url_for('.app_xml', app_id = app_id, _external = True) }}">App URL</a>
     </div>
 {% endblock %}
 
@@ -24,6 +25,15 @@
     {% if definition_script %}
         <script src="http://code.jquery.com/ui/1.10.3/jquery-ui.js" type="text/javascript"></script>
         <script src="{{ definition_script }}" type="text/javascript"></script>
+        <script type="text/javascript">
+
+            function golabConfigurationSavedCallback(newConfiguration) {
+                var url = "{{ url_for('.save_json_config', app_id = app_id) }}";
+                // TODO: save this data by posting it to that path
+                $.post(url, JSON.stringify(newConfiguration));
+            }
+
+        </script>
         <script src="{{ url_for('jsconfig.static', filename='ConfigDialog0.1.js') }}" type="text/javascript"></script>
     {% endif %}
 {% endblock %}

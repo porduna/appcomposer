@@ -78,12 +78,7 @@
   var appName = keys[0];
   var config = window.golab.tools.configurationDefinition[appName];
   
-  new window.ut.tools.conceptmapper.ConfigDialog(config, function(newConfig) {
-    // Submit this config to the server side
-    console.log(newConfig);
-    alert(newConfig);
-  });
-
+  new window.ut.tools.conceptmapper.ConfigDialog(config, golabConfigurationSavedCallback);
 }).call(this);
 
 /*

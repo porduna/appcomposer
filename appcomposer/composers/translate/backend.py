@@ -7,7 +7,7 @@ from babel import Locale, UnknownLocaleError
 from flask import make_response, url_for, render_template, request
 from appcomposer import db
 
-from appcomposer.utils import make_url_absolute, inject_absolute_urls
+from appcomposer.utils import make_url_absolute, inject_absolute_urls, inject_original_url_in_xmldoc
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.models import AppVar, App
@@ -433,17 +433,7 @@ class BundleManager(object):
             locale.appendChild(xmldoc.createTextNode(""))
             module_prefs.appendChild(locale)
 
-        contents = xmldoc.getElementsByTagName("Content")
-        for content in contents:
-            text_node = xmldoc.createCDATASection("""
-            <script>
-                if (typeof gadgets !== "undefined" && gadgets !== null) {
-                    gadgets.util.getUrlParameters().url = "%s";
-                }
-            </script>
-            """ % url)
-            content.insertBefore(text_node, content.firstChild)
-
+        inject_original_url_in_xmldoc(xmldoc, url)
         return xmldoc.toprettyxml()
 
     def get_bundle(self, bundle_code):

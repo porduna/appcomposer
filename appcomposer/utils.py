@@ -1,5 +1,9 @@
 import re
+import json
+import traceback
 import urlparse
+from xml.dom import minidom
+from flask import request
 
 def extract_base_url(url):
     parsed = urlparse.urlparse(url)
@@ -17,7 +21,40 @@ def make_url_absolute(relative_path, url):
 
 SRC_REGEXP = re.compile(r"""(\s(src|href)\s*=\s*"?'?)(?!http://|https://|#|"|"#|'|'#| )""")
 
-def inject_absolute_urls(self, output_xml, url):
+def inject_absolute_urls(output_xml, url):
     base_url = extract_base_url(url)
     return SRC_REGEXP.sub(r"\1%s" % base_url, output_xml)
 
+def inject_original_url_in_xmldoc(xmldoc, url):
+    contents = xmldoc.getElementsByTagName("Content")
+    for content in contents:
+        text_node = xmldoc.createCDATASection("""
+        <script>
+            if (typeof gadgets !== "undefined" && gadgets !== null) {
+                gadgets.util.getUrlParameters().url = "%s";
+            }
+        </script>
+        """ % url)
+        content.insertBefore(text_node, content.firstChild)
+
+def inject_original_url(output_xml, url):
+    xmldoc = minidom.parseString(output_xml)
+    inject_original_url_in_xmldoc(xmldoc, url)
+    return xmldoc.toprettyxml()
+
+def get_json():
+    if request.json is not None:
+        return request.json
+    else:
+        try:
+            if request.data:
+                data = request.data
+            else:
+                keys = request.form.keys() or ['']
+                data = keys[0]
+            return json.loads(data)
+        except:
+            print "Invalid JSON found"
+            print "Suggested JSON: %r" % data
+            traceback.print_exc()
+            return None
