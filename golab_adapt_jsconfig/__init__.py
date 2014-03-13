@@ -45,7 +45,7 @@ def replace_default_configuration_script(contents, new_url):
 def edit(app_id):
     # Load data from the database for this application
     data = adaptor.load_data(app_id)
-        
+    new_url = False
     contents = None
     if request.method == 'POST':
         value = request.form['url']
@@ -62,6 +62,7 @@ def edit(app_id):
                 else:
                     # Reset the configuration
                     data['url'] = value
+                    new_url = True
                     data['configuration'] = None
                     data['configuration_name'] = None
                     adaptor.save_data(app_id, data)
@@ -80,6 +81,12 @@ def edit(app_id):
 
     external_url = url_for('.app_xml', app_id = app_id, _external = True)
     preview_url = shindig_url("/gadgets/ifr?nocache=1&url=%s" % external_url)
+    if new_url:
+        try:
+            # Force shindig to refresh the ifr. We had problems with new URLs
+            urllib2.urlopen(preview_url).read()
+        except:
+            pass
     configuration_name = data['configuration_name']
     configuration = json.dumps(data['configuration'], indent = 4)
 
