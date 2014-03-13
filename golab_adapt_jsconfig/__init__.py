@@ -6,7 +6,7 @@ from xml.dom import minidom
 
 from flask import render_template, request, flash, url_for
 
-from appcomposer.utils import make_url_absolute, inject_absolute_urls, get_json, inject_original_url_xmldoc, inject_absolute_locales_xmldoc
+from appcomposer.utils import make_url_absolute, inject_absolute_urls, get_json, inject_original_url_in_xmldoc, inject_absolute_locales_in_xmldoc
 from appcomposer.composers.adapt import create_adaptor
 
 adaptor = create_adaptor('JavaScript configuration', 
@@ -116,8 +116,8 @@ def app_xml(app_id):
         contents = replace_default_configuration_script(contents, url_for('.configuration', app_id = app_id, _external = True))
         contents = inject_absolute_urls(contents, url)
         xmldoc = minidom.parseString(contents)
-        inject_original_url_xmldoc(xmldoc, url)
-        inject_absolute_locales_xmldoc(xmldoc, url)
+        inject_original_url_in_xmldoc(xmldoc, url)
+        inject_absolute_locales_in_xmldoc(xmldoc, url)
         contents = xmldoc.toprettyxml()
     except Exception as e:
         traceback.print_exc()

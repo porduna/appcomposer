@@ -36,7 +36,7 @@ def inject_original_url_in_xmldoc(xmldoc, url):
         """ % url)
         content.insertBefore(text_node, content.firstChild)
 
-def inject_absolute_locales_xmldoc(xmldoc, url):
+def inject_absolute_locales_in_xmldoc(xmldoc, url):
     locales = xmldoc.getElementsByTagName("Locale")
     for loc in locales:
         messages_url = loc.getAttribute("messages")
