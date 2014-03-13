@@ -2,7 +2,6 @@ import re
 import json
 import traceback
 import urlparse
-from xml.dom import minidom
 from flask import request
 
 def extract_base_url(url):
@@ -37,10 +36,13 @@ def inject_original_url_in_xmldoc(xmldoc, url):
         """ % url)
         content.insertBefore(text_node, content.firstChild)
 
-def inject_original_url(output_xml, url):
-    xmldoc = minidom.parseString(output_xml)
-    inject_original_url_in_xmldoc(xmldoc, url)
-    return xmldoc.toprettyxml()
+def inject_absolute_locales_xmldoc(xmldoc, url):
+    locales = xmldoc.getElementsByTagName("Locale")
+    for loc in locales:
+        messages_url = loc.getAttribute("messages")
+        new_messages_url = make_url_absolute(messages_url, url)
+        if new_messages_url != messages_url:
+            loc.setAttribute("messages", new_messages_url)
 
 def get_json():
     if request.json is not None:
