@@ -31,7 +31,7 @@
             function golabConfigurationSavedCallback(newConfiguration) {
                 var url = "{{ url_for('.save_json_config', app_id = app_id) }}";
                 // TODO: add json2.js if MSIE
-                $.post(url, JSON.stringify(newConfiguration));
+                $.post(url, JSON.stringify(newConfiguration)).done(function() { location.reload(); });
             }
             
             // foo ={{ configuration_name }}=
