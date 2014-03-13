@@ -15,9 +15,15 @@
 
 {% block preview_tab %}
     <div class="col-lg-10">
-        <iframe src="{{ preview_url }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
-        <br>
-        <a href="{{ url_for('.app_xml', app_id = app_id, _external = True) }}">App URL</a>
+        {% if url %}
+            <iframe src="{{ preview_url }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+            <br>
+            <a href="{{ url_for('.app_xml', app_id = app_id, _external = True) }}">App URL</a>
+        {% else %}
+            <div class="alert alert-danger">
+                <h3>No preview available: you must set a URL first</h3>
+            </div>
+        {% endif %}
     </div>
 {% endblock %}
 
