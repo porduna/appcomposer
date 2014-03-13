@@ -1,4 +1,4 @@
-// Code developed by University of Twente, taken and adapted from:
+// Original code developed by University of Twente, taken and adapted from:
 // http://go-lab.gw.utwente.nl/sources/tools/conceptmap/src/main/webapp/coffee/ConfigDialog0.1.js
 
 (function() {
@@ -10,11 +10,10 @@
   window.ut.tools.conceptmapper = window.ut.tools.conceptmapper || {};
 
   window.ut.tools.conceptmapper.ConfigDialog = (function() {
-    function ConfigDialog(currentConfiguration, configurationCallback) {
+    function ConfigDialog(appName, currentConfiguration, configurationCallback) {
       var $dialogElement, $fieldset, $form,
         _this = this;
       $dialogElement = $(document.body).find("#ut_tools_conceptmapper_ConfigDialog");
-      $dialogElement.empty();
       $fieldset = $("<fieldset/>");
       $.each(currentConfiguration, function(id, setting) {
         $input;
@@ -43,6 +42,7 @@
       });
       $form = $("<form/>");
       $form.append($fieldset);
+      $form.submit(function() { event.preventDefault(); });
       $dialogElement.append($form);
       var $saveBtn = $("<button class='btn'>Save</button>");
       $saveBtn.click(function() {
@@ -63,8 +63,7 @@
                 });
               }
             });
-            configurationCallback(currentConfiguration);
-            return $("#ut_tools_conceptmapper_ConfigDialog").dialog("close");
+            configurationCallback({ 'appName' : appName, 'config' : currentConfiguration });
           });
       $dialogElement.append($saveBtn);
     };
@@ -78,7 +77,7 @@
   var appName = keys[0];
   var config = window.golab.tools.configurationDefinition[appName];
   
-  new window.ut.tools.conceptmapper.ConfigDialog(config, golabConfigurationSavedCallback);
+  new window.ut.tools.conceptmapper.ConfigDialog(appName, config, golabConfigurationSavedCallback);
 }).call(this);
 
 /*

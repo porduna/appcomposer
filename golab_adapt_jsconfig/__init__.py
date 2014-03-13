@@ -10,7 +10,7 @@ from appcomposer.utils import make_url_absolute, inject_absolute_urls, get_json,
 from appcomposer.composers.adapt import create_adaptor
 
 adaptor = create_adaptor('JavaScript configuration', 
-                initial = {'url' : None})
+                initial = {'url' : None, 'configuration' : None, 'configuration_name' : None})
 
 SHINDIG_SERVER = 'http://shindig.epfl.ch'
 def shindig_url(relative_url):
@@ -49,19 +49,22 @@ def edit(app_id):
     contents = None
     if request.method == 'POST':
         value = request.form['url']
-        try:
-            contents = urllib2.urlopen(value).read()
-        except:
-            flash("Could not download the provided URL")
-        else:
+        if value != data['url']:
             try:
-                minidom.parseString(contents)
+                contents = urllib2.urlopen(value).read()
             except:
-                flash("The provided URL is not a valid XML!")
+                flash("Could not download the provided URL")
             else:
-                data['url'] = value
-                # Store it in the database
-                adaptor.save_data(app_id, data)
+                try:
+                    minidom.parseString(contents)
+                except:
+                    flash("The provided URL is not a valid XML!")
+                else:
+                    # Reset the configuration
+                    data['url'] = value
+                    data['configuration'] = None
+                    data['configuration_name'] = None
+                    adaptor.save_data(app_id, data)
 
     url = data['url']
     definition_script = None
@@ -77,12 +80,16 @@ def edit(app_id):
 
     external_url = url_for('.app_xml', app_id = app_id, _external = True)
     preview_url = shindig_url("/gadgets/ifr?nocache=1&url=%s" % external_url)
+    configuration_name = data['configuration_name']
+    configuration = json.dumps(data['configuration'], indent = 4)
 
     return render_template("jsconfig/edit.html",  
                                 url = url or '',
                                 definition_script = definition_script,
                                 app_id = app_id,
-                                preview_url = preview_url)
+                                preview_url = preview_url,
+                                configuration_name = configuration_name,
+                                configuration = configuration)
 
 @adaptor.route('/save/<app_id>/', methods = ['GET', 'POST'])
 def save_json_config(app_id):
@@ -92,7 +99,8 @@ def save_json_config(app_id):
         if json_contents:
             print json_contents
             data = adaptor.load_data(app_id)
-            data['configuration'] = json_contents
+            data['configuration_name'] = json_contents.get('appName', 'appName not found')
+            data['configuration'] = json_contents.get('config', {})
             adaptor.save_data(app_id, data)
         else:
             return 'error: malformed json content'
