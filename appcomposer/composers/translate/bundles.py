@@ -1,6 +1,8 @@
 import StringIO
 import json
+import os
 import urllib
+import urlparse
 from xml.dom import minidom
 from babel import Locale, UnknownLocaleError
 from flask import url_for
@@ -143,12 +145,28 @@ class BundleManager(object):
     def _retrieve_url(url):
         """
         Simply retrieves a specified URL (Synchronously).
-        @param url: URL to retrieve.
+        @param url: URL to retrieve. Should be absolute, not relative.
         @return: Contents of the URL.
         """
         handle = urllib.urlopen(url)
         contents = handle.read()
         return contents
+
+    def _to_absolute_url(self, url):
+        """
+        Converts the provided URL into absolute if it isn't already.
+        It uses the xml spec as base.
+        """
+        # Check if the url is already absolute.
+        is_absolute = bool(urlparse.urlparse(url).netloc)
+        if is_absolute:
+            return url
+
+        # Extract the base.
+        base = os.path.dirname(self.original_spec_file)
+
+        # Append the file to the base.
+        return base + os.sep + url
 
     def load_full_spec(self, url):
         """
@@ -170,6 +188,8 @@ class BundleManager(object):
 
         for lang, country, bundle_url in locales:
             try:
+                # TODO: Warning. The provided URL in an xml can be relative (or can it not?).
+                bundle_url = self._to_absolute_url(bundle_url)  # Will convert it if it isn't already.
                 bundle_xml = self._retrieve_url(bundle_url)
                 bundle = Bundle.from_xml(bundle_xml, lang, country, "ALL")
                 name = Bundle.get_standard_code_string(lang, country, "ALL")
