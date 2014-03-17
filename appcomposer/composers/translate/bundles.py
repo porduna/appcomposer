@@ -33,16 +33,17 @@ class BundleManager(object):
         return self.original_spec_file
 
     @staticmethod
-    def create_new_app(app_spec_url):
+    def create_new_app(app_spec_url, progress_callback=None):
         """
         Handles the creation of a completely new App from a standard OpenSocial XML specification.
         This operation needs to request the external XML and in some cases external XMLs referred by it.
         As such, it can take a while to complete, and there are potential security issues.
 
         @param app_spec_url: URL of the XML to use to construct the App.
+        @param progress_callback: Optional callback to receive progress updates.
         """
         bm = BundleManager()
-        bm.load_full_spec(app_spec_url)
+        bm.load_full_spec(app_spec_url, progress_callback)
         return bm
 
     @staticmethod
@@ -168,13 +169,16 @@ class BundleManager(object):
         # Append the file to the base.
         return base + os.sep + url
 
-    def load_full_spec(self, url):
+    def load_full_spec(self, url, progress_callback=None):
         """
         Fully loads the specified Gadget Spec.
         This is meant to be used when first loading a new App, so that all existing languages are taken into account.
         Google default i18n mechanism doesn't support groups. Hence, all "imported" bundles will be created for the
         group "ALL", which is the default one for us.
         @param url:  URL to the XML Gadget Spec.
+        @param progress_callback: This function may take a long time. If other than None, will receive notifications when progress is made.
+        The callback should be a function with three arguments: function callback(tasks_done, total_tasks, update_message). Total tasks may be None if they
+        are not known.
         @return: Nothing. The bundles are internally stored once parsed.
         """
         # Store the specified URL as the gadget spec.
@@ -183,9 +187,19 @@ class BundleManager(object):
         # Retrieve the original spec. This may take a while.
         xml_str = self._retrieve_url(url)
 
+        # For progress reporting.
+        tasks_done = 0
+        total_tasks = None
+
         # Extract the locales from the XML.
         locales = self._extract_locales_from_xml(xml_str)
 
+        tasks_done += 1
+        update_message = "Retrieved base XML specification file"
+        if progress_callback is not None:
+            progress_callback(tasks_done, total_tasks, update_message)
+
+        total_tasks = len(locales)+1
         for lang, country, bundle_url in locales:
             try:
                 # TODO: Warning. The provided URL in an xml can be relative (or can it not?).
@@ -194,6 +208,11 @@ class BundleManager(object):
                 bundle = Bundle.from_xml(bundle_xml, lang, country, "ALL")
                 name = Bundle.get_standard_code_string(lang, country, "ALL")
                 self._bundles[name] = bundle
+
+                tasks_done += 1  # For progress reporting.
+                update_message = "Extracted bundle for " + name
+                if progress_callback is not None:
+                    progress_callback(tasks_done, total_tasks, update_message)
             except:
                 # TODO: For now, we do not really handle errors, we simply ignore those locales which cause exceptions.
                 # In the future, we should probably analyze which kind of exceptions can occur, and decide what
@@ -228,6 +247,8 @@ class BundleManager(object):
         for name, bundledata in bundles.items():
             bundle = Bundle.from_jsonable(bundledata)
             self._bundles[name] = bundle
+
+        self.original_spec_file = appdata["spec"]
         return
 
     def merge_json(self, json_data):

@@ -7,6 +7,7 @@ from appcomposer.composers.translate import translate_blueprint, backend
 from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException
 from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships
 
+from appcomposer.composers.translate.tasks import extract_opensocial_app
 
 def do_languages_initial_merge(app, bm):
     """
@@ -52,11 +53,15 @@ def translate_selectlang():
     # As of now (may change in the future) if it is a POST we are creating the app for the first time.
     # Hence, we will need to carry out a full spec retrieval.
     if request.method == "POST":
+
+        # We require either an appurl or a taskid (sync or async mode).
+        taskid = request.form.get("taskid")
         # URL to the XML spec of the gadget.
         appurl = request.form.get("appurl")
+
         spec = appurl
-        if appurl is None or len(appurl) == 0:
-            flash("An application URL is required", "error")
+        if (taskid is None) and (appurl is None or len(appurl) == 0):
+            flash("An application URL or a TaskID is required", "error")
             return redirect(url_for("translate.translate_index"))
 
         base_appname = request.values.get("appname")
@@ -71,12 +76,19 @@ def translate_selectlang():
             return render_template("composers/errors.html",
                                    message="Too many Apps with the same name. Please, choose another.")
 
-        # Create a fully new App. It will be automatically generated from a XML.
-        try:
-            bm = BundleManager.create_new_app(appurl)
-        except InvalidXMLFileException:
-            return render_template("composers/errors.html",
-                                   message="Invalid XML in either the XML specification file or the XML translation bundles that it links to")
+        if appurl is not None:
+            # If we have an App URL we create a fully new App. It will be automatically generated from a XML.
+            try:
+                bm = BundleManager.create_new_app(appurl)
+            except InvalidXMLFileException:
+                return render_template("composers/errors.html",
+                                       message="Invalid XML in either the XML specification file or the XML translation bundles that it links to")
+
+        # Otherwise, if we have a taskid, we already have the Bundle ready in the task, so we get it from there.
+        if taskid is not None:
+            ar = extract_opensocial_app.AsyncResult(taskid)
+            bm = BundleManager()
+            bm.load_from_json(ar.result)
 
         spec = bm.get_gadget_spec()  # For later
 

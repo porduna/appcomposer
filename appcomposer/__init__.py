@@ -1,6 +1,7 @@
 import os
 import sys
 import optparse
+from celery import Celery
 
 
 class ComposerRegister(object):

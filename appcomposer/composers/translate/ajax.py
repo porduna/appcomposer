@@ -1,8 +1,10 @@
 from flask import request, jsonify, json
+import time
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager
 from appcomposer.composers.translate.db_helpers import _db_get_ownerships
 from appcomposer.models import AppVar
+from appcomposer.composers.translate.tasks import extract_opensocial_app
 
 
 @translate_blueprint.route("/get_proposal", methods=["GET"])
@@ -73,3 +75,41 @@ def get_ownership_list():
         result["owners"][language] = {"owner_id": owner.id, "owner_login": owner.login, "owner_app": ownership.app.id}
 
     return jsonify(**result)
+
+
+@translate_blueprint.route("/app_extract_start")
+def app_extract_start():
+    """
+    Starts loading a new App and all of its languages from a remote server.
+    """
+    appurl = request.values.get("appurl")
+    if appurl is None:
+        return jsonify({"result": "error", "message": "App URL not specified"})
+
+    ar = extract_opensocial_app.apply_async((appurl,))
+    task_id = ar.task_id
+
+    return jsonify({"result": "success", "task_id": task_id})
+
+
+@translate_blueprint.route("/app_extract_progress")
+def app_extract_progress():
+    """
+    Checks the status of a loading App.
+    """
+    taskid = request.values.get("taskid")
+    if taskid is None:
+        return jsonify({"result": "error", "message": "Task ID not specified"})
+
+    ar = extract_opensocial_app.AsyncResult(taskid)
+
+    return jsonify({"result": "success", "state": ar.state, "return": ar.result})
+
+
+@translate_blueprint.route("/test")
+def test():
+    ar = extract_opensocial_app.delay("http://www.google.com")
+    time.sleep(1)
+    if ar.result is not None:
+        print "RESULT: " + str(ar.result)
+    return "HELLO"
