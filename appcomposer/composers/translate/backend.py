@@ -1,8 +1,5 @@
-
-import re
 import json
 import urllib
-import urlparse
 from xml.dom import minidom
 import StringIO
 
@@ -10,6 +7,7 @@ from babel import Locale, UnknownLocaleError
 from flask import make_response, url_for, render_template, request
 from appcomposer import db
 
+from appcomposer.utils import make_url_absolute, inject_absolute_urls, inject_original_url_in_xmldoc
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.models import AppVar, App
@@ -83,20 +81,7 @@ class BundleExistsAlreadyException(Exception):
     def __init__(self, message=None):
         self.message = message
 
-def _extract_base_url(url):
-    parsed = urlparse.urlparse(url)
-    new_path = parsed.path
-    # Go to the last directory
-    if '/' in new_path:
-        new_path = new_path[:new_path.rfind('/')+1]
-    messages_file_parsed = urlparse.ParseResult(scheme = parsed.scheme, netloc = parsed.netloc, path = new_path, params = '', query = '', fragment = '')
-    return messages_file_parsed.geturl()
-    
-
-def _make_url_absolute(relative_path, url):
-    if relative_path.startswith(('http://', 'https://')):
-        return relative_path
-    return _extract_base_url(url) + relative_path
+   
 
 class BundleManager(object):
     """
@@ -347,7 +332,7 @@ class BundleManager(object):
             for elem in itemlist:
                 messages_file = elem.attributes["messages"].nodeValue
                 
-                messages_file = _make_url_absolute(messages_file, url)
+                messages_file = make_url_absolute(messages_file, url)
 
                 try:
                     lang = elem.attributes["lang"].nodeValue
@@ -399,7 +384,7 @@ class BundleManager(object):
                 if "lang" not in loc.attributes.keys() and "country" not in loc.attributes.keys():
                     default_locale_found = True
                     messages_url = loc.getAttribute("messages")
-                    new_messages_url = _make_url_absolute(messages_url, url)
+                    new_messages_url = make_url_absolute(messages_url, url)
                     if new_messages_url != messages_url:
                         loc.setAttribute("messages", new_messages_url)
                     continue
@@ -448,17 +433,7 @@ class BundleManager(object):
             locale.appendChild(xmldoc.createTextNode(""))
             module_prefs.appendChild(locale)
 
-        contents = xmldoc.getElementsByTagName("Content")
-        for content in contents:
-            text_node = xmldoc.createCDATASection("""
-            <script>
-                if (typeof gadgets !== "undefined" && gadgets !== null) {
-                    gadgets.util.getUrlParameters().url = "%s";
-                }
-            </script>
-            """ % url)
-            content.insertBefore(text_node, content.firstChild)
-
+        inject_original_url_in_xmldoc(xmldoc, url)
         return xmldoc.toprettyxml()
 
     def get_bundle(self, bundle_code):
@@ -495,13 +470,8 @@ class BundleManager(object):
         """
         xmlspec = self._retrieve_url(self.original_spec_file)
         output_xml = self._inject_locales_into_spec(appid, xmlspec, self.original_spec_file, True, group)
-        output_xml = self._inject_absolute_urls(output_xml, self.original_spec_file)
+        output_xml = inject_absolute_urls(output_xml, self.original_spec_file)
         return output_xml
-
-    def _inject_absolute_urls(self, output_xml, url):
-        base_url = _extract_base_url(url)
-        exp = re.compile(r"""(\s(src|href)\s*=\s*"?)(?!http://|https://|#|"|"#| )""")
-        return exp.sub(r"\1%s" % base_url, output_xml)
 
     def merge_bundle(self, base_bundle_code, proposed_bundle):
         """

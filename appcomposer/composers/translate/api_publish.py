@@ -26,6 +26,8 @@ def app_translation_serve():
     if lang is None:
         return render_template("composers/errors.html",
                                message="Error 400: Bad Request: Parameter lang is missing."), 400
+    if len(lang) == 2:
+        lang = '%s_ALL' % lang
 
     target = request.values.get("target")
     if target is None:
