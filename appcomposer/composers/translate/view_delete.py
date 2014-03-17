@@ -19,7 +19,7 @@ def translate_delete():
             return "appid not provided", 400
         app = get_app(appid)
         if app is None:
-            return "App not found", 500
+            return "App not found", 404
         return render_template("composers/dummy/delete.html", app=app)
 
     # If POST we consider whether the user clicked Delete or Cancel in the confirmation screen.
