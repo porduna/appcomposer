@@ -107,6 +107,24 @@ class TestTranslateDbHelpers:
         secondOwnership = next(o for o in ownerships if o.value == "testen_TESTEN")
         assert secondOwnership.app == app2
 
+    def test_conflicting_composer(self):
+        """
+        Check that there is no confussion when there is a conflicting composer using the same appvar names.
+        """
+        # We now declare 1 ownership.
+        _db_declare_ownership(self.tapp, "test_TEST")
+        ownerships = _db_get_ownerships("http://justatest.com")
+        assert len(ownerships) == 1
+
+        # We now create a non-translate app.
+        app2 = api.create_app("UTApp2", "dummy", "{'spec':'http://justatest.com'}")
+        api.add_var(app2, "spec", "http://justatest.com")
+        api.add_var(app2, "ownership", "test_TEST")
+
+        # Make sure that even though we added an ownership on an app with the same spec, it won't be
+        # taken into account because it is a DUMMY and not a TRANSLATE composer.
+        assert len(ownerships) == 1
+
     def test_find_unique_name_for_app(self):
         # There is no conflict, so the name should be exactly the chosen one.
         name = _find_unique_name_for_app("UTAPPDoesntExist")
