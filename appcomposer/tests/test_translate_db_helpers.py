@@ -1,7 +1,7 @@
 import appcomposer
 import appcomposer.application
 
-from appcomposer.appstorage import api
+from appcomposer.appstorage import api, add_var
 from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals
 from appcomposer.login import current_user
 
@@ -109,7 +109,7 @@ class TestTranslateDbHelpers:
 
     def test_conflicting_composer(self):
         """
-        Check that there is no confussion when there is a conflicting composer using the same appvar names.
+        Check that there is no mistake when there is a conflicting composer using the same appvar names.
         """
         # We now declare 1 ownership.
         _db_declare_ownership(self.tapp, "test_TEST")
@@ -124,6 +124,23 @@ class TestTranslateDbHelpers:
         # Make sure that even though we added an ownership on an app with the same spec, it won't be
         # taken into account because it is a DUMMY and not a TRANSLATE composer.
         assert len(ownerships) == 1
+
+    def test_conflicting_composer_proposal(self):
+        """
+        Check that there is no mistake when there is a conflicting composer using the same appvar names.
+        """
+        # We now declare add 1 proposal to the app.
+        add_var(self.tapp, "proposal", "{}")
+
+        # We now create a non-translate app.
+        app2 = api.create_app("UTApp2", "dummy", "{'spec':'http://justatest.com'}")
+        # We add 1 proposal to the app with the same spec but different composer type.
+        add_var(app2, "proposal", "{}")
+
+        # Get the proposals for our app.
+        proposals = _db_get_proposals(self.tapp)
+        assert len(proposals) == 1
+
 
     def test_find_unique_name_for_app(self):
         # There is no conflict, so the name should be exactly the chosen one.
