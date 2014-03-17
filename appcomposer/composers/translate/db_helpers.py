@@ -14,16 +14,20 @@ ca_ES) as its value.
 
 def _db_get_ownerships(spec):
     """
-    Gets every single ownership for a spec.
+    Gets every single ownership for a spec. It will only work on "translate" specs.
     @param spec: The spec whose ownerships to retrieve.
     @return: List of ownerships.
     """
-    related_apps_ids = db.session.query(AppVar.app_id).filter_by(name="spec",
-                                                                 value=spec).subquery()
+    related_apps_ids = db.session.query(AppVar.app_id).filter(AppVar.name == "spec",
+                                                              AppVar.value == spec).subquery()
 
     # Among those AppVars for our Spec, we try to locate an ownership AppVar.
     owner_apps = db.session.query(AppVar).filter(AppVar.name == "ownership",
                                                  AppVar.app_id.in_(related_apps_ids)).all()
+
+    # Filter those that do not belong to the translator. This should probably be done directly in one of the previous
+    # query, but we need to find out how. (First attempts have failed).
+    owner_apps = [owner_app for owner_app in owner_apps if owner_app.app.composer == "translate"]
 
     return owner_apps
 
@@ -36,16 +40,26 @@ def _db_get_lang_owner_app(spec, lang_code):
     language without the territory is NOT enough.
     @return: The owner for the App and language. None if no owner is found.
     """
-    related_apps_ids = db.session.query(AppVar.app_id).filter_by(name="spec",
-                                                                 value=spec).subquery()
+    related_apps_ids = db.session.query(AppVar.app_id).filter(AppVar.name == "spec",
+                                                              AppVar.value == spec).subquery()
 
     # Among those AppVars for our Spec, we try to locate an ownership AppVar for our
     # lang code.
-    owner_app_id = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
+    owner_app_ids = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
                                                           AppVar.value == lang_code,
-                                                          AppVar.app_id.in_(related_apps_ids)).first()
+                                                          AppVar.app_id.in_(related_apps_ids)).all()
 
-    if owner_app_id is None:
+    # TODO: We shouldnt repeat this.
+    owner_appvars = db.session.query(AppVar).filter(AppVar.name == "ownership",
+                                                      AppVar.value == lang_code,
+                                                      AppVar.app_id.in_(related_apps_ids)).all()
+
+    owner_app_id = [owner_appvar.app_id for owner_appvar in owner_appvars if owner_appvar.app.composer == "translate"]
+
+    # TODO: Add some tests to make sure that we do not get confused if another composer uses the same appvar names.
+    # TODO: Make this better. Right now it's somewhat kludgey.
+
+    if owner_app_id is None or len(owner_app_id) == 0:
         return None
 
     owner_app = App.query.filter_by(id=owner_app_id[0]).first()
