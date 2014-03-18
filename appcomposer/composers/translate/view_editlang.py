@@ -1,5 +1,6 @@
 from flask import request, render_template, flash, json, url_for, redirect
 import time
+from appcomposer import db
 from appcomposer.appstorage.api import get_app, update_app_data, add_var
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
@@ -83,10 +84,29 @@ def translate_edit():
 
             proposal_json = json.dumps(proposal_data)
 
-            # Link the proposal with the Owner app.
-            add_var(owner_app, "proposal", proposal_json)
 
-            flash("Changes have been proposed to the owner")
+            # Normally we will add the proposal to the queue. However, sometimes the owner wants to auto-accept
+            # all proposals. We check for this. If the autoaccept mode is enabled on the app, we do the merge
+            # right here and now.
+
+            if bm.get_autoaccept():
+                flash("Changes are being applied instantly because the owner has auto-accept enabled")
+
+                # TODO: Do merge here.
+                obm = BundleManager.create_from_existing_app(owner_app.data)
+                obm.merge_bundle(targetbundle_code, targetbundle)
+
+                # Now we need to update the owner app's data. Because we aren't the owners, we can't use the appstorage
+                # API directly.
+                owner_app.data = obm.to_json()
+                db.session.add(owner_app)
+                db.session.commit()
+
+            else:
+                # Link the proposal with the Owner app.
+                add_var(owner_app, "proposal", proposal_json)
+
+                flash("Changes have been proposed to the owner")
 
         # Check whether the user wants to exit or to continue editing.
         if "save_exit" in request.values:
