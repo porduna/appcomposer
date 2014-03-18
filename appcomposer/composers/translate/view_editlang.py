@@ -88,12 +88,11 @@ def translate_edit():
             # Normally we will add the proposal to the queue. However, sometimes the owner wants to auto-accept
             # all proposals. We check for this. If the autoaccept mode is enabled on the app, we do the merge
             # right here and now.
-
-            if bm.get_autoaccept():
+            obm = BundleManager.create_from_existing_app(owner_app.data)
+            if obm.get_autoaccept():
                 flash("Changes are being applied instantly because the owner has auto-accept enabled")
 
-                # TODO: Do merge here.
-                obm = BundleManager.create_from_existing_app(owner_app.data)
+                # Merge into the owner app.
                 obm.merge_bundle(targetbundle_code, targetbundle)
 
                 # Now we need to update the owner app's data. Because we aren't the owners, we can't use the appstorage
