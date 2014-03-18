@@ -1,7 +1,11 @@
 import json
+import urllib2
+import traceback
+import xml.dom.minidom as minidom
 from flask import render_template, make_response, request
 from appcomposer import db
 from appcomposer.appstorage.api import get_app
+from appcomposer.utils import get_original_url
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import Bundle, BundleManager
 from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_get_ownerships
@@ -21,6 +25,19 @@ def app_translation_serve():
     if app_xml is None:
         return render_template("composers/errors.html",
                                message="Error 400: Bad Request: Parameter app_url is missing."), 400
+    try:
+        # XXX FIXME
+        # TODO: this makes this method to call twice the app_xml. We shouldn't need
+        # that. We should have the contents here downloaded for later.
+        if app_xml.startswith(('http://','https://')):
+            print app_xml
+            xmldoc = minidom.parseString(urllib2.urlopen(app_xml).read())
+            app_xml = get_original_url(xmldoc, app_xml)
+            print "New app xml:", app_xml
+    except:
+        traceback.print_exc()
+        pass
+
 
     lang = request.values.get("lang")
     if lang is None:
