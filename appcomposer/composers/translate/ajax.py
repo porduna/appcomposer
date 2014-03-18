@@ -1,11 +1,9 @@
 from flask import request, jsonify, json
 from appcomposer.appstorage.api import get_app, update_app_data
 from appcomposer.composers.translate import translate_blueprint
-from appcomposer.composers.translate.bundles import BundleManager
+from appcomposer.composers.translate.bundles import BundleManager, AUTOACCEPT_DEFAULT
 from appcomposer.composers.translate.db_helpers import _db_get_ownerships
 from appcomposer.models import AppVar
-
-AUTOACCEPT_DEFAULT = "1"
 
 @translate_blueprint.route("/config/autoaccept/<appid>", methods=["GET", "POST"])
 def autoaccept(appid):
@@ -26,14 +24,7 @@ def autoaccept(appid):
     data = json.loads(app.data)
 
     if request.method == "GET":
-        if "autoaccept" in data:
-            if data["autoaccept"]:
-                result["value"] = "1"
-            else:
-                result["value"] = "0"
-        else:
-            result["value"] = AUTOACCEPT_DEFAULT  # True by default.
-
+        result["value"] = data.get("autoaccept", AUTOACCEPT_DEFAULT)
         result["result"] = "success"
         return jsonify(**result)
 
@@ -45,9 +36,9 @@ def autoaccept(appid):
             return jsonify(**result)
 
         if value == "0":
-            data["autoaccept"] = "0"
+            data["autoaccept"] = False
         elif value == "1":
-            data["autoaccept"] = "1"
+            data["autoaccept"] = True
         else:
             result["result"] = "error"
             result["message"] = "Value not recognized. Should be 0 or 1."
@@ -56,7 +47,7 @@ def autoaccept(appid):
         update_app_data(app, json.dumps(data))
 
         result["result"] = "success"
-        result["value"] = value
+        result["value"] = value == "1"
         return jsonify(**result)
 
 

@@ -73,7 +73,7 @@ class TestTranslateAjax:
         js = json.loads(rv.data)
 
         assert js["result"] == "success"
-        assert js["value"] == "1"  # True by default.
+        assert js["value"] == True  # True by default.
 
     def test_autoaccept_not_exist(self):
         get_url = u"/composers/translate/config/autoaccept/" + "32124214124134124124"  # Non existing
@@ -93,10 +93,10 @@ class TestTranslateAjax:
         assert rv.status_code == 200
         js = json.loads(rv.data)
         assert js["result"] == "success"
-        assert js["value"] == "0"
+        assert js["value"] == False
         app = get_app(self.tapp.unique_id)
         appdata = json.loads(app.data)
-        assert appdata["autoaccept"] == "0"
+        assert appdata["autoaccept"] == False
 
         # Check for 1 POST
         url = u"/composers/translate/config/autoaccept/" + self.tapp.unique_id
@@ -104,10 +104,10 @@ class TestTranslateAjax:
         assert rv.status_code == 200
         js = json.loads(rv.data)
         assert js["result"] == "success"
-        assert js["value"] == "1"
+        assert js["value"] == True
         app = get_app(self.tapp.unique_id)
         appdata = json.loads(app.data)
-        assert appdata["autoaccept"] == "1"
+        assert appdata["autoaccept"] == True
 
         # Check for INVALID POST
         url = u"/composers/translate/config/autoaccept/" + self.tapp.unique_id

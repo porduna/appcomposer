@@ -8,6 +8,9 @@ from babel import Locale, UnknownLocaleError
 from flask import url_for
 
 
+AUTOACCEPT_DEFAULT = True
+
+
 class BundleManager(object):
     """
     To manage the set of bundles for an App, and to provide common functionality.
@@ -70,10 +73,7 @@ class BundleManager(object):
         spec_file = app_data["spec"]
         bm = BundleManager(spec_file)
 
-        if not "autoaccept" in app_data:
-            bm.autoaccept = True
-        else:
-            bm.autoaccept = app_data["autoaccept"] == "1"
+        bm.autoaccept = app_data.get("autoaccept", AUTOACCEPT_DEFAULT)
 
         bm.merge_json(app_data)
 
@@ -223,14 +223,9 @@ class BundleManager(object):
         Exports everything to JSON. It includes both the JSON for the bundles, and a spec attribute, which
         links to the original XML file (it will be requested everytime).
         """
-        if self.get_autoaccept():
-            autoaccept = "1"
-        else:
-            autoaccept = "0"
-
         data = {
             "spec": self.original_spec_file,
-            "autoaccept": autoaccept,
+            "autoaccept": self.autoaccept,
             "bundles": {}
         }
         for name, bundle in self._bundles.items():

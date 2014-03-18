@@ -197,8 +197,7 @@ def translate_selectlang():
     # We pass the autoaccept data var so that it can be rendered.
     # TODO: Optimize this once we have this fully covered with tests.
     data = json.loads(app.data)
-    autoaccept = data.get("autoaccept", "1")  # We autoaccept by default. Problems may arise if this value changes, because it is used in a couple of places.
-    autoaccept = autoaccept == "1"
+    autoaccept = data.get("autoaccept", True)  # We autoaccept by default. Problems may arise if this value changes, because it is used in a couple of places.
 
     # We pass some parameters as JSON strings because they are generated dynamically
     # through JavaScript in the template.
