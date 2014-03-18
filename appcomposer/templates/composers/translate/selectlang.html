@@ -31,7 +31,7 @@
                             <div class="checkbox" style="padding-top:20px">
                                 <label>
                                     <!-- This control is handled through Javascript. It modifies the config through AJAX. -->
-                                    <input type="checkbox" id="accept-proposals">Accept all translation proposals
+                                    <input type="checkbox" id="accept-proposals" {% if autoaccept %}checked{% endif %}>Accept all translation proposals
                                     automatically
                                 </label>
                             </div>

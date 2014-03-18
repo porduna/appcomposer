@@ -176,11 +176,18 @@ def translate_selectlang():
     # because those will be added to the targetlangs by default.
     suggested_target_langs = [elem for elem in targetlangs_list if elem["pcode"] not in locales_codes]
 
+    # We pass the autoaccept data var so that it can be rendered.
+    # TODO: Optimize this once we have this fully covered with tests.
+    data = json.loads(app.data)
+    autoaccept = data.get("autoaccept", "1")  # We autoaccept by default. Problems may arise if this value changes, because it is used in a couple of places.
+    autoaccept = autoaccept == "1"
+
     # We pass some parameters as JSON strings because they are generated dynamically
     # through JavaScript in the template.
     return render_template("composers/translate/selectlang.html",
                            app=app, # Current app object.
                            xmlspec=spec, # URL to the App XML.
+                           autoaccept=autoaccept,  # Whether the app is configured to autoaccept proposals or not.
                            suggested_target_langs=suggested_target_langs, # Suggested (not already translated) langs
                            source_groups_json=json.dumps(src_groups_dict), # Source groups in a JSON string
                            full_groups_json=json.dumps(full_groups_list), # (To find names etc)
