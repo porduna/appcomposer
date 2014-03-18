@@ -1,6 +1,11 @@
-from collections import defaultdict
 import babel
+import urllib2
+import traceback
+import xml.dom.minidom as minidom
+from collections import defaultdict
+
 from flask import request, flash, redirect, url_for, render_template, json
+from appcomposer.utils import get_original_url
 from appcomposer.appstorage import create_app, set_var
 from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint, backend
@@ -62,6 +67,19 @@ def translate_selectlang():
         base_appname = request.values.get("appname")
         if base_appname is None:
             return render_template("composers/errors.html", message="An appname was not specified")
+
+        try:
+            # XXX FIXME
+            # TODO: this makes this method to call twice the app_xml. We shouldn't need
+            # that. We should have the contents here downloaded for later.
+            if appurl.startswith(('http://','https://')):
+                print appurl
+                xmldoc = minidom.parseString(urllib2.urlopen(appurl).read())
+                appurl = get_original_url(xmldoc, appurl)
+                print "New app xml:", appurl
+        except:
+            traceback.print_exc()
+            pass
 
         # Generates a unique (for the current user) name for the App,
         # based on the base name that the user himself chose. Note that
