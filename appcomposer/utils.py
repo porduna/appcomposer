@@ -26,6 +26,9 @@ def inject_absolute_urls(output_xml, url):
 
 def inject_original_url_in_xmldoc(xmldoc, url):
     contents = xmldoc.getElementsByTagName("Content")
+    original_url_node = xmldoc.createElement("AppComposer")
+    original_url_node.setAttribute("originalUrl", url)
+
     for content in contents:
         text_node = xmldoc.createCDATASection("""
         <script>
@@ -35,6 +38,14 @@ def inject_original_url_in_xmldoc(xmldoc, url):
         </script>
         """ % url)
         content.insertBefore(text_node, content.firstChild)
+        content.parentNode.insertBefore(original_url_node, content)
+
+def get_original_url(xmldoc, default_url = None):
+    app_composer_tags = xmldoc.getElementsByTagName("AppComposer")
+    for app_composer_tag in app_composer_tags:
+        if app_composer_tag.hasAttribute('originalUrl'):
+            return app_composer_tag.getAttribute('originalUrl')
+    return default_url
 
 def inject_absolute_locales_in_xmldoc(xmldoc, url):
     locales = xmldoc.getElementsByTagName("Locale")
