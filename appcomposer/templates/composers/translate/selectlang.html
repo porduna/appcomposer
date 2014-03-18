@@ -24,6 +24,12 @@
                 <h4 class="alert alert-info">Original XML: <a href="{{ xmlspec }}">{{ xmlspec }}</a></h4>
                 {% if is_owner %}
                     <h4 class="alert alert-success">You are the owner of this App's default translation.</h4>
+                    <div class="checkbox" style="padding-top:20px">
+                        <label>
+                            <!-- This control is handled through Javascript. It modifies the config through AJAX. -->
+                            <input type="checkbox" id="accept-proposals">Accept all translation proposals automatically
+                        </label>
+                    </div>
                 {% else %}
                     <h4 class="alert alert-warning">This App's default translation belongs to {{ owner.name }} ({{ owner.login }}).</h4>
                 {% endif %}
@@ -222,7 +228,10 @@
         $("select").attr("size", 8);
 
 
-        
+        // Handle the accept-proposals toggle. It will enable or disable auto-accepting through AJAX.
+        $("#accept-proposals").change(function(){
+            $.post("")
+        });
     });
 
 
