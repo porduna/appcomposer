@@ -76,14 +76,6 @@ def translate_edit():
 
         propose_to_owner = request.values.get("proposeToOwner")
         if propose_to_owner is not None and owner_app != app:
-            # We need to propose this Bundle to the owner.
-            # Note: May be confusing: app.owner.login refers to the generic owner of the App, and not the owner
-            # we are talking about in the specific Translate composer.
-            proposal_data = {"from": app.owner.login, "timestamp": time.time(), "bundle_code": targetbundle_code,
-                             "bundle_contents": targetbundle.to_jsonable()}
-
-            proposal_json = json.dumps(proposal_data)
-
 
             # Normally we will add the proposal to the queue. However, sometimes the owner wants to auto-accept
             # all proposals. We check for this. If the autoaccept mode is enabled on the app, we do the merge
@@ -102,6 +94,15 @@ def translate_edit():
                 db.session.commit()
 
             else:
+
+                # We need to propose this Bundle to the owner.
+                # Note: May be confusing: app.owner.login refers to the generic owner of the App, and not the owner
+                # we are talking about in the specific Translate composer.
+                proposal_data = {"from": app.owner.login, "timestamp": time.time(), "bundle_code": targetbundle_code,
+                                 "bundle_contents": targetbundle.to_jsonable()}
+
+                proposal_json = json.dumps(proposal_data)
+
                 # Link the proposal with the Owner app.
                 add_var(owner_app, "proposal", proposal_json)
 
