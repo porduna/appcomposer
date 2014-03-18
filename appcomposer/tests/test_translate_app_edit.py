@@ -1,3 +1,6 @@
+ #!/usr/bin/python
+ # -*- coding: utf-8 -*-
+
 import json
 import os
 import appcomposer
@@ -75,11 +78,10 @@ class TestTranslateAppCreation:
         assert "not found" in rv.data
 
     def test_just_edit_default(self):
-        #url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % self.firstApp.unique_id
         url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
-        print "URL: " + url
+        # print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
         print rv.data
-        assert "purple" in rv.data
-        assert "Propose translation" in rv.data
+        assert u"purple" in rv.data
+        assert u"Propose translation" in rv.data

@@ -1,3 +1,6 @@
+ #!/usr/bin/python
+ # -*- coding: utf-8 -*-
+
 from flask import request, render_template, flash, json, url_for, redirect
 import time
 from appcomposer import db
