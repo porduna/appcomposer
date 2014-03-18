@@ -21,7 +21,7 @@ def translate_edit():
     # Retrieve the application we want to view or edit.
     app = get_app(appid)
     if app is None:
-        return render_template("composers/errors.html", message="App not found")
+        return render_template("composers/errors.html", message="App not found"), 404
 
     bm = BundleManager.create_from_existing_app(app.data)
     spec = bm.get_gadget_spec()
