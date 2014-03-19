@@ -1,4 +1,10 @@
 @charset "utf-8";
+@font-face {
+  font-family: 'Titillium Web';
+  font-style: normal;
+  font-weight: 400;
+  src: local('Titillium Web'), local('TitilliumWeb-Regular'), url(http://go-lab.gw.utwente.nl/sources/tools/conceptmap/src/main/libs/fonts/titilliumWeb400.woff) format('woff');
+}
 body,
 td,
 th,
@@ -7,7 +13,7 @@ input,
 textarea {
   font-family: 'Titillium Web', sans-serif;
   font-size: 15px;
-  color: #565656;
+  color: #3f3f3f;
 }
 h1 {
   font-weight: normal;
@@ -36,29 +42,74 @@ h1 {
 .activeButton {
   border: 1px solid #939597;
   border-radius: 2px;
-  background: #92d6e3;
+  background-color: #92d6e3;
   background-size: contain;
 }
 .activeButton:hover {
-  background: #00bacc;
+  background-color: #00bacc;
   background-size: contain;
 }
 .activeButton:active {
-  background: #faa519;
+  background-color: #faa519;
   background-size: contain;
 }
 .pressedButton,
 .pressedButton:active,
 .pressedButton:hover {
-  background: #faa519;
+  background-color: #faa519;
   background-size: contain;
 }
 .pressedButton:hover {
-  background: #faa519;
+  background-color: #faa519;
   background-size: contain;
 }
 .pressedButton:active {
-  background: #faa519;
+  background-color: #faa519;
+}
+.disabledButton,
+.disabledButton:hover,
+.disabledButton:active {
+  background-color: #f5f5f5;
+  color: #939597;
+}
+.fontAweSomeButton {
+  padding: 4px;
+  margin: 2px;
+  margin-bottom: 5px;
+  font-size: 23px;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.fontAweSomeButtonSmall {
+  padding: 2px;
+  margin: 2px;
+  margin-bottom: 2px;
+  font-size: 17px;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.fontAweSomeButtonLarge {
+  padding: 6px;
+  margin: 2px;
+  margin-bottom: 5px;
+  font-size: 29px;
+  -moz-user-select: -moz-none;
+  -khtml-user-select: none;
+  -webkit-user-select: none;
+  -ms-user-select: none;
+  -o-user-select: none;
+  user-select: none;
+}
+.golabDroppable {
+  border: 2px dotted #faa519 !important;
 }
 .dropObjectOutSideDropArea {
   opacity: 0.35;
@@ -81,7 +132,7 @@ h1 {
   /*background: #eeeeee url(images/ui-bg_highlight-soft_100_eeeeee_1x100.png) 50% top repeat-x;*/
 
   background: #ffffff;
-  color: #565656;
+  color: #3f3f3f;
 }
 /*.ui-widget-content a {*/
 /*color: #333333;*/
@@ -113,7 +164,7 @@ h1 {
 .ui-state-default a,
 .ui-state-default a:link,
 .ui-state-default a:visited {
-  color: #565656;
+  color: #3f3f3f;
   text-decoration: none;
 }
 .ui-state-hover,
@@ -142,12 +193,12 @@ h1 {
 
   background: #faa519;
   font-weight: bold;
-  color: #565656;
+  color: #3f3f3f;
 }
 .ui-state-active a,
 .ui-state-active a:link,
 .ui-state-active a:visited {
-  color: #565656;
+  color: #3f3f3f;
   text-decoration: none;
 }
 .ui-widget :active {
@@ -180,6 +231,9 @@ ul.ui-tabs-nav li.ui-tabs-active {
   font-family: 'Titillium Web', sans-serif;
   font-size: 15px;
 }
+.ui-dialog-titlebar {
+  background: #00bacc;
+}
 .unselectable {
   -moz-user-select: -moz-none;
   -khtml-user-select: none;
@@ -202,9 +256,7 @@ ul.ui-tabs-nav li.ui-tabs-active {
   -webkit-user-select: none;
   -webkit-tap-highlight-color: transparent;
 }
-html {
-  height: 100%;
-}
+html,
 body {
   height: 100%;
 }
@@ -215,18 +267,12 @@ body {
   display: none;
 }
 #ut_tools_conceptmapper_root {
-  height: 98%;
+  height: 100%;
 }
 #ut_tools_conceptmapper_toolbar_container {
   background: #f5f5f5;
   border: 2px solid #faa519;
   border-radius: 3px;
-  -moz-user-select: -moz-none;
-  -khtml-user-select: none;
-  -webkit-user-select: none;
-  -ms-user-select: none;
-  -o-user-select: none;
-  user-select: none;
 }
 #ut_tools_conceptmapper_toolbar {
   padding: 5px;
@@ -237,11 +283,15 @@ body {
 #ut_tools_conceptmapper_toolbar_list {
   list-style-type: none;
   padding: 0px;
+  text-align: center;
+}
+.ut_tools_conceptmapper_icon {
+  padding: 7px 7px 7px 7px;
 }
 #ut_tools_conceptmapper_logoContainer {
   position: absolute;
   bottom: 10px;
-  padding-left: 8px;
+  padding-left: 22px;
   padding-bottom: 8px;
 }
 #ut_tools_conceptmapper_map {
@@ -268,6 +318,9 @@ body {
   width: 40px;
   height: 40px;
   display: block;
+}
+.ut_tools_conceptmapper_icon {
+  padding: 7px 7px 7px 7px;
 }
 /* the concepts */
 /*--------------*/

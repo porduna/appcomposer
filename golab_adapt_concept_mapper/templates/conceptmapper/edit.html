@@ -2,10 +2,20 @@
 {% set adaptor_type = "Concept Mapper" %}
 {% extends 'composers/adapt/edit.html' %}
 
+{% block tab_links %}
+    {% if not concepts %}
+    <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
+    <li class="disabled"><a>Preview</a></li>
+    {% else %}
+    <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
+    <li><a href="#preview" data-toggle="tab">Preview</a></li>
+    {% endif %}
+{% endblock %}
+
 {% block edit_tab %}
 <div class="col-lg-10">
 
-<p class="small  col-lg-offset-2">Please type the terms or comma-separated values you wish to save. (Hint: copy &amp; paste concepts supported).</p>
+<p class="small  col-lg-offset-2">Please type the terms or comma-separated values you wish to save. (Hint: copy &amp; paste concepts is supported in input fields).</p>
 <form id="conceptsform" class="form-horizontal" method="POST" action=".">
     <div class="form-group">
         <label for="concepts" class="col-lg-2 control-label">List of Concepts:</label>
@@ -15,7 +25,14 @@
             <span class="help-block"></span>
         </div>
     </div>
-
+    <div class="form-group">
+        <label for="relations" class="col-lg-2 control-label">List of Relations:</label>
+        <div class="col-lg-10">
+            
+            <input type="text" name="relations" id="relations" placeholder="Type the relation and hit enter or tab" value="{{ relations|replace('[', '')|replace(']', '')|replace('"', '') }}" class="form-control tokenfield input-lg" required="required">
+            <span class="help-block"></span>
+        </div>
+    </div>
 
     <div class="form-group">
         <div class="col-lg-10 col-lg-offset-2">
@@ -31,7 +48,8 @@
 {% endblock %}
 
 {% block preview_tab %}
-<iframe src="{{ url_for('.conceptmapper_index', app_id = app_id) }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+<div>
+<iframe src="{{ url_for('.conceptmapper_index', app_id = app_id) }}" width="800" height="650" frameborder="1px solid gray" scrolling="no"></iframe>
 <div>
     <a href="{{ url_for('.conceptmapper_widget', app_id = app_id) }}">[+] Widget link</a>
 </div>
@@ -71,8 +89,10 @@ if (jQuery.validator) {
 <script>     
 $(document).ready(function () {
     $('#concepts').tokenfield();
+    $('#relations').tokenfield();
 
     var concepts = $("#concepts");
+    var relations = $("#relations");    
     var conceptsform = $('#conceptsform');
     var submitbtn = $('#submitbtn');
     conceptsform.validate();
@@ -81,8 +101,17 @@ $(document).ready(function () {
       required: true,
       rangelength: [2, 500],
       messages: {
-        required: "You must provide the concept list.",
-        rangelength: "The concept must be between 2 and 20 characters in length."
+        required: "You must provide the concepts list.",
+        rangelength: "The concept must be between 2 and 500 characters in length."
+      }
+    });
+
+    relations.rules("add", {
+      required: true,
+      rangelength: [2, 500],
+      messages: {
+        required: "You must provide the relations list.",
+        rangelength: "The relation must be between 2 and 500 characters in length."
       }
     });
  

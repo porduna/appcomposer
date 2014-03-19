@@ -1,6 +1,7 @@
 <Module>
- <ModulePrefs title="{{ title }}">
+ <ModulePrefs title="{{ title }}"  height="600" width="800"  author="Lars Bollen" author_email="l.bollen@utwente.nl">
   <Require feature="osapi" />
+  <Require feature="dynamic-height" />  
    </ModulePrefs>
     <Content type="html" view="home,canvas">
      <![CDATA[

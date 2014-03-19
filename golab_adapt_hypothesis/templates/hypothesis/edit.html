@@ -3,18 +3,26 @@
 {% set current_link = "home" %}
 {% extends 'composers/adapt/edit.html' %}
 
+{% block tab_links %}
+    {% if not inputs %}
+    <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
+    <li class="disabled"><a>Preview</a></li>
+    {% else %}
+    <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
+    <li><a href="#preview" data-toggle="tab">Preview</a></li>
+    {% endif %}
+{% endblock %}
 
 {% block edit_tab %}
 <div class="col-lg-10">
 
     <!--
-           * Concept mapper & Hypothesis tools: form input.
-           Variables to fill: domain = "concepts" of the concept mapper, and "elements" (conditionals+inputs/outputs) of the hypothesis tool, respectively.
+           * Hypothesis tool form input.
+           Variables to fill: conditionals+inputs/outputs
     -->
     <p class="small  col-lg-offset-2">Please type the terms or comma-separated values you wish to save. (Hint: copy &amp; paste elements supported).</p>
     <form id="hypothesisform" class="form-horizontal" method="POST" action=".">
 
-    <!-- The previous block and this one are used by the Hypothesis tool -->
         <div class="form-group">
             <label for="conditionals" class="col-lg-2 control-label">Conditionals:</label>
             <div class="col-lg-10">
@@ -54,7 +62,7 @@
 {% endblock %}
 
 {% block preview_tab %}
-<iframe src="{{ url_for('.hypothesis_index', app_id = app_id) }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
+<iframe src="{{ url_for('.hypothesis_index', app_id = app_id) }}" width="850" height="800" frameborder="1px solid gray" scrolling="no"></iframe>
 <div>
     <a href="{{ url_for('.hypothesis_widget', app_id = app_id) }}">[+] Widget link</a>
 </div>

@@ -1,12 +1,10 @@
 from flask import redirect, request, url_for
 from flask.ext.admin import Admin, BaseView, expose
 from flask.ext.wtf import TextField, Form, PasswordField
-from appcomposer.models import App
 from .fields import DisabledTextField
 from appcomposer import db
 from appcomposer.login import current_user
 from appcomposer.babel import lazy_gettext
-from appcomposer.views import RedirectView
 from appcomposer.appstorage import api as appstorage
 
 # List of all available composers
