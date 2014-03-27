@@ -8,100 +8,115 @@
     <div class="translateblock">
 
 
-    <div class="row">
+        <div class="row">
 
-        <div class="col-lg-12">
-            <div class="page-header">
+            <div class="col-lg-12">
+                <div class="page-header">
 
-                <h1 id="apptitle">Translate</h1>
+                    <h1 id="apptitle">Translate</h1>
 
-                {% if app %}
-                    <h2 id="appfullname">{{ app.name }}</h2>
-                {% else %}
-                    <h2 id="appfullname">[App name not available]</h2>
-                {% endif %}
+                    {% if app %}
+                        <h2 id="appfullname">{{ app.name }}</h2>
+                    {% else %}
+                        <h2 id="appfullname">[App name not available]</h2>
+                    {% endif %}
 
-                <h4 class="alert alert-info">Original XML: <a href="{{ xmlspec }}">{{ xmlspec }}</a></h4>
-                {% if is_owner %}
-                    <h4 class="alert alert-success">You are the owner of this App's default translation.</h4>
-                {% else %}
-                    <h4 class="alert alert-warning">This App's default translation belongs to {{ owner.name }} ({{ owner.login }}).</h4>
-                {% endif %}
+                    <h4 class="alert alert-info">Original XML: <a href="{{ xmlspec }}">{{ xmlspec }}</a></h4>
+                    {% if is_owner %}
+                        <h4 class="alert alert-success">
+                            <p>
+                                You are the owner of this App's default translation.
+                            </p>
+
+                            <div class="checkbox" style="padding-top:20px">
+                                <label>
+                                    <!-- This control is handled through Javascript. It modifies the config through AJAX. -->
+                                    <input type="checkbox" id="accept-proposals" {% if autoaccept %}checked{% endif %}>Accept all translation proposals
+                                    automatically
+                                </label>
+                            </div>
+                        </h4>
+                    {% else %}
+                        <h4 class="alert alert-warning">This App's default translation belongs to {{ owner.name }}
+                            ({{ owner.login }}).</h4>
+                    {% endif %}
 
 
-                <div style="float: right">
-                    <a href="{{ url_for(".translate_proposed_list", appid=app.unique_id) }}">
-                        <button class="btn btn-warning">View Proposed Translations
-                            <span class="badge" style="{{ "" if proposal_num == 0 else "background-color:#EE2222" }}">{{ proposal_num }}</span>
-                        </button>
-                    </a>
+                    <div style="float: right">
+                        <a href="{{ url_for(".translate_proposed_list", appid=app.unique_id) }}">
+                            <button class="btn btn-warning">View Proposed Translations
+                                <span class="badge"
+                                      style="{{ "" if proposal_num == 0 else "background-color:#EE2222" }}">{{ proposal_num }}</span>
+                            </button>
+                        </a>
+                    </div>
+
+
                 </div>
-
-
             </div>
         </div>
-    </div>
 
 
-    <!-- Forms
-    ================================================== -->
-    <div class="well">
+        <!-- Forms
+        ================================================== -->
+        <div class="well">
 
-        <div class="row">
-            <div class="col-lg-12">
-                <form class="form-horizontal" id="getlangs" name="getlangs"
-                      action="{{ url_for('translate.translate_edit') }}" method="GET">
+            <div class="row">
+                <div class="col-lg-12">
+                    <form class="form-horizontal" id="getlangs" name="getlangs"
+                          action="{{ url_for('translate.translate_edit') }}" method="GET">
 
-                    {# This is necessary so that the next page knows which App to load. #}
-                    <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
+                        {# This is necessary so that the next page knows which App to load. #}
+                        <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
 
-                    <legend>Step 2: Select the source and target language</legend>
+                        <legend>Step 2: Select the source and target language</legend>
 
-                    <div class="col-lg-6 col-md-6">
+                        <div class="col-lg-6 col-md-6">
 
 
-                        <div class="form-group">
-                            <label class="control-label" for="srclang">Select source language</label>
+                            <div class="form-group">
+                                <label class="control-label" for="srclang">Select source language</label>
 
-                            <select id="srclang" multiple="" name="srclang" class="form-control"
-                                    onchange="onSrcLangChanged()">
-                                <option selected="selected" value="all_ALL">DEFAULT</option>
+                                <select id="srclang" multiple="" name="srclang" class="form-control"
+                                        onchange="onSrcLangChanged()">
+                                    <option selected="selected" value="all_ALL">DEFAULT</option>
 
-                                {# When displaying the languages note that we only show those with GROUP=ALL. This is because otherwise some languages
+                                    {# When displaying the languages note that we only show those with GROUP=ALL. This is because otherwise some languages
                                  would appear more than once. Though somewhat kludgey, this approach should always work because a language must always
                                  have a default (ALL) translation. #}
-                                {% for loc in translated_langs if loc["group"] == "ALL" and not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}
-                                    <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                                    {% for loc in translated_langs if loc["group"] == "ALL" and not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}
+                                        <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
 
-                        <button id="editSelectedSourceButton" name="editSelectedSourceButton" type="submit" class="btn btn-primary" style="margin-bottom:20px">
-                            Edit selected <b>source</b> on its own
-                        </button>
+                            <button id="editSelectedSourceButton" name="editSelectedSourceButton" type="submit"
+                                    class="btn btn-primary" style="margin-bottom:20px">
+                                Edit selected <b>source</b> on its own
+                            </button>
 
-                        <div class="form-group">
-                            <label class="control-label" for="targetlang">Select target language</label>
-                            <select id="targetlang" multiple="" name="targetlang" class="form-control">
+                            <div class="form-group">
+                                <label class="control-label" for="targetlang">Select target language</label>
+                                <select id="targetlang" multiple="" name="targetlang" class="form-control">
 
-                                {# Add the DEFAULT first. #}
-                                <option value="all_ALL" selected="selected">DEFAULT</option>
+                                    {# Add the DEFAULT first. #}
+                                    <option value="all_ALL" selected="selected">DEFAULT</option>
 
-                                {# TODO: Clean this up. The design probably needs some changes as well. #}
+                                    {# TODO: Clean this up. The design probably needs some changes as well. #}
 
-                                {# Now add the messages that are already translated. #}
-                                {% for loc in translated_langs if loc["group"] == "ALL" and not (loc["lang"] == "all" and loc["country"] == "ALL") %}
-                                    <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
-                                {% endfor %}
+                                    {# Now add the messages that are already translated. #}
+                                    {% for loc in translated_langs if loc["group"] == "ALL" and not (loc["lang"] == "all" and loc["country"] == "ALL") %}
+                                        <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
+                                    {% endfor %}
 
-                                {# Now add the messages that are suggested by the system. #}
-                                {% for lang in suggested_target_langs %}
-                                    <option value="{{ lang["pcode"] }}">{{ lang["repr"] }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                                    {# Now add the messages that are suggested by the system. #}
+                                    {% for lang in suggested_target_langs %}
+                                        <option value="{{ lang["pcode"] }}">{{ lang["repr"] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
 
-                        <!--
+                            <!--
                         {# TODO: Consider reenabling this or removing it altogether. #}
                         <div class="form-group">
                             <div class="controls">
@@ -112,63 +127,65 @@
                         </div>
                         -->
 
-                    </div>
-
-                    <div class="col-lg-6 col-md-6">
-                        <div class="form-group">
-                            <label class="control-label" for="srcgroup">Select source group</label>
-                            <select id="srcgroup" multiple="" name="srcgroup" class="form-control">
-                                <!-- These are dynamically filled through JavaScript -->
-                            </select>
                         </div>
+
+                        <div class="col-lg-6 col-md-6">
+                            <div class="form-group">
+                                <label class="control-label" for="srcgroup">Select source group</label>
+                                <select id="srcgroup" multiple="" name="srcgroup" class="form-control">
+                                    <!-- These are dynamically filled through JavaScript -->
+                                </select>
+                            </div>
 
                             <!-- Placeholder button so that the layout doesn't get messed up -->
                             <button class="PLACEHOLDER btn btn-primary" style="visibility:hidden; margin-bottom:20px">
                                 PLACEHOLDER
                             </button>
 
-                        <div class="form-group">
-                            <label class="control-label" for="targetgroup">Select target group</label>
-                            <select id="targetgroup" multiple="" name="targetgroup" class="form-control">
-                                {% for group in target_groups %}
-                                    <option {% if loop.index0 == 0 %}selected="selected"{% endif %}
-                                            value="{{ group[0] }}">{{ group[1] }}</option>
-                                {% endfor %}
-                            </select>
-                        </div>
+                            <div class="form-group">
+                                <label class="control-label" for="targetgroup">Select target group</label>
+                                <select id="targetgroup" multiple="" name="targetgroup" class="form-control">
+                                    {% for group in target_groups %}
+                                        <option {% if loop.index0 == 0 %}selected="selected"{% endif %}
+                                                value="{{ group[0] }}">{{ group[1] }}</option>
+                                    {% endfor %}
+                                </select>
+                            </div>
 
 
-                        <div class="form-group">
-                            <div class="controls">
-                                <span id="help-msg" class="help-block"><!--Contents to be updated dynamically through JS--></span>
+                            <div class="form-group">
+                                <div class="controls">
+                                    <span id="help-msg" class="help-block"><!--Contents to be updated dynamically through JS--></span>
 
-                                <div style="float:left">
-                                    <a class="btn btn-default" id="backtoindexbtn"
-                                       href="{{ url_for('translate.translate_index') }}">« Go Back to Step 1</a>
-                                </div>
+                                    <div style="float:left">
+                                        <a class="btn btn-default" id="backtoindexbtn"
+                                           href="{{ url_for('translate.translate_index') }}">« Go Back to Step 1</a>
+                                    </div>
 
-                                <!-- The wrapping div is for the tooltips -->
-                                <div id="localisebtndiv" style="">
-                                    <button type="submit" id="localisebtn" name="sendurl" class="btn btn-success">Step 2 -
-                                        Localise »
-                                    </button>
-                                </div>
+                                    <!-- The wrapping div is for the tooltips -->
+                                    <div id="localisebtndiv" style="">
+                                        <button type="submit" id="localisebtn" name="sendurl" class="btn btn-success">
+                                            Step 2 -
+                                            Localise »
+                                        </button>
+                                    </div>
 
-                                <p id="same-lang" class="text-danger">Target and source languages may not be the same</p>
+                                    <p id="same-lang" class="text-danger">Target and source languages may not be the
+                                        same</p>
 
-                                <!--
+                                    <!--
                     <a class="btn btn-success" id="sendlangsbtn" href="{{ url_for('translate.translate_edit') }}">Step 3 - Translate »</a>
                     -->
+                                </div>
                             </div>
+
+
                         </div>
+                    </form>
 
-
-                    </div>
-                </form>
-
+                </div>
             </div>
         </div>
-    </div>
 
     </div>
 
@@ -181,15 +198,14 @@
 
 {% block scripts %}
 
-{{ super() }}
+    {{ super() }}
 
 
-<!-- JavaScript source code -->
-<script type="text/javascript">
+    <!-- JavaScript source code -->
+    <script type="text/javascript">
 
     //! Load and initialize what we must.
-    $(document).ready(function()
-    {
+    $(document).ready(function () {
         console.log("On ready");
 
         // We need to take a different action if we want to edit the selected source language.
@@ -207,9 +223,9 @@
         displayOwnershipInformation();
 
         // Add handlers to every Select element.
-        $("select").on("change", function(event) {
-                    onLanguageChange(event)
-                });
+        $("select").on("change", function (event) {
+            onLanguageChange(event)
+        });
 
         // For initialization
         onLanguageChange(null);
@@ -222,7 +238,14 @@
         $("select").attr("size", 8);
 
 
-        
+        // Handle the accept-proposals toggle. It will enable or disable auto-accepting through AJAX.
+        $("#accept-proposals").change(function () {
+            // Send an AJAX request to change the autoaccept proposals config.
+            $.post("/composers/translate/config/autoaccept/{{ app.unique_id }}", { value: this.checked ? 1 : 0 }, function () {
+                console.log("Autoaccept changed");
+            });
+        });
+
     });
 
 
@@ -230,21 +253,20 @@
     //! we can direct the user to the standard page but after setting
     //! the target language to be equal than the source language ourselves.
     function interceptEditSelectedSourceLanguageButton() {
-        $("#editSelectedSourceButton").click(function() {
+        $("#editSelectedSourceButton").click(function () {
             $("#targetlang").val($("#srclang").val());
             $("#targetgroup").val($("#srcgroup").val());
         });
     }
 
     //! Initializes the tooltips and popovers.
-    function initializeTooltips()
-    {
+    function initializeTooltips() {
         $("#merge_existing").popover(
                 {
                     placement: "top",
                     title: "Merge existing translations",
                     html: "true",
-                    content : "This option will let you merge someone else's translations into this one. <br>Note, however, that you need to be careful, because after you select the app to merge with, the merge is automatic, and some translations may get overrided.",
+                    content: "This option will let you merge someone else's translations into this one. <br>Note, however, that you need to be careful, because after you select the app to merge with, the merge is automatic, and some translations may get overrided.",
                     trigger: "hover"
                 }
         );
@@ -255,7 +277,7 @@
                     placement: "top",
                     title: "Localise",
                     html: "true",
-                    content : "", // to be set dynamically
+                    content: "", // to be set dynamically
                     trigger: "hover"
                 }
         );
@@ -269,16 +291,14 @@
 
         // The same source and target combination was chosen. User should not be allowed
         // to try to translate that, as it makes no sense.
-        if( getChosenSource() == getChosenTarget() )
-        {
+        if (getChosenSource() == getChosenTarget()) {
             $("#same-lang").show();
             submits.attr("disabled", "disabled");
             submits.prop('disabled', true);
 
             $('#localisebtndiv').attr("data-content", "In order to start localising the App, the chosen source language-group and target language-group combinations must be different");
         }
-        else
-        {
+        else {
             $("#same-lang").hide();
             submits.removeAttr("disabled");
             submits.prop("disabled", false);
@@ -293,18 +313,18 @@
         var targetLang = $("#targetlang").find(":selected").text();
         var targetGroup = $("#targetgroup").find(":selected").text();
 
-        if(sourceGroup == "ALL")
+        if (sourceGroup == "ALL")
             sourceGroup = "anyone";
-        if(targetGroup == "ALL")
+        if (targetGroup == "ALL")
             targetGroup = "anyone";
 
-        if(sourceLang == "DEFAULT")
+        if (sourceLang == "DEFAULT")
             sourceLang = "the default language";
-        if(targetLang == "DEFAULT")
+        if (targetLang == "DEFAULT")
             targetLang = "the default language";
 
         var translateMsg = "You want to translate the app from " + sourceLang + " (for " + sourceGroup + ") into " +
-                targetLang + " (for " + targetGroup +").";
+                targetLang + " (for " + targetGroup + ").";
         $("#help-msg").html(translateMsg);
     }
 
@@ -372,10 +392,9 @@
         var request_url = "{{ url_for(".get_ownership_list", xmlspec=xmlspec) }}";
 
         // Request the information through AJAX.
-        $.getJSON(request_url, undefined, function(data, status, jqXHR) {
+        $.getJSON(request_url, undefined, function (data, status, jqXHR) {
 
-            if(data["result"] != "success")
-            {
+            if (data["result"] != "success") {
                 console.error("Error while trying to retrieve ownership information. It seems to be invalid:");
                 console.error(data);
                 return;
@@ -383,14 +402,14 @@
 
             var owners = data["owners"];
 
-            for(var owned_lang in owners) {
-                if(owners.hasOwnProperty(owned_lang)) {
+            for (var owned_lang in owners) {
+                if (owners.hasOwnProperty(owned_lang)) {
                     var owner = owners[owned_lang];
 
                     var $opt = $("#targetlang,#srclang").find("option[value=" + owned_lang + "]");
 
                     var owner_app = owner["owner_app"];
-                    if(owner_app == {{ app.id }}) {
+                    if (owner_app == {{ app.id }}) {
                         $opt.append(" [you own this language]");
                     } else {
                         $opt.append(" [owner: " + owner["owner_login"] + "]");
@@ -400,6 +419,6 @@
         });
     }
 
-</script>
+    </script>
 
 {% endblock %}

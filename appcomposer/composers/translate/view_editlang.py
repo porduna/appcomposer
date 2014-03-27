@@ -1,5 +1,9 @@
+ #!/usr/bin/python
+ # -*- coding: utf-8 -*-
+
 from flask import request, render_template, flash, json, url_for, redirect
 import time
+from appcomposer import db
 from appcomposer.appstorage.api import get_app, update_app_data, add_var
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
@@ -20,7 +24,7 @@ def translate_edit():
     # Retrieve the application we want to view or edit.
     app = get_app(appid)
     if app is None:
-        return render_template("composers/errors.html", message="App not found")
+        return render_template("composers/errors.html", message="App not found"), 404
 
     bm = BundleManager.create_from_existing_app(app.data)
     spec = bm.get_gadget_spec()
@@ -75,18 +79,37 @@ def translate_edit():
 
         propose_to_owner = request.values.get("proposeToOwner")
         if propose_to_owner is not None and owner_app != app:
-            # We need to propose this Bundle to the owner.
-            # Note: May be confusing: app.owner.login refers to the generic owner of the App, and not the owner
-            # we are talking about in the specific Translate composer.
-            proposal_data = {"from": app.owner.login, "timestamp": time.time(), "bundle_code": targetbundle_code,
-                             "bundle_contents": targetbundle.to_jsonable()}
 
-            proposal_json = json.dumps(proposal_data)
+            # Normally we will add the proposal to the queue. However, sometimes the owner wants to auto-accept
+            # all proposals. We check for this. If the autoaccept mode is enabled on the app, we do the merge
+            # right here and now.
+            obm = BundleManager.create_from_existing_app(owner_app.data)
+            if obm.get_autoaccept():
+                flash("Changes are being applied instantly because the owner has auto-accept enabled")
 
-            # Link the proposal with the Owner app.
-            add_var(owner_app, "proposal", proposal_json)
+                # Merge into the owner app.
+                obm.merge_bundle(targetbundle_code, targetbundle)
 
-            flash("Changes have been proposed to the owner")
+                # Now we need to update the owner app's data. Because we aren't the owners, we can't use the appstorage
+                # API directly.
+                owner_app.data = obm.to_json()
+                db.session.add(owner_app)
+                db.session.commit()
+
+            else:
+
+                # We need to propose this Bundle to the owner.
+                # Note: May be confusing: app.owner.login refers to the generic owner of the App, and not the owner
+                # we are talking about in the specific Translate composer.
+                proposal_data = {"from": app.owner.login, "timestamp": time.time(), "bundle_code": targetbundle_code,
+                                 "bundle_contents": targetbundle.to_jsonable()}
+
+                proposal_json = json.dumps(proposal_data)
+
+                # Link the proposal with the Owner app.
+                add_var(owner_app, "proposal", proposal_json)
+
+                flash("Changes have been proposed to the owner")
 
         # Check whether the user wants to exit or to continue editing.
         if "save_exit" in request.values:

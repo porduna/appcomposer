@@ -201,3 +201,13 @@ class TestTranslateAppCreation:
             gerBundle = bm.get_bundle("de_ALL_ALL")
             assert gerBundle is not None
             assert len(gerBundle.get_msgs()) > 6
+
+    def test_translate_default_autoaccept(self):
+        with self.flask_app:
+            rv = self.login("testuser", "password")
+            app = api.create_app("UTApp", "translate", '{"spec":"http://justatest.com", "bundles":{}}')
+            api.add_var(app, "spec", "http://justatest.com")
+
+            # Test that autoaccept is True (it's the default).
+            bm = BundleManager.create_from_existing_app(json.loads(app.data))
+            assert bm.get_autoaccept() == True
