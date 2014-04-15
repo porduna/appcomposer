@@ -38,14 +38,21 @@ else:
 # Composers info
 ###
 
+ACTIVATE_TRANSLATOR = app.config.get('ACTIVATE_TRANSLATOR', False)
+
 from .composers.dummy import info as dummy_info
-from .composers.translate import info as translate_info
 from .composers.adapt import info as adapt_info
+
+COMPOSERS = [adapt_info]
+
+if ACTIVATE_TRANSLATOR:
+    from .composers.translate import info as translate_info
+    COMPOSERS.append(translate_info)
 
 # So that we can have access to all the info from the Users component.
 # It is important that this is done early. Otherwise, it will be accessed by the
 # user component before it is ready.
-COMPOSERS = [translate_info, adapt_info]
+
 COMPOSERS_DICT = {info["blueprint"]: info for info in COMPOSERS}
 COMPOSERS_DICT[dummy_info['blueprint']] = dummy_info
 
@@ -78,14 +85,14 @@ initialize_admin_component(app)
 #####
 # Composers
 #####
-
-from .composers.translate import translate_blueprint
 from .composers.adapt import adapt_blueprint, adaptors_blueprints, load_plugins
 from .composers.expert import expert_blueprint
 from .composers.dummy import dummy_blueprint
 
+if ACTIVATE_TRANSLATOR:
+    from .composers.translate import translate_blueprint
+    app.register_blueprint(translate_blueprint, url_prefix='/composers/translate')
 
-app.register_blueprint(translate_blueprint, url_prefix='/composers/translate')
 app.register_blueprint(adapt_blueprint, url_prefix='/composers/adapt')
 load_plugins()
 for adaptor_blueprint in adaptors_blueprints:
