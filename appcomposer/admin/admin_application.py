@@ -9,9 +9,14 @@ from wtforms.fields import PasswordField
 from wtforms.validators import Email, Regexp
 
 from appcomposer import models, db
-from appcomposer.login import current_user, ROLES
+from appcomposer.login import current_user, ROLES, Role
 from appcomposer.babel import lazy_gettext
 
+
+def _is_admin():
+    _current_user = current_user()
+    return _current_user and _current_user.role == Role.admin
+        
 
 ##########################################################
 #
@@ -41,8 +46,7 @@ class MyAdminIndexView(AdminIndexView):
     """
 
     def is_accessible(self):
-        self._current_user = current_user()
-        return self._current_user is not None
+        return _is_admin()
 
     def _handle_view(self, *args, **kwargs):
         if not self.is_accessible():
@@ -58,8 +62,7 @@ class AdminBaseView(BaseView):
     """
 
     def is_accessible(self):
-        self._current_user = current_user()
-        return self._current_user is not None
+        return _is_admin()
 
     def _handle_view(self, *args, **kwargs):
         if not self.is_accessible():
@@ -75,8 +78,7 @@ class AdminModelView(ModelView):
     """
 
     def is_accessible(self):
-        self._current_user = current_user()
-        return self._current_user is not None
+        return _is_admin()
 
     def _handle_view(self, *args, **kwargs):
         if not self.is_accessible():
