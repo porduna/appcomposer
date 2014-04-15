@@ -43,7 +43,9 @@ ADAPTORS = {
 _current_plugin = threading.local()
 
 def load_plugins():
-    plugins = ['concept_mapper', 'hypothesis', 'edt', 'jsconfig']
+    # These plug-ins have been deprecated in favor of jsconfig
+    # plugins = ['concept_mapper', 'hypothesis', 'edt', 'jsconfig']
+    plugins = ['jsconfig']
 
     for plugin in app.config.get('ADAPT_PLUGINS', []):
         if plugin not in plugins:
