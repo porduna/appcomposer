@@ -96,6 +96,12 @@ def url_shindig(url):
 def graasp_user(id):
     return 'graasp_%s' % id
 
+class Role:
+    teacher = 'teacher'
+    admin   = 'administrator'
+
+ROLES = [Role.teacher, Role.admin]
+
 @app.route('/graasp/authn/')
 def graasp_authn():
     st = request.args.get('st', '')
@@ -113,7 +119,7 @@ def graasp_authn():
     existing_user = User.query.filter_by(login=graasp_user(user_id)).first()
     if existing_user is None:
         # Create the user
-        new_user = User(login = graasp_user(user_id), name = name, password = '', email = '', organization = 'Graasp', role = '', creation_date = datetime.datetime.now(), last_access_date = datetime.datetime.now(), auth_system = 'graasp', auth_data = user_id)
+        new_user = User(login = graasp_user(user_id), name = name, password = '', email = '', organization = 'Graasp', role = Role.teacher, creation_date = datetime.datetime.now(), last_access_date = datetime.datetime.now(), auth_system = 'graasp', auth_data = user_id)
         db.session.add(new_user)
         db.session.commit()
     
