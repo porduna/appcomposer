@@ -68,6 +68,12 @@ def login():
 
     return render_template("login/login.html", form=form, next=next_url, login_app = login_app, login_app_creation = login_app_creation)
 
+def login_as(login):
+    user = User.query.filter_by(login=login).first()
+    if user:
+        login_user(login, user.name)
+    else:
+        flash(gettext("User does not exist"))
 
 @app.route('/logout', methods=["GET", "POST"])
 def logout():
