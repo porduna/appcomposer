@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-04-16 13:52+0200\n"
+"POT-Creation-Date: 2014-04-16 14:05+0200\n"
 "PO-Revision-Date: 2013-12-16 17:02+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -350,12 +350,14 @@ msgstr "Por favor, pon el nombre de tu aplicación"
 #: appcomposer/templates/composers/dummy/edit.html:81
 #: appcomposer/templates/user/profile-edit.html:33
 #: appcomposer/templates/user/profile-edit.html:35
+#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:47
+#: golab_adapt_jsconfig/templates/jsconfig/edit.html:9
 msgid "Save"
-msgstr "Salvar"
+msgstr "Guardar"
 
 #: appcomposer/templates/composers/dummy/edit.html:82
 msgid "Save & exit"
-msgstr "Salvar y salir"
+msgstr "Guardar y salir"
 
 #: appcomposer/templates/composers/dummy/index.html:3
 msgid "Welcome to dummy composer!"

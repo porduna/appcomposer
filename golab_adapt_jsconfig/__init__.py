@@ -164,3 +164,6 @@ def configuration(app_id):
     configuration_json = json.dumps(configuration, indent = 4)
     return render_template("jsconfig/configuration.js", name = name, configuration = configuration_json)
 
+@adaptor.route("/js/ConfigDialog.js")
+def config_dialog():
+    return render_template("jsconfig/ConfigDialog0.1.js")

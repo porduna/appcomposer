@@ -44,7 +44,7 @@
       $form.append($fieldset);
       $form.submit(function() { event.preventDefault(); });
       $dialogElement.append($form);
-      var $saveBtn = $("<button class='btn'>Save</button>");
+      var $saveBtn = $("<button class='btn'>{{ gettext("Save") }}</button>");
       $saveBtn.click(function() {
             $.each(currentConfiguration, function(id, settings) {
               if (settings.type === "boolean") {
