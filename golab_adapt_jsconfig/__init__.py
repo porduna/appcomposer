@@ -121,7 +121,11 @@ def app_xml(app_id):
         data = adaptor.load_data(app_id)
         url = data['url']
         contents = urllib2.urlopen(url).read()
-        contents = replace_default_configuration_script(contents, url_for('.configuration', app_id = app_id, _external = True))
+        
+        # If the user hasn't clicked on "Save" yet, do not replace configuration script
+        if data.get('configuration_name'):
+            contents = replace_default_configuration_script(contents, url_for('.configuration', app_id = app_id, _external = True))
+
         contents = inject_absolute_urls(contents, url)
         xmldoc = minidom.parseString(contents)
         inject_original_url_in_xmldoc(xmldoc, url)
