@@ -4,8 +4,21 @@
 
 {% block edit_tab %}
     <div class="col-lg-10">
-        <form class="form" action="." method="POST" >
-            URL: <input type="text" name="url" size="100" value="{{ url }}"/> <input type="submit" class="btn btn-primary" value="Save"/>
+        <form class="form" action="." method="POST" enctype="multipart/form-data">
+            {{ url_form.hidden_tag() }}
+            {{ url_form.url.label }}: {{ url_form.url(size=100) }} <input type="submit" class="btn btn-primary" value="Save"/>
+            {% if url_form.url.errors %}
+                <div class="row">
+                    <div class="alert alert-danger col-md-5 col-md-offset-3">
+                        <ul>
+                        {% for error in url_form.url.errors %}
+                            <li>{{ error }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
+
         </form>
         <div id='ut_tools_conceptmapper_ConfigDialog'>
         </div>
@@ -22,7 +35,7 @@
             <!-- <a target="_blank" href="{{ preview_url }}">Preview URL</a> -->
         {% else %}
             <div class="alert alert-danger">
-                <h3>No preview available: you must set a URL first</h3>
+                <h3>{{ gettext("No preview available: you must set a URL first") }}</h3>
             </div>
         {% endif %}
     </div>

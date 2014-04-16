@@ -5,11 +5,15 @@ import traceback
 from xml.dom import minidom
 
 from flask import render_template, request, flash, url_for
+from flask_wtf import Form
+from wtforms import TextField
+from wtforms.validators import url, required
 
+from appcomposer.babel import gettext, lazy_gettext
 from appcomposer.utils import make_url_absolute, inject_absolute_urls, get_json, inject_original_url_in_xmldoc, inject_absolute_locales_in_xmldoc
 from appcomposer.composers.adapt import create_adaptor
 
-adaptor = create_adaptor('JavaScript configuration', 
+adaptor = create_adaptor(lazy_gettext('JavaScript configuration'), 
                 initial = {'url' : None, 'configuration' : None, 'configuration_name' : None})
 
 SHINDIG_SERVER = 'http://shindig.epfl.ch'
@@ -23,15 +27,15 @@ SRC_REGEX = re.compile(r"""src\s*=\s*["']?([^"']+)["']?""")
 def find_definition_script(contents, url):
     data_config_definition_scripts = CONFIG_DEFINITION_REGEX.findall(contents)
     if len(data_config_definition_scripts) > 1:
-        flash("Too many scripts with data-configuration-definition found. This may happen if you have commented one. There can be a single one.")
+        flash(gettext("Too many scripts with data-configuration-definition found. This may happen if you have commented one. There can be a single one."))
     elif len(data_config_definition_scripts) < 1:
-        flash("No script with data-configuration-definition found. Is the app adapted for the Go-Lab JavaScript configuration tools?")
+        flash(gettext("No script with data-configuration-definition found. Is the app adapted for the Go-Lab JavaScript configuration tools?"))
     else:
         src_attributes = SRC_REGEX.findall(data_config_definition_scripts[0])
         if len(src_attributes) > 1:
-            flash("In the data-configuration-definition tag, there must be a single src attribute")
+            flash(gettext("In the data-configuration-definition tag, there must be a single src attribute"))
         elif len(src_attributes) < 1:
-            flash("In the data-configuration-definition tag, there must be at least an src attribute. None found")
+            flash(gettext("In the data-configuration-definition tag, there must be at least an src attribute. None found"))
         else:
             src_attribute = src_attributes[0]
             return make_url_absolute(src_attribute, url)
@@ -41,31 +45,44 @@ DEFAULT_CONFIG_REGEX = re.compile(r"""(<\s*script[^<]*\sdata-configuration(?:>|\
 def replace_default_configuration_script(contents, new_url):
     return DEFAULT_CONFIG_REGEX.sub('<script data-configuration type="text/javascript" src="%s">' % new_url, contents)
 
+class UrlForm(Form):
+    url = TextField(lazy_gettext(u'URL'), validators = [ url(), required() ])
+
 @adaptor.edit_route
 def edit(app_id):
     # Load data from the database for this application
     data = adaptor.load_data(app_id)
     new_url = False
     contents = None
+
+    url_form = UrlForm()
+    if not url_form.url.data:
+        url_form.url.data = data['url']
+
     if request.method == 'POST':
         value = request.form['url']
         if value != data['url']:
-            try:
-                contents = urllib2.urlopen(value).read()
-            except:
-                flash("Could not download the provided URL")
-            else:
+            if url_form.validate_on_submit():
                 try:
-                    minidom.parseString(contents)
+                    contents = urllib2.urlopen(value).read()
                 except:
-                    flash("The provided URL is not a valid XML!")
+                    if not url_form.url.errors:
+                        url_form.url.errors = []
+                    url_form.url.errors.append(gettext("Could not download the provided URL"))
                 else:
-                    # Reset the configuration
-                    data['url'] = value
-                    new_url = True
-                    data['configuration'] = None
-                    data['configuration_name'] = None
-                    adaptor.save_data(app_id, data)
+                    try:
+                        minidom.parseString(contents)
+                    except:
+                        if not url_form.url.errors:
+                            url_form.url.errors = []
+                        url_form.url.errors.append(gettext("The provided URL is not a valid XML!"))
+                    else:
+                        # Reset the configuration
+                        data['url'] = value
+                        new_url = True
+                        data['configuration'] = None
+                        data['configuration_name'] = None
+                        adaptor.save_data(app_id, data)
 
     url = data['url']
     definition_script = None
@@ -75,7 +92,7 @@ def edit(app_id):
             try:
                 contents = urllib2.urlopen(url).read()
             except:
-                flash("Could not download the provided URL")
+                flash(gettext("Could not download the provided URL"))
         if contents:
             definition_script = find_definition_script(contents, url)
 
@@ -96,7 +113,8 @@ def edit(app_id):
                                 app_id = app_id,
                                 preview_url = preview_url,
                                 configuration_name = configuration_name,
-                                configuration = configuration)
+                                configuration = configuration,
+                                url_form = url_form)
 
 @adaptor.route('/save/<app_id>/', methods = ['GET', 'POST'])
 def save_json_config(app_id):

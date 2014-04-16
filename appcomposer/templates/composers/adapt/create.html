@@ -27,13 +27,13 @@
             <div class="col-lg-4">
                 <div class="panel panel-success">
                     <div class="panel-heading">
-                        <h5 class="panel-title">Details of the {{ adaptor_type|replace('_', ' ') }}</h5>
+                        <h5 class="panel-title">{{ gettext("Details of the %s" % adaptor_type|replace('_', ' ')) }}</h5>
                     </div>
                     <div class="panel-body">
                         <form class="form-horizontal" method="POST" action=".">
 
                             <div class="form-group">
-                                <label for="app_name" class="col-lg-4 control-label">Name: </label>
+                                <label for="app_name" class="col-lg-4 control-label">{{ gettext("Name") }}: </label>
                                 <div class="col-lg-8">
                                     <input type="text" name="app_name" class="form-control" placeholder="{{ adaptor_type|replace('_', ' ') }} title" autofocus>
                                     <input type="hidden" name="adaptor_type" value="{{ adaptor_type }}">
@@ -41,14 +41,14 @@
                             </div>
 
                             <div class="form-group">
-                                <label for="app_description" class="col-lg-4 control-label">Description: </label>
+                                <label for="app_description" class="col-lg-4 control-label">{{ gettext("Description") }}: </label>
                                 <div class="col-lg-8">
                                     <input type="text" name="app_description" class="form-control" placeholder="{{ adaptor_type|replace('_', ' ') }} description">
                                 </div>
                             </div>
 
-                            <a class="btn btn-default" id="returnbtn" href="{{ url_for('adapt.adapt_index') }}">« Go Back</a>
-                            <input type="submit"  class="btn btn-success" value="Build it »">
+                            <a class="btn btn-default" id="returnbtn" href="{{ url_for('adapt.adapt_index') }}">« {{ gettext("Go Back") }}</a>
+                            <input type="submit"  class="btn btn-success" value="{{ gettext("Build it") }} »">
 
 
                         </form>
@@ -59,7 +59,7 @@
         </div>
 
         {% if apps %}
-        <h4>...or edit an existing one from the following list:</h4>
+        <h4>{{ gettext("...or edit an existing one from the following list:") }}</h4>
         <hr>
         {% endif %}
 
@@ -75,10 +75,10 @@
                     </div>
                     <div class="panel-body">
                         <h6 class="text-danger">Type: {{ app.composer }}</h6>
-                        <p><small>Created: {{ app.creation_date }}</small></p>
-                        <p><small>Modified: {{ app.modification_date }}</small></p>
-                        <p><small>Accessed: {{ app.last_access_date }}</small></p>
-                        <p><a href="{{ build_edit_link(app) }}" class="btn btn-primary" type="button">Edit »</a></p>
+                        <p><small>{{ gettext("Created:") }} {{ app.creation_date }}</small></p>
+                        <p><small>{{ gettext("Modified:") }} {{ app.modification_date }}</small></p>
+                        <p><small>{{ gettext("Accessed:") }} {{ app.last_access_date }}</small></p>
+                        <p><a href="{{ build_edit_link(app) }}" class="btn btn-primary" type="button">{{ gettext("Edit") }} »</a></p>
 
 
                     </div>
