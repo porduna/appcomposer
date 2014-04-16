@@ -114,7 +114,8 @@ def edit(app_id):
                                 preview_url = preview_url,
                                 configuration_name = configuration_name,
                                 configuration = configuration,
-                                url_form = url_form)
+                                url_form = url_form,
+                                name = adaptor.get_name(app_id))
 
 @adaptor.route('/save/<app_id>/', methods = ['GET', 'POST'])
 def save_json_config(app_id):

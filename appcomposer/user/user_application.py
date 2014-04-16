@@ -74,6 +74,27 @@ class ProfileEditForm(Form):
     auth_system = TextField(lazy_gettext(u"Auth system:"))
 
 
+def build_edit_link(app):
+    if app.composer not in COMPOSERS_DICT:
+        return ""
+    endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]
+    return url_for(endpoint, appid=app.unique_id)
+
+def build_duplicate_link(app):
+    if app.composer not in COMPOSERS_DICT:
+        return ""
+    if 'duplicate_endpoint' not in COMPOSERS_DICT[app.composer]:
+        return ""
+    endpoint = COMPOSERS_DICT[app.composer]["duplicate_endpoint"]
+    return url_for(endpoint, appid=app.unique_id)
+
+def build_delete_link(app):
+    if app.composer not in COMPOSERS_DICT:
+        return ""
+    endpoint = COMPOSERS_DICT[app.composer]["delete_endpoint"]
+    return url_for(endpoint, appid=app.unique_id)
+
+
 class AppsView(UserBaseView):
     """
     Apps View. Will list all the apps owned by someone. He will be able to edit and delete them,
@@ -88,20 +109,8 @@ class AppsView(UserBaseView):
         # Retrieve the apps
         apps = appstorage.get_my_apps()
 
-        def build_edit_link(app):
-            if app.composer not in COMPOSERS_DICT:
-                return ""
-            endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]
-            return url_for(endpoint, appid=app.unique_id)
-
-        def build_delete_link(app):
-            if app.composer not in COMPOSERS_DICT:
-                return ""
-            endpoint = COMPOSERS_DICT[app.composer]["delete_endpoint"]
-            return url_for(endpoint, appid=app.unique_id)
-
         return self.render('user/profile-apps.html', apps=apps, build_edit_link=build_edit_link,
-                           build_delete_link=build_delete_link)
+                           build_delete_link=build_delete_link, build_duplicate_link=build_duplicate_link)
 
 
 class ProfileEditView(UserBaseView):
