@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-04-16 14:05+0200\n"
+"POT-Creation-Date: 2014-04-16 14:26+0200\n"
 "PO-Revision-Date: 2013-12-16 17:02+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -84,9 +84,8 @@ msgid "Role"
 msgstr "Rol"
 
 #: appcomposer/admin/admin_application.py:120
-#, fuzzy
 msgid "Login as"
-msgstr "Usuario"
+msgstr "Entrar como"
 
 #: appcomposer/admin/admin_application.py:123
 msgid "Username (all letters, dots and numbers)"
@@ -350,7 +349,7 @@ msgstr "Por favor, pon el nombre de tu aplicación"
 #: appcomposer/templates/composers/dummy/edit.html:81
 #: appcomposer/templates/user/profile-edit.html:33
 #: appcomposer/templates/user/profile-edit.html:35
-#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:47
+#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:69
 #: golab_adapt_jsconfig/templates/jsconfig/edit.html:9
 msgid "Save"
 msgstr "Guardar"
@@ -589,6 +588,10 @@ msgstr "No se pudo descargar la dirección proporcionada"
 #: golab_adapt_jsconfig/__init__.py:78
 msgid "The provided URL is not a valid XML!"
 msgstr "¡La dirección proporcionada no es un XML válido!"
+
+#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:17
+msgid "Application options"
+msgstr "Opciones de la aplicación"
 
 #: golab_adapt_jsconfig/templates/jsconfig/edit.html:38
 msgid "No preview available: you must set a URL first"

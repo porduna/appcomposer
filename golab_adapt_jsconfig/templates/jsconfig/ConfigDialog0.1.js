@@ -14,7 +14,8 @@
       var $dialogElement, $fieldset, $form,
         _this = this;
       $dialogElement = $(document.body).find("#ut_tools_conceptmapper_ConfigDialog");
-      $form = $("<form class='form-horizontal' role='form'/>");
+      $dialogElement.append("<h3>{{ gettext('Application options') }}</h3>");
+      $form = $("<form class='form-horizontal' role='form'></form>");
 
       $.each(currentConfiguration, function(id, setting) {
         var $current_line = $("<div class='form-group'></div>");
