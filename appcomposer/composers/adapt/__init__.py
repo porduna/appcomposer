@@ -249,12 +249,15 @@ def adapt_edit(appid):
     # TODO: Improve this: do not load the whole thing. We just need the variables.
     app = appstorage.get_app(appid)
     if app is None:
-        return "App not found", 500
+        return "Error: App not found", 500
 
     adaptor_types = [ var for var in app.appvars if var.name == 'adaptor_type' ]
     if not adaptor_types:
-        return "no attached adaptor_type variable"
+        return "Error: no attached adaptor_type variable"
     adaptor_type = adaptor_types[0].value
+
+    if adaptor_type not in ADAPTORS:
+        return "Error: adaptor %s not currently supported" % adaptor_type
     
     adaptor_plugin = ADAPTORS[adaptor_type]['adaptor']
 

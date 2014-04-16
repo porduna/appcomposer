@@ -89,10 +89,14 @@ class AppsView(UserBaseView):
         apps = appstorage.get_my_apps()
 
         def build_edit_link(app):
+            if app.composer not in COMPOSERS_DICT:
+                return ""
             endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]
             return url_for(endpoint, appid=app.unique_id)
 
         def build_delete_link(app):
+            if app.composer not in COMPOSERS_DICT:
+                return ""
             endpoint = COMPOSERS_DICT[app.composer]["delete_endpoint"]
             return url_for(endpoint, appid=app.unique_id)
 
