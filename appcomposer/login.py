@@ -1,6 +1,10 @@
 import json
+import string
+import random
 import datetime
 import urllib2
+
+from hashlib import new as new_hash
 
 from functools import wraps
 
@@ -42,6 +46,22 @@ def login_user(login, name):
     session["login"] = login
     session["name"] = name
    
+def create_salted_password(password):
+    alphabet = string.ascii_letters + string.digits
+    CHARS = 6
+    random_str = ""
+    for _ in range(CHARS):
+        random_str += random.choice(alphabet)
+
+    salted_password = unicode(new_hash("sha", random_str + password).hexdigest())
+    return random_str + "::" + salted_password
+
+def check_salted_password(password, salted_password):
+    random_str = salted_password[:6]
+    rest = salted_password[8:]
+
+    salted = unicode(new_hash("sha", random_str + password).hexdigest())
+    return rest == salted
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
@@ -59,12 +79,12 @@ def login():
 
     # This is an effective login request
     if form.validate_on_submit():
-        user = User.query.filter_by(login=form.login.data, auth_data=form.password.data).first()
-        if user is None:
-            flash(gettext("Invalid login"))
-        else:
+        user = User.query.filter_by(login=form.login.data, auth_system="userpass").first()
+        if user and check_salted_password(form.password.data, user.auth_data):
             login_user(form.login.data, user.name)
             return redirect(next_url or url_for('user.index'))
+        else:
+            flash(gettext("Invalid login"))
 
     return render_template("login/login.html", form=form, next=next_url, login_app = login_app, login_app_creation = login_app_creation)
 

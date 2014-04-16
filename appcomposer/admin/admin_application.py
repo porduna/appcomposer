@@ -6,10 +6,10 @@ from flask.ext.admin.contrib.sqla import ModelView
 
 from flask.ext import wtf
 from wtforms.fields import PasswordField
-from wtforms.validators import Email, Regexp
+from wtforms.validators import Email, Regexp, Optional
 
 from appcomposer import models, db
-from appcomposer.login import current_user, ROLES, Role, login_as
+from appcomposer.login import current_user, ROLES, Role, login_as, create_salted_password
 from appcomposer.babel import lazy_gettext
 from appcomposer.views import RedirectView
 
@@ -132,14 +132,18 @@ class UsersView(AdminModelView):
     column_searchable_list = ('login', 'name', 'email', 'organization', 'role')
  
     # Fields used for the creations of new users    
-    form_columns = ('login', 'name', 'email', 'organization', 'role', 'password')
+    form_columns = ('login', 'name', 'email', 'organization', 'role', 'auth_system', 'auth_data')
     
     sel_choices = []
     for role in ROLES:
         sel_choices.append( (role, lazy_gettext(role).title()) )
+
+    auth_system_choices = []
+    auth_system_choices.append(('graasp', 'graasp'))
+    auth_system_choices.append(('userpass', 'Regular'))
     
-    form_overrides = dict(access_level=wtf.SelectField, password=PasswordField, role=wtf.SelectField)        
-    form_args = dict(email=dict(validators=[Email()]), login=dict(validators=[Regexp(LOGIN_REGEX)]), role=dict(choices = sel_choices))
+    form_overrides = dict(auth_system = wtf.SelectField, auth_data=PasswordField, role=wtf.SelectField)        
+    form_args = dict(email=dict(validators=[Email()]), login=dict(validators=[Regexp(LOGIN_REGEX)]), role=dict(choices = sel_choices), auth_system=dict(choices = auth_system_choices), auth_data = dict(validators=[Optional()]))
     
     def __init__(self, **kwargs):
         super(UsersView, self).__init__(models.User, db.session, **kwargs)
@@ -155,13 +159,26 @@ class UsersView(AdminModelView):
 
         return self.render("admin/login_as.html", login = login)
 
-    # This function is used when creating a new empty composer    
-    def on_model_change(self, form, model):                
-        model.auth_system = 'userpass'
-        model.auth_data = model.password
+    def create_model(self, form):
+        if form.auth_data.data == '':
+            form.auth_data.errors.append(lazy_gettext("This field is required."))
+            return False 
+
+        form.auth_data.data = create_salted_password(form.auth_data.data)
+        model = super(UsersView, self).create_model(form)
         model.creation_date = datetime.datetime.now()
-        model.last_access_date = datetime.datetime.now()
-        
+        return model
+
+    def update_model(self, form, model):
+        old_auth_data = model.auth_data
+        if form.auth_data.data != '':
+            form.auth_data.data = create_salted_password(form.auth_data.data)
+        return_value = super(UsersView, self).update_model(form, model)
+        if form.auth_data.data == '':
+            model.auth_data = old_auth_data
+            self.session.add(model)
+            self.session.commit()
+        return return_value
 
 class AdminAppsView(AdminModelView):
     """
