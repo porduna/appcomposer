@@ -16,6 +16,8 @@ class TestTranslateAppCreation:
     def __init__(self):
         self.flask_app = None
         self.tapp = None
+        self.firstApp = None
+        self.secondApp = None
 
     def login(self, username, password):
         return self.flask_app.post('/login', data=dict(
@@ -32,13 +34,16 @@ class TestTranslateAppCreation:
         Can be invoked *before* and *after* the tests.
         """
         self.flask_app.get("/")  # This is required to create a context. Otherwise session etc don't exist.
-        app = api.get_app_by_name("UTApp")
-        if app is not None:
-            api.delete_app(app)
 
-        app = api.get_app_by_name("UTApp2")
-        if app is not None:
-            api.delete_app(app)
+        if self.firstApp is not None:
+            app = api.get_app(self.firstApp.unique_id)
+            if app is not None:
+                api.delete_app(app)
+
+        if self.secondApp is not None:
+            app = api.get_app(self.secondApp.unique_id)
+            if app is not None:
+                api.delete_app(app)
 
     def setUp(self):
         appcomposer.app.config['DEBUG'] = True
@@ -79,9 +84,41 @@ class TestTranslateAppCreation:
 
     def test_just_edit_default(self):
         url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
-        # print "URL: " + url
+        print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
-        print rv.data
-        assert u"purple" in rv.data
-        assert u"Propose translation" in rv.data
+
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        assert u"purple" in data
+
+        assert u"View Published Translation" in data
+        assert u"View Shindig Translation" in data
+
+    def test_simple_ownership(self):
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        # Ensure that we (testuser), as owner, we have no propose translation button.
+        assert u"Propose translation" not in data
+
+        assert u"You are the owner" in data
+
+    def test_simple_non_ownership(self):
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        # Ensure that we (testuser), as as non-owners of the second app, we can propose translations.
+        assert u"Propose translation" in data
+
+        # Ensure that the non-owner explanation appears.
+        assert u"You are not the owner" in data
+
