@@ -1,5 +1,6 @@
 import datetime
 from appcomposer import db
+from appcomposer.login import create_salted_password
 from appcomposer.models import User, App, AppVar
 
 
@@ -7,8 +8,9 @@ def create_user(login, name, password):
     """
     Creates a new user and adds it to the DB.
     """
+    password = create_salted_password("password")
     user = User(login, name, password, "user@user.com", None, None,
-                datetime.datetime.now(), datetime.datetime.now(), "loginpass", "password")
+                datetime.datetime.now(), datetime.datetime.now(), "userpass", password)
     db.session.add(user)
     db.session.commit()
     return user
