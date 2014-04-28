@@ -59,6 +59,12 @@ def run():
         app.config['DEBUG'] = True
         app.config["SECRET_KEY"] = 'secret'
 
+    if app.config['DEBUG']:
+        from flask_debugtoolbar import DebugToolbarExtension
+        app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
+        app.config['DEBUG_TB_PROFILER_ENABLED'] = False
+        toolbar = DebugToolbarExtension(app)
+
     port = int(os.environ.get('PORT', args.port))
     #print app.url_map
     app.run(host='0.0.0.0', port=port, threaded=True)

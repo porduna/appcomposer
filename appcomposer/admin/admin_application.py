@@ -1,17 +1,23 @@
 import datetime
 
-from flask import redirect, request, url_for
+from flask import redirect, request, url_for, Markup
 from flask.ext.admin import Admin, BaseView, AdminIndexView, expose
 from flask.ext.admin.contrib.sqla import ModelView
 
 from flask.ext import wtf
 from wtforms.fields import PasswordField
-from wtforms.validators import Email, Regexp
+from wtforms.validators import Email, Regexp, Optional
 
 from appcomposer import models, db
-from appcomposer.login import current_user
+from appcomposer.login import current_user, ROLES, Role, login_as, create_salted_password
 from appcomposer.babel import lazy_gettext
+from appcomposer.views import RedirectView
 
+
+def _is_admin():
+    _current_user = current_user()
+    return _current_user and _current_user.role == Role.admin
+        
 
 ##########################################################
 #
@@ -26,8 +32,8 @@ def initialize_admin_component(app):
     admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name=lazy_gettext('Admin Profile'), endpoint = "home-admin")
     admin.add_view(UsersView(name=lazy_gettext('Users'), url = 'users', endpoint = 'admin.users'))
     admin.add_view(AdminAppsView(name=lazy_gettext('Apps'), url = 'apps-admin', endpoint = 'admin.admin-apps'))      
-    admin.add_view(ProfileView(name=lazy_gettext('My Profile'), url = 'profile', endpoint = 'admin.profile'))
-    admin.add_view(BackView(name=lazy_gettext('Back'), url = 'back', endpoint = 'admin.back'))     
+    admin.add_view(RedirectView('user.profile.index', name=lazy_gettext('My Profile'), url = 'profile', endpoint = 'admin.profile'))
+    admin.add_view(RedirectView('index', name=lazy_gettext('Back'), url = 'back', endpoint = 'admin.back'))
     admin.init_app(app)
 
 # Regular expression to validate the "login" field
@@ -41,8 +47,7 @@ class MyAdminIndexView(AdminIndexView):
     """
 
     def is_accessible(self):
-        self._current_user = current_user()
-        return self._current_user is not None
+        return _is_admin()
 
     def _handle_view(self, *args, **kwargs):
         if not self.is_accessible():
@@ -58,8 +63,7 @@ class AdminBaseView(BaseView):
     """
 
     def is_accessible(self):
-        self._current_user = current_user()
-        return self._current_user is not None
+        return _is_admin()
 
     def _handle_view(self, *args, **kwargs):
         if not self.is_accessible():
@@ -75,8 +79,7 @@ class AdminModelView(ModelView):
     """
 
     def is_accessible(self):
-        self._current_user = current_user()
-        return self._current_user is not None
+        return _is_admin()
 
     def _handle_view(self, *args, **kwargs):
         if not self.is_accessible():
@@ -100,20 +103,27 @@ class AdminView(MyAdminIndexView):
     def index(self):       
         return self.render('admin/index.html')
 
+def login_as_formatter(v, c, req, p):
+    return Markup("<a href='%(url)s' class='btn' >%(login)s</a>" % {
+        'login' : req.login,
+        'url' : url_for('.login_as', login = req.login),
+    })
+
 
 class UsersView(AdminModelView):
     """
     Users View. Entry view which lets us manage the users in the system.
     """
    
-    column_list = ('login', 'name', 'email', 'organization', 'role')
-
-    column_labels = dict(login = lazy_gettext('Login'), name = lazy_gettext('Full Name'), email = lazy_gettext('E-mail'), organization = lazy_gettext('Organization'), role = lazy_gettext('Role'))
+    column_list = ('login', 'name', 'email', 'organization', 'role', 'login_as')
+    column_formatters = dict( login_as = login_as_formatter )
+    column_labels = dict(login = lazy_gettext('Login'), name = lazy_gettext('Full Name'), email = lazy_gettext('E-mail'), organization = lazy_gettext('Organization'), role = lazy_gettext('Role'), login_as = lazy_gettext('Login as'))
     column_filters = ('login', 'name', 'email', 'organization', 'role')
           
     column_descriptions = dict(login=lazy_gettext('Username (all letters, dots and numbers)'),
                                name=lazy_gettext('First and Last name'),
-                               email=lazy_gettext('Valid e-mail address'))
+                               email=lazy_gettext('Valid e-mail address'),
+                               login_as=lazy_gettext('Log in as you were that user'))
 
     # List of columns that can be sorted
     column_sortable_list = ('login', 'name', 'email', 'organization', 'role')
@@ -122,23 +132,53 @@ class UsersView(AdminModelView):
     column_searchable_list = ('login', 'name', 'email', 'organization', 'role')
  
     # Fields used for the creations of new users    
-    form_columns = ('login', 'name', 'email', 'organization', 'role', 'password')
-   
-    sel_choices = [(level, level.title()) for level in (lazy_gettext('administrator'), lazy_gettext('teacher'))] # TODO: establish different permisions in the system   
+    form_columns = ('login', 'name', 'email', 'organization', 'role', 'auth_system', 'auth_data')
     
-    form_overrides = dict(access_level=wtf.SelectField, password=PasswordField, role=wtf.SelectField)        
-    form_args = dict(email=dict(validators=[Email()]), login=dict(validators=[Regexp(LOGIN_REGEX)]), role=dict(choices = sel_choices))
+    sel_choices = []
+    for role in ROLES:
+        sel_choices.append( (role, lazy_gettext(role).title()) )
+
+    auth_system_choices = []
+    auth_system_choices.append(('graasp', 'graasp'))
+    auth_system_choices.append(('userpass', 'Regular'))
+    
+    form_overrides = dict(auth_system = wtf.SelectField, auth_data=PasswordField, role=wtf.SelectField)        
+    form_args = dict(email=dict(validators=[Email()]), login=dict(validators=[Regexp(LOGIN_REGEX)]), role=dict(choices = sel_choices), auth_system=dict(choices = auth_system_choices), auth_data = dict(validators=[Optional()]))
     
     def __init__(self, **kwargs):
         super(UsersView, self).__init__(models.User, db.session, **kwargs)
 
-    # This function is used when creating a new empty composer    
-    def on_model_change(self, form, model):                
-        model.auth_system = 'userpass'
-        model.auth_data = model.password
+    @expose('/login_as/<login>/', methods = ['GET', 'POST'])
+    def login_as(self, login):
+        if not _is_admin():
+            return "Something's going really wrong"
+
+        if request.method == 'POST':
+            login_as(login)
+            return redirect(url_for('user.index'))
+
+        return self.render("admin/login_as.html", login = login)
+
+    def create_model(self, form):
+        if form.auth_data.data == '':
+            form.auth_data.errors.append(lazy_gettext("This field is required."))
+            return False 
+
+        form.auth_data.data = create_salted_password(form.auth_data.data)
+        model = super(UsersView, self).create_model(form)
         model.creation_date = datetime.datetime.now()
-        model.last_access_date = datetime.datetime.now()
-        
+        return model
+
+    def update_model(self, form, model):
+        old_auth_data = model.auth_data
+        if form.auth_data.data != '':
+            form.auth_data.data = create_salted_password(form.auth_data.data)
+        return_value = super(UsersView, self).update_model(form, model)
+        if form.auth_data.data == '':
+            model.auth_data = old_auth_data
+            self.session.add(model)
+            self.session.commit()
+        return return_value
 
 class AdminAppsView(AdminModelView):
     """
@@ -171,22 +211,3 @@ class AdminAppsView(AdminModelView):
         app = models.App.query.filter_by(unique_id=model.unique_id).first()        
         models.AppVar.query.filter_by(app=app).delete()
     
-
-class ProfileView(AdminBaseView):
-    """
-    Profile View. Entry view which lets us edit our profile.
-    """
-    
-    @expose('/')
-    def index(self):       
-        return self.render('admin/profile.html')
-
-
-class BackView(AdminBaseView):
-    """
-    Back View.Entry view which lets us come back to the initial page.
-    """
-    
-    @expose('/')
-    def index(self):       
-        return self.render('index.html')

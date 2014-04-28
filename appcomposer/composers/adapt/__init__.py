@@ -2,6 +2,10 @@ import threading
 from functools import wraps
 
 from flask import Blueprint, flash, json, redirect, render_template, request, url_for
+from flask_wtf import Form
+
+from wtforms import TextField
+from wtforms.validators import Required, Length
 
 import appcomposer.appstorage.api as appstorage
 from appcomposer.application import app
@@ -17,6 +21,7 @@ info = {
     'new_endpoint': 'adapt.adapt_index',
     'edit_endpoint': 'adapt.adapt_edit',
     'create_endpoint': 'adapt.adapt_create',
+    'duplicate_endpoint': 'adapt.adapt_duplicate',
     'delete_endpoint': 'dummy.delete',
 
     'name': lazy_gettext('Adaptor Composer'),
@@ -43,7 +48,9 @@ ADAPTORS = {
 _current_plugin = threading.local()
 
 def load_plugins():
-    plugins = ['concept_mapper', 'hypothesis', 'edt', 'jsconfig']
+    # These plug-ins have been deprecated in favor of jsconfig
+    # plugins = ['concept_mapper', 'hypothesis', 'edt', 'jsconfig']
+    plugins = ['jsconfig']
 
     for plugin in app.config.get('ADAPT_PLUGINS', []):
         if plugin not in plugins:
@@ -65,9 +72,14 @@ class AdaptorPlugin(object):
         self.blueprint = blueprint
         self.initial   = initial
         self._edit_endpoint = None
+        self._data = None
 
     def route(self, *args, **kwargs):
         return self.blueprint.route(*args, **kwargs)
+
+    def get_name(self, appid):
+        app = appstorage.get_app(appid)
+        return app.name
 
     def load_data(self, appid):
         """ Wrapper of the appstorage API. It returns a valid JSON file. """
@@ -233,6 +245,46 @@ def adapt_create(adaptor_type):
 
         return redirect(url_for("adapt.adapt_edit", appid = app.unique_id))
 
+class DuplicationForm(Form):
+    name = TextField(lazy_gettext('Name'), validators = [ Required(), Length(min=4) ]) 
+
+@adapt_blueprint.route("/duplicate/<appid>/", methods = ['GET', 'POST'])
+@requires_login
+def adapt_duplicate(appid):
+    app = appstorage.get_app(appid)
+    if app is None:
+        return render_template("composers/errors.html", message = "Application not found")
+
+    form = DuplicationForm()
+    
+    if form.validate_on_submit():
+        existing_app = appstorage.get_app_by_name(form.name.data)
+        if existing_app:
+            if not form.name.errors:
+                form.name.errors = []
+            form.name.errors.append(gettext("You already have an application with this name"))
+        else:
+            new_app = appstorage.create_app(form.name.data, 'adapt', app.data)
+            for appvar in app.appvars:
+                appstorage.add_var(new_app, appvar.name, appvar.value)
+
+            return redirect(url_for('.adapt_edit', appid = new_app.unique_id))
+
+    if not form.name.data:
+        counter = 2
+        potential_name = ''
+        while counter < 1000:
+            potential_name = '%s (%s)' % (app.name, counter)
+
+            existing_app = appstorage.get_app_by_name(potential_name)
+            if not existing_app:
+                break
+            counter += 1
+
+        form.name.data = potential_name
+
+    return render_template("composers/adapt/duplicate.html", form = form, app = app)
+
 @adapt_blueprint.route("/edit/<appid>/", methods = ['GET', 'POST'])
 @requires_login
 def adapt_edit(appid):
@@ -247,12 +299,15 @@ def adapt_edit(appid):
     # TODO: Improve this: do not load the whole thing. We just need the variables.
     app = appstorage.get_app(appid)
     if app is None:
-        return "App not found", 500
+        return "Error: App not found", 500
 
     adaptor_types = [ var for var in app.appvars if var.name == 'adaptor_type' ]
     if not adaptor_types:
-        return "no attached adaptor_type variable"
+        return "Error: no attached adaptor_type variable"
     adaptor_type = adaptor_types[0].value
+
+    if adaptor_type not in ADAPTORS:
+        return "Error: adaptor %s not currently supported" % adaptor_type
     
     adaptor_plugin = ADAPTORS[adaptor_type]['adaptor']
 

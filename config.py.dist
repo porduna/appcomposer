@@ -13,5 +13,8 @@ USE_PYMYSQL = False
 GRAASP_LOGIN_APP = 'https://graasp.epfl.ch/#url=appcomposer_pablo'
 SHOW_LOGIN_APP_CREATION = False
 
+# By default, the translator is not active
+ACTIVATE_TRANSLATOR = False
+
 # Adaptor plug-ins (the defaults are loaded by default)
 ADAPT_PLUGINS = []

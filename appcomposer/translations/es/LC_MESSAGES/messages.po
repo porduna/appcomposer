@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-01-09 10:02+0100\n"
+"POT-Creation-Date: 2014-04-16 14:26+0200\n"
 "PO-Revision-Date: 2013-12-16 17:02+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -19,11 +19,11 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: appcomposer/login.py:34 appcomposer/user/user_application.py:69
+#: appcomposer/login.py:34 appcomposer/user/user_application.py:67
 msgid "Login:"
 msgstr "Usuario:"
 
-#: appcomposer/login.py:35 appcomposer/user/user_application.py:71
+#: appcomposer/login.py:35 appcomposer/user/user_application.py:69
 msgid "Password:"
 msgstr "Contraseña:"
 
@@ -31,113 +31,106 @@ msgstr "Contraseña:"
 msgid "Invalid login"
 msgstr "Credenciales inválidas"
 
-#: appcomposer/login.py:110
+#: appcomposer/login.py:76
+msgid "User does not exist"
+msgstr "El usuario no existe"
+
+#: appcomposer/login.py:122
 msgid "You must be logged in to use the App Composer."
 msgstr "Debes estar logueado para usar el App Composer."
 
-#: appcomposer/admin/admin_application.py:28
+#: appcomposer/admin/admin_application.py:32
 msgid "Admin Profile"
 msgstr "Administrador"
 
-#: appcomposer/admin/admin_application.py:29
+#: appcomposer/admin/admin_application.py:33
 msgid "Users"
 msgstr "Usuarios"
 
-#: appcomposer/admin/admin_application.py:30
-#: appcomposer/templates/composers/layout.html:48
-#: appcomposer/user/user_application.py:23
+#: appcomposer/admin/admin_application.py:34
+#: appcomposer/templates/composers/layout.html:50
+#: appcomposer/user/user_application.py:21
 msgid "Apps"
 msgstr "Apps"
 
-#: appcomposer/admin/admin_application.py:31
+#: appcomposer/admin/admin_application.py:35
 msgid "My Profile"
 msgstr "Mi perfil"
 
-#: appcomposer/admin/admin_application.py:32
+#: appcomposer/admin/admin_application.py:36
 #: appcomposer/templates/login/errors.html:10
 #: appcomposer/templates/login/login.html:104
 msgid "Back"
 msgstr "Atrás"
 
-#: appcomposer/admin/admin_application.py:113
+#: appcomposer/admin/admin_application.py:120
 msgid "Login"
 msgstr "Usuario"
 
-#: appcomposer/admin/admin_application.py:113
+#: appcomposer/admin/admin_application.py:120
 msgid "Full Name"
 msgstr "Nombre completo"
 
-#: appcomposer/admin/admin_application.py:113
+#: appcomposer/admin/admin_application.py:120
 msgid "E-mail"
 msgstr "E-mail"
 
-#: appcomposer/admin/admin_application.py:113
+#: appcomposer/admin/admin_application.py:120
 msgid "Organization"
 msgstr "Organización"
 
-#: appcomposer/admin/admin_application.py:113
+#: appcomposer/admin/admin_application.py:120
 msgid "Role"
 msgstr "Rol"
 
-#: appcomposer/admin/admin_application.py:118
+#: appcomposer/admin/admin_application.py:120
+msgid "Login as"
+msgstr "Entrar como"
+
+#: appcomposer/admin/admin_application.py:123
 msgid "Username (all letters, dots and numbers)"
 msgstr "Usuario (letras, puntos y números)"
 
-#: appcomposer/admin/admin_application.py:119
+#: appcomposer/admin/admin_application.py:124
 msgid "First and Last name"
 msgstr "Nombre y apellidos"
 
-#: appcomposer/admin/admin_application.py:120
+#: appcomposer/admin/admin_application.py:125
 msgid "Valid e-mail address"
 msgstr "E-mail válido"
 
-#: appcomposer/admin/admin_application.py:131
-msgid "administrator"
-msgstr "administrador"
+#: appcomposer/admin/admin_application.py:126
+msgid "Log in as you were that user"
+msgstr "Entra como ese usuario"
 
-#: appcomposer/admin/admin_application.py:131
-msgid "teacher"
-msgstr "profesor"
-
-#: appcomposer/admin/admin_application.py:157
+#: appcomposer/admin/admin_application.py:176
 msgid "Owner"
 msgstr "Propietario"
 
-#: appcomposer/admin/admin_application.py:157
+#: appcomposer/admin/admin_application.py:176
 msgid "ID"
 msgstr "Identificador"
 
-#: appcomposer/admin/admin_application.py:157
+#: appcomposer/admin/admin_application.py:176
+#: appcomposer/templates/composers/adapt/create.html:36
 #: appcomposer/templates/composers/dummy/new.html:42
 msgid "Name"
 msgstr "Nombre"
 
-#: appcomposer/admin/admin_application.py:157
+#: appcomposer/admin/admin_application.py:176
 #: appcomposer/templates/user/profile-apps.html:24
 msgid "Composer"
 msgstr "Tipo de componedor"
 
-#: appcomposer/admin/admin_application.py:157
-msgid "Creation Date"
-msgstr "Fecha de creación"
-
-#: appcomposer/admin/admin_application.py:157
-msgid "Modification Date"
-msgstr "Fecha de modificación:"
-
-#: appcomposer/admin/admin_application.py:157
-msgid "Last Access Date"
-msgstr "Fechaa de último acceso:"
-
-#: appcomposer/admin/admin_application.py:163
+#: appcomposer/admin/admin_application.py:183
 msgid "translate"
 msgstr "traductor"
 
-#: appcomposer/admin/admin_application.py:163
+#: appcomposer/admin/admin_application.py:183
 msgid "adapt"
 msgstr "adaptador"
 
-#: appcomposer/admin/admin_application.py:163
+#: appcomposer/admin/admin_application.py:183
 msgid "dummy"
 msgstr "dummy"
 
@@ -161,6 +154,7 @@ msgid "Pretend that you are composing an app. For testing purposes."
 msgstr "Simula que estás creando una aplicación para pruebas."
 
 #: appcomposer/composers/dummy/__init__.py:53
+#: appcomposer/composers/translate/view_delete.py:42
 msgid "App successfully deleted."
 msgstr "App borrada satisfactoriamente."
 
@@ -172,11 +166,11 @@ msgstr "Salvada satisfactoriamente"
 msgid "An App with that name exists already"
 msgstr "Ya hay una App con ese nombre"
 
-#: appcomposer/composers/translate/__init__.py:24
+#: appcomposer/composers/translate/__init__.py:15
 msgid "Translate Composer"
 msgstr "Componedor de traducciones"
 
-#: appcomposer/composers/translate/__init__.py:25
+#: appcomposer/composers/translate/__init__.py:16
 msgid "Translate an existing app."
 msgstr "Traduce una aplicación existente."
 
@@ -225,8 +219,8 @@ msgid "Learn more"
 msgstr "Leer más"
 
 #: appcomposer/templates/master.html:26
-#: appcomposer/templates/composers/layout.html:46
-#: appcomposer/user/user_application.py:21
+#: appcomposer/templates/composers/layout.html:48
+#: appcomposer/user/user_application.py:19
 msgid "Home"
 msgstr "Inicio"
 
@@ -235,14 +229,13 @@ msgid "Admin"
 msgstr "Administración"
 
 #: appcomposer/templates/master.html:42
-#: appcomposer/templates/composers/layout.html:86
+#: appcomposer/templates/composers/layout.html:88
 #: appcomposer/templates/user/base.html:59
 #, python-format
 msgid "the %(link)s application creator for teachers"
 msgstr "el sistema de creación de aplicaciones para profesores de %(link)s"
 
 #: appcomposer/templates/admin/index.html:8
-#: appcomposer/templates/admin/profile.html:8
 #: appcomposer/templates/user/index.html:8
 #, python-format
 msgid "Welcome %(user)s!"
@@ -257,27 +250,78 @@ msgstr ""
 "aplicaciones. Puedes utilizar este panel para gestionar los usuarios y "
 "aplicaciones."
 
-#: appcomposer/templates/admin/profile.html:9
-msgid ""
-"You can change your profile data in the User Panel. Please, click next "
-"button."
-msgstr ""
-"Puedes cambiar tu perfil en el panel de usuario. Por favor, pulsa el "
-"botón siguiente."
+#: appcomposer/templates/admin/login_as.html:7
+#: appcomposer/templates/login/graasp.html:19
+msgid "Warning"
+msgstr "Aviso"
 
-#: appcomposer/templates/admin/profile.html:11
-msgid "Go to My Profile"
-msgstr "Ir a mi perfil"
+#: appcomposer/templates/admin/login_as.html:10
+msgid "Proceed"
+msgstr "Continúa"
 
-#: appcomposer/templates/composers/layout.html:47
-#: appcomposer/user/user_application.py:22
+#: appcomposer/templates/composers/layout.html:49
+#: appcomposer/user/user_application.py:20
 msgid "Profile"
 msgstr "Mi perfil"
 
-#: appcomposer/templates/composers/layout.html:61
+#: appcomposer/templates/composers/layout.html:63
 #: appcomposer/templates/user/base.html:45
 msgid "Log out"
 msgstr "Salir"
+
+#: appcomposer/templates/composers/adapt/create.html:44
+msgid "Description"
+msgstr "Descripción"
+
+#: appcomposer/templates/composers/adapt/create.html:50
+msgid "Go Back"
+msgstr "Volver atrás"
+
+#: appcomposer/templates/composers/adapt/create.html:51
+msgid "Build it"
+msgstr "Contruir"
+
+#: appcomposer/templates/composers/adapt/create.html:62
+msgid "...or edit an existing one from the following list:"
+msgstr "...o edita una de las existentes de la siguiente lista:"
+
+#: appcomposer/templates/composers/adapt/create.html:78
+msgid "Created:"
+msgstr "Creada:"
+
+#: appcomposer/templates/composers/adapt/create.html:79
+msgid "Modified:"
+msgstr "Modificada:"
+
+#: appcomposer/templates/composers/adapt/create.html:80
+msgid "Accessed:"
+msgstr "Accedida:"
+
+#: appcomposer/templates/composers/adapt/create.html:81
+#: appcomposer/templates/composers/adapt/edit.html:31
+msgid "Edit"
+msgstr "Editar"
+
+#: appcomposer/templates/composers/adapt/edit.html:16
+#: appcomposer/templates/composers/adapt/index.html:16
+msgid "Adapt a guidance app"
+msgstr "Adaptar una aplicación"
+
+#: appcomposer/templates/composers/adapt/edit.html:32
+msgid "Preview"
+msgstr "Previsualizar"
+
+#: appcomposer/templates/composers/adapt/index.html:26
+msgid "Pick your choice"
+msgstr "Selecciona tu opción"
+
+#: appcomposer/templates/composers/adapt/index.html:46
+msgid "Go back to main"
+msgstr "Volver al menú principal"
+
+#: appcomposer/templates/composers/adapt/index.html:47
+msgid "Next step"
+msgstr "Siguiente paso"
 
 #: appcomposer/templates/composers/dummy/delete.html:66
 msgid "Are you sure you want to delete this application?"
@@ -305,12 +349,14 @@ msgstr "Por favor, pon el nombre de tu aplicación"
 #: appcomposer/templates/composers/dummy/edit.html:81
 #: appcomposer/templates/user/profile-edit.html:33
 #: appcomposer/templates/user/profile-edit.html:35
+#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:69
+#: golab_adapt_jsconfig/templates/jsconfig/edit.html:9
 msgid "Save"
-msgstr "Salvar"
+msgstr "Guardar"
 
 #: appcomposer/templates/composers/dummy/edit.html:82
 msgid "Save & exit"
-msgstr "Salvar y salir"
+msgstr "Guardar y salir"
 
 #: appcomposer/templates/composers/dummy/index.html:3
 msgid "Welcome to dummy composer!"
@@ -335,10 +381,6 @@ msgstr "Autenticación mediante Graasp"
 #: appcomposer/templates/login/graasp.html:15
 msgid "Create an app in your Graasp space"
 msgstr "Crea un aplicación en tu spacio de Graasp"
-
-#: appcomposer/templates/login/graasp.html:19
-msgid "Warning"
-msgstr "Aviso"
 
 #: appcomposer/templates/login/graasp.html:20
 msgid ""
@@ -463,41 +505,97 @@ msgstr "Mi perfil"
 msgid "Show"
 msgstr "Mostrar"
 
-#: appcomposer/user/user_application.py:21
+#: appcomposer/user/user_application.py:19
 msgid "User Profile"
 msgstr "Mi perfil"
 
-#: appcomposer/user/user_application.py:68
+#: appcomposer/user/user_application.py:66
 msgid "Name:"
 msgstr "Nombre:"
 
-#: appcomposer/user/user_application.py:70
+#: appcomposer/user/user_application.py:68
 msgid "E-mail:"
 msgstr "E-mail:"
 
-#: appcomposer/user/user_application.py:71
+#: appcomposer/user/user_application.py:69
 msgid "Password."
 msgstr "Contraseña."
 
-#: appcomposer/user/user_application.py:72
+#: appcomposer/user/user_application.py:70
 msgid "Organization:"
 msgstr "Organización:"
 
-#: appcomposer/user/user_application.py:73
+#: appcomposer/user/user_application.py:71
 msgid "Role:"
 msgstr "Rol:"
 
-#: appcomposer/user/user_application.py:74
+#: appcomposer/user/user_application.py:72
 msgid "Creation date:"
 msgstr "Fecha creación:"
 
-#: appcomposer/user/user_application.py:75
+#: appcomposer/user/user_application.py:73
 msgid "Last access:"
 msgstr "Último acceso:"
 
-#: appcomposer/user/user_application.py:76
+#: appcomposer/user/user_application.py:74
 msgid "Auth system:"
 msgstr "Sistema autentiación:"
+
+#: golab_adapt_jsconfig/__init__.py:16
+msgid "JavaScript configuration"
+msgstr "Configuración de JavaScript"
+
+#: golab_adapt_jsconfig/__init__.py:30
+msgid ""
+"Too many scripts with data-configuration-definition found. This may "
+"happen if you have commented one. There can be a single one."
+msgstr ""
+"Demasiados scripts con data-configuration-definition. Esto podría ocurrir"
+" si tienes uno comentado. Debe haber sólo uno."
+
+#: golab_adapt_jsconfig/__init__.py:32
+msgid ""
+"No script with data-configuration-definition found. Is the app adapted "
+"for the Go-Lab JavaScript configuration tools?"
+msgstr ""
+"No hay un script con data-configuration-definition. ¿Está esa dirección "
+"adaptada para Go-Lab?"
+
+#: golab_adapt_jsconfig/__init__.py:36
+msgid ""
+"In the data-configuration-definition tag, there must be a single src "
+"attribute"
+msgstr ""
+"En la etiqueta data-configuration-definition, debe haber un sólo atributo"
+" src"
+
+#: golab_adapt_jsconfig/__init__.py:38
+msgid ""
+"In the data-configuration-definition tag, there must be at least an src "
+"attribute. None found"
+msgstr ""
+"En la etiqueta data-configuration-definition, debe haber al menos un "
+"atributo src. No se encontró ninguno."
+
+#: golab_adapt_jsconfig/__init__.py:49
+msgid "URL"
+msgstr "Dirección"
+
+#: golab_adapt_jsconfig/__init__.py:71 golab_adapt_jsconfig/__init__.py:95
+msgid "Could not download the provided URL"
+msgstr "No se pudo descargar la dirección proporcionada"
+
+#: golab_adapt_jsconfig/__init__.py:78
+msgid "The provided URL is not a valid XML!"
+msgstr "¡La dirección proporcionada no es un XML válido!"
+
+#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:17
+msgid "Application options"
+msgstr "Opciones de la aplicación"
+
+#: golab_adapt_jsconfig/templates/jsconfig/edit.html:38
+msgid "No preview available: you must set a URL first"
+msgstr "No hay previsualización disponible: debes introducir una dirección primero"
 
 #~ msgid "Loading..."
 #~ msgstr "Cargando..."
@@ -522,4 +620,25 @@ msgstr "Sistema autentiación:"
 
 #~ msgid "Home view"
 #~ msgstr "Inicio"
+
+#~ msgid "administrator"
+#~ msgstr "administrador"
+
+#~ msgid "teacher"
+#~ msgstr "profesor"
+
+#~ msgid "Creation Date"
+#~ msgstr "Fecha de creación"
+
+#~ msgid "Modification Date"
+#~ msgstr "Fecha de modificación:"
+
+#~ msgid "Last Access Date"
+#~ msgstr "Fechaa de último acceso:"
+
+#~ msgid ""
+#~ msgstr ""
+
+#~ msgid "Go to My Profile"
+#~ msgstr "Ir a mi perfil"
 

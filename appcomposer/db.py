@@ -21,14 +21,15 @@ def init_db(drop=False):
     # they will be registered properly on the metadata.  Otherwise
     # you will have to import them first before calling init_db()
     from .models import User
+    from .login import create_salted_password
 
     if drop:
         print "Dropping Database"
         db.session.drop_all(app=app)
     db.session.create_all(app=app)
 
-    password = unicode(hashlib.new('sha', 'password').hexdigest())
-    admin_user = User(u'admin', u'Administrator', password)
+    password = create_salted_password("password")
+    admin_user = User(u'admin', role = u'Administrator', auth_data = password, auth_system = "userpass")
     db.session.add(admin_user)
     db.session.commit()
 

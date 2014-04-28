@@ -13,7 +13,7 @@
             <div class="row">
                 <div class="col-lg-12">
                     <div class="page-header">
-                        <h1 id="adapt_title">Adapt a guidance app</h1>
+                        <h1 id="adapt_title">{{ gettext("Adapt a guidance app") }}</h1>
                     </div>
                 </div>
             </div>
@@ -23,7 +23,7 @@
                   <div class="well">
 
                         <form class="form-horizontal" id="apptype" action="{{ url_for('adapt.adapt_index') }}" method="POST">
-                            <legend>Pick your choice</legend>
+                            <legend>{{ gettext("Pick your choice") }}</legend>
 
                             <hr>
 
@@ -43,8 +43,8 @@
                                     <label class="control-label" for="createbtn"></label>
                                     <div class="controls">
                                         <input type="hidden" name="n_rows" value="5">
-                                        <a href="{{ url_for("user.index") }}" class="btn btn-default btn-medium">&laquo; Go back to main</a>
-                                        <input type="submit"  class="btn btn-success" value="Next step &raquo;">
+                                        <a href="{{ url_for("user.index") }}" class="btn btn-default btn-medium">&laquo; {{ gettext("Go back to main") }}</a>
+                                        <input type="submit"  class="btn btn-success" value="{{ gettext("Next step") }} &raquo;">
                                     </div>
                                 </div>
                             </div>

@@ -18,7 +18,7 @@ class User(db.Model, UserMixin):
 
     login = db.Column(db.Unicode(50), unique=True)
     name = db.Column(db.Unicode(50), nullable=False)
-    password = db.Column(db.Unicode(50), nullable=False)  # hash
+    password = db.Column(db.Unicode(50), nullable=False)  # NOT USED!!!
     email = db.Column(db.Unicode(254), nullable=False)
     organization = db.Column(db.Unicode(50))
     role = db.Column(db.Unicode(50))

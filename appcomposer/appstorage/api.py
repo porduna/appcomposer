@@ -35,7 +35,7 @@ class NonUniqueVarException(Exception):
         self.message = message
 
 
-def create_app(name, composer, data):
+def create_app(name, composer, data, find_new_name = False):
     """
     create_app(name, data)
     @param name: Unique name to give to the application.
@@ -58,7 +58,21 @@ def create_app(name, composer, data):
     # Check if an app with that name and owner exists already.
     existing_app = App.query.filter_by(owner=owner, name=name).first()
     if existing_app is not None:
-        raise AppExistsException()
+        if find_new_name:
+            MAX = 10000
+            counter = 2
+            while counter < MAX:
+                new_name = '%s (%s)' % (name, counter)
+                existing_app = App.query.filter_by(owner=owner, name=new_name).first()
+                if existing_app is None:
+                    name = new_name
+                    break
+
+                counter += 1
+            if counter == MAX:
+                raise AppExistsException()
+        else:
+            raise AppExistsException()
 
     # Create it
     new_app = App(name, owner, composer)

@@ -14,51 +14,73 @@
       var $dialogElement, $fieldset, $form,
         _this = this;
       $dialogElement = $(document.body).find("#ut_tools_conceptmapper_ConfigDialog");
-      $fieldset = $("<fieldset/>");
+      $dialogElement.append("<h3>{{ gettext('Application options') }}</h3>");
+      $form = $("<form class='form-horizontal' role='form'></form>");
+
       $.each(currentConfiguration, function(id, setting) {
-        $input;
+        var $current_line = $("<div class='form-group'></div>");
+
         var $input;
         if (setting.type === "boolean") {
+          var $current_container = $("<div class='col-sm-offset-2 col-sm-10'><div class='checkbox'><label></label></div></div>");
           $input = $("<input type='checkbox' name='" + id + "'> " + setting.label + "</input>");
+          $current_container.find("label").append($input);
+
+          if (setting.description) {
+            $current_container.append("<span class='help-block''>" + setting.description + "</span>");
+          }
           if (setting.value === "true") {
             $input.attr("checked", "checked");
           }
-          $fieldset.append($input);
+          $current_line.append($current_container);
         } else if (setting.type === "array" || setting.type === "string") {
+          var $current_label = $("<label for='" + id + "' class='col-sm-2 control-label'>" + setting.label + "</label>");
+          var $current_container = $("<div class='col-sm-10'></div>");
+          $input = $("<input type='text' name='" + id + "' size='50'></input>");
+          $input.val(setting.value);
+          $current_container.append($input);
+          $current_line.append($current_label);
+          if (setting.description) {
+            $current_container.append("<span class='help-block''>" + setting.description + "</span>");
+          }
+
+          $current_line.append($current_container);
+        } else {
+          var $current_label = $("<label for='" + id + "' class='col-sm-2 control-label'>" + setting.label + "</label>");
+          var $current_container = $("<div class='col-sm-10'></div>");
           $input = $("<input type='text' name='" + id + "'></input>");
           $input.val(setting.value);
-          $fieldset.append("<label for='" + id + "'>" + setting.label + "</label>");
-          $fieldset.append($input);
-        } else {
-          $input = $("<input type='text' name='" + id + "'></input>");
-          $fieldset.append("<label for='" + id + "'>" + setting.label + "</label>");
-          $fieldset.append($input);
+          $current_container.append($input);
+          $current_line.append($current_label);
+          if (setting.description) {
+            $current_container.append("<span class='help-block''>" + setting.description + "</span>");
+          }
+
+          $current_line.append($current_container);
         }
         $input.attr("title", "" + setting.description + ".");
         if (setting.configurable === "false") {
           $input.attr("readonly", true);
         }
-        return $fieldset.append("<br/>");
+        $form.append($current_line);
       });
-      $form = $("<form/>");
-      $form.append($fieldset);
       $form.submit(function() { event.preventDefault(); });
       $dialogElement.append($form);
-      var $saveBtn = $("<button class='btn'>Save</button>");
+      var $saveBtn = $("<button class='btn'>{{ gettext("Save") }}</button>");
       $saveBtn.click(function() {
             $.each(currentConfiguration, function(id, settings) {
               if (settings.type === "boolean") {
-                $fieldset.find("input[name='" + id + "']").each(function(index, input) {
+                $form.find("input[name='" + id + "']").each(function(index, input) {
                   return currentConfiguration["" + id].value = $(input).is(':checked').toString();
                 });
               }
               if (settings.type === "array") {
-                $fieldset.find("input[name='" + id + "']").each(function(index, input) {
+                $form.find("input[name='" + id + "']").each(function(index, input) {
                   return currentConfiguration["" + id].value = $(input).val().split(",");
                 });
               }
               if (settings.type === "string") {
-                return $fieldset.find("input[name='" + id + "']").each(function(index, input) {
+                return $form.find("input[name='" + id + "']").each(function(index, input) {
                   return currentConfiguration["" + id].value = $(input).val();
                 });
               }
