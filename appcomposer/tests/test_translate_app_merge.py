@@ -221,4 +221,48 @@ class TestTranslateAppMerge:
         assert """class="badge" style>0</span>"""
 
 
+    def test_ajax_deny_proposal_removes_it(self):
+        """
+        To check that denying a proposal removes it without
+        applying the changes.
+        """
+        # Extract the proposal ID.
+        url = u"/composers/translate/proposed_list?appid=%s" % self.firstApp.unique_id
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")
+        matches = re.findall("""option value="([0-9]+)">""", data)
+        proposal_id = int(matches[0])
+
+        # Build the POST's data.
+        mergedata = {"blue": "Blue", "hello_world": "Hello Yet Again Testing", "color": "Color Test"}
+        postdata = {"data": json.dumps(mergedata),
+                    "appid": self.firstApp.unique_id,
+                    "proposals": proposal_id,
+                    "denyButton": ""}
+
+        rv = self.flask_app.post(url, data=postdata)
+        assert rv.status_code == 200
+
+        # Access the parent's selectlang to see the proposal button.
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+        assert """class="badge" style>0</span>"""  # Check that it was removed.
+
+        # Verify that the suggested changes were NOT applied.
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+        # Ensure that the change has NOT been applied.
+        assert "Hello Yet Again Testing" not in data
+        assert "Color Test" not in data
+        assert "Hello World." in data
+        # Ensure that the translations that have not been specified remain as they are.
+        assert data.count("Black") >= 2
+
+
 
