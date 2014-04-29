@@ -1,8 +1,10 @@
- #!/usr/bin/python
- # -*- coding: utf-8 -*-
+#!/usr/bin/python
 
 import json
 import os
+import re
+import urllib
+import urllib2
 import appcomposer
 import appcomposer.application
 from appcomposer import db
@@ -113,7 +115,6 @@ class TestTranslateAppCreation:
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
-
         data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
 
         # Ensure that we (testuser), as as non-owners of the second app, we can propose translations.
@@ -122,3 +123,100 @@ class TestTranslateAppCreation:
         # Ensure that the non-owner explanation appears.
         assert u"You are not the owner" in data
 
+    def test_publish_links(self):
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        # We use regex rather than exactly predict the link itself because due to the decode workaround above
+        # the ampersand in the URL gets originally replaced.
+        standard_link = u"/composers/translate/publish\\?group=ALL.{1,7}appid=%s" % self.firstApp.unique_id
+        assert re.search(standard_link, data) is not None
+
+        urlstr = urllib.quote_plus(u"appcomposer/tests_data/relativeExample/i18n.xml")
+        shindig_link = u"/composers/translate/serve\\?app_url=%s" % urlstr
+        assert re.search(shindig_link, data) is not None
+
+    def test_messages_expected(self):
+        """
+        Check that the translations present in the page seem to be the expected ones.
+        """
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        assert data.count("Black") >= 2
+        assert data.count("hello_world") >= 1
+        assert "Hello World." in data
+        assert data.count("Color") >= 2
+
+    def test_save_works(self):
+        """
+        Check that Save changes the content.
+        """
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        posturl = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % self.firstApp.unique_id
+        postdata = {"appid": self.firstApp.unique_id,
+                    "srclang": "all_ALL",
+                    "targetlang": "all_ALL",
+                    "srcgroup": "ALL",
+                    "targetgroup": "ALL",
+                    "_message_blue": "Blue",
+                    "_message_hello_world": "Hello Test World",
+                    "save": ""}
+        rv = self.flask_app.post(posturl, data=postdata)
+        assert rv.status_code == 200
+
+        data = rv.data.decode("utf8")
+
+        # Ensure that the change has been really saved by the post.
+        assert "Hello Test World" in data
+        assert "Hello World." not in data
+
+        # Ensure that the translations that have not been specified remain as they are.
+        assert data.count("Black") >= 2
+
+    def test_save_exit_works(self):
+        """
+        Check that Save & Exit changes the content and redirects.
+        """
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        posturl = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % self.firstApp.unique_id
+        postdata = {"appid": self.firstApp.unique_id,
+                    "srclang": "all_ALL",
+                    "targetlang": "all_ALL",
+                    "srcgroup": "ALL",
+                    "targetgroup": "ALL",
+                    "_message_blue": "Blue",
+                    "_message_hello_world": "Hello Test World",
+                    "save_exit": ""}
+        rv = self.flask_app.post(posturl, data=postdata)
+        assert rv.status_code == 302
+
+        # GET again to check the changes.
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        # Ensure that the change has been really saved by the post.
+        assert "Hello Test World" in data
+        assert "Hello World." not in data
+
+        # Ensure that the translations that have not been specified remain as they are.
+        assert data.count("Black") >= 2
