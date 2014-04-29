@@ -1,17 +1,13 @@
 #!/usr/bin/python
 
 import json
-import os
 import re
 import urllib
-import urllib2
 import appcomposer
 import appcomposer.application
-from appcomposer import db
 
 from appcomposer.appstorage import api
 from appcomposer.appstorage.api import get_app_by_name
-from appcomposer.composers.translate.bundles import BundleManager
 
 
 class TestTranslateAppEdit:
