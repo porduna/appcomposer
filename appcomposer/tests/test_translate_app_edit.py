@@ -14,7 +14,7 @@ from appcomposer.appstorage.api import get_app_by_name
 from appcomposer.composers.translate.bundles import BundleManager
 
 
-class TestTranslateAppCreation:
+class TestTranslateAppEdit:
     def __init__(self):
         self.flask_app = None
         self.tapp = None
@@ -221,7 +221,7 @@ class TestTranslateAppCreation:
         # Ensure that the translations that have not been specified remain as they are.
         assert data.count("Black") >= 2
 
-    def test_new_bundle_creation(self):
+    def test_new_language_translation_creation(self):
         """
         Test that a translation for a language that does not have a translation yet is
         automatically created (for a user who owns the all_ALL language of the app).
@@ -237,3 +237,215 @@ class TestTranslateAppCreation:
         # (that is, that it appears to be translate-able)
         assert u"hello_world" in data
         assert u"black" in data
+
+    def test_new_group_creation(self):
+        """
+        Test that we can create a translation for a new group, from an existing translation.
+        (Translate to all_ALL_TEST).
+        """
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=TEST" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        # Ensure that the identifiers appear in the response.
+        # (that is, that it appears to be translate-able)
+        assert u"hello_world" in data
+        assert u"black" in data
+        assert u"Hello World." in data
+
+    def test_source_group_must_exist(self):
+        """
+        Ensure that the existence of the source group is required
+        for translating anything, or otherwise a 400 error is returned.
+        """
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ERR&targetgroup=TEST" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 400
+
+
+    def test_source_lang_must_exist(self):
+        """
+        Ensure that the existence of the source language is required
+        for translating anything, or otherwise a 400 error is returned.
+        """
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ERR&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=TEST" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 400
+
+
+    def test_autopropose_save_works_on_child_app(self):
+        """
+        Check that Save changes the content on the children app.
+        """
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        posturl = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % self.secondApp.unique_id
+        postdata = {"appid": self.secondApp.unique_id,
+                    "srclang": "all_ALL",
+                    "targetlang": "all_ALL",
+                    "srcgroup": "ALL",
+                    "targetgroup": "ALL",
+                    "_message_blue": "Blue",
+                    "_message_hello_world": "Hello Test World",
+                    "save": "",
+                    "proposeToOwner": "true"}
+        rv = self.flask_app.post(posturl, data=postdata)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")
+
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        # Ensure that the change has been really saved by the post.
+        assert "Hello Test World" in data
+        assert "Hello World." not in data
+        # Ensure that the translations that have not been specified remain as they are.
+        assert data.count("Black") >= 2
+
+
+        # Ensure that the changes affect the PARENT app as well (because the
+        # Accept All Translation Proposals Automatically switch should be turned on by default).
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        assert "Hello Test World" in data
+        assert "Hello World." not in data
+
+    def test_translate_default_autoaccept_in_selectlang(self):
+        """
+        Check that in the selectlang screen, the Accept Proposals Automatically switch is checked.
+        (Which should be, by default).
+        """
+        # Ensure that "Accept all translation proposals automatically" is checked by default.
+        url = u"/composers/translate/selectlang?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        assert """id="accept-proposals" checked""" in data
+
+    def test_save_does_not_affect_parent_when_not_proposed(self):
+        """
+        Check that when the child app does not propose the changes to the owner,
+        these changes have no effect on it.
+        """
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        posturl = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % self.secondApp.unique_id
+        postdata = {"appid": self.secondApp.unique_id,
+                    "srclang": "all_ALL",
+                    "targetlang": "all_ALL",
+                    "srcgroup": "ALL",
+                    "targetgroup": "ALL",
+                    "_message_blue": "Blue",
+                    "_message_hello_world": "Hello Test World",
+                    "save": "",
+                    # proposeToOwner deliberately NOT here.
+                    }
+        rv = self.flask_app.post(posturl, data=postdata)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")
+
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        # Ensure that the change has been really saved by the post.
+        assert "Hello Test World" in data
+        assert "Hello World." not in data
+        # Ensure that the translations that have not been specified remain as they are.
+        assert data.count("Black") >= 2
+
+
+        # Ensure that the changes DO NOT affect the PARENT app as well (accept-automatically
+        # is switched on, but the child app DID NOT PROPOSE the changes).
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        assert "Hello Test World" not in data
+        assert "Hello World." in data
+
+
+
+    def test_save_propose_without_autoaccept(self):
+        """
+        Check that AutoAccept can be disabled, and that then the children
+        app can propose the changes to the parent, and the parent sees them.
+        """
+        # Set Autoaccept to False
+        url = u"/composers/translate/config/autoaccept/" + self.firstApp.unique_id
+        rv = self.flask_app.post(url, data={"value": 0})
+        assert rv.status_code == 200
+        js = json.loads(rv.data)
+        assert js["result"] == "success"
+        assert js["value"] == False
+
+
+        # Edit the child app and propose changes.
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        posturl = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % self.secondApp.unique_id
+        postdata = {"appid": self.secondApp.unique_id,
+                    "srclang": "all_ALL",
+                    "targetlang": "all_ALL",
+                    "srcgroup": "ALL",
+                    "targetgroup": "ALL",
+                    "_message_blue": "Blue",
+                    "_message_hello_world": "Hello Test World",
+                    "save": "",
+                    "proposeToOwner": "true"}
+        rv = self.flask_app.post(posturl, data=postdata)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")
+
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        # Ensure that the change has been really saved by the post.
+        assert "Hello Test World" in data
+        assert "Hello World." not in data
+        # Ensure that the translations that have not been specified remain as they are.
+        assert data.count("Black") >= 2
+
+
+        # Ensure that the parent now sees a proposal.
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        assert """class="badge" style>1</span>"""
+
