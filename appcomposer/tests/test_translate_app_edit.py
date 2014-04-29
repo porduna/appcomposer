@@ -220,3 +220,20 @@ class TestTranslateAppCreation:
 
         # Ensure that the translations that have not been specified remain as they are.
         assert data.count("Black") >= 2
+
+    def test_new_bundle_creation(self):
+        """
+        Test that a translation for a language that does not have a translation yet is
+        automatically created (for a user who owns the all_ALL language of the app).
+        """
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=te_ST&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        print "URL: " + url
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+
+        data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+
+        # Ensure that the identifiers appear in the response.
+        # (that is, that it appears to be translate-able)
+        assert u"hello_world" in data
+        assert u"black" in data
