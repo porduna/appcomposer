@@ -1,7 +1,7 @@
 from flask import Blueprint
 
 from appcomposer.babel import lazy_gettext
-from forms import UrlForm, LangselectForm
+from forms import UrlForm
 
 
 info = {
@@ -29,7 +29,6 @@ CFG_SAME_NAME_LIMIT = 30
 import backend
 import view_editlang
 import view_selectlang
-import view_merge_existing
 import view_proposed_list
 import view_publish
 import view_index

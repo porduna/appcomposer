@@ -1,17 +1,9 @@
 import json
-import urllib
-from xml.dom import minidom
-import StringIO
 
-from babel import Locale, UnknownLocaleError
-from flask import make_response, url_for, render_template, request
-from appcomposer import db
-from appcomposer.composers.translate.bundles import InvalidXMLFileException, NoDefaultLanguageException
+from flask import make_response, render_template
 
-from appcomposer.utils import make_url_absolute, inject_absolute_urls, inject_original_url_in_xmldoc
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
-from appcomposer.models import AppVar, App
 
 
 """
