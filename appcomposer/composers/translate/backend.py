@@ -4,6 +4,7 @@ from flask import make_response, render_template
 
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
+from appcomposer.composers.translate.bundles import BundleManager, Bundle
 
 
 """
