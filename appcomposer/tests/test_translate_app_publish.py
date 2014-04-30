@@ -88,6 +88,10 @@ class TestTranslateAppPublish:
 
         assert "How to publish" in data
 
+        publish_url = "/composers/translate/app/%s/ALL/app.xml" % self.firstApp.unique_id
+        print data
+        assert publish_url in data
+
     def test_standard_publish(self):
 
         url = "/composers/translate/app/%s/ALL/app.xml" % self.firstApp.unique_id
@@ -116,7 +120,7 @@ class TestTranslateAppPublish:
         assert "Farbe" in data
         assert "<messagebundle>" in data
 
-    def test_shindig_publish(self):
+    def test_shindig_serve(self):
 
         app_url = "appcomposer/tests_data/relativeExample/i18n.xml"
         url = "/composers/translate/serve?%s" % urllib.urlencode({"app_url": app_url,
@@ -131,6 +135,23 @@ class TestTranslateAppPublish:
         assert "Color" in data
         assert "<messagebundle>" in data
 
+
+    def test_shindig_serve_list(self):
+        """
+        Tests that the SERVE_LIST API made available to shindig works
+        as expected. The serve_list API is meant to provide a list of
+        apps and eTags.
+        """
+        url = "/composers/translate/serve_list"
+        rv = self.flask_app.get(url)
+
+        assert rv.status_code == 200
+        data = rv.data
+
+        assert "all_ALL_ALL" in data
+        assert "relativeExample/i18n.xml" in data
+        assert "etag" in data
+        
 
 
 
