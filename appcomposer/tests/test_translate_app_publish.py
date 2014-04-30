@@ -75,6 +75,19 @@ class TestTranslateAppPublish:
         self._cleanup()
         self.flask_app.__exit__(None, None, None)
 
+    def test_publish_screen(self):
+        """
+        Check that the publish screen displays a link as it should.
+        """
+        url = "/composers/translate/publish?%s" % urllib.urlencode(
+            dict(group="ALL", appid=self.firstApp.unique_id))
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+
+        data = rv.data
+
+        assert "How to publish" in data
+
     def test_standard_publish(self):
 
         url = "/composers/translate/app/%s/ALL/app.xml" % self.firstApp.unique_id
