@@ -12,6 +12,35 @@ from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _
 from appcomposer.models import AppVar
 
 
+"""
+ NOTE ABOUT THE REQUIREMENTS ON THE APP TO BE TRANSLATED:
+ The App to be translated should be already internationalized and should contain at least a reference to one Bundle,
+ the Default language Bundle. This is a Locale node on the spec, with NO lang attribute and NO country attribute.
+ (If this entry does not exist the App can't be translated).
+
+
+ FILE NAMING CONVENTIONS:
+
+ The convention we will try to use here is the following:
+
+ Example: ca_ES_ALL.xml (for language files)
+
+ ca would be the language.
+ ES would be the country.
+ ANY would be the group (the default).
+
+ If any is not set, then it will be replaced with "all", in the right case. For instance,
+ if lang is not specified it will be all_ES. Or if the country isn't, es_ALL.
+
+ The default language is always all_ALL_ALL and should always be present.
+
+
+ OTHER CONVENTIONS / GLOSSARY:
+
+ "Bundle code" or "locale code" refers generally to the "es_ALL_ALL"-like string.
+ """
+
+
 @translate_blueprint.route('/serve')
 def app_translation_serve():
     """
@@ -29,7 +58,7 @@ def app_translation_serve():
         # XXX FIXME
         # TODO: this makes this method to call twice the app_xml. We shouldn't need
         # that. We should have the contents here downloaded for later.
-        if app_xml.startswith(('http://','https://')):
+        if app_xml.startswith(('http://', 'https://')):
             print app_xml
             xmldoc = minidom.parseString(urllib2.urlopen(app_xml).read())
             app_xml = get_original_url(xmldoc, app_xml)
@@ -157,7 +186,7 @@ def app_langfile(appid, langfile):
 
 
 @translate_blueprint.route('/app/<appid>/<group>/app.xml')
-def app_xml_group(appid, group):
+def app_xml(appid, group):
     """
     app_xml(appid, group)
 
@@ -190,33 +219,3 @@ def app_xml_group(appid, group):
     return response
 
 
-# @translate_blueprint.route('/app/<appid>/app.xml')
-# def app_xml(appid):
-#     """
-#     app_xml(appid)
-#
-#     Provided for end-users. This is the function that provides hosting for the
-#     gadget specs for a specified App. The gadget specs are actually dynamically
-#     generated, as every time a request is made the original XML is obtained and
-#     modified.
-#
-#     @param appid: Identifier of the App.
-#     @return: XML of the modified Gadget Spec with the Locales injected, or an HTTP error code
-#     if an error occurs.
-#     """
-#     app = get_app(appid)
-#
-#     if app is None:
-#         return render_template("composers/errors.html", message="Error 404: App doesn't exist"), 404
-#
-#     # The composer MUST be 'translate'
-#     if app.composer != "translate":
-#         return render_template("composers/errors.html",
-#                                message="Error 500: The composer for the specified App is not Translate"), 500
-#
-#     bm = BundleManager.create_from_existing_app(app.data)
-#     output_xml = bm.do_render_app_xml(appid)
-#
-#     response = make_response(output_xml)
-#     response.mimetype = "application/xml"
-#     return response

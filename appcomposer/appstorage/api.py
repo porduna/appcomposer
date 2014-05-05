@@ -35,7 +35,7 @@ class NonUniqueVarException(Exception):
         self.message = message
 
 
-def create_app(name, composer, data, find_new_name = False):
+def create_app(name, composer, data, find_new_name=False):
     """
     create_app(name, data)
     @param name: Unique name to give to the application.
@@ -49,6 +49,10 @@ def create_app(name, composer, data, find_new_name = False):
 
     # Get the current user, who will be the owner of our app.
     owner = current_user()
+
+    # To try to create an app we need to be logged in.
+    if owner is None:
+        raise NotAuthorizedException("User is not logged in")
 
     # If the composer-specific data is already a string, we assume
     # it is JSON'ed already.

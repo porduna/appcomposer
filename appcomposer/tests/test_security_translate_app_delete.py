@@ -7,6 +7,8 @@ from appcomposer.user import remove_user, create_user, get_user_by_login
 
 from appcomposer import db
 
+from flask import session
+
 
 class TestSecurityAppDelete:
     def __init__(self):
@@ -16,10 +18,12 @@ class TestSecurityAppDelete:
         self.user2 = None
 
     def login(self, username, password):
-        return self.flask_app.post('/login', data=dict(
+        rv = self.flask_app.post('/login', data=dict(
             login=username,
             password=password
         ), follow_redirects=True)
+        assert "Invalid" not in rv.data
+        return rv
 
     def logout(self):
         return self.flask_app.get('/logout', follow_redirects=True)
@@ -50,6 +54,7 @@ class TestSecurityAppDelete:
             self.flask_app.get("/")
             self.user1 = create_user("utuser1", "Test User 1", "password")
             self.user2 = create_user("utuser2", "Test User 2", "password")
+            rv = self.login("utuser1", "password")
 
     def tearDown(self):
         self._cleanup()
@@ -62,6 +67,7 @@ class TestSecurityAppDelete:
         # Create utapp1 in utuser1
         with self.flask_app:
             rv = self.login("utuser1", "password")
+            assert session["logged_in"] == True
             app = api.create_app("utapp1", "translate", '{"spec":"http://justatest.com", "bundles":{}}')
             api.add_var(app, "spec", "http://justatest.com")
             self.appid = app.unique_id

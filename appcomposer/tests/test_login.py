@@ -32,6 +32,7 @@ class TestLogin:
         rv = self.login("testuser", "password")
         assert rv.status_code == 200
         assert "logged_in" in session
+        assert session["logged_in"] == True
         assert session["login"] == "testuser"
         assert session["name"] == "Test User"
 

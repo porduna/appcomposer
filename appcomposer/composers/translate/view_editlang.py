@@ -12,7 +12,11 @@ from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
 def translate_edit():
-    """ Translation editor for the selected language. """
+    """
+    Translation editor for the selected language.
+
+    @note: Returns error 400 if the source language or group don't exist.
+    """
 
     # No matter if we are handling a GET or POST, we require these parameters.
     appid = request.values["appid"]
@@ -34,6 +38,12 @@ def translate_edit():
     targetbundle_code = BundleManager.partialcode_to_fullcode(targetlang, targetgroup)
 
     srcbundle = bm.get_bundle(srcbundle_code)
+
+    # Ensure the existence of the source bundle.
+    if srcbundle is None:
+        return render_template("composers/errors.html",
+                               message="The source language and group combination does not exist"), 400
+
     targetbundle = bm.get_bundle(targetbundle_code)
 
     # The target bundle doesn't exist yet. We need to create it ourselves.

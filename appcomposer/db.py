@@ -16,6 +16,7 @@ db = SQLAlchemy()
 db.init_app(app)
 session = db.session
 
+
 def init_db(drop=False):
     # import all modules here that might define models so that
     # they will be registered properly on the metadata.  Otherwise
@@ -29,7 +30,7 @@ def init_db(drop=False):
     db.session.create_all(app=app)
 
     password = create_salted_password("password")
-    admin_user = User(u'admin', role = u'Administrator', auth_data = password, auth_system = "userpass")
+    admin_user = User(u'admin', role=u'Administrator', auth_data=password, auth_system="userpass")
     db.session.add(admin_user)
     db.session.commit()
 

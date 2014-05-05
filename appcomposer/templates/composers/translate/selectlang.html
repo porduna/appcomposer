@@ -104,7 +104,6 @@
                                     {% for loc in translated_langs if loc["group"] == "ALL" and not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}
                                         <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
                                     {% endfor %}
-<<<<<<< HEAD
                                 </optgroup>
 
                                 <option selected="selected" value="all_ALL">DEFAULT</option>
@@ -158,18 +157,6 @@
                             </select>
 
                         </div>
-
-                            <!--
-                        {# TODO: Consider reenabling this or removing it altogether. #}
-                        <div class="form-group">
-                            <div class="controls">
-                                <span class="help-block">You want to merge an existing translation into this translation.</span>
-                                <a class="btn btn-default" id="merge_existing"
-                                   href="{{ url_for('translate.translate_merge_existing', appid=app.unique_id) }}">Merge existing translation</a>
-                            </div>
-                        </div>
-                        -->
-
 
                     </div>
 
@@ -226,13 +213,9 @@
                         </div>
                     </form>
 
-                </div>
-            </div>
-        </div>
-    </div>
-
-
-
+                </div> <!-- ! col -->
+            </div> <!-- ! row -->
+        </div> <!-- ! well -->
     </div>
 
 
