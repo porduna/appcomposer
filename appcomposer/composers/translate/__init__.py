@@ -26,7 +26,6 @@ CFG_SAME_NAME_LIMIT = 30
 
 # These imports NEED to be after the translate_blueprint assignment due to
 # importing and cyclic dependencies issues.
-import backend
 import view_editlang
 import view_selectlang
 import view_proposed_list

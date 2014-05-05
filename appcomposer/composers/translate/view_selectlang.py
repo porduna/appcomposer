@@ -8,7 +8,7 @@ from flask import request, flash, redirect, url_for, render_template, json
 from appcomposer.utils import get_original_url
 from appcomposer.appstorage import create_app, set_var
 from appcomposer.appstorage.api import update_app_data, get_app
-from appcomposer.composers.translate import translate_blueprint, backend
+from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException
 from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships
 
