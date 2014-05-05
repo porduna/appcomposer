@@ -115,3 +115,23 @@ class TestTranslateAjax:
         assert rv.status_code == 200
         js = json.loads(rv.data)
         assert js["result"] == "error"
+
+    def test_ownership_list(self):
+        # Create the PARENT app
+        url = "appcomposer/tests_data/relativeExample/i18n.xml"
+        spec = url
+        rv = self.flask_app.post("/composers/translate/selectlang", data={"appname": "UTApp", "appurl": url}, follow_redirects=True)
+        assert rv.status_code == 200
+
+        # Get the ownership list
+        url = "/composers/translate/get_ownership_list?xmlspec=%s" % spec
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
+        data = rv.data
+
+        assert "all_ALL" in data
+        assert "owner_login" in data
+        assert "success" in data
+
+        owl = json.loads(data)
+        assert "all_ALL" in owl["owners"]

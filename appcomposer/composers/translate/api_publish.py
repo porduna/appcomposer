@@ -58,7 +58,7 @@ def app_translation_serve():
         # XXX FIXME
         # TODO: this makes this method to call twice the app_xml. We shouldn't need
         # that. We should have the contents here downloaded for later.
-        if app_xml.startswith(('http://','https://')):
+        if app_xml.startswith(('http://', 'https://')):
             print app_xml
             xmldoc = minidom.parseString(urllib2.urlopen(app_xml).read())
             app_xml = get_original_url(xmldoc, app_xml)
@@ -186,40 +186,6 @@ def app_langfile(appid, langfile):
 
 
 @translate_blueprint.route('/app/<appid>/<group>/app.xml')
-def app_xml_group(appid, group):
-    """
-    app_xml(appid, group)
-
-    Provided for end-users. This is the function that provides hosting for the
-    gadget specs for a specified App. The gadget specs are actually dynamically
-    generated, as every time a request is made the original XML is obtained and
-    modified.
-
-    @param appid: Identifier of the App.
-    @param group: Group that will act as a filter. If, for instance, it is set to 14-18, then only
-    Bundles that belong to that group will be shown.
-    @return: XML of the modified Gadget Spec with the Locales injected, or an HTTP error code
-    if an error occurs.
-    """
-    app = get_app(appid)
-
-    if app is None:
-        return render_template("composers/errors.html", message="Error 404: App doesn't exist"), 404
-
-    # The composer MUST be 'translate'
-    if app.composer != "translate":
-        return render_template("composers/errors.html",
-                               message="Error 500: The composer for the specified App is not Translate"), 500
-
-    bm = BundleManager.create_from_existing_app(app.data)
-    output_xml = bm.do_render_app_xml(appid, group)
-
-    response = make_response(output_xml)
-    response.mimetype = "application/xml"
-    return response
-
-
-@translate_blueprint.route('/app/<appid>/<group>/app.xml')
 def app_xml(appid, group):
     """
     app_xml(appid, group)
@@ -251,3 +217,5 @@ def app_xml(appid, group):
     response = make_response(output_xml)
     response.mimetype = "application/xml"
     return response
+
+
