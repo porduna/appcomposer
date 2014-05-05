@@ -151,7 +151,7 @@ class TestTranslateAppPublish:
         assert "all_ALL_ALL" in data
         assert "relativeExample/i18n.xml" in data
         assert "etag" in data
-        
+
 
 
 
