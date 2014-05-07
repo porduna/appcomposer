@@ -7,15 +7,22 @@ from pymongo import MongoClient
 
 # Fix the working directory when running from the script's own folder.
 from pymongo.errors import DuplicateKeyError
+import sys
 
-from appcomposer import app as flask_app
 
-
+# Fix the path so it can be run more easily, etc.
 cwd = os.getcwd()
 path = os.path.join("appcomposer", "composers", "translate")
 if cwd.endswith(path):
     cwd = cwd[0:len(cwd) - len(path)]
     os.chdir(cwd)
+
+sys.path.insert(0, cwd)
+
+
+
+from appcomposer import app as flask_app
+
 
 
 cel = Celery('pusher_tasks', backend='amqp', broker='amqp://')
@@ -63,4 +70,4 @@ def push(self, spec, lang, data, time):
 
 
 if __name__ == '__main__':
-    cel.worker_main(["worker"])
+    cel.worker_main(sys.argv)

@@ -10,7 +10,8 @@ from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
 from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_declare_ownership
 
-from appcomposer import app as flask_app
+from appcomposer.application import app as flask_app
+
 
 
 def on_leading_bundle_updated(spec, bundle):
@@ -20,10 +21,15 @@ def on_leading_bundle_updated(spec, bundle):
     systems such as GRAASP.
     """
     if flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
-        import mongodb_pusher as pusher
-        code = bundle.get_standard_code_string(bundle.lang, bundle.country, bundle.group)
-        pusher.push.delay(spec, code, bundle.to_json(), datetime.datetime.utcnow())
-        print "[MONGODB_PUSHER]: Update reported."
+        try:
+            import mongodb_pusher as pusher
+            code = bundle.get_standard_code_string(bundle.lang, bundle.country, bundle.group)
+            pusher.push.delay(spec, code, bundle.to_json(), datetime.datetime.utcnow())
+            print "[MONGODB_PUSHER]: Update reported."
+        except:
+            # TODO: HANDLE THIS EXCEPTION.
+            print "[MONGODB_PUSHER] Failed to notify of leading bundle update"
+            pass
 
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
