@@ -15,3 +15,7 @@ class TestBasic:
     def test_root_page(self):
         rootResponse = self.flask_app.get("/").data
         nt.assert_true("Use it!" in rootResponse)
+
+    def test_about_page(self):
+        rv = self.flask_app.get("/about")
+        assert rv.status_code == 200
