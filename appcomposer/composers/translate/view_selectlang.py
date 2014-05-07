@@ -122,6 +122,7 @@ def translate_selectlang():
 
         # Advanced merge. Merge owner languages into our bundles.
         do_languages_initial_merge(app, bm)
+        
 
         # Find out which locales does the app provide (for now).
         translated_langs = bm.get_locales_list()
