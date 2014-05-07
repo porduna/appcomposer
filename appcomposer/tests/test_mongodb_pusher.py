@@ -28,5 +28,4 @@ class TestMongoDBPusher:
         pass
 
     def tearDown(self):
-        pass
-        #pusher.bundles.remove({"bundle": "test_TEST_TEST"})
+        pusher.bundles.remove({"bundle": "test_TEST_TEST"})

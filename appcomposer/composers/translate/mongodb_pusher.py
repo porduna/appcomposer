@@ -8,11 +8,15 @@ from pymongo import MongoClient
 # Fix the working directory when running from the script's own folder.
 from pymongo.errors import DuplicateKeyError
 
+from appcomposer import app as flask_app
+
+
 cwd = os.getcwd()
 path = os.path.join("appcomposer", "composers", "translate")
 if cwd.endswith(path):
     cwd = cwd[0:len(cwd) - len(path)]
     os.chdir(cwd)
+
 
 cel = Celery('pusher_tasks', backend='amqp', broker='amqp://')
 cel.conf.update(
@@ -21,7 +25,7 @@ cel.conf.update(
     CELERY_ACKS_LATE="1"
 )
 
-cli = MongoClient("mongodb://localhost")
+cli = MongoClient(flask_app.config["MONGODB_PUSHES_URI"])
 db = cli.appcomposerdb
 bundles = db.bundles
 
@@ -30,6 +34,14 @@ logger = get_task_logger(__name__)
 
 @cel.task(name="push", bind=True, default_retry_delay=0)
 def push(self, spec, lang, data, time):
+    """
+    Pushes a Bundle into the MongoDB.
+    @param spec: Spec to which the Bundle belongs.
+    @param lang: Full bundle identifier, in the ca_ES_ALL format.
+    @param data: Contents of the Bundle.
+    @param time: Time the Bundle was last modified. If the proposed change to push
+    is actually older from the one in the dabatase, nothing will be updated.
+    """
     try:
         logger.info("[PUSH] Pushing to %s@%s on %s" % (lang, spec, time))
 
