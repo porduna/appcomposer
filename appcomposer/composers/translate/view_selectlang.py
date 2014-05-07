@@ -5,6 +5,7 @@ import xml.dom.minidom as minidom
 from collections import defaultdict
 
 from flask import request, flash, redirect, url_for, render_template, json
+from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 from appcomposer.utils import get_original_url
 from appcomposer.appstorage import create_app, set_var
 from appcomposer.appstorage.api import update_app_data, get_app
@@ -119,10 +120,24 @@ def translate_selectlang():
             _db_declare_ownership(app, "all_ALL")
             ownerApp = app
 
+            # Report initial bundle creation. Needed for the MongoDB replica.
+            for bundle in bm.get_bundles("all_ALL"):
+                on_leading_bundle_updated(spec, bundle)
+
+        # We do the same for the other included languages which are not owned already.
+        # If the other languages have a translation but no owner, then we declare ourselves as their owner.
+        for partialcode in bm.get_langs_list():
+            otherOwner = _db_get_lang_owner_app(appurl, partialcode)
+            if otherOwner is None:
+                _db_declare_ownership(app, partialcode)
+
+                # Report initial bundle creation. Needed fort he MongoDB replica.
+                for bundle in bm.get_bundles(partialcode):
+                    on_leading_bundle_updated(spec, bundle)
 
         # Advanced merge. Merge owner languages into our bundles.
         do_languages_initial_merge(app, bm)
-        
+
 
         # Find out which locales does the app provide (for now).
         translated_langs = bm.get_locales_list()
@@ -157,6 +172,9 @@ def translate_selectlang():
         ownerApp = _db_get_lang_owner_app(spec, "all_ALL")
         # If there isn't already an owner for the default languages, we declare ourselves
         # as the owner for this App's default language.
+        # TODO: NOTE: With the latest changes, this should never happen, because owners are declared
+        # for all existing languages by the user who creates the app. It may, however, happen in the future,
+        # when we take deletions and such into account.
         if ownerApp is None:
             _db_declare_ownership(app, "all_ALL")
             ownerApp = app

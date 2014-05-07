@@ -30,6 +30,22 @@ class BundleManager(object):
         # The autoaccept status.
         self.autoaccept = True
 
+    def get_langs_list(self):
+        """
+        Retrieves a list of all the different language partial codes that the BundleManager contains.
+        For instance: [es_ES, ca_ES]. Does not take group into account.
+        """
+        langs = list(set([BundleManager.fullcode_to_partialcode(code) for code in self._bundles.keys()]))
+        return langs
+
+    def get_bundles(self, partialcode):
+        """
+        Get all the Bundles that correspond to a given partialcode (specific lang and territory, that is, all
+        group bundles for a given lang).
+        """
+        return [self._bundles[key] for key in self._bundles.keys() if
+                BundleManager.fullcode_to_partialcode(key) == partialcode]
+
     def get_gadget_spec(self):
         """
         Gets the path to the XML file that originally describes the app.
