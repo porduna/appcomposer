@@ -16,5 +16,11 @@ SHOW_LOGIN_APP_CREATION = False
 # By default, the translator is not active
 ACTIVATE_TRANSLATOR = False
 
+# By default, the translator's MongoDB pushes are not active
+ACTIVATE_TRANSLATOR_MONGODB_PUSHES = False
+
+# MongoDB pushes URI. Not used unless the MongoDB pushes are enabled.
+MONGODB_PUSHES_URI = "mongodb://localhost"
+
 # Adaptor plug-ins (the defaults are loaded by default)
 ADAPT_PLUGINS = []
