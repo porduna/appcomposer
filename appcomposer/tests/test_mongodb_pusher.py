@@ -1,14 +1,6 @@
 #!/usr/bin/python
 
-import json
-import re
-import urllib
 import datetime
-import appcomposer
-import appcomposer.application
-
-from appcomposer.appstorage import api
-from appcomposer.appstorage.api import get_app_by_name
 
 from appcomposer.composers.translate import mongodb_pusher as pusher
 
@@ -36,4 +28,5 @@ class TestMongoDBPusher:
         pass
 
     def tearDown(self):
-        pusher.bundles.remove({"bundle": "test_TEST_TEST"})
+        pass
+        #pusher.bundles.remove({"bundle": "test_TEST_TEST"})
