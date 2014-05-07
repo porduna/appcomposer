@@ -1,7 +1,18 @@
 
 from celery import Celery
+from celery.utils.log import get_task_logger
 from pymongo import MongoClient
 import datetime
+
+import os
+import unittest
+
+# Fix the working directory when running from the script's own folder.
+cwd = os.getcwd()
+path = os.path.join("appcomposer", "composers", "translate")
+if cwd.endswith(path):
+    cwd = cwd[0:len(cwd)-len(path)]
+    os.chdir(cwd)
 
 from appcomposer import app as flask_app
 
@@ -16,10 +27,11 @@ cli = MongoClient("mongodb://localhost")
 db = cli.appcomposerdb
 bundles = db.bundles
 
+logger = get_task_logger(__name__)
 
 @cel.task(name="push", bind=True, default_retry_delay=0)
 def push(self, spec, lang, data, time):
-    logger = push.get_logger()
+
     try:
         logger.info("[PUSH] Pushing to %s@%s on %s" % (lang, spec, time))
 
@@ -42,4 +54,4 @@ def push(self, spec, lang, data, time):
 
 if __name__ == '__main__':
     # cel.worker_main(["worker"])
-    push("es_ES_ALL", "app.xml", "ooo5", datetime.datetime.utcnow()-datetime.timedelta(minutes=1))
+    push.apply(args=["es_ES_ALL", "app.xml", "ooo5", datetime.datetime.utcnow()-datetime.timedelta(minutes=1)])
