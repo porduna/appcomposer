@@ -131,7 +131,7 @@ def translate_selectlang():
             if otherOwner is None:
                 _db_declare_ownership(app, partialcode)
 
-                # Report initial bundle creation. Needed fort he MongoDB replica.
+                # Report initial bundle creation. Needed for the MongoDB replica.
                 for bundle in bm.get_bundles(partialcode):
                     on_leading_bundle_updated(spec, bundle)
 
