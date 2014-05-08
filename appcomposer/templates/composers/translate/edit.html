@@ -20,6 +20,11 @@
                                 Your translation is the <b>standard</b> for this App and language, and the one which will be globally used by default for this App.
                                 Other translators may propose changes, which you can accept, modify, or deny.
                             </p>
+                            <p style="padding-top: 10px">
+                                <a href="{{ url_for('.translate_publish', appid=app.unique_id, group=request.values["targetgroup"]) }}">
+                                    <button class="btn btn-mini btn-info">Transfer Ownership</button>
+                                </a>
+                            </p>
                         </div>
                         {% else %}
                         <div name="ownership_status" class="alert alert-warning">
