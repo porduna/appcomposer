@@ -2,7 +2,7 @@ import appcomposer
 import appcomposer.application
 
 from appcomposer.appstorage import api, add_var
-from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals
+from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals, _db_get_spec_apps
 from appcomposer.login import current_user
 
 
@@ -168,3 +168,21 @@ class TestTranslateDbHelpers:
         api.add_var(self.tapp, "proposal", "{}")
         proposals = _db_get_proposals(self.tapp)
         assert len(proposals) == 2
+
+    def test_get_spec_apps(self):
+        apps = _db_get_spec_apps("http://justatest.com")
+        assert len(apps) == 1
+
+        # Add a second spec (which should NOT be retrieved) for further testing.
+        app2 = api.create_app("UTApp (1)", "translate", "{'spec':'http://different.com'}")
+        api.add_var(app2, "spec", "http://different.com")
+        apps = _db_get_spec_apps("http://justatest.com")
+        # Should still be 1. The new app is of a different spec.
+        assert len(apps) == 1
+
+        # Add a second spec (which should NOT be retrieved) for further testing.
+        app2 = api.create_app("UTApp2", "translate", "{'spec':'http://justatest.com'}")
+        api.add_var(app2, "spec", "http://justatest.com")
+        apps = _db_get_spec_apps("http://justatest.com")
+        # Should now be 2.
+        assert len(apps) == 2

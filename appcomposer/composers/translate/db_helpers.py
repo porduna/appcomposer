@@ -38,7 +38,7 @@ def _db_get_spec_apps(spec):
     @param spec: String to the App's original XML.
     @return: List of apps with the specified spec."
     """
-    appvars = db.session.query(AppVar).filter(AppVar.name == "spec").all()
+    appvars = db.session.query(AppVar).filter(AppVar.name == "spec", AppVar.value == spec).all()
     apps = [appvar.app for appvar in appvars]
     return apps
 
