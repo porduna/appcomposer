@@ -1,4 +1,4 @@
-{% set title = "Translation tool" %}
+{% set title = "Translation tool :: Edit Translation" %}
 {% set current_link = "home" %}
 {% extends 'composers/translate/layout.html' %}
 
@@ -21,7 +21,7 @@
                                 Other translators may propose changes, which you can accept, modify, or deny.
                             </p>
                             <p style="padding-top: 10px">
-                                <a href="{{ url_for('.translate_publish', appid=app.unique_id, group=request.values["targetgroup"]) }}">
+                                <a href="{{ url_for('.transfer_ownership', appid=app.unique_id, lang=request.values["srclang"]) }}">
                                     <button class="btn btn-mini btn-info">Transfer Ownership</button>
                                 </a>
                             </p>

@@ -1,9 +1,97 @@
-<!DOCTYPE html>
-<html>
-<head>
-    <title></title>
-</head>
-<body>
+{% extends 'composers/translate/layout.html' %}
+{% set title = "Translation tool :: Transfer Ownership" %}
+{% set current_link = "home" %}
 
-</body>
-</html>
+
+{# Parameters that this template should receive: #}
+{# app: The App #}
+{# xmlspec: The original XML #}
+{# srclang: The source language whose ownership to transfer #}
+{# apps: List of apps to which we can transfer the ownership #}
+
+
+
+{% block styles %}
+    {{ super() }}
+
+    <style>
+        .my-select2 {
+            display: block;
+            padding-right: 50px;
+        }
+    </style>
+{% endblock %}
+
+
+{% block body_content %}
+
+    <div class="translateblock">
+
+
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="page-header">
+
+                    <h1 id="apptitle">Transfer Ownership</h1>
+
+                    {% if app %}
+                        <h2 id="appfullname">{{ app.name }}</h2>
+                    {% else %}
+                        <h2 id="appfullname">[App name not available]</h2>
+                    {% endif %}
+
+                    <h4 class="alert alert-info">Original XML: <a href="{{ xmlspec }}">{{ xmlspec }}</a></h4>
+
+
+        <!-- Forms
+        ================================================== -->
+        <div class="well">
+
+            <div class="row">
+                <div class="col-lg-12">
+
+
+                </div> <!-- ! col -->
+            </div> <!-- ! row -->
+        </div> <!-- ! well -->
+    </div>
+
+
+
+
+{% endblock %}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+{% block scripts %}
+
+    {{ super() }}
+
+
+    <!-- JavaScript source code -->
+    <script type="text/javascript">
+
+
+
+    </script>
+
+{% endblock %}
