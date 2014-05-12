@@ -110,11 +110,11 @@ class TestMongoDBPusher:
 
         data = bundles["all_ALL_ALL"]["data"]
         data = json.loads(data)
-        assert data["messages"]["hello_world"] == "Hello World."
+        assert data["hello_world"] == "Hello World."
 
         data = bundles["de_ALL_ALL"]["data"]
         data = json.loads(data)
-        assert data["messages"]["hello_world"] == "Hallo Welt."
+        assert data["hello_world"] == "Hallo Welt."
 
     def test_mongodb_pusher_at_app_edit(self):
         """
@@ -162,7 +162,7 @@ class TestMongoDBPusher:
         data = json.loads(data)
 
         # Test that the changes have been applied.
-        assert data["messages"]["hello_world"] == "Hello Test World"
+        assert data["hello_world"] == "Hello Test World"
 
     def test_mongodb_pusher_at_app_edit_non_owner_propose_disabled(self):
         """
@@ -221,7 +221,7 @@ class TestMongoDBPusher:
 
         # Test that the changes have NOT been applied. That is, that MongoDB still contains the translation
         # of the parent, which does not have the children's modifications.
-        assert data["messages"]["hello_world"] == "Hello World."
+        assert data["hello_world"] == "Hello World."
 
     def test_mongodb_pusher_at_app_edit_non_owner_propose_enabled(self):
         """
@@ -280,7 +280,7 @@ class TestMongoDBPusher:
 
         # Test that the changes have been applied. This is expected, because though the modified lang was
         # the child, a proposal was sent and proposals are by default set to autoaccept.
-        assert data["messages"]["hello_world"] == "Hello Test World"
+        assert data["hello_world"] == "Hello Test World"
 
     def test_nothing(self):
         pass

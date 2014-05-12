@@ -1,4 +1,5 @@
 import datetime
+import json
 from appcomposer.application import app as flask_app
 
 
@@ -15,7 +16,7 @@ def on_leading_bundle_updated(spec, bundle):
             code = bundle.get_standard_code_string(bundle.lang, bundle.country, bundle.group)
 
             # Push the task to Celery
-            async_result = pusher.push.delay(spec, code, bundle.to_json(), datetime.datetime.utcnow())
+            async_result = pusher.push.delay(spec, code, json.dumps(bundle.get_msgs()), datetime.datetime.utcnow())
 
             print "[MONGODB_PUSHER]: Update reported."
         except:
