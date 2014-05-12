@@ -2,7 +2,7 @@ import appcomposer
 import appcomposer.application
 
 from appcomposer.appstorage import api, add_var
-from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals, _db_get_spec_apps
+from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals, _db_get_spec_apps, _db_transfer_ownership
 from appcomposer.login import current_user
 
 
@@ -186,3 +186,23 @@ class TestTranslateDbHelpers:
         apps = _db_get_spec_apps("http://justatest.com")
         # Should now be 2.
         assert len(apps) == 2
+
+
+    def test_transfer_ownership(self):
+        """
+        Tests the method to transfer ownership.
+        """
+        # We now declare 1 ownership.
+        _db_declare_ownership(self.tapp, "test_TEST")
+        ownerships = _db_get_ownerships("http://justatest.com")
+        assert len(ownerships) == 1
+        # We now create a second app for further testing.
+        app2 = api.create_app("UTApp2", "translate", "{'spec':'http://justatest.com'}")
+        api.add_var(app2, "spec", "http://justatest.com")
+
+        # We transfer the ownership to the second app.
+        _db_transfer_ownership("test_TEST", self.tapp, app2)
+
+        # Verify that the ownership has indeed been transferred..
+        owner = _db_get_lang_owner_app("http://justatest.com", "test_TEST")
+        assert owner == app2

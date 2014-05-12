@@ -90,8 +90,16 @@ def _db_declare_ownership(owner_app, lang_code):
 
 
 def _db_transfer_ownership(lang, from_app, target_app):
-    # TODO: Implement this.
-    pass
+    """
+    Transfers ownership of a language from an app to another.
+    """
+    ownership = db.session.query(AppVar).filter(AppVar.app == from_app,
+                                                AppVar.name == "ownership", AppVar.value == lang).first()
+    if ownership is None:
+        raise Exception("Could not find specified ownership")
+    ownership.app = target_app
+    db.session.add(ownership)
+    db.session.commit()
 
 
 def _find_unique_name_for_app(base_name):
