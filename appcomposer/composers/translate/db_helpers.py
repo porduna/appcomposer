@@ -89,6 +89,11 @@ def _db_declare_ownership(owner_app, lang_code):
     add_var(owner_app, "ownership", lang_code)
 
 
+def _db_transfer_ownership(lang, from_app, target_app):
+    # TODO: Implement this.
+    pass
+
+
 def _find_unique_name_for_app(base_name):
     """
     Generates a unique (for the current user) name for the app, using a base name.
