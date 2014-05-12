@@ -1,4 +1,4 @@
-from flask import render_template, request, json
+from flask import render_template, request, json, redirect, url_for
 from appcomposer.login import current_user
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
@@ -60,5 +60,7 @@ def transfer_ownership():
         _db_transfer_ownership(lang, app, targetapp)
 
         # Redirect to selectlang.
+        return redirect(url_for("translate.translate_selectlang", appid=app.unique_id))
 
+    # For GET
     return render_template("composers/translate/transfer_ownership.html", app=app, apps=apps, xmlspec=spec, lang=lang)

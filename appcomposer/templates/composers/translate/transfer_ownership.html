@@ -54,7 +54,7 @@
 
                     <div class="form-group">
                         <label class="control-label" for="transfer-to">Select target:</label>
-                        <select id="transfer-to" class="my-select2" style="min-width: 30%">
+                        <select name="transfer" id="transfer-to" class="my-select2" style="min-width: 30%">
                             {% for a in apps %}
                                 <option {% if loop.index0 == 0 %}selected="selected"{% endif %}
                                         value="{{ a.unique_id }}">{{ a.owner.name }}: {{ a.name }}</option>
@@ -62,7 +62,7 @@
                         </select>
                     </div>
 
-                    <button type="submit" id="transfer-btn" name="transfer" class="btn btn-warning">
+                    <button type="submit" id="transfer-btn" name="transfer-btn" class="btn btn-warning">
                         Transfer
                     </button>
 
