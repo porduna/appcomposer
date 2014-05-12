@@ -3,7 +3,7 @@ from appcomposer.login import current_user
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager
-from appcomposer.composers.translate.db_helpers import _db_get_ownerships, _db_get_spec_apps, _db_get_lang_owner_app
+from appcomposer.composers.translate.db_helpers import _db_get_ownerships, _db_get_spec_apps, _db_get_lang_owner_app, _db_transfer_ownership
 
 
 # TODO: Add "security" unit-test that verifies ownership.
@@ -42,7 +42,6 @@ def transfer_ownership():
     apps = _db_get_spec_apps(spec)
     apps = [a for a in apps if a != app]
 
-
     # We received a POST request. We need to transfer the ownership.
     if request.method == "POST":
 
@@ -57,6 +56,9 @@ def transfer_ownership():
         if targetspec != spec:
             return render_template("composers/errors.html", message="Target app does not have the same spec"), 400
 
+        # Carry out the transfer.
         _db_transfer_ownership(lang, app, targetapp)
+
+        # Redirect to selectlang.
 
     return render_template("composers/translate/transfer_ownership.html", app=app, apps=apps, xmlspec=spec, lang=lang)

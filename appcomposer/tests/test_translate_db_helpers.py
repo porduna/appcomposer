@@ -187,7 +187,6 @@ class TestTranslateDbHelpers:
         # Should now be 2.
         assert len(apps) == 2
 
-
     def test_transfer_ownership(self):
         """
         Tests the method to transfer ownership.
