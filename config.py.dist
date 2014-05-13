@@ -22,5 +22,10 @@ ACTIVATE_TRANSLATOR_MONGODB_PUSHES = False
 # MongoDB pushes URI. Not used unless the MongoDB pushes are enabled.
 MONGODB_PUSHES_URI = "mongodb://localhost"
 
+# How often to sync the database. In the case here, sync the whole database
+# every hour (3600 seconds).
+# Note that this is an expensive operation.
+MONGODB_SYNC_PERIOD = 3600
+
 # Adaptor plug-ins (the defaults are loaded by default)
 ADAPT_PLUGINS = []

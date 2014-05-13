@@ -26,6 +26,7 @@ from appcomposer.composers.translate.bundles import BundleManager
 from appcomposer.composers.translate.db_helpers import _db_get_diff_specs, _db_get_ownerships
 
 
+MONGODB_SYNC_PERIOD = flask_app.config.get("MONGODB_SYNC_PERIOD", 60*15)  # Every 15 min by default.
 
 cel = Celery('pusher_tasks', backend='amqp', broker='amqp://')
 cel.conf.update(
@@ -36,7 +37,7 @@ cel.conf.update(
     CELERYBEAT_SCHEDULE = {
         'sync-periodically': {
             'task': 'sync',
-            'schedule': timedelta(seconds=10),
+            'schedule': timedelta(seconds=MONGODB_SYNC_PERIOD),
             'args': ()
         }
     }
