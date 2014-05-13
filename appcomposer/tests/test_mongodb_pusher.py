@@ -29,9 +29,9 @@ class TestMongoDBPusher:
         Can be invoked *before* and *after* the tests,
         and it is meant to be idempotent.
         """
-        pusher.bundles.remove({"spec": "appcomposer/tests_data/relativeExample/i18n.xml"})
-        pusher.bundles.remove({"bundle": "test_TEST_TEST"})
-        pusher.bundles.remove({"bundle": "test_CELERYTEST_ALL"})
+        pusher.mongo_bundles.remove({"spec": "appcomposer/tests_data/relativeExample/i18n.xml"})
+        pusher.mongo_bundles.remove({"bundle": "test_TEST_TEST"})
+        pusher.mongo_bundles.remove({"bundle": "test_CELERYTEST_ALL"})
 
         with self.flask_app:
             self.flask_app.get("/")  # This is required to create a context. Otherwise session etc don't exist.
@@ -55,13 +55,13 @@ class TestMongoDBPusher:
         self._cleanup()
 
     def test_connection(self):
-        assert pusher.cli.alive()
+        assert pusher.mongo_client.alive()
 
     def test_mongodb_pusher(self):
         t = datetime.datetime.utcnow()
         pusher.push.apply(args=["app.xml", "test_TEST_TEST", "test data", t])
 
-        testbundle = pusher.bundles.find_one({"bundle": "test_TEST_TEST", "spec": "app.xml"})
+        testbundle = pusher.mongo_bundles.find_one({"bundle": "test_TEST_TEST", "spec": "app.xml"})
         assert testbundle is not None
         assert testbundle["bundle"] == "test_TEST_TEST"
         assert testbundle["spec"] == "app.xml"
@@ -82,7 +82,7 @@ class TestMongoDBPusher:
         # Wait for the async task to finish. This is normally not done.
         async_result.wait()
 
-        testbundle = pusher.bundles.find_one({"bundle": "test_CELERYTEST_ALL", "spec": "test_app.xml"})
+        testbundle = pusher.mongo_bundles.find_one({"bundle": "test_CELERYTEST_ALL", "spec": "test_app.xml"})
         assert testbundle is not None
         assert testbundle["bundle"] == "test_CELERYTEST_ALL"
         assert testbundle["spec"] == "test_app.xml"
@@ -101,7 +101,7 @@ class TestMongoDBPusher:
         # Ensure that after a short while we have all the bundles in the MongoDB.
         time.sleep(1)
 
-        bundles = pusher.bundles.find({"spec": url})
+        bundles = pusher.mongo_bundles.find({"spec": url})
         bundles = {b["bundle"]: b for b in bundles}
 
         print bundles
@@ -153,7 +153,7 @@ class TestMongoDBPusher:
         # Ensure that after a short while we have all the bundles in the MongoDB and the changes have been applied.
         time.sleep(1)
 
-        bundles = pusher.bundles.find({"spec": appurl})
+        bundles = pusher.mongo_bundles.find({"spec": appurl})
         bundles = {b["bundle"]: b for b in bundles}
         print bundles
         assert len(bundles) == 2
@@ -211,7 +211,7 @@ class TestMongoDBPusher:
         # Ensure that after a short while we have all the bundles in the MongoDB and the changes have been applied.
         time.sleep(1)
 
-        bundles = pusher.bundles.find({"spec": appurl})
+        bundles = pusher.mongo_bundles.find({"spec": appurl})
         bundles = {b["bundle"]: b for b in bundles}
         print bundles
         assert len(bundles) == 2
@@ -270,7 +270,7 @@ class TestMongoDBPusher:
         # Ensure that after a short while we have all the bundles in the MongoDB and the changes have been applied.
         time.sleep(1)
 
-        bundles = pusher.bundles.find({"spec": appurl})
+        bundles = pusher.mongo_bundles.find({"spec": appurl})
         bundles = {b["bundle"]: b for b in bundles}
         print bundles
         assert len(bundles) == 2
