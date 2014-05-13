@@ -71,6 +71,13 @@ def check_salted_password(password, salted_password):
 
 @app.route('/login', methods=["GET", "POST"])
 def login():
+    return _login_impl(app.config.get('DEBUG', False))
+
+@app.route('/login-local', methods=["GET", "POST"])
+def login_local():
+    return _login_impl(True)
+
+def _login_impl(show_local_users):
     next_url = request.args.get('next', '')
 
     form = LoginForm(request.form)
@@ -93,7 +100,7 @@ def login():
             flash(gettext("Invalid login"))
 
     return render_template("login/login.html", form=form, next=next_url, login_app=login_app,
-                           login_app_creation=login_app_creation)
+                           login_app_creation=login_app_creation, show_local_users=show_local_users)
 
 
 def login_as(login):

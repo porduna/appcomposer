@@ -53,7 +53,7 @@
                 <br/>
             </div>
 
-            <div class="span2">
+            <div class="{% if not show_local_users %}offset1 span4{% else %}span2{% endif %}">
                 <div style="text-align: center">
                     <h3>{{ gettext('Use Graasp') }}</h3>
                     {% if login_app_creation %}
@@ -66,6 +66,7 @@
                 </div>
             </div>
 
+            {% if show_local_users %}
             <div class="span4 text-center login-form">
                 <div style="text-align: center; width: 100%">
                     <h3>{{ gettext('Local users') }}</h3>
@@ -97,6 +98,7 @@
                     </fieldset>
                 </form>                    
             </div>
+            {% endif %}
         </div>
         <div class="row">
             <div class="span1">
