@@ -32,6 +32,17 @@ def _db_get_ownerships(spec):
     return owner_apps
 
 
+def _db_get_spec_apps(spec):
+    """
+    Gets from the database the list of apps with the specified spec.
+    @param spec: String to the App's original XML.
+    @return: List of apps with the specified spec."
+    """
+    appvars = db.session.query(AppVar).filter(AppVar.name == "spec", AppVar.value == spec).all()
+    apps = [appvar.app for appvar in appvars]
+    return apps
+
+
 def _db_get_lang_owner_app(spec, lang_code):
     """
     Gets from the database the App that is considered the Owner for a given spec and language.
@@ -46,13 +57,13 @@ def _db_get_lang_owner_app(spec, lang_code):
     # Among those AppVars for our Spec, we try to locate an ownership AppVar for our
     # lang code.
     owner_app_ids = db.session.query(AppVar.app_id).filter(AppVar.name == "ownership",
-                                                          AppVar.value == lang_code,
-                                                          AppVar.app_id.in_(related_apps_ids)).all()
+                                                           AppVar.value == lang_code,
+                                                           AppVar.app_id.in_(related_apps_ids)).all()
 
     # TODO: We shouldnt repeat this.
     owner_appvars = db.session.query(AppVar).filter(AppVar.name == "ownership",
-                                                      AppVar.value == lang_code,
-                                                      AppVar.app_id.in_(related_apps_ids)).all()
+                                                    AppVar.value == lang_code,
+                                                    AppVar.app_id.in_(related_apps_ids)).all()
 
     owner_app_id = [owner_appvar.app_id for owner_appvar in owner_appvars if owner_appvar.app.composer == "translate"]
 
@@ -76,6 +87,19 @@ def _db_declare_ownership(owner_app, lang_code):
     @return: None.
     """
     add_var(owner_app, "ownership", lang_code)
+
+
+def _db_transfer_ownership(lang, from_app, target_app):
+    """
+    Transfers ownership of a language from an app to another.
+    """
+    ownership = db.session.query(AppVar).filter(AppVar.app == from_app,
+                                                AppVar.name == "ownership", AppVar.value == lang).first()
+    if ownership is None:
+        raise Exception("Could not find specified ownership")
+    ownership.app = target_app
+    db.session.add(ownership)
+    db.session.commit()
 
 
 def _find_unique_name_for_app(base_name):

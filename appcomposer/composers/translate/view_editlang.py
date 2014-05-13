@@ -22,11 +22,11 @@ def translate_edit():
     """
 
     # No matter if we are handling a GET or POST, we require these parameters.
-    appid = request.values["appid"]
-    srclang = request.values["srclang"]
-    targetlang = request.values["targetlang"]
-    srcgroup = request.values["srcgroup"]
-    targetgroup = request.values["targetgroup"]
+    appid = request.values.get("appid")
+    srclang = request.values.get("srclang")
+    targetlang = request.values.get("targetlang")
+    srcgroup = request.values.get("srcgroup")
+    targetgroup = request.values.get("targetgroup")
 
     # Retrieve the application we want to view or edit.
     app = get_app(appid)

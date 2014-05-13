@@ -33,5 +33,6 @@ import view_publish
 import view_index
 import view_delete
 import view_others
+import view_transfer_ownership
 import ajax
 import api_publish
