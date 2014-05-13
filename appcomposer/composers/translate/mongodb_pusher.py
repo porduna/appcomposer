@@ -1,3 +1,4 @@
+import json
 import os
 
 from celery import Celery
@@ -11,6 +12,9 @@ import sys
 
 
 # Fix the path so it can be run more easily, etc.
+from appcomposer.composers.translate.bundles import BundleManager
+from appcomposer.composers.translate.db_helpers import _db_get_diff_specs, _db_get_ownerships
+
 cwd = os.getcwd()
 path = os.path.join("appcomposer", "composers", "translate")
 if cwd.endswith(path):
@@ -39,7 +43,7 @@ bundles = db.bundles
 logger = get_task_logger(__name__)
 
 
-@cel.task(name="push", bind=True, default_retry_delay=0)
+@cel.task(name="push", bind=True)
 def push(self, spec, lang, data, time):
     """
     Pushes a Bundle into the MongoDB.
@@ -67,6 +71,52 @@ def push(self, spec, lang, data, time):
 
         logger.warn("[PUSH]: Exception occurred. Retrying soon.")
         raise self.retry(exc=exc, default_retry_delay=60, max_retries=None)
+
+@cel.task(name="sync", bind=True)
+def sync(self):
+    """
+    Fully synchronizes the local database leading translations with
+    the MongoDB.
+    """
+    # Retrieve a list of specs that are currently hosted in the local DB.
+    specs = _db_get_diff_specs()
+
+    # Store a list of bundleids
+    bundleids = []
+
+    for spec in specs:
+        # For each spec we get the ownerships.
+        ownerships = _db_get_ownerships(spec)
+
+        bundles = []
+
+        for ownership in ownerships:
+            lang = ownership.value
+            bm = BundleManager.create_from_existing_app(ownership.app.data)
+
+            # Get a list of fullcodes (including the group).
+            keys = [key for key in bm._bundles.keys() if BundleManager.fullcode_to_partialcode(key) == lang]
+
+            # TODO: The graining of the modification date will actually lead
+            # to unneeded updates.
+            update_date = ownership.app.modification_date
+
+            for full_lang in keys:
+
+                # Create the MongoDB id.
+                bundleid = full_lang + "::" + spec
+                bundleids.append(bundleid)
+
+                # Launch a task to carry out the synchronization if needed.
+                # The current method will waste some bandwidth but require
+                # a single query per bundle.
+                data = json.dumps(bm.get_bundle(full_lang).get_msgs())
+                push.delay(spec, full_lang, data, update_date)
+
+    # Now that the bundles that are actually in the local DB have been
+    # supposedly synchronized, it's time to delete the ones that no longer exist.
+    bundles.remove()
+
 
 
 if __name__ == '__main__':

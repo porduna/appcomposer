@@ -12,6 +12,15 @@ ca_ES) as its value.
 """
 
 
+def _db_get_diff_specs():
+    """
+    Gets a list of the different specs that are in the database.
+    @return: List of different specs. (The specs themselves, not the AppVar objects).
+    """
+    spec_values = db.session.query(AppVar.value).filter_by(name="spec").distinct()
+    specs = [val[0] for val in spec_values]
+    return specs
+
 def _db_get_ownerships(spec):
     """
     Gets every single ownership for a spec. It will only work on "translate" specs.

@@ -8,7 +8,7 @@ from appcomposer.appstorage.api import get_app
 from appcomposer.utils import get_original_url
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import Bundle, BundleManager
-from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_get_ownerships
+from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_get_ownerships, _db_get_diff_specs
 from appcomposer.models import AppVar
 
 
@@ -116,13 +116,11 @@ def app_translation_serve_list():
     """
 
     # Get a list of distinct XMLs.
-    specs = db.session.query(AppVar.value).filter(AppVar.name == "spec").distinct()
+    specs = _db_get_diff_specs()
 
     output = {}
 
-    for spec_tuple in specs:
-        spec = spec_tuple[0]
-
+    for spec in specs:
         # For each spec we get the ownerships.
         ownerships = _db_get_ownerships(spec)
 
