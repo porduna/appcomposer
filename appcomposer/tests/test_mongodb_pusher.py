@@ -282,6 +282,9 @@ class TestMongoDBPusher:
         # the child, a proposal was sent and proposals are by default set to autoaccept.
         assert data["hello_world"] == "Hello Test World"
 
+    def test_sync_basic(self):
+        pusher.sync()
+
     def test_nothing(self):
         pass
 
