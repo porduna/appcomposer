@@ -1,4 +1,4 @@
-from datetime import timedelta
+from datetime import timedelta, datetime
 import json
 import os
 
@@ -93,6 +93,13 @@ def sync(self):
     # should use SQLAlchemy on its own.
     with flask_app.app_context():
 
+        # Remember the time in which we start this process. This is so that
+        # later we can avoid deleting bundles that were created in this time
+        # but which were not present on the _db_get_diff_specs() call yet.
+        # (That is, to avoid a concurrency issue that could occur when creating
+        # new translations).
+        start_time = datetime.utcnow()
+
         # Retrieve a list of specs that are currently hosted in the local DB.
         specs = _db_get_diff_specs()
 
@@ -132,7 +139,10 @@ def sync(self):
         logger.info("[SYNC]: Sync finished.")
         # Now that the bundles that are actually in the local DB have been
         # supposedly synchronized, it's time to delete the ones that no longer exist.
-        mongo_bundles.remove({"_id": {"$nin": bundleids}})
+        # We avoid deleting those which were created while we executed this synchronization
+        # method, because a new app could have been created in the meantime and could be deleted
+        # if we did.
+        mongo_bundles.remove({"_id": {"$nin": bundleids}, "time": {"$lt": start_time}})
 
 
 if __name__ == '__main__':
