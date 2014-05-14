@@ -282,8 +282,12 @@ class TestMongoDBPusher:
         # the child, a proposal was sent and proposals are by default set to autoaccept.
         assert data["hello_world"] == "Hello Test World"
 
-    def test_sync_basic(self):
-        pusher.sync()
+    def test_sync_basic_apply(self):
+        self.login("testuser", "password")
+        url = "appcomposer/tests_data/relativeExample/i18n.xml"
+        rv = self.flask_app.post("/composers/translate/selectlang", data={"appname": "UTApp", "appurl": url},
+                                 follow_redirects=True)
+        pusher.sync.apply()
 
     def test_celery_sync_update(self):
 

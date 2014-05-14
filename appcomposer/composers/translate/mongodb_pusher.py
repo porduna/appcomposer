@@ -136,7 +136,6 @@ def sync(self):
                     push.delay(spec, full_lang, data, update_date)
 
 
-        logger.info("[SYNC]: Sync finished.")
         # Now that the bundles that are actually in the local DB have been
         # supposedly synchronized, it's time to delete the ones that no longer exist.
         # We avoid deleting those which were created while we executed this synchronization
@@ -144,6 +143,7 @@ def sync(self):
         # if we did.
         mongo_bundles.remove({"_id": {"$nin": bundleids}, "time": {"$lt": start_time}})
 
+        logger.info("[SYNC]: Sync finished.")
 
 if __name__ == '__main__':
     cel.worker_main(sys.argv)
