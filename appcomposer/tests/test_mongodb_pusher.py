@@ -285,6 +285,65 @@ class TestMongoDBPusher:
     def test_sync_basic(self):
         pusher.sync()
 
+    def test_celery_sync_update(self):
+
+        # Create test apps so that they are in the DB.
+        self.login("testuser", "password")
+        url = "appcomposer/tests_data/relativeExample/i18n.xml"
+        rv = self.flask_app.post("/composers/translate/selectlang", data={"appname": "UTApp", "appurl": url},
+                                 follow_redirects=True)
+        assert rv.status_code == 200  # Page found code.
+
+        # Wait to be sure that they are not placed into the MongoDB early.
+        time.sleep(1)
+
+        # Remove the bundles that are originally there, so that we can
+        # test later.
+        bundles = pusher.mongo_bundles
+        bundles.remove()
+
+        # Sync through celery. May take a short while, it is asynchronous and
+        # it issues asynchronous tasks.
+        pusher.sync.delay()
+        time.sleep(1)
+
+        # Check that our new app got added to the DB.
+        appurl = "appcomposer/tests_data/relativeExample/i18n.xml"
+        f = bundles.find_one({"spec": appurl})
+        assert f["spec"] == appurl
+        assert f["bundle"] == "all_ALL_ALL"
+        assert "hello" in f["data"]
+
+    def test_celery_sync_delete(self):
+
+        # Create test apps so that they are in the DB.
+        self.login("testuser", "password")
+        url = "appcomposer/tests_data/relativeExample/i18n.xml"
+        rv = self.flask_app.post("/composers/translate/selectlang", data={"appname": "UTApp", "appurl": url},
+                                 follow_redirects=True)
+        assert rv.status_code == 200  # Page found code.
+
+        # Wait to be sure that they are not placed into the MongoDB early.
+        time.sleep(1)
+
+        with self.flask_app:
+            self.flask_app.get("/")
+            unid = get_app_by_name("UTApp").unique_id
+
+        rv = self.flask_app.post("/composers/translate/delete", data={"appid": unid, "delete": "Delete"}, follow_redirects=True)
+        assert rv.status_code == 200
+
+        # Sync through celery. May take a short while, it is asynchronous and
+        # it issues asynchronous tasks.
+        pusher.sync.delay()
+        time.sleep(1)
+
+        # Check that our new app got added to the DB.
+        appurl = "appcomposer/tests_data/relativeExample/i18n.xml"
+        bundles = pusher.mongo_bundles
+        f = bundles.find_one({"spec": appurl})
+        assert f is None
+
     def test_nothing(self):
         pass
 
