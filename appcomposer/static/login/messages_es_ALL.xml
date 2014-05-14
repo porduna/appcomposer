@@ -1,3 +1,5 @@
 <messagebundle>
     <msg name="go_to_app_composer">Ir al App Composer</msg>
+    <msg name="you_must_be_logged_first">Debes estar registrado en Graasp</msg>
+    <msg name="click_on_top_right_corner">Haz click en el botón de Entrar arriba a la derecha</msg>
 </messagebundle>
