@@ -1,4 +1,5 @@
 from flask import request, flash, redirect, url_for, render_template, json
+from appcomposer import db
 from appcomposer.appstorage.api import get_app, delete_app, NotAuthorizedException
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import translate_blueprint
@@ -43,6 +44,25 @@ def translate_delete():
             return redirect(url_for("user.apps.index"))
 
         try:
+
+            # If we have ownerships and we have someone to transfer them to,
+            # then we need to do it.
+            if len(ownerships) > 0 and len(transfer_apps) > 0:
+                transfer_app_id = request.values.get("transfer")
+                if transfer_app_id is None:
+                    return render_template("composers/errors.html", message="transfer parameter missing"), 400
+                transfer_app = get_app(transfer_app_id)
+                if transfer_app is None:
+                    return render_template("composers/errors.html", message="could not retrieve app"), 400
+
+                # Transfer all ownerships to the selected app.
+                for o in ownerships:
+                    o.app = transfer_app
+                    db.session.add(o)
+                db.session.commit()
+
+                transfer_app = get_app(transfer_app_id)
+
             delete_app(app)
 
             flash(gettext("App successfully deleted."), "success")
