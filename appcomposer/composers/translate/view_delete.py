@@ -4,6 +4,7 @@ from appcomposer.appstorage.api import get_app, delete_app, NotAuthorizedExcepti
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.db_helpers import _db_get_ownerships, _db_get_app_ownerships, _db_get_spec_apps
+from appcomposer.models import AppVar
 
 
 @translate_blueprint.route("/delete", methods=["GET", "POST"])
@@ -14,7 +15,7 @@ def translate_delete():
     other user's App is made.
     """
 
-    appid = request.args.get("appid")
+    appid = request.values.get("appid")
     if not appid:
         return "appid not provided", 400
     app = get_app(appid)
@@ -22,7 +23,7 @@ def translate_delete():
         return "App not found", 404
 
     # Get our spec.
-    spec = json.loads(app.data)["spec"]
+    spec = db.session.query(AppVar.value).filter_by(app=app, name="spec").first()[0]
 
     # Find out which languages we own.
     ownerships = _db_get_app_ownerships(app)
