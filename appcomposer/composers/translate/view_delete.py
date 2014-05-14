@@ -2,6 +2,7 @@ from flask import request, flash, redirect, url_for, render_template, json
 from appcomposer.appstorage.api import get_app, delete_app, NotAuthorizedException
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import translate_blueprint
+from appcomposer.composers.translate.db_helpers import _db_get_ownerships
 
 
 @translate_blueprint.route("/delete", methods=["GET", "POST"])
@@ -12,15 +13,20 @@ def translate_delete():
     other user's App is made.
     """
 
+    appid = request.args.get("appid")
+    if not appid:
+        return "appid not provided", 400
+    app = get_app(appid)
+    if app is None:
+        return "App not found", 404
+
     # If GET we display the confirmation screen and do not actually delete it.
     if request.method == "GET":
-        appid = request.args.get("appid")
-        if not appid:
-            return "appid not provided", 400
-        app = get_app(appid)
-        if app is None:
-            return "App not found", 404
-        return render_template("composers/dummy/delete.html", app=app)
+
+        # Find out which languages we own.
+        ownerships = _db_get_app_ownerships()
+
+        return render_template("composers/translate/delete.html", app=app)
 
     # If POST we consider whether the user clicked Delete or Cancel in the confirmation screen.
     elif request.method == "POST":
@@ -30,13 +36,6 @@ def translate_delete():
             return redirect(url_for("user.apps.index"))
 
         try:
-            appid = request.form.get("appid")
-            if not appid:
-                return "appid not provided (bad request)", 400  # Bad request.
-            app = get_app(appid)
-            if app is None:
-                return "App not found", 404  # Not found.
-
             delete_app(app)
 
             flash(gettext("App successfully deleted."), "success")
