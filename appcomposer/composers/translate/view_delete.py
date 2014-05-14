@@ -2,7 +2,7 @@ from flask import request, flash, redirect, url_for, render_template, json
 from appcomposer.appstorage.api import get_app, delete_app, NotAuthorizedException
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import translate_blueprint
-from appcomposer.composers.translate.db_helpers import _db_get_ownerships
+from appcomposer.composers.translate.db_helpers import _db_get_ownerships, _db_get_app_ownerships, _db_get_spec_apps
 
 
 @translate_blueprint.route("/delete", methods=["GET", "POST"])
@@ -20,13 +20,20 @@ def translate_delete():
     if app is None:
         return "App not found", 404
 
+    # Get our spec.
+    spec = json.loads(app.data)["spec"]
+
+    # Find out which languages we own.
+    ownerships = _db_get_app_ownerships(app)
+
+    # Find out which apps we can transfer to.
+    transfer_apps = _db_get_spec_apps(spec)
+    transfer_apps = [a for a in transfer_apps if a != app]
+
     # If GET we display the confirmation screen and do not actually delete it.
     if request.method == "GET":
-
-        # Find out which languages we own.
-        ownerships = _db_get_app_ownerships()
-
-        return render_template("composers/translate/delete.html", app=app)
+        return render_template("composers/translate/delete.html", app=app, ownerships=ownerships,
+                               transfer_apps=transfer_apps)
 
     # If POST we consider whether the user clicked Delete or Cancel in the confirmation screen.
     elif request.method == "POST":
