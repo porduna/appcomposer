@@ -4,7 +4,7 @@ import urllib2
 import traceback
 from xml.dom import minidom
 
-from flask import render_template, request, flash, url_for
+from flask import render_template, request, flash, url_for, Response
 from flask_wtf import Form
 from wtforms import TextField
 from wtforms.validators import url, required
@@ -155,7 +155,7 @@ def app_xml(app_id):
         # TODO: some bootstrap magic
         return "Could not convert the application. %s" % str(e)
     else:
-        return contents
+        return Response(contents, mimetype='text/xml')
 
 @adaptor.route('/export/<app_id>/configuration.js')
 def configuration(app_id):
