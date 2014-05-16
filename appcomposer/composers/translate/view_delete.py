@@ -14,7 +14,12 @@ def translate_delete():
 
     # If GET we display the confirmation screen and do not actually delete it.
     if request.method == "GET":
-
+        appid = request.form.get("appid")
+        if not appid:
+            return "appid not provided (bad request)", 400  # Bad request.
+        app = get_app(appid)
+        if app is None:
+            return "App not found", 404  # Not found.
         return render_template("composers/dummy/delete.html", app=app)
 
     # If POST we consider whether the user clicked Delete or Cancel in the confirmation screen.

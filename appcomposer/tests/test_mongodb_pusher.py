@@ -268,7 +268,7 @@ class TestMongoDBPusher:
         assert rv.status_code == 302
 
         # Ensure that after a short while we have all the bundles in the MongoDB and the changes have been applied.
-        time.sleep(1)
+        time.sleep(2)
 
         bundles = pusher.mongo_bundles.find({"spec": appurl})
         bundles = {b["bundle"]: b for b in bundles}
@@ -299,7 +299,7 @@ class TestMongoDBPusher:
         assert rv.status_code == 200  # Page found code.
 
         # Wait to be sure that they are not placed into the MongoDB early.
-        time.sleep(1)
+        time.sleep(2)
 
         # Remove the bundles that are originally there, so that we can
         # test later.
@@ -309,11 +309,12 @@ class TestMongoDBPusher:
         # Sync through celery. May take a short while, it is asynchronous and
         # it issues asynchronous tasks.
         pusher.sync.delay()
-        time.sleep(1)
+        time.sleep(2)
 
         # Check that our new app got added to the DB.
         appurl = "appcomposer/tests_data/relativeExample/i18n.xml"
-        f = bundles.find_one({"spec": appurl})
+        f = bundles.find_one({"spec": appurl, "bundle": "all_ALL_ALL"})
+        print f
         assert f["spec"] == appurl
         assert f["bundle"] == "all_ALL_ALL"
         assert "hello" in f["data"]
@@ -328,7 +329,7 @@ class TestMongoDBPusher:
         assert rv.status_code == 200  # Page found code.
 
         # Wait to be sure that they are not placed into the MongoDB early.
-        time.sleep(1)
+        time.sleep(2)
 
         with self.flask_app:
             self.flask_app.get("/")
@@ -340,7 +341,7 @@ class TestMongoDBPusher:
         # Sync through celery. May take a short while, it is asynchronous and
         # it issues asynchronous tasks.
         pusher.sync.delay()
-        time.sleep(1)
+        time.sleep(2)
 
         # Check that our new app got added to the DB.
         appurl = "appcomposer/tests_data/relativeExample/i18n.xml"

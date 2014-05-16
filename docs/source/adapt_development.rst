@@ -13,7 +13,7 @@ are once customized they are available to students.
 
 So as to develop new adaptors, some software development skills are required. At
 the moment of this writing, basic knowledge of the `Python programming language
-<http://www.python.org/>`_, as well as HTML5, is required. Prior knowledge to
+<http://www.python.org/>`_, as well as HTML5, is required. Prior knowledge of
 these technologies is assumed in this section.
 
 Additionally, it is assumed that the developer has properly installed the App
@@ -193,7 +193,7 @@ use, such as inheritance or passing the required values.
 Step 2: Our first template
 ##########################
 
-So let's do our first template, which we will save in
+So let's make our first template, which we will save in
 ``templates/simpletext/edit.html``:
 
 .. code-block:: html
