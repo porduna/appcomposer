@@ -6,6 +6,9 @@ import urlparse
 from xml.dom import minidom
 from babel import Locale, UnknownLocaleError
 from flask import url_for
+import requests
+from appcomposer.application import app as flask_app
+
 
 
 AUTOACCEPT_DEFAULT = True
@@ -180,8 +183,15 @@ class BundleManager(object):
         @param url: URL to retrieve. Should be absolute, not relative.
         @return: Contents of the URL.
         """
-        handle = urllib.urlopen(url)
-        contents = handle.read()
+
+        if flask_app.config.get("DEBUG") == True:
+            handle = urllib.urlopen(url)
+            contents = handle.read()
+
+        else:
+            r = requests.get(url)
+            contents = r.text
+
         return contents
 
     def _to_absolute_url(self, url):

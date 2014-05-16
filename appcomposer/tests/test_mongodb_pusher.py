@@ -99,7 +99,7 @@ class TestMongoDBPusher:
         assert rv.status_code == 200  # Page found code.
 
         # Ensure that after a short while we have all the bundles in the MongoDB.
-        time.sleep(1)
+        time.sleep(2)
 
         bundles = pusher.mongo_bundles.find({"spec": url})
         bundles = {b["bundle"]: b for b in bundles}
@@ -151,7 +151,7 @@ class TestMongoDBPusher:
         assert rv.status_code == 302
 
         # Ensure that after a short while we have all the bundles in the MongoDB and the changes have been applied.
-        time.sleep(1)
+        time.sleep(2)
 
         bundles = pusher.mongo_bundles.find({"spec": appurl})
         bundles = {b["bundle"]: b for b in bundles}
@@ -162,6 +162,7 @@ class TestMongoDBPusher:
         data = json.loads(data)
 
         # Test that the changes have been applied.
+        print data
         assert data["hello_world"] == "Hello Test World"
 
     def test_mongodb_pusher_at_app_edit_non_owner_propose_disabled(self):
