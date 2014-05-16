@@ -171,7 +171,8 @@ class ProfileEditView(UserBaseView):
             user.organization = form.organization.data
             user.role = form.role.data
             user.auth_type = form.auth_system.data  # Probably in the release we shouldn't let users modify the auth this way
-            user.auth_data = form.password.data  # For the userpass method, the auth_data should contain the password. Eventually, should add hashing.
+            if len(form.password.data) > 0:
+                user.auth_data = form.password.data  # For the userpass method, the auth_data should contain the password. Eventually, should add hashing.
             db.session.add(user)
             db.session.commit()
 
