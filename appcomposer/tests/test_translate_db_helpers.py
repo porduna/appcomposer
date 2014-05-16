@@ -2,7 +2,7 @@ import appcomposer
 import appcomposer.application
 
 from appcomposer.appstorage import api, add_var
-from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals, _db_get_spec_apps, _db_transfer_ownership, _db_get_app_ownerships
+from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals, _db_get_spec_apps, _db_transfer_ownership, _db_get_app_ownerships, _db_get_diff_specs
 from appcomposer.login import current_user
 
 
@@ -206,7 +206,6 @@ class TestTranslateDbHelpers:
         owner = _db_get_lang_owner_app("http://justatest.com", "test_TEST")
         assert owner == app2
 
-<<<<<<< HEAD
     def test_get_diff_specs(self):
         """
         Check that we can retrieve a list of all specs from the DB. Because we don't re-create
@@ -221,7 +220,7 @@ class TestTranslateDbHelpers:
         specs = _db_get_diff_specs()
         assert "http://justatest.com" in specs
         assert "ATESTSPEC" in specs
-=======
+
     def test_get_app_ownerships(self):
         """
         Test the method to retrieve the ownerships given an app.
@@ -229,4 +228,3 @@ class TestTranslateDbHelpers:
         _db_declare_ownership(self.tapp, "test_TEST")
         ownerships = _db_get_app_ownerships(self.tapp)
         assert len(ownerships) == 1
->>>>>>> delete_with_transfer
