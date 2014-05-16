@@ -41,6 +41,17 @@ def _db_get_ownerships(spec):
     return owner_apps
 
 
+def _db_get_app_ownerships(app):
+    """
+    Gets every single ownership for an app.
+    @param app: The app whose ownerships to retrieve.
+    @return: List of ownerships.
+    """
+    ownerships = db.session.query(AppVar).filter_by(name="ownership",
+                                                    app=app).all()
+    return ownerships
+
+
 def _db_get_spec_apps(spec):
     """
     Gets from the database the list of apps with the specified spec.
