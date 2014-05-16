@@ -5,6 +5,7 @@ import xml.dom.minidom as minidom
 from collections import defaultdict
 
 from flask import request, flash, redirect, url_for, render_template, json
+from requests.exceptions import MissingSchema
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 from appcomposer.utils import get_original_url
 from appcomposer.appstorage import create_app, set_var
@@ -95,7 +96,10 @@ def translate_selectlang():
             bm = BundleManager.create_new_app(appurl)
         except InvalidXMLFileException:
             return render_template("composers/errors.html",
-                                   message="Invalid XML in either the XML specification file or the XML translation bundles that it links to")
+                                   message="Invalid XML in either the XML specification file or the XML translation bundles that it links to"), 400
+        except MissingSchema:
+            return render_template("composers/errors.html",
+                                   message="Failed to retrieve the XML spec. The URL was maybe invalid."), 400
 
         spec = bm.get_gadget_spec()  # For later
 
