@@ -7,6 +7,15 @@ Installation
 
 This section covers the installation and deployment of a custom AppComposer server.
 
+Document Audience
+.................
+
+This documentation is primarily intended for server administrators who
+intend to deploy and manage their own AppComposer instance on their own server,
+or for prospective AppComposer developers.
+
+Some technical knowledge may be required to successfully deploy the server.
+
 
 Introduction & Technologies
 ...........................

@@ -1,6 +1,7 @@
-from flask import redirect, request, url_for
+from flask import redirect, request, url_for, flash
 from flask.ext.admin import Admin, BaseView, expose
 from flask.ext.wtf import TextField, Form, PasswordField
+from wtforms import ValidationError, validators
 from .fields import DisabledTextField
 from appcomposer import db
 from appcomposer.login import current_user
@@ -16,7 +17,8 @@ def initialize_user_component(app):
     # URL describes through which address we access the page.
     # Endpoint enables us to do url_for('userp') to yield the URL
     url = '/user'
-    admin = Admin(index_view=HomeView(url=url, endpoint='user', name=lazy_gettext("Home")), name=lazy_gettext("User Profile"), url=url, endpoint="home-user")
+    admin = Admin(index_view=HomeView(url=url, endpoint='user', name=lazy_gettext("Home")),
+                  name=lazy_gettext("User Profile"), url=url, endpoint="home-user")
     admin.add_view(ProfileEditView(name=lazy_gettext("Profile"), url='profile', endpoint='user.profile'))
     admin.add_view(AppsView(name=lazy_gettext("Apps"), url="apps", endpoint='user.apps'))
     admin.init_app(app)
@@ -66,7 +68,9 @@ class ProfileEditForm(Form):
     name = DisabledTextField(lazy_gettext(u"Name:"))
     login = DisabledTextField(lazy_gettext(u"Login:"))
     email = TextField(lazy_gettext(u"E-mail:"))
-    password = PasswordField(lazy_gettext(u"Password:"), description=lazy_gettext("Password."))
+    password = PasswordField(lazy_gettext(u"Password:"),
+                             [validators.EqualTo("password_rep", message="Passwords must match")])
+    password_rep = PasswordField(lazy_gettext(u"Password again:"))
     organization = TextField(lazy_gettext(u"Organization:"))
     role = TextField(lazy_gettext(u"Role:"))
     creation_date = DisabledTextField(lazy_gettext(u"Creation date:"))
@@ -80,6 +84,7 @@ def build_edit_link(app):
     endpoint = COMPOSERS_DICT[app.composer]["edit_endpoint"]
     return url_for(endpoint, appid=app.unique_id)
 
+
 def build_duplicate_link(app):
     if app.composer not in COMPOSERS_DICT:
         return ""
@@ -87,6 +92,7 @@ def build_duplicate_link(app):
         return ""
     endpoint = COMPOSERS_DICT[app.composer]["duplicate_endpoint"]
     return url_for(endpoint, appid=app.unique_id)
+
 
 def build_delete_link(app):
     if app.composer not in COMPOSERS_DICT:
@@ -113,8 +119,12 @@ class AppsView(UserBaseView):
                            build_delete_link=build_delete_link, build_duplicate_link=build_duplicate_link)
 
 
-class ProfileEditView(UserBaseView):
+def passwords_match(form, field):
+    if form.password.data != form.password_rep.data:
+        raise ValidationError("Passwords don't match")
 
+
+class ProfileEditView(UserBaseView):
     def __init__(self, *args, **kwargs):
         super(ProfileEditView, self).__init__(*args, **kwargs)
 
@@ -161,8 +171,11 @@ class ProfileEditView(UserBaseView):
             user.organization = form.organization.data
             user.role = form.role.data
             user.auth_type = form.auth_system.data  # Probably in the release we shouldn't let users modify the auth this way
-            user.auth_data = form.password.data  # For the userpass method, the auth_data should contain the password. Eventually, should add hashing.
+            if len(form.password.data) > 0:
+                user.auth_data = form.password.data  # For the userpass method, the auth_data should contain the password. Eventually, should add hashing.
             db.session.add(user)
             db.session.commit()
+
+            flash("Changes saved", "success")
 
         return self.render("user/profile-edit.html", user=user, form=form, change_password=change_password)
