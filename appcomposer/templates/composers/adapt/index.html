@@ -21,7 +21,7 @@
             <div class="row">
                 {% for adaptor_id, adaptor in adaptors.iteritems() %}
                     <div class="col-md-4 app">
-                        <div class="alert alert-default">
+                        <div class="alert alert-warning">
                             <h3>{{ adaptor.name }}</h3>
                             {% if adaptor.description %}
                                 <p>{{ adaptor.description|safe }}</p>
