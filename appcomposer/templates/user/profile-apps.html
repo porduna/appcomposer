@@ -12,38 +12,64 @@
         </div>
     {% endif %}
 
-    {% for app in apps %}
-
-        {% if loop.index % 3 == 0 %}
-        <div class="row">
-        {% endif %}
-
-            <div class="span3 alert alert-info" style="padding: 10px; margin: 15px;">
-                <h2>{{ app.name }}</h2>
-                <p>
-                    <h4>{{ gettext("Composer") }}: {{ app.composer }}</h4><br>
-                    {{ gettext("Created") }}: {{ app.creation_date }}<br>
-                    {{ gettext("Modified") }}: {{ app.modification_date }}<br>
-                    {{ gettext("Accessed") }}: {{ app.last_access_date }}<br>
-                </p>
-                <br/>
-                <p>
-                    {% if build_edit_link(app) %}
-                        <a href="{{ build_edit_link(app) }}" class="btn btn-primary" type="button">{{ gettext("Open") }}</a>
-                    {% endif %}
-                    {% if build_duplicate_link(app) %}
-                        <a href="{{ build_duplicate_link(app) }}" class="btn btn-info" type="button">{{ gettext("Duplicate") }}</a>
-                    {% endif %}
-                    {% if build_delete_link(app) %}
-                        <a href="{{ build_delete_link(app) }}" class="btn btn-danger" type="button">{{ gettext("Delete") }}</a>
-                    {% endif %}
-                </p>
-            </div>
-
-        {% if loop.index % 3 == 0 %}
+    <div class="row">
+        <div class="col-md-3 pull-right">
+            <input name="text" maxlength="50" placeholder="Search..." type="text" class="form-control" id="search_box" />
         </div>
-        {% endif %}
-    {% endfor %}
+    </div>
+
+    <div class="row">
+        {% for app in apps %}
+            <div class="span4 app">
+                <div class="alert alert-info">
+                    <h2>{{ app.name }}</h2>
+                    <p>
+                        <h4>{{ gettext("Composer") }}: {{ app.composer }}</h4><br>
+                        {# {{ gettext("Created") }}: {{ app.creation_date.strftime("%Y-%m-%d %H:%M") }}<br> #}
+                        {{ gettext("Last modified") }}: {{ app.modification_date.strftime("%Y-%m-%d %H:%M") }}<br>
+                        {# {{ gettext("Accessed") }}: {{ app.last_access_date.strftime("%Y-%m-%d %H:%M") }}<br> #}
+                    </p>
+                    <br/>
+                    <p>
+                        {% if build_edit_link(app) %}
+                            <a href="{{ build_edit_link(app) }}" class="btn btn-primary" type="button">{{ gettext("Open") }}</a>
+                        {% endif %}
+                        {% if build_duplicate_link(app) %}
+                            <a href="{{ build_duplicate_link(app) }}" class="btn btn-info" type="button">{{ gettext("Duplicate") }}</a>
+                        {% endif %}
+                        {% if build_delete_link(app) %}
+                            <a href="{{ build_delete_link(app) }}" class="btn btn-danger" type="button">{{ gettext("Delete") }}</a>
+                        {% endif %}
+                    </p>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
 
 
+{% endblock %}
+
+{% block tail %}
+    {{ super() }}
+<script>
+        // If activated, in mobile phones it scrolls down, which is kind of weird
+        // $('#search_box').focus();
+        $('#search_box').keyup( function(e) {
+            var current_value = $(this).val().toLowerCase();
+            if (current_value == "") {
+                $(".app").show();
+            } else {
+                $(".app").each(function(pos, element) {
+                    var title = $(element).find("h2").text().toLowerCase();
+                    var adaptor_name = $(element).find("h4").text().toLowerCase();
+
+                    if (adaptor_name.toLowerCase().indexOf(current_value) >= 0 || title.indexOf(current_value) >= 0) {
+                        $(element).show();
+                    } else {
+                        $(element).hide();
+                    }
+                });
+            }
+        });
+    </script>
 {% endblock %}
