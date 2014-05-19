@@ -33,6 +33,8 @@ def about():
 def contact():
     return render_template('contact.html')
 
+
+
 def run():
     if not upgrader.check():
         print >> sys.stderr, "Database not upgraded!!! Run:"
@@ -57,6 +59,7 @@ def run():
         app.config['DEBUG'] = False
     else:
         app.config['DEBUG'] = True
+        app.config["CSRF_ENABLED"] = True
         app.config["SECRET_KEY"] = 'secret'
 
     if app.config['DEBUG']:

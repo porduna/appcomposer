@@ -4,6 +4,7 @@ from appcomposer.appstorage.api import get_app, delete_app, NotAuthorizedExcepti
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.db_helpers import _db_get_ownerships, _db_get_app_ownerships, _db_get_spec_apps
+from appcomposer.csrf import verify_csrf
 from appcomposer.models import AppVar
 
 
@@ -39,6 +40,12 @@ def translate_delete():
 
     # If POST we consider whether the user clicked Delete or Cancel in the confirmation screen.
     elif request.method == "POST":
+
+        # Protect against CSRF attacks.
+        if not verify_csrf(request):
+            return render_template("composers/errors.html",
+                                   message="Request does not seem to come from the right source (csrf check)"), 400
+
         # If the user didn't click delete he probably clicked cancel.
         # We return to the Apps View page.
         if not "delete" in request.form:

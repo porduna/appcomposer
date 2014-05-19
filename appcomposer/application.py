@@ -1,6 +1,8 @@
+import os
+
 from flask import Flask, request
 from flask import escape
-import os
+
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(32)
@@ -104,7 +106,6 @@ for adaptor_blueprint in adaptors_blueprints:
     app.register_blueprint(adaptor_blueprint)
 app.register_blueprint(expert_blueprint, url_prefix='/composers/expert')
 app.register_blueprint(dummy_blueprint, url_prefix=dummy_info["url"])
-
 
 
 # Mostly for debugging purposes, this snippet will print the site-map so that we can check
