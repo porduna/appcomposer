@@ -82,6 +82,8 @@ class TestMongoDBPusher:
         # Wait for the async task to finish. This is normally not done.
         async_result.wait()
 
+        time.sleep(0.5)
+
         testbundle = pusher.mongo_bundles.find_one({"bundle": "test_CELERYTEST_ALL", "spec": "test_app.xml"})
         assert testbundle is not None
         assert testbundle["bundle"] == "test_CELERYTEST_ALL"
