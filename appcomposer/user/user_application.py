@@ -113,7 +113,7 @@ class AppsView(UserBaseView):
     @expose('/')
     def index(self):
         # Retrieve the apps
-        apps = appstorage.get_my_apps()
+        apps = appstorage.get_my_apps()[::-1]
 
         return self.render('user/profile-apps.html', apps=apps, build_edit_link=build_edit_link,
                            build_delete_link=build_delete_link, build_duplicate_link=build_duplicate_link)

@@ -1,0 +1,67 @@
+{% set title = gettext("Developers") %}
+{% set adaptor_type = "JS Config" %}
+{% extends "composers/adapt/about.html" %}
+
+{% block adaptor_content %}
+   <p>Creating an application is simple. Your application must contain two scripts with the following special tags:</p>
+   <pre>
+    &lt;script <b>data-configuration-definition</b> type="text/javascript" charset="utf-8" src="conceptmap1.0/configuration_definition.js"&gt;&lt;/script&gt;
+    &lt;script <b>data-configuration</b> type="text/javascript" charset="utf-8" src="conceptmap1.0/configuration_default.js"&gt;&lt;/script&gt;
+   </pre>
+   <p>The first script includes the definition of the variables which are present. An example of this, developed at University of Twente, is the following:</p>
+   <pre>
+(function() {
+  "use strict";
+  window.golab = window.golab || {};
+
+  window.golab.tools = window.golab.tools || {};
+
+  window.golab.tools = window.golab.tools || {};
+
+  window.golab.tools.configurationDefinition = window.golab.tools.configurationDefinition || {};
+
+  window.golab.tools.configurationDefinition["conceptmapper"] = {
+    debug: {
+      label: "Debug mode?",
+      description: "Turns on/off verbose console messages.",
+      type: "boolean",
+      value: "true",
+      configurable: "true"
+    },
+    auto_load: {
+      label: "Auto load?",
+      description: "Automatically load the latest saved file?",
+      type: "boolean",
+      value: "true",
+      configurable: "true"
+    }
+  }
+}).call(this);
+   </pre>
+    <p>You have the complete example <a href="http://go-lab.gw.utwente.nl/production/conceptmapper_v1/tools/conceptmap/src/main/webapp/conceptmap1.0/configuration_definition.js">here</a>. The second script contains the default configuration:</p>
+    <pre>
+(function() {
+  "use strict";
+  window.golab = window.golab || {};
+
+  window.golab.tools = window.golab.tools || {};
+
+  window.golab.tools = window.golab.tools || {};
+
+  window.golab.tools.configuration = window.golab.tools.configuration || {};
+
+  window.golab.tools.configuration["conceptmapper"] = {
+    debug: {
+      type: "boolean",
+      value: "true"
+    },
+    auto_load: {
+      type: "boolean",
+      value: "false"
+    }
+  };
+}).call(this);
+    </pre>
+    <p>You have the complete example <a href="http://go-lab.gw.utwente.nl/production/conceptmapper_v1/tools/conceptmap/src/main/webapp/conceptmap1.0/configuration_default.js">here</a>.</p>
+    <p>The AppComposer basically takes the first script and use it to display a form to the teachers. Then, it stores the changes made by the teacher. Finally, every user loading the adaptation will have the same contents, but the second file path will be replaced by the one customized by the teacher.</p>
+{% endblock %}

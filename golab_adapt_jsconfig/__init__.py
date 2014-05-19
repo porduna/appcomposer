@@ -14,7 +14,9 @@ from appcomposer.utils import make_url_absolute, inject_absolute_urls, get_json,
 from appcomposer.composers.adapt import create_adaptor
 
 adaptor = create_adaptor('JavaScript configuration', 
-                initial = {'url' : None, 'configuration' : None, 'configuration_name' : None})
+                initial = {'url' : None, 'configuration' : None, 'configuration_name' : None}, 
+                description = lazy_gettext("Create adaptations of customizable Go-Lab applications."),
+                about_endpoint = 'jsconfig.about')
 
 SHINDIG_SERVER = 'http://shindig.epfl.ch'
 def shindig_url(relative_url):
@@ -168,3 +170,12 @@ def configuration(app_id):
 @adaptor.route("/js/ConfigDialog.js")
 def config_dialog():
     return render_template("jsconfig/ConfigDialog0.1.js")
+
+@adaptor.route("/about")
+def about():
+    return render_template("jsconfig/about.html")
+
+@adaptor.route("/developers")
+def developers():
+    return render_template("jsconfig/developers.html")
+

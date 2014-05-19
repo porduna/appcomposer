@@ -20,7 +20,7 @@
             </div>
         </div>
 
-        <h4>Create a new {{ adaptor_type|replace('_', ' ')|title }}</h4>
+        <h4>{{ gettext("Create a new {adaptor_type}").format(adaptor_type = adaptor_type|replace('_', ' ')|title) }}</h4>
         <hr>
 
         <div class="row">

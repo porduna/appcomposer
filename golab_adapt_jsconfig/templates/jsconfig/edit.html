@@ -18,7 +18,19 @@
                     </div>
                 </div>
             {% endif %}
-
+            {% if not url_form.url.data %}
+                <div class="row">
+                    <br>
+                    <div class="alert alert-info col-md-11 col-md-offset-1">
+                        {{ gettext("Put the address of an application to be adapted. Examples:") }}
+                        <ul>
+                        {% for example in ['http://go-lab.gw.utwente.nl/production/conceptmapper_v1/tools/conceptmap/src/main/webapp/conceptmapper.xml', 'http://go-lab.gw.utwente.nl/production/hypothesis_v1/tools/hypothesis/src/main/webapp/hypothesis.xml'] %}
+                            <li>{{ example }}</li>
+                        {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+            {% endif %}
         </form>
         <div id='ut_tools_conceptmapper_ConfigDialog'>
         </div>
