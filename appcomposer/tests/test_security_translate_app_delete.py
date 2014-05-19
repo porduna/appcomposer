@@ -1,3 +1,5 @@
+import re
+import urllib
 import appcomposer
 import appcomposer.application
 
@@ -6,6 +8,7 @@ from appcomposer.models import App
 from appcomposer.user import remove_user, create_user, get_user_by_login
 
 from appcomposer import db
+from appcomposer.application import app as flask_instance
 
 from flask import session
 
@@ -113,3 +116,44 @@ class TestSecurityAppDelete:
             rv = self.login("utuser2", "password")
             rv = self.flask_app.get("/composers/translate/delete?appid=14314-not-exist", follow_redirects=True)
             assert rv.status_code == 404  # Make sure attempting to get on a non-existing app results in a 404.
+
+
+    def test_delete_csrf_field_appears(self):
+        """
+        Ensure that a csrf field is added to the delete view form.
+        """
+        # Create utapp1 in utuser1
+        with self.flask_app:
+            rv = self.login("utuser1", "password")
+            assert session["logged_in"] == True
+            app = api.create_app("utapp1", "translate", '{"spec":"http://justatest.com", "bundles":{}}')
+            api.add_var(app, "spec", "http://justatest.com")
+            self.appid = app.unique_id
+
+        # GET the app delete view with CSRF enabled.
+        flask_instance.config["CSRF_ENABLED"] = True
+        rv = self.flask_app.get("/composers/translate/delete?" +
+                                urllib.urlencode({"appid": self.appid, "delete": "Delete"}))
+
+        # Check whether there is indeed a _csrf_token field
+        print rv.data
+        assert "_csrf_token" in rv.data
+        assert re.search("^.*?<input.*?hidden.*?_csrf_token.*?$", rv.data, re.MULTILINE) is not None
+
+    def test_delete_is_csrf_protected(self):
+        """
+        Ensure that app delete is not vulnerable to CSRF exploits.
+        """
+        # Create utapp1 in utuser1
+        with self.flask_app:
+            rv = self.login("utuser1", "password")
+            assert session["logged_in"] == True
+            app = api.create_app("utapp1", "translate", '{"spec":"http://justatest.com", "bundles":{}}')
+            api.add_var(app, "spec", "http://justatest.com")
+            self.appid = app.unique_id
+
+        # Try to delete the app with the CSRF enabled.
+        flask_instance.config["CSRF_ENABLED"] = True
+        rv = self.flask_app.post("/composers/translate/delete", data={"appid": self.appid, "delete": "Delete"},
+            follow_redirects=True)
+        assert rv.status_code == 400  # We are not complying with the CSRF code, so an error 400 should be returned.

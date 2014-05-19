@@ -1,13 +1,16 @@
- #!/usr/bin/python
- # -*- coding: utf-8 -*-
+#!/usr/bin/python
+# -*- coding: utf-8 -*-
+
+import time
 
 from flask import request, render_template, flash, json, url_for, redirect
-import time
+
 from appcomposer import db
 from appcomposer.appstorage.api import get_app, update_app_data, add_var
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
 from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_declare_ownership
+from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
@@ -106,6 +109,10 @@ def translate_edit():
                 db.session.add(owner_app)
                 db.session.commit()
 
+                # [Context: We are not the leading Bundles, but our changes are merged directly into the leading Bundle]
+                # We report the change to a "leading" bundle.
+                on_leading_bundle_updated(spec, targetbundle)
+
             else:
 
                 # We need to propose this Bundle to the owner.
@@ -120,6 +127,12 @@ def translate_edit():
                 add_var(owner_app, "proposal", proposal_json)
 
                 flash("Changes have been proposed to the owner")
+
+        # If we are the owner app.
+        if owner_app == app:
+            # [Context: We are the leading Bundle]
+            # We report the change.
+            on_leading_bundle_updated(spec, targetbundle)
 
         # Check whether the user wants to exit or to continue editing.
         if "save_exit" in request.values:

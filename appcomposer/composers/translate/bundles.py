@@ -6,6 +6,9 @@ import urlparse
 from xml.dom import minidom
 from babel import Locale, UnknownLocaleError
 from flask import url_for
+import requests
+from appcomposer.application import app as flask_app
+
 
 
 AUTOACCEPT_DEFAULT = True
@@ -29,6 +32,22 @@ class BundleManager(object):
 
         # The autoaccept status.
         self.autoaccept = True
+
+    def get_langs_list(self):
+        """
+        Retrieves a list of all the different language partial codes that the BundleManager contains.
+        For instance: [es_ES, ca_ES]. Does not take group into account.
+        """
+        langs = list(set([BundleManager.fullcode_to_partialcode(code) for code in self._bundles.keys()]))
+        return langs
+
+    def get_bundles(self, partialcode):
+        """
+        Get all the Bundles that correspond to a given partialcode (specific lang and territory, that is, all
+        group bundles for a given lang).
+        """
+        return [self._bundles[key] for key in self._bundles.keys() if
+                BundleManager.fullcode_to_partialcode(key) == partialcode]
 
     def get_gadget_spec(self):
         """
@@ -164,8 +183,15 @@ class BundleManager(object):
         @param url: URL to retrieve. Should be absolute, not relative.
         @return: Contents of the URL.
         """
-        handle = urllib.urlopen(url)
-        contents = handle.read()
+
+        if flask_app.config.get("DEBUG") == True:
+            handle = urllib.urlopen(url)
+            contents = handle.read()
+
+        else:
+            r = requests.get(url)
+            contents = r.text
+
         return contents
 
     def _to_absolute_url(self, url):
@@ -207,9 +233,16 @@ class BundleManager(object):
                 # TODO: Warning. The provided URL in an xml can be relative (or can it not?).
                 bundle_url = self._to_absolute_url(bundle_url)  # Will convert it if it isn't already.
                 bundle_xml = self._retrieve_url(bundle_url)
+
+                # Create the bundle that corresponds to the file.
                 bundle = Bundle.from_xml(bundle_xml, lang, country, "ALL")
                 name = Bundle.get_standard_code_string(lang, country, "ALL")
-                self._bundles[name] = bundle
+
+                # It is possible to have several locale files specified for the same Bundle. In this case,
+                # we will merge the contents in the order they are specified.
+                # Most often, the bundle will actually not exist yet. No problem there though, because
+                # merge_bundle will then just create a new one.
+                self.merge_bundle(name, bundle)
             except:
                 # TODO: For now, we do not really handle errors, we simply ignore those locales which cause exceptions.
                 # In the future, we should probably analyze which kind of exceptions can occur, and decide what

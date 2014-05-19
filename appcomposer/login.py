@@ -26,7 +26,10 @@ def current_user():
 
 
 def requires_login(f):
-    """Require that a particular flask URL requires login. It will require the user to be logged, and if he's not logged he will be redirected there afterwards."""
+    """
+    Require that a particular flask URL requires login. It will require the user to be logged,
+    and if he's not logged he will be redirected there afterwards.
+    """
 
     @wraps(f)
     def wrapper(*args, **kwargs):
@@ -73,9 +76,11 @@ def check_salted_password(password, salted_password):
 def login():
     return _login_impl(app.config.get('DEBUG', False))
 
+
 @app.route('/login-local', methods=["GET", "POST"])
 def login_local():
     return _login_impl(True)
+
 
 def _login_impl(show_local_users):
     next_url = request.args.get('next', '')
