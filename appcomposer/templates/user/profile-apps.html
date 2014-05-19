@@ -22,15 +22,21 @@
         {% for app in apps %}
             <div class="span4 app">
                 <div class="alert alert-info">
-                    <h2>{{ app.name }}</h2>
-                    <p>
+                    <div>
+                        <h2>{{ app.name }}</h2>
                         <h4>{{ gettext("Composer") }}: {{ app.composer }}</h4><br>
+                        {% if app.description %}
+                            <p>{{ app.description }}</p>
+                        {% else %}
+                            <p></p>
+                        {% endif %}
                         {# {{ gettext("Created") }}: {{ app.creation_date.strftime("%Y-%m-%d %H:%M") }}<br> #}
-                        {{ gettext("Last modified") }}: {{ app.modification_date.strftime("%Y-%m-%d %H:%M") }}<br>
+                        <div>
+                            <h6>{{ gettext("Last modified") }}: {{ app.modification_date.strftime("%Y-%m-%d %H:%M") }}</h6>
+                        </div>
                         {# {{ gettext("Accessed") }}: {{ app.last_access_date.strftime("%Y-%m-%d %H:%M") }}<br> #}
-                    </p>
-                    <br/>
-                    <p>
+                    </div>
+                    <div>
                         {% if build_edit_link(app) %}
                             <a href="{{ build_edit_link(app) }}" class="btn btn-primary" type="button">{{ gettext("Open") }}</a>
                         {% endif %}
@@ -40,7 +46,7 @@
                         {% if build_delete_link(app) %}
                             <a href="{{ build_delete_link(app) }}" class="btn btn-danger" type="button">{{ gettext("Delete") }}</a>
                         {% endif %}
-                    </p>
+                    </div>
                 </div>
             </div>
         {% endfor %}
@@ -62,8 +68,9 @@
                 $(".app").each(function(pos, element) {
                     var title = $(element).find("h2").text().toLowerCase();
                     var adaptor_name = $(element).find("h4").text().toLowerCase();
+                    var description = $(element).find("p").text().toLowerCase();
 
-                    if (adaptor_name.toLowerCase().indexOf(current_value) >= 0 || title.indexOf(current_value) >= 0) {
+                    if (description.toLowerCase().indexOf(current_value) >= 0 || adaptor_name.toLowerCase().indexOf(current_value) >= 0 || title.indexOf(current_value) >= 0) {
                         $(element).show();
                     } else {
                         $(element).hide();

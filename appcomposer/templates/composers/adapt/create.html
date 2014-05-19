@@ -74,10 +74,13 @@
                         <h5 class="panel-title">{{ app.name }}</h5>
                     </div>
                     <div class="panel-body">
+                        {% if app.description %}
+                            <p>{{ app.description }}</p>
+                        {% endif %}
                         <h6 class="text-danger">Type: {{ app.composer }}</h6>
-                        <p><small>{{ gettext("Created:") }} {{ app.creation_date }}</small></p>
-                        <p><small>{{ gettext("Modified:") }} {{ app.modification_date }}</small></p>
-                        <p><small>{{ gettext("Accessed:") }} {{ app.last_access_date }}</small></p>
+                        {# <p><small>{{ gettext("Created:") }} {{ app.creation_date.strftime("%Y-%m-%d %H:%M") }}</small></p> #}
+                        <p><small>{{ gettext("Last modified:") }} {{ app.modification_date.strftime("%Y-%m-%d %H:%M") }}</small></p>
+                        {# <p><small>{{ gettext("Accessed:") }} {{ app.last_access_date.strftime("%Y-%m-%d %H:%M") }}</small></p> #}
                         <p><a href="{{ build_edit_link(app) }}" class="btn btn-primary" type="button">{{ gettext("Edit") }} »</a></p>
 
 

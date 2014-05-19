@@ -244,7 +244,7 @@ def adapt_create(adaptor_type):
         app_data = json.dumps(data)
 
         try:
-            app = appstorage.create_app(name, 'adapt', app_data)
+            app = appstorage.create_app(name, 'adapt', app_data, description = app_description)
             appstorage.add_var(app, 'adaptor_type', unicode(adaptor_type))
         except appstorage.AppExistsException:
             flash("An App with that name already exists", "error")

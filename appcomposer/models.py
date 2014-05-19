@@ -89,6 +89,7 @@ class App(db.Model):
     creation_date = db.Column(db.DateTime, nullable=False, index=True)
     modification_date = db.Column(db.DateTime, nullable=False, index=True)
     last_access_date = db.Column(db.DateTime, nullable=False, index=True)
+    description = db.Column(db.Unicode(1000), nullable=True)
 
     # TODO: Find out why this relationships seems to not work sometimes.
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
@@ -96,7 +97,7 @@ class App(db.Model):
     def __repr__(self):
         return self.to_json()
 
-    def __init__(self, name=None, owner=None, composer=None):
+    def __init__(self, name=None, owner=None, composer=None, description = None):
         self.name = name
         self.owner = owner
         self.composer = composer
@@ -105,6 +106,8 @@ class App(db.Model):
         self.unique_id = str(uuid.uuid4())
         while App.find_by_unique_id(self.unique_id) is not None:
             self.unique_id = str(uuid.uuid4())
+
+        self.description = description
 
     def to_dict(self):
         """

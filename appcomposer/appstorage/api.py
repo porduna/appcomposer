@@ -35,7 +35,7 @@ class NonUniqueVarException(Exception):
         self.message = message
 
 
-def create_app(name, composer, data, find_new_name=False):
+def create_app(name, composer, data, find_new_name=False, description = None):
     """
     create_app(name, data)
     @param name: Unique name to give to the application.
@@ -79,7 +79,7 @@ def create_app(name, composer, data, find_new_name=False):
             raise AppExistsException()
 
     # Create it
-    new_app = App(name, owner, composer)
+    new_app = App(name, owner, composer, description = description)
     new_app.data = data
 
     # Insert the new app into the database
