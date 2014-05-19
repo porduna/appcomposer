@@ -233,9 +233,16 @@ class BundleManager(object):
                 # TODO: Warning. The provided URL in an xml can be relative (or can it not?).
                 bundle_url = self._to_absolute_url(bundle_url)  # Will convert it if it isn't already.
                 bundle_xml = self._retrieve_url(bundle_url)
+
+                # Create the bundle that corresponds to the file.
                 bundle = Bundle.from_xml(bundle_xml, lang, country, "ALL")
                 name = Bundle.get_standard_code_string(lang, country, "ALL")
-                self._bundles[name] = bundle
+
+                # It is possible to have several locale files specified for the same Bundle. In this case,
+                # we will merge the contents in the order they are specified.
+                # Most often, the bundle will actually not exist yet. No problem there though, because
+                # merge_bundle will then just create a new one.
+                self.merge_bundle(name, bundle)
             except:
                 # TODO: For now, we do not really handle errors, we simply ignore those locales which cause exceptions.
                 # In the future, we should probably analyze which kind of exceptions can occur, and decide what
