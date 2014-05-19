@@ -9,6 +9,7 @@ FROM CODE:
 * verify_csrf(request) verifies that a request includes the
   right CSRF code.
 """
+
 import uuid
 
 from .application import app as flask_app
