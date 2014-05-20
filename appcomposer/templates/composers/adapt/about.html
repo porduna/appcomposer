@@ -1,0 +1,19 @@
+{% set title = gettext("About") %}
+{% set current_link = "home" %}
+{% extends 'composers/adapt/layout.html' %}
+
+{% block body_content %}
+    <div id="adaptblock">
+        <div class="row">
+            <div class="col-lg-12">
+                <div class="page-header">
+                    <h1 id="apptitle">{{ gettext("About") }} - {{ adaptor_type }}</h1>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    {% block adaptor_content %}
+    {% endblock %}
+{% endblock %}
+

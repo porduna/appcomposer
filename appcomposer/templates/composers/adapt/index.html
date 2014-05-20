@@ -19,40 +19,25 @@
             </div>
 
             <div class="row">
-                <div class="col-lg-6">
-                  <div class="well">
-
-                        <form class="form-horizontal" id="apptype" action="{{ url_for('adapt.adapt_index') }}" method="POST">
-                            <legend>{{ gettext("Pick your choice") }}</legend>
-
-                            <hr>
-
-                            <div class="form-group">
-
-                              <!-- App type list -->
-                              <!-- TODO: Include Font Awesome icons -->
-                                <div id="picker" class="col-lg-10 col-lg-offset-2">
-                                        <select name="adaptor_type" class="form-control">
-                                            {% for adaptor_id, adaptor in adaptors.iteritems() %}
-                                                <option value="{{ adaptor_id }}">  {{ adaptor['name'] }}  </option>
-                                            {% endfor %}
-                                        </select>
-                                </div>
-
-                                <div class="col-lg-10 col-lg-offset-2">
-                                    <label class="control-label" for="createbtn"></label>
-                                    <div class="controls">
-                                        <input type="hidden" name="n_rows" value="5">
-                                        <a href="{{ url_for("user.index") }}" class="btn btn-default btn-medium">&laquo; {{ gettext("Go back to main") }}</a>
-                                        <input type="submit"  class="btn btn-success" value="{{ gettext("Next step") }} &raquo;">
-                                    </div>
-                                </div>
+                {% for adaptor_id, adaptor in adaptors.iteritems() %}
+                    <div class="col-md-4 app">
+                        <div class="alert alert-warning">
+                            <h3>{{ adaptor.name }}</h3>
+                            {% if adaptor.description %}
+                                <p>{{ adaptor.description|safe }}</p>
+                            {% endif %}
+                            <br/>
+                            <div>
+                                <a href="{{ url_for('.adapt_create', adaptor_type = adaptor_id) }}" class="btn btn-primary" type="button">{{ gettext("Create") }}</a>
+                                {% if adaptor.about_endpoint %}
+                                    <a href="{{ url_for(adaptor.about_endpoint) }}" class="btn btn-info" type="button">{{ gettext("Read more") }}</a>
+                                {% endif %}
                             </div>
-
-                        </form>
-                    </div>
-                </div>
-            </div>
+                        </div>
+                    </div>  
+                {% endfor %}
+            </div> <!-- row -->
+        </div> <!-- adapt block -->
 
 {% endblock %}
 

@@ -1,0 +1,20 @@
+{% set title = gettext("About") %}
+{% set adaptor_type = "JS Config" %}
+{% extends "composers/adapt/about.html" %}
+
+{% block adaptor_content %}
+    <p>{{ gettext("With the JS Config, you can adapt applications easily. You only need to paste the address to the application that can be copied:") }}</p>
+
+    <img src="{{ url_for("jsconfig.static", filename="use1.png") }}" width="50%"><br>
+
+    <p>{{ gettext("And then you can start editing the application:") }}</p>
+
+    <img src="{{ url_for("jsconfig.static", filename="use2.png") }}" width="50%"><br>
+
+    <p>Then you can click on "Save" and go to the preview window to see the result.</p>
+
+    <div class="pull-right">
+        <br>
+        <a href="{{ url_for(".developers") }}">{{ gettext("Information for developers") }}</a>
+    </div>
+{% endblock %}

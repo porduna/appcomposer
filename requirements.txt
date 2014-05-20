@@ -12,3 +12,4 @@ alembic==0.6.0
 pyflakes==0.5.0
 babel
 nose
+requests==2.3.0
