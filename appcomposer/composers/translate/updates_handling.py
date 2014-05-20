@@ -10,7 +10,7 @@ def on_leading_bundle_updated(spec, bundle):
     systems such as GRAASP.
     """
     async_result = None
-    if flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
+    if flask_app.config.get("ACTIVATE_TRANSLATOR_MONGODB_PUSHES", False):
         try:
             import mongodb_pusher as pusher
             code = bundle.get_standard_code_string(bundle.lang, bundle.country, bundle.group)

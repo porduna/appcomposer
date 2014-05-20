@@ -181,7 +181,7 @@ def save_app(composed_app):
     if composed_app.owner != current_user():
         raise NotAuthorizedException()
 
-    composed_app.modification_date = composed_app.last_access_date = datetime.datetime.now()
+    composed_app.modification_date = composed_app.last_access_date = datetime.datetime.utcnow()
 
     db.session.add(composed_app)
     db.session.commit()
@@ -209,7 +209,7 @@ def update_app_data(composed_app, data):
         raise NotAuthorizedException()
 
     composed_app.data = data
-    composed_app.modification_date = composed_app.last_access_date = datetime.datetime.now()
+    composed_app.modification_date = composed_app.last_access_date = datetime.datetime.utcnow()
 
     db.session.add(composed_app)
     db.session.commit()
