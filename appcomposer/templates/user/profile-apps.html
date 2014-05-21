@@ -10,47 +10,64 @@
                 <h2>{{ gettext("No application.") }}</h2>
             </div>
         </div>
-    {% endif %}
 
-    <div class="row">
-        <div class="col-md-3 pull-right">
-            <input name="text" maxlength="50" placeholder="Search..." type="text" class="form-control" id="search_box" />
-        </div>
-    </div>
-
-    <div class="row">
-        {% for app in apps %}
-            <div class="span4 app">
-                <div class="alert alert-info">
-                    <div>
-                        <h2>{{ app.name }}</h2>
-                        <h4>{{ gettext("Composer") }}: {{ app.composer }}</h4><br>
-                        {% if app.description %}
-                            <p>{{ app.description }}</p>
-                        {% else %}
-                            <p></p>
-                        {% endif %}
-                        {# {{ gettext("Created") }}: {{ app.creation_date.strftime("%Y-%m-%d %H:%M") }}<br> #}
-                        <div>
-                            <h6>{{ gettext("Last modified") }}: {{ app.modification_date.strftime("%Y-%m-%d %H:%M") }}</h6>
-                        </div>
-                        {# {{ gettext("Accessed") }}: {{ app.last_access_date.strftime("%Y-%m-%d %H:%M") }}<br> #}
-                    </div>
-                    <div>
-                        {% if build_edit_link(app) %}
-                            <a href="{{ build_edit_link(app) }}" class="btn btn-primary" type="button">{{ gettext("Open") }}</a>
-                        {% endif %}
-                        {% if build_duplicate_link(app) %}
-                            <a href="{{ build_duplicate_link(app) }}" class="btn btn-info" type="button">{{ gettext("Duplicate") }}</a>
-                        {% endif %}
-                        {% if build_delete_link(app) %}
-                            <a href="{{ build_delete_link(app) }}" class="btn btn-danger" type="button">{{ gettext("Delete") }}</a>
-                        {% endif %}
-                    </div>
-                </div>
+        <div class="row">
+        {% for composer in composers %}
+            <div class="span4 {% if composers|length == 1 %}offset5{% endif %} {% if composers|length == 2 and loop.index0 == 0 %}offset3{% endif %}">
+                <h2>{{composer.name}}
+                </h2>
+                <p>
+                    {{composer.description}}
+                </p>
+                <p>
+                    <a class="btn" href="{{url_for(composer.new_endpoint)}}">{{ gettext("Start composing") }} &raquo;
+                    </a>
+                </p>
             </div>
         {% endfor %}
-    </div>
+        </div>
+
+        {% else %}
+        <div class="row">
+            <div class="col-md-3 pull-right">
+                <input name="text" maxlength="50" placeholder="Search..." type="text" class="form-control" id="search_box" />
+            </div>
+        </div>
+
+        <div class="row">
+            {% for app in apps %}
+                <div class="span4 app">
+                    <div class="alert alert-info">
+                        <div>
+                            <h2>{{ app.name }}</h2>
+                            <h4>{{ gettext("Composer") }}: {{ app.composer }}</h4><br>
+                            {% if app.description %}
+                                <p>{{ app.description }}</p>
+                            {% else %}
+                                <p></p>
+                            {% endif %}
+                            {# {{ gettext("Created") }}: {{ app.creation_date.strftime("%Y-%m-%d %H:%M") }}<br> #}
+                            <div>
+                                <h6>{{ gettext("Last modified") }}: {{ app.modification_date.strftime("%Y-%m-%d %H:%M") }}</h6>
+                            </div>
+                            {# {{ gettext("Accessed") }}: {{ app.last_access_date.strftime("%Y-%m-%d %H:%M") }}<br> #}
+                        </div>
+                        <div>
+                            {% if build_edit_link(app) %}
+                                <a href="{{ build_edit_link(app) }}" class="btn btn-primary" type="button">{{ gettext("Open") }}</a>
+                            {% endif %}
+                            {% if build_duplicate_link(app) %}
+                                <a href="{{ build_duplicate_link(app) }}" class="btn btn-info" type="button">{{ gettext("Duplicate") }}</a>
+                            {% endif %}
+                            {% if build_delete_link(app) %}
+                                <a href="{{ build_delete_link(app) }}" class="btn btn-danger" type="button">{{ gettext("Delete") }}</a>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
 
 
 {% endblock %}
