@@ -116,7 +116,7 @@ class AppsView(UserBaseView):
         apps = appstorage.get_my_apps()[::-1]
 
         return self.render('user/profile-apps.html', apps=apps, build_edit_link=build_edit_link,
-                           build_delete_link=build_delete_link, build_duplicate_link=build_duplicate_link)
+                           build_delete_link=build_delete_link, build_duplicate_link=build_duplicate_link, composers=COMPOSERS)
 
 
 def passwords_match(form, field):
