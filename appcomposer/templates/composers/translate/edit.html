@@ -41,7 +41,7 @@
 
                         <h5>You may access the translation for this language:</h5>
                         <a href="{{ url_for('.translate_publish', appid=app.unique_id, group=request.values["targetgroup"]) }}">
-                            <button class="btn btn-primary">View Published Translation</button>
+                            <button class="btn btn-primary">Publish Translation</button>
                         </a>
 
                         <a href="{{ url_for('.app_translation_serve', app_url=spec, lang=request.values["targetlang"], target=request.values["targetgroup"]) }}">

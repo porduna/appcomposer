@@ -88,7 +88,7 @@ def translate_edit():
         json_str = bm.to_json()
         update_app_data(app, json_str)
 
-        flash("Changes have been saved", "success")
+        flash("Changes have been saved.", "success")
 
         propose_to_owner = request.values.get("proposeToOwner")
         if propose_to_owner is not None and owner_app != app:

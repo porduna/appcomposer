@@ -12,12 +12,44 @@
         </div>
 
         <div class="row">
-            <div class="col-lg-6">        
+            <div class="col-lg-6">
                 <div class="panel panel-primary">
                     <div class="panel-heading">
-                        <h3 class="panel-title">How to publish your App</h3>
+                        <h3 class="panel-title">How to publish in Graasp</h3>
                     </div>
                     <div class="panel-body">
+                        <p>
+                            Translated Apps can be published in the <a href="http://graasp.epfl.ch">Graasp</a>
+                            platform easily. This way, students will be able to access your app from within
+                            a <a href="http://graasp.epfl.ch">Graasp</a>  space.
+                        </p>
+                        <p>
+                            To publish it, go to your <a href="http://graasp.epfl.ch">Graasp</a> space. Then, simply
+                            create a new application and input the provided <a href="http://graasp.epfl.ch">Graasp</a>
+                            publish link as an URL. The link is the following:
+                        </p>
+                        <p>
+                            <a href="{{ link }}">{{ link }}</a>
+                        </p>
+                    </div>
+                </div>
+
+                <div>
+                   <a href="{{ request.referrer }}">
+                       <button class="btn btn-primary">Back</button>
+                   </a>
+                </div>
+            </div>
+
+            <div class="col-lg-6">        
+                <div class="panel panel-info">
+                    <div class="panel-heading">
+                        <h3 class="panel-title">How to publish in other container</h3>
+                    </div>
+                    <div class="panel-body">
+                        <p>
+                            You can publish the App in any place that supports standard OpenSocial applications.
+                        </p>
                         <p>
                             Because Google's OpenSocial internationalization scheme doesn't support translations unique
                             for specific groups of people (such as specific ages), a unique app is generated for each
@@ -29,15 +61,10 @@
                         </p>
                         <p>
                             The XML file in the link will be updated automatically each time your translation is updated.
-                            Copy the link wherever appropriate to refer to your App (you may copy the link in Graasp, for instance).
+                            Copy the link wherever appropriate to refer to your App.
                         </p>
                     </div>
                 </div>
-
-                <div>
-                   <a href="{{ request.referrer }}">
-                       <button class="btn btn-primary">Back</button>
-                   </a>
-                </div>
+            </div>
         </div>
 {% endblock %}
