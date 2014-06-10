@@ -1,0 +1,12 @@
+{% set title = gettext("About") %}
+{% set adaptor_type = "gateway4labs" %}
+{% extends "composers/adapt/about.html" %}
+
+{% block adaptor_content %}
+    <p>To be added.</p>
+
+    <div class="pull-right">
+        <br>
+        <a href="{{ url_for(".developers") }}">{{ gettext("Information for developers") }}</a>
+    </div>
+{% endblock %}
