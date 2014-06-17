@@ -90,8 +90,9 @@ class TestTranslateAppEdit:
 
         assert u"purple" in data
 
-        assert u"View Published Translation" in data
+        assert u"Publish Translation" in data
         assert u"View Shindig Translation" in data
+
 
     def test_simple_ownership(self):
         url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
