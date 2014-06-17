@@ -11,6 +11,7 @@ from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
 from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_declare_ownership
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
+from appcomposer.csrf import verify_csrf
 
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
@@ -76,6 +77,12 @@ def translate_edit():
 
     # This is a POST request. We need to save the entries.
     else:
+
+        # Protect against CSRF attacks.
+        if not verify_csrf(request):
+            return render_template("composers/errors.html",
+                                   message="Request does not seem to come from the right source (csrf check)"), 400
+
         # Retrieve a list of all the key-values to save. That is, the parameters which start with _message_.
         messages = [(k[len("_message_"):], v) for (k, v) in request.values.items() if k.startswith("_message_")]
 
