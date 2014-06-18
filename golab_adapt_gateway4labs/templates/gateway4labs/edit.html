@@ -76,7 +76,6 @@
                 if (new String(e.data).indexOf("lab-configuration::") == 0) {
                     var lab_config_string = new String(e.data);
                     var configuration = lab_config_string.substr("lab-configuration::".length);
-                    alert(configuration);
                     var url = "{{ url_for('.save_json_config', app_id = app_id) }}";
                     $.post(url, configuration).done(function() { location.reload(); });
                 } else if (new String(e.data).indexOf("request-initialization") == 0) {
