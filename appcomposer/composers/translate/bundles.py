@@ -73,6 +73,7 @@ class BundleManager(object):
         As such, it can take a while to complete, and there are potential security issues.
 
         @param app_spec_url: URL of the XML to use to construct the App.
+        @return: The new BundleManager.
         """
         bm = BundleManager()
         bm.load_full_spec(app_spec_url)

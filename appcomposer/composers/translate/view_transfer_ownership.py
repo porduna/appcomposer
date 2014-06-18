@@ -1,4 +1,5 @@
 from flask import render_template, request, json, redirect, url_for
+from appcomposer.csrf import verify_csrf
 from appcomposer.login import current_user
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
@@ -44,6 +45,11 @@ def transfer_ownership():
 
     # We received a POST request. We need to transfer the ownership.
     if request.method == "POST":
+
+        # Protect against CSRF attacks.
+        if not verify_csrf(request):
+            return render_template("composers/errors.html",
+                                   message="Request does not seem to come from the right source (csrf check)"), 400
 
         # Verify that we were passed the target app.
         targetapp = get_app(request.values.get("transfer"))

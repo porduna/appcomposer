@@ -7,6 +7,7 @@ from collections import defaultdict
 from flask import request, flash, redirect, url_for, render_template, json
 from requests.exceptions import MissingSchema
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
+from appcomposer.csrf import verify_csrf
 from appcomposer.utils import get_original_url
 from appcomposer.appstorage import create_app, set_var
 from appcomposer.appstorage.api import update_app_data, get_app
@@ -59,6 +60,12 @@ def translate_selectlang():
     # As of now (may change in the future) if it is a POST we are creating the app for the first time.
     # Hence, we will need to carry out a full spec retrieval.
     if request.method == "POST":
+
+        # Protect against CSRF attacks.
+        if not verify_csrf(request):
+            return render_template("composers/errors.html",
+               message="Request does not seem to come from the right source (csrf check)"), 400
+
         # URL to the XML spec of the gadget.
         appurl = request.form.get("appurl")
         spec = appurl

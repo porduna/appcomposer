@@ -43,6 +43,7 @@ def verify_csrf(request):
     """
     enabled = flask_app.config.get("CSRF_ENABLED")
     if not enabled or enabled == False:
+        print "[Warning]: CSRF check bypassed"
         return True
     token = session.pop("_csrf_token", None)
     if not token or token != request.values.get("_csrf_token"):
