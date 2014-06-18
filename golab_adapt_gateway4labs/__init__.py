@@ -57,11 +57,13 @@ def edit(app_id):
 
     url = data['url']
     configuration = json.dumps(data['configuration'], indent = 4)
+    quoted_config = urllib2.quote(json.dumps(data['configuration']), '')
 
     return render_template("gateway4labs/edit.html",  
                                 url = url or '',
                                 app_id = app_id,
                                 configuration = configuration,
+                                quoted_config = quoted_config,
                                 url_form = url_form,
                                 name = adaptor.get_name(app_id))
 

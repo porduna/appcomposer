@@ -45,12 +45,15 @@
         {% if url %}
             <!-- <iframe src="{{ preview_url }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe> -->
             <br>
-            <div class="alert alert-info">
+            <div class="alert alert-danger" id="must_save_first">
+                <h3>{{ gettext("No preview available: you must save first.") }}</h3>
+            </div>
+
+            <div class="alert alert-info" id="display_url">
                 <h4>{{ gettext("Adaptation URL") }}</h4>
                 <p>{{ gettext("Copy the following URL and put it in Graasp to share this adaptation with other people:") }}</p>
                 <br/>
                 <input id="app_url" type="text" value="{{ url_for('.app_xml', app_id = app_id, _external = True) }}" style="width: 90%">
-                <!-- <a target="_blank" href="{{ url_for('.app_xml', app_id = app_id, _external = True) }}">App URL</a> -->
             </div>
             <!-- <a target="_blank" href="{{ preview_url }}">Preview URL</a> -->
         {% else %}
@@ -71,6 +74,7 @@
             $("#save-button").click(function() {
                 document.getElementById("labiframe").contentWindow.postMessage("get-configuration", "*");
             });
+            $("#display_url").hide();
 
             function processMessages(e) {
                 if (new String(e.data).indexOf("lab-configuration::") == 0) {
@@ -82,9 +86,17 @@
                     {% if configuration %}
                         var configuration = {{ configuration|safe }};
                         var configurationString = JSON.stringify(configuration);
-                        console.log("Providing initializer");
                         document.getElementById("labiframe").contentWindow.postMessage("initializer::" + configurationString, "*");
                     {% endif %}
+                } else if (new String(e.data).indexOf("labmanager::") == 0) {
+                    var labmanager_config_string = new String(e.data);
+                    var labmanager_config_json = labmanager_config_string.substr("labmanager::".length);
+                    var labmanager_config = JSON.parse(labmanager_config_json);
+                    var configuration = "{{ quoted_config }}";
+                    var testing_url = labmanager_config['widget_url'] + '?lab_config=' + configuration;
+                    $("#app_url").attr("value", testing_url);
+                    $("#display_url").show();
+                    $("#must_save_first").hide();
                 }
             }
 
