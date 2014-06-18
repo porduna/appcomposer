@@ -51,6 +51,26 @@ def verify_csrf(request):
     return True
 
 
+def verify_ajax_csrf(request):
+    """
+    Verifies that the specified request contains a X-CSRF HTTP header with a csrf token
+    which matches the session's. If CSRF is disabled on the flask config it returns TRUE
+    without checking.
+
+    @param request: The request to verify.
+    @return: True if the CSRF matches, False otherwise.
+    """
+    enabled = flask_app.config.get("CSRF_ENABLED")
+    if not enabled or enabled == False:
+        print "[Warning]: CSRF check bypassed"
+        return True
+    # token = session.pop("_csrf_token", None)
+    token = session.get("_csrf_token", None)
+    if not token or token != request.headers.get("x-csrf"):
+        return False
+    return True
+
+
 @flask_app.context_processor
 def register_jinja_csrf_globals():
     """

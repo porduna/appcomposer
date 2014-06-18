@@ -3,6 +3,7 @@ from appcomposer.appstorage.api import get_app, update_app_data
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, AUTOACCEPT_DEFAULT
 from appcomposer.composers.translate.db_helpers import _db_get_ownerships
+from appcomposer.csrf import verify_ajax_csrf
 from appcomposer.models import AppVar
 
 @translate_blueprint.route("/config/autoaccept/<appid>", methods=["GET", "POST"])
@@ -29,6 +30,12 @@ def autoaccept(appid):
         return jsonify(**result)
 
     if request.method == "POST":
+
+        if not verify_ajax_csrf(request):
+            result["result"] = "error"
+            result["message"] = "CSRF token not valid"
+            return jsonify(**result)
+
         value = request.values.get("value")
         if value is None:
             result["result"] = "error"

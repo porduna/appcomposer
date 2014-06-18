@@ -286,11 +286,19 @@
 
         $("select").select2();
 
+        // Configure AJAX to send the CSRF header.
+        $.ajaxSetup({
+           headers: {"x-csrf": "{{ csrf_token()|safe }}"}
+        });
+
         // Handle the accept-proposals toggle. It will enable or disable auto-accepting through AJAX.
         $("#accept-proposals").change(function () {
             // Send an AJAX request to change the autoaccept proposals config.
-            $.post("/composers/translate/config/autoaccept/{{ app.unique_id }}", { value: this.checked ? 1 : 0 }, function () {
+            $.post("/composers/translate/config/autoaccept/{{ app.unique_id }}", { value: this.checked ? 1 : 0 }, function (data) {
                 console.log("Autoaccept changed");
+
+                if(data.result == "error")
+                    alert("Error: Could not change autoaccept state");
             });
         });
 
