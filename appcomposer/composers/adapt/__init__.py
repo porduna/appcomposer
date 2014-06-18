@@ -12,6 +12,7 @@ from appcomposer.application import app
 
 # Required imports for a customized app view for the adapt tool (a possible block to be refactored?)
 from appcomposer.babel import lazy_gettext
+from appcomposer.csrf import verify_csrf
 from appcomposer.login import requires_login
 
 info = {
@@ -179,6 +180,12 @@ def adapt_index():
     @return: The adaptor type that the user has selected.
     """
     if request.method == "POST":
+
+        # Protect against CSRF attacks.
+        if not verify_csrf(request):
+            return render_template("composers/errors.html",
+                                   message="Request does not seem to come from the right source (csrf check)"), 400
+
         adaptor_type = request.form["adaptor_type"]
 
         if adaptor_type and adaptor_type in ADAPTORS:
@@ -216,6 +223,10 @@ def adapt_create(adaptor_type):
 
     # If a post is received, we are creating an adaptor app.
     elif request.method == "POST":
+
+        # Protect against CSRF attacks.
+        if not verify_csrf(request):
+            return render_template("composers/errors.html", message="Request does not seem to come from the right source (csrf check)"), 400
 
         # We read the app details provided by the user
         name = request.form["app_name"]
@@ -265,11 +276,17 @@ def adapt_duplicate(appid):
     form = DuplicationForm()
     
     if form.validate_on_submit():
+
+        # Protect against CSRF attacks.
+        if not verify_csrf(request):
+            return render_template("composers/errors.html",
+                                   message="Request does not seem to come from the right source (csrf check)"), 400
+
         existing_app = appstorage.get_app_by_name(form.name.data)
         if existing_app:
             if not form.name.errors:
                 form.name.errors = []
-            form.name.errors.append(gettext("You already have an application with this name"))
+            form.name.errors.append(lazy_gettext("You already have an application with this name"))
         else:
             new_app = appstorage.create_app(form.name.data, 'adapt', app.data)
             for appvar in app.appvars:

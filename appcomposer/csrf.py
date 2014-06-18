@@ -45,7 +45,9 @@ def verify_csrf(request):
     if not enabled or enabled == False:
         print "[Warning]: CSRF check bypassed"
         return True
-    token = session.pop("_csrf_token", None)
+    else:
+        print "[Info]: Checking CSRF"
+    token = session.get("_csrf_token", None)
     if not token or token != request.values.get("_csrf_token"):
         return False
     return True
@@ -64,6 +66,8 @@ def verify_ajax_csrf(request):
     if not enabled or enabled == False:
         print "[Warning]: CSRF check bypassed"
         return True
+    else:
+        print "[Info]: Checking CSRF"
     # token = session.pop("_csrf_token", None)
     token = session.get("_csrf_token", None)
     if not token or token != request.headers.get("x-csrf"):

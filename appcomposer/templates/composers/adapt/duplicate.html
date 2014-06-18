@@ -27,6 +27,8 @@
                             <button type="submit" class="btn">{{ gettext("Save") }}</button>
                         </div>
                     </div>
+
+                    {{ csrf_field()|safe }}
                 </form>
             </div>
         </div>

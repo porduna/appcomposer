@@ -50,6 +50,7 @@
                             <a class="btn btn-default" id="returnbtn" href="{{ url_for('adapt.adapt_index') }}">« {{ gettext("Go Back") }}</a>
                             <input type="submit"  class="btn btn-success" value="{{ gettext("Build it") }} »">
 
+                        {{ csrf_field()|safe }}
 
                         </form>
 
