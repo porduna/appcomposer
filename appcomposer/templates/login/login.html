@@ -73,7 +73,12 @@
                     <br/>
                     <br/>
                 </div>
-                <form method="POST" action="{{ url_for('login', next = next) }}" class="form-horizontal">
+
+                {% if show_local_users %}
+                <form method="POST" action="{{ url_for('login_local', next = next) }}" class="form-horizontal">
+                {% else %}
+                <form method="POST" action="{{ url_for("login", next = next) }}" class="form-horizontal">
+                {% endif %}
                     <fieldset>
                     {{ form.hidden_tag() }}
 
