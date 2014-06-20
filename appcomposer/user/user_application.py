@@ -4,7 +4,7 @@ from flask.ext.wtf import TextField, Form, PasswordField
 from wtforms import ValidationError, validators
 from .fields import DisabledTextField
 from appcomposer import db
-from appcomposer.login import current_user
+from appcomposer.login import current_user, create_salted_password
 from appcomposer.babel import lazy_gettext
 from appcomposer.appstorage import api as appstorage
 
@@ -172,7 +172,8 @@ class ProfileEditView(UserBaseView):
             user.role = form.role.data
             user.auth_type = form.auth_system.data  # Probably in the release we shouldn't let users modify the auth this way
             if len(form.password.data) > 0:
-                user.auth_data = form.password.data  # For the userpass method, the auth_data should contain the password. Eventually, should add hashing.
+                new_password_data = create_salted_password(form.password.data)
+                user.auth_data = new_password_data
             db.session.add(user)
             db.session.commit()
 
