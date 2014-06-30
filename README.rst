@@ -1,3 +1,6 @@
+.. image:: https://travis-ci.org/porduna/appcomposer.svg?branch=master
+        :target: https://travis-ci.org/porduna/appcomposer/
+
 App Composer
 ============
 
