@@ -2,6 +2,7 @@
 
 import datetime
 import json
+import multiprocessing
 import appcomposer
 from appcomposer.appstorage import api
 from appcomposer.appstorage.api import get_app_by_name
@@ -11,7 +12,7 @@ from appcomposer.composers.translate.bundles import Bundle
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 
 import time
-
+import threading
 
 class TestMongoDBPusher:
     def __init__(self):
@@ -43,6 +44,7 @@ class TestMongoDBPusher:
                 api.delete_app(app)
 
     def setUp(self):
+        pusher.cel.conf.update({"CELERY_ALWAYS_EAGER": True})
         appcomposer.app.config['DEBUG'] = True
         appcomposer.app.config['TESTING'] = True
         appcomposer.app.config['CSRF_ENABLED'] = False
