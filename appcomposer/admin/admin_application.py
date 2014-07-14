@@ -117,9 +117,10 @@ class UsersView(AdminModelView):
    
     column_list = ('login', 'name', 'email', 'organization', 'role', 'login_as')
     column_formatters = dict( login_as = login_as_formatter )
+    # column_filters = ('login', 'name', 'email', 'organization', 'role')
+
     column_labels = dict(login = lazy_gettext('Login'), name = lazy_gettext('Full Name'), email = lazy_gettext('E-mail'), organization = lazy_gettext('Organization'), role = lazy_gettext('Role'), login_as = lazy_gettext('Login as'))
-    column_filters = ('login', 'name', 'email', 'organization', 'role')
-          
+
     column_descriptions = dict(login=lazy_gettext('Username (all letters, dots and numbers)'),
                                name=lazy_gettext('First and Last name'),
                                email=lazy_gettext('Valid e-mail address'),
@@ -193,7 +194,7 @@ class AdminAppsView(AdminModelView):
     column_labels = dict(owner = lazy_gettext('Owner'), unique_id = lazy_gettext('ID'), name = lazy_gettext('Name'), composer = lazy_gettext('Composer'))
     column_sortable_list = ('unique_id', 'name', 'composer')
     column_searchable_list = ('unique_id', 'name', 'composer')
-    column_filters = ('unique_id', 'name', 'composer', 'creation_date', 'modification_date', 'last_access_date')
+    # column_filters = ('unique_id', 'name', 'composer', 'creation_date', 'modification_date', 'last_access_date')
    
     # Information needed when creating a new composer (not used at the moment)
     form_columns = ('owner', 'name', 'composer') 
