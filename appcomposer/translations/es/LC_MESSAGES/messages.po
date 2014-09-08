@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-04-16 14:26+0200\n"
+"POT-Creation-Date: 2014-09-08 10:57+0200\n"
 "PO-Revision-Date: 2013-12-16 17:02+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -19,23 +19,23 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
 
-#: appcomposer/login.py:34 appcomposer/user/user_application.py:67
+#: appcomposer/login.py:44 appcomposer/user/user_application.py:69
 msgid "Login:"
 msgstr "Usuario:"
 
-#: appcomposer/login.py:35 appcomposer/user/user_application.py:69
+#: appcomposer/login.py:45 appcomposer/user/user_application.py:71
 msgid "Password:"
 msgstr "Contraseña:"
 
-#: appcomposer/login.py:64
+#: appcomposer/login.py:104
 msgid "Invalid login"
 msgstr "Credenciales inválidas"
 
-#: appcomposer/login.py:76
+#: appcomposer/login.py:115
 msgid "User does not exist"
 msgstr "El usuario no existe"
 
-#: appcomposer/login.py:122
+#: appcomposer/login.py:170
 msgid "You must be logged in to use the App Composer."
 msgstr "Debes estar logueado para usar el App Composer."
 
@@ -49,7 +49,7 @@ msgstr "Usuarios"
 
 #: appcomposer/admin/admin_application.py:34
 #: appcomposer/templates/composers/layout.html:50
-#: appcomposer/user/user_application.py:21
+#: appcomposer/user/user_application.py:23
 msgid "Apps"
 msgstr "Apps"
 
@@ -59,88 +59,98 @@ msgstr "Mi perfil"
 
 #: appcomposer/admin/admin_application.py:36
 #: appcomposer/templates/login/errors.html:10
-#: appcomposer/templates/login/login.html:104
+#: appcomposer/templates/login/login.html:111
 msgid "Back"
 msgstr "Atrás"
 
-#: appcomposer/admin/admin_application.py:120
+#: appcomposer/admin/admin_application.py:122
 msgid "Login"
 msgstr "Usuario"
 
-#: appcomposer/admin/admin_application.py:120
+#: appcomposer/admin/admin_application.py:122
 msgid "Full Name"
 msgstr "Nombre completo"
 
-#: appcomposer/admin/admin_application.py:120
+#: appcomposer/admin/admin_application.py:122
 msgid "E-mail"
 msgstr "E-mail"
 
-#: appcomposer/admin/admin_application.py:120
+#: appcomposer/admin/admin_application.py:122
 msgid "Organization"
 msgstr "Organización"
 
-#: appcomposer/admin/admin_application.py:120
+#: appcomposer/admin/admin_application.py:122
 msgid "Role"
 msgstr "Rol"
 
-#: appcomposer/admin/admin_application.py:120
+#: appcomposer/admin/admin_application.py:122
 msgid "Login as"
 msgstr "Entrar como"
 
-#: appcomposer/admin/admin_application.py:123
+#: appcomposer/admin/admin_application.py:124
 msgid "Username (all letters, dots and numbers)"
 msgstr "Usuario (letras, puntos y números)"
 
-#: appcomposer/admin/admin_application.py:124
+#: appcomposer/admin/admin_application.py:125
 msgid "First and Last name"
 msgstr "Nombre y apellidos"
 
-#: appcomposer/admin/admin_application.py:125
+#: appcomposer/admin/admin_application.py:126
 msgid "Valid e-mail address"
 msgstr "E-mail válido"
 
-#: appcomposer/admin/admin_application.py:126
+#: appcomposer/admin/admin_application.py:127
 msgid "Log in as you were that user"
 msgstr "Entra como ese usuario"
 
-#: appcomposer/admin/admin_application.py:176
+#: appcomposer/admin/admin_application.py:165
+msgid "This field is required."
+msgstr "Este campo es obligatorio."
+
+#: appcomposer/admin/admin_application.py:194
 msgid "Owner"
 msgstr "Propietario"
 
-#: appcomposer/admin/admin_application.py:176
+#: appcomposer/admin/admin_application.py:194
 msgid "ID"
 msgstr "Identificador"
 
-#: appcomposer/admin/admin_application.py:176
+#: appcomposer/admin/admin_application.py:194
+#: appcomposer/composers/adapt/__init__.py:267
 #: appcomposer/templates/composers/adapt/create.html:36
 #: appcomposer/templates/composers/dummy/new.html:42
+#: appcomposer/templates/composers/translate/index.html:30
 msgid "Name"
 msgstr "Nombre"
 
-#: appcomposer/admin/admin_application.py:176
-#: appcomposer/templates/user/profile-apps.html:24
+#: appcomposer/admin/admin_application.py:194
+#: appcomposer/templates/user/profile-apps.html:43
 msgid "Composer"
 msgstr "Tipo de componedor"
 
-#: appcomposer/admin/admin_application.py:183
+#: appcomposer/admin/admin_application.py:201
 msgid "translate"
 msgstr "traductor"
 
-#: appcomposer/admin/admin_application.py:183
+#: appcomposer/admin/admin_application.py:201
 msgid "adapt"
 msgstr "adaptador"
 
-#: appcomposer/admin/admin_application.py:183
+#: appcomposer/admin/admin_application.py:201
 msgid "dummy"
 msgstr "dummy"
 
-#: appcomposer/composers/adapt/__init__.py:22
+#: appcomposer/composers/adapt/__init__.py:28
 msgid "Adaptor Composer"
 msgstr "Creador de adaptaciones"
 
-#: appcomposer/composers/adapt/__init__.py:23
+#: appcomposer/composers/adapt/__init__.py:29
 msgid "Adapt an existing app."
 msgstr "Adapta una aplicación existente."
+
+#: appcomposer/composers/adapt/__init__.py:289
+msgid "You already have an application with this name"
+msgstr "Ya tienes una aplicación con ese nombre"
 
 #: appcomposer/composers/dummy/__init__.py:12
 #: appcomposer/templates/composers/dummy/edit.html:66
@@ -154,7 +164,7 @@ msgid "Pretend that you are composing an app. For testing purposes."
 msgstr "Simula que estás creando una aplicación para pruebas."
 
 #: appcomposer/composers/dummy/__init__.py:53
-#: appcomposer/composers/translate/view_delete.py:42
+#: appcomposer/composers/translate/view_delete.py:76
 msgid "App successfully deleted."
 msgstr "App borrada satisfactoriamente."
 
@@ -175,6 +185,10 @@ msgid "Translate an existing app."
 msgstr "Traduce una aplicación existente."
 
 #: appcomposer/templates/about.html:10 appcomposer/templates/master.html:28
+#: appcomposer/templates/composers/adapt/about.html:1
+#: appcomposer/templates/composers/adapt/about.html:10
+#: golab_adapt_gateway4labs/templates/gateway4labs/about.html:1
+#: golab_adapt_jsconfig/templates/jsconfig/about.html:1
 msgid "About"
 msgstr "Acerca de"
 
@@ -220,7 +234,7 @@ msgstr "Leer más"
 
 #: appcomposer/templates/master.html:26
 #: appcomposer/templates/composers/layout.html:48
-#: appcomposer/user/user_application.py:19
+#: appcomposer/user/user_application.py:20
 msgid "Home"
 msgstr "Inicio"
 
@@ -230,7 +244,7 @@ msgstr "Administración"
 
 #: appcomposer/templates/master.html:42
 #: appcomposer/templates/composers/layout.html:88
-#: appcomposer/templates/user/base.html:59
+#: appcomposer/templates/user/base.html:60
 #, python-format
 msgid "the %(link)s application creator for teachers"
 msgstr "el sistema de creación de aplicaciones para profesores de %(link)s"
@@ -260,7 +274,7 @@ msgid "Proceed"
 msgstr "Continúa"
 
 #: appcomposer/templates/composers/layout.html:49
-#: appcomposer/user/user_application.py:20
+#: appcomposer/user/user_application.py:22
 msgid "Profile"
 msgstr "Mi perfil"
 
@@ -268,6 +282,10 @@ msgstr "Mi perfil"
 #: appcomposer/templates/user/base.html:45
 msgid "Log out"
 msgstr "Salir"
+
+#: appcomposer/templates/composers/adapt/create.html:23
+msgid "Create a new {adaptor_type}"
+msgstr "Crear un nuevo {adaptor_type}"
 
 #: appcomposer/templates/composers/adapt/create.html:44
 msgid "Description"
@@ -281,26 +299,43 @@ msgstr "Volver atrás"
 msgid "Build it"
 msgstr "Contruir"
 
-#: appcomposer/templates/composers/adapt/create.html:62
+#: appcomposer/templates/composers/adapt/create.html:63
 msgid "...or edit an existing one from the following list:"
 msgstr "...o edita una de las existentes de la siguiente lista:"
 
-#: appcomposer/templates/composers/adapt/create.html:78
-msgid "Created:"
-msgstr "Creada:"
-
-#: appcomposer/templates/composers/adapt/create.html:79
-msgid "Modified:"
+#: appcomposer/templates/composers/adapt/create.html:83
+#, fuzzy
+msgid "Last modified:"
 msgstr "Modificada:"
 
-#: appcomposer/templates/composers/adapt/create.html:80
-msgid "Accessed:"
-msgstr "Accedida:"
-
-#: appcomposer/templates/composers/adapt/create.html:81
+#: appcomposer/templates/composers/adapt/create.html:85
 #: appcomposer/templates/composers/adapt/edit.html:31
 msgid "Edit"
 msgstr "Editar"
+
+#: appcomposer/templates/composers/adapt/duplicate.html:10
+#, fuzzy
+msgid "Duplication of an application"
+msgstr "Opciones de la aplicación"
+
+#: appcomposer/templates/composers/adapt/duplicate.html:11
+msgid ""
+"You are going to duplicate the App {app} of the user {user}. What name do"
+" you want to use?"
+msgstr ""
+"Vas a duplicar la App {app} del usuario {user}. ¿Qué nombre "
+"quieres utilizar?"
+
+#: appcomposer/templates/composers/adapt/duplicate.html:27
+#: appcomposer/templates/composers/dummy/edit.html:81
+#: appcomposer/templates/user/profile-edit.html:47
+#: appcomposer/templates/user/profile-edit.html:49
+#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:9
+#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:38
+#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:69
+#: golab_adapt_jsconfig/templates/jsconfig/edit.html:9
+msgid "Save"
+msgstr "Guardar"
 
 #: appcomposer/templates/composers/adapt/edit.html:16
 #: appcomposer/templates/composers/adapt/index.html:16
@@ -311,17 +346,15 @@ msgstr "Adaptar una aplicación"
 msgid "Preview"
 msgstr "Previsualizar"
 
-#: appcomposer/templates/composers/adapt/index.html:26
-msgid "Pick your choice"
-msgstr "Selecciona tu opción"
+#: appcomposer/templates/composers/adapt/index.html:31
+#, fuzzy
+msgid "Create"
+msgstr "Creada"
 
-#: appcomposer/templates/composers/adapt/index.html:46
-msgid "Go back to main"
-msgstr "Volver al menú principal"
-
-#: appcomposer/templates/composers/adapt/index.html:47
-msgid "Next step"
-msgstr "Siguiente paso"
+#: appcomposer/templates/composers/adapt/index.html:33
+#, fuzzy
+msgid "Read more"
+msgstr "Leer más"
 
 #: appcomposer/templates/composers/dummy/delete.html:66
 msgid "Are you sure you want to delete this application?"
@@ -329,30 +362,25 @@ msgstr "¿Estás seguro de querer eliminar esta aplicación?"
 
 #: appcomposer/templates/composers/dummy/delete.html:67
 #: appcomposer/templates/composers/dummy/edit.html:68
+#: appcomposer/templates/composers/translate/delete.html:23
 #, python-format
 msgid "Note: Your application is %(app)s %(id)s"
 msgstr "Nota: Tu aplicación es %(app)s %(id)s"
 
 #: appcomposer/templates/composers/dummy/delete.html:78
-#: appcomposer/templates/user/profile-apps.html:32
+#: appcomposer/templates/composers/translate/delete.html:51
+#: appcomposer/templates/user/profile-apps.html:63
 msgid "Delete"
 msgstr "Borrar"
 
 #: appcomposer/templates/composers/dummy/delete.html:79
+#: appcomposer/templates/composers/translate/delete.html:52
 msgid "Cancel"
 msgstr "Cancelar"
 
 #: appcomposer/templates/composers/dummy/edit.html:67
 msgid "Please, set the text for your application"
 msgstr "Por favor, pon el nombre de tu aplicación"
-
-#: appcomposer/templates/composers/dummy/edit.html:81
-#: appcomposer/templates/user/profile-edit.html:33
-#: appcomposer/templates/user/profile-edit.html:35
-#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:69
-#: golab_adapt_jsconfig/templates/jsconfig/edit.html:9
-msgid "Save"
-msgstr "Guardar"
 
 #: appcomposer/templates/composers/dummy/edit.html:82
 msgid "Save & exit"
@@ -369,6 +397,51 @@ msgstr "Por favor, pon el nombre de tu aplicación"
 #: appcomposer/templates/composers/dummy/new.html:44
 msgid "App name"
 msgstr "Nombre de la App"
+
+#: appcomposer/templates/composers/translate/delete.html:22
+#, fuzzy
+msgid "Are you really sure you want to delete this application?"
+msgstr "¿Estás seguro de querer eliminar esta aplicación?"
+
+#: appcomposer/templates/composers/translate/index.html:9
+#, fuzzy
+msgid "Translate"
+msgstr "traductor"
+
+#: appcomposer/templates/composers/translate/index.html:19
+msgid "Step 1 - App creation"
+msgstr "Paso 1 - Creación de la App"
+
+#: appcomposer/templates/composers/translate/index.html:22
+#: golab_adapt_gateway4labs/__init__.py:30 golab_adapt_jsconfig/__init__.py:51
+msgid "URL"
+msgstr "Dirección"
+
+#: appcomposer/templates/composers/translate/index.html:24
+msgid "URL of the app"
+msgstr "URL de la app"
+
+#: appcomposer/templates/composers/translate/index.html:25
+msgid "Enter the URL of the XML for the app you want to translate."
+msgstr "Introduce la URL del XML de la app que quieres traducir."
+
+#: appcomposer/templates/composers/translate/index.html:32
+msgid "Name of the app"
+msgstr "Nombre de la app"
+
+#: appcomposer/templates/composers/translate/index.html:33
+msgid "Enter the name of the new app that will be created."
+msgstr "Introduce el nombre de la nueva App a ser creada"
+
+#: appcomposer/templates/composers/translate/index.html:111
+msgid "Step 2 - Select language »"
+msgstr "Paso 2 - Selecciona el lenguaje"
+
+#: appcomposer/templates/composers/translate/index.html:131
+#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:25
+#: golab_adapt_jsconfig/templates/jsconfig/edit.html:25
+msgid "Put the address of an application to be adapted. Examples:"
+msgstr ""
 
 #: appcomposer/templates/login/errors.html:7
 msgid "Error"
@@ -442,19 +515,19 @@ msgstr "Usar Graasp"
 
 #: appcomposer/templates/login/login.html:61
 #: appcomposer/templates/login/login.html:64
-#: appcomposer/templates/login/login.html:94
+#: appcomposer/templates/login/login.html:100
 msgid "Log in"
 msgstr "Entrar"
 
-#: appcomposer/templates/login/login.html:71
+#: appcomposer/templates/login/login.html:72
 msgid "Local users"
 msgstr "Usuarios locales"
 
-#: appcomposer/templates/login/login.html:79
+#: appcomposer/templates/login/login.html:85
 msgid "Username"
 msgstr "Usuario"
 
-#: appcomposer/templates/login/login.html:80
+#: appcomposer/templates/login/login.html:86
 msgid "Password"
 msgstr "Contraseña"
 
@@ -474,6 +547,7 @@ msgid "Go to My Apps"
 msgstr "Ir a Mis Apps"
 
 #: appcomposer/templates/user/index.html:26
+#: appcomposer/templates/user/profile-apps.html:23
 msgid "Start composing"
 msgstr "Comienza a componer"
 
@@ -481,21 +555,18 @@ msgstr "Comienza a componer"
 msgid "No application."
 msgstr "No hay apps."
 
-#: appcomposer/templates/user/profile-apps.html:25
-msgid "Created"
-msgstr "Creada"
-
-#: appcomposer/templates/user/profile-apps.html:26
-msgid "Modified"
+#: appcomposer/templates/user/profile-apps.html:51
+#, fuzzy
+msgid "Last modified"
 msgstr "Modificada"
 
-#: appcomposer/templates/user/profile-apps.html:27
-msgid "Accessed"
-msgstr "Accedida"
-
-#: appcomposer/templates/user/profile-apps.html:31
+#: appcomposer/templates/user/profile-apps.html:57
 msgid "Open"
 msgstr "Abrir"
+
+#: appcomposer/templates/user/profile-apps.html:60
+msgid "Duplicate"
+msgstr "Duplicar"
 
 #: appcomposer/templates/user/profile-edit.html:10
 msgid "My profile"
@@ -505,47 +576,84 @@ msgstr "Mi perfil"
 msgid "Show"
 msgstr "Mostrar"
 
-#: appcomposer/user/user_application.py:19
+#: appcomposer/user/user_application.py:21
 msgid "User Profile"
 msgstr "Mi perfil"
 
-#: appcomposer/user/user_application.py:66
+#: appcomposer/user/user_application.py:68
 msgid "Name:"
 msgstr "Nombre:"
 
-#: appcomposer/user/user_application.py:68
+#: appcomposer/user/user_application.py:70
 msgid "E-mail:"
 msgstr "E-mail:"
 
-#: appcomposer/user/user_application.py:69
-msgid "Password."
-msgstr "Contraseña."
+#: appcomposer/user/user_application.py:73
+#, fuzzy
+msgid "Password again:"
+msgstr "Contraseña:"
 
-#: appcomposer/user/user_application.py:70
+#: appcomposer/user/user_application.py:74
 msgid "Organization:"
 msgstr "Organización:"
 
-#: appcomposer/user/user_application.py:71
+#: appcomposer/user/user_application.py:75
 msgid "Role:"
 msgstr "Rol:"
 
-#: appcomposer/user/user_application.py:72
+#: appcomposer/user/user_application.py:76
 msgid "Creation date:"
 msgstr "Fecha creación:"
 
-#: appcomposer/user/user_application.py:73
+#: appcomposer/user/user_application.py:77
 msgid "Last access:"
 msgstr "Último acceso:"
 
-#: appcomposer/user/user_application.py:74
+#: appcomposer/user/user_application.py:78
 msgid "Auth system:"
 msgstr "Sistema autentiación:"
 
-#: golab_adapt_jsconfig/__init__.py:16
-msgid "JavaScript configuration"
-msgstr "Configuración de JavaScript"
+#: golab_adapt_gateway4labs/__init__.py:18
+msgid "Create adaptations of customizable gateway4labs laboratories."
+msgstr "Crear adaptaciones de laboratorios de gateway4labs personalizables"
 
-#: golab_adapt_jsconfig/__init__.py:30
+#: golab_adapt_gateway4labs/templates/gateway4labs/about.html:10
+#: golab_adapt_jsconfig/templates/jsconfig/about.html:18
+msgid "Information for developers"
+msgstr "Información para desarrolladores"
+
+#: golab_adapt_gateway4labs/templates/gateway4labs/developers.html:1
+#: golab_adapt_jsconfig/templates/jsconfig/developers.html:1
+msgid "Developers"
+msgstr "Desarrolladores"
+
+#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:49
+#, fuzzy
+msgid "No preview available: you must save first."
+msgstr "No hay previsualización disponible: debes introducir una dirección primero"
+
+#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:53
+#: golab_adapt_jsconfig/templates/jsconfig/edit.html:47
+msgid "Adaptation URL"
+msgstr "URL de Adaptación"
+
+#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:54
+#: golab_adapt_jsconfig/templates/jsconfig/edit.html:48
+msgid ""
+"Copy the following URL and put it in Graasp to share this adaptation with"
+" other people:"
+msgstr ""
+
+#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:61
+#: golab_adapt_jsconfig/templates/jsconfig/edit.html:56
+msgid "No preview available: you must set a URL first"
+msgstr "No hay previsualización disponible: debes introducir una dirección primero"
+
+#: golab_adapt_jsconfig/__init__.py:18
+msgid "Create adaptations of customizable Go-Lab applications."
+msgstr "Crear adaptaciones de aplicaciones Go-Lab personalizables."
+
+#: golab_adapt_jsconfig/__init__.py:32
 msgid ""
 "Too many scripts with data-configuration-definition found. This may "
 "happen if you have commented one. There can be a single one."
@@ -553,7 +661,7 @@ msgstr ""
 "Demasiados scripts con data-configuration-definition. Esto podría ocurrir"
 " si tienes uno comentado. Debe haber sólo uno."
 
-#: golab_adapt_jsconfig/__init__.py:32
+#: golab_adapt_jsconfig/__init__.py:34
 msgid ""
 "No script with data-configuration-definition found. Is the app adapted "
 "for the Go-Lab JavaScript configuration tools?"
@@ -561,7 +669,7 @@ msgstr ""
 "No hay un script con data-configuration-definition. ¿Está esa dirección "
 "adaptada para Go-Lab?"
 
-#: golab_adapt_jsconfig/__init__.py:36
+#: golab_adapt_jsconfig/__init__.py:38
 msgid ""
 "In the data-configuration-definition tag, there must be a single src "
 "attribute"
@@ -569,7 +677,7 @@ msgstr ""
 "En la etiqueta data-configuration-definition, debe haber un sólo atributo"
 " src"
 
-#: golab_adapt_jsconfig/__init__.py:38
+#: golab_adapt_jsconfig/__init__.py:40
 msgid ""
 "In the data-configuration-definition tag, there must be at least an src "
 "attribute. None found"
@@ -577,15 +685,11 @@ msgstr ""
 "En la etiqueta data-configuration-definition, debe haber al menos un "
 "atributo src. No se encontró ninguno."
 
-#: golab_adapt_jsconfig/__init__.py:49
-msgid "URL"
-msgstr "Dirección"
-
-#: golab_adapt_jsconfig/__init__.py:71 golab_adapt_jsconfig/__init__.py:95
+#: golab_adapt_jsconfig/__init__.py:73 golab_adapt_jsconfig/__init__.py:97
 msgid "Could not download the provided URL"
 msgstr "No se pudo descargar la dirección proporcionada"
 
-#: golab_adapt_jsconfig/__init__.py:78
+#: golab_adapt_jsconfig/__init__.py:80
 msgid "The provided URL is not a valid XML!"
 msgstr "¡La dirección proporcionada no es un XML válido!"
 
@@ -593,9 +697,17 @@ msgstr "¡La dirección proporcionada no es un XML válido!"
 msgid "Application options"
 msgstr "Opciones de la aplicación"
 
-#: golab_adapt_jsconfig/templates/jsconfig/edit.html:38
-msgid "No preview available: you must set a URL first"
-msgstr "No hay previsualización disponible: debes introducir una dirección primero"
+#: golab_adapt_jsconfig/templates/jsconfig/about.html:6
+msgid ""
+"With the JS Config, you can adapt applications easily. You only need to "
+"paste the address to the application that can be copied:"
+msgstr ""
+"Con la Configuración JS, puedes adaptar aplicaciones fácilmente. Sólo "
+"necesitas copiar la dirección de la aplicación que puede ser copiada:"
+
+#: golab_adapt_jsconfig/templates/jsconfig/about.html:10
+msgid "And then you can start editing the application:"
+msgstr "Y entonces puedes empezar a editar la aplicación:"
 
 #~ msgid "Loading..."
 #~ msgstr "Cargando..."
@@ -641,4 +753,28 @@ msgstr "No hay previsualización disponible: debes introducir una dirección pri
 
 #~ msgid "Go to My Profile"
 #~ msgstr "Ir a mi perfil"
+
+#~ msgid "Created:"
+#~ msgstr "Creada:"
+
+#~ msgid "Accessed:"
+#~ msgstr "Accedida:"
+
+#~ msgid "Pick your choice"
+#~ msgstr "Selecciona tu opción"
+
+#~ msgid "Go back to main"
+#~ msgstr "Volver al menú principal"
+
+#~ msgid "Next step"
+#~ msgstr "Siguiente paso"
+
+#~ msgid "Accessed"
+#~ msgstr "Accedida"
+
+#~ msgid "Password."
+#~ msgstr "Contraseña."
+
+#~ msgid "JavaScript configuration"
+#~ msgstr "Configuración de JavaScript"
 
