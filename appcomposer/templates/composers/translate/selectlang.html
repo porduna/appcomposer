@@ -25,7 +25,7 @@
             <div class="col-lg-12">
                 <div class="page-header">
 
-                    <h1 id="apptitle">Translate</h1>
+                    <h1 id="apptitle">{{ gettext("Translate") }}</h1>
 
                     {% if app %}
                         <h2 id="appfullname">{{ app.name }}</h2>
@@ -91,13 +91,13 @@
                             <select id="srclang" name="srclang" class="my-select2"
                                     onchange="onSrcLangChanged()">
 
-                                <optgroup id="srclang_mine" label="Translations I own">
+                                <optgroup id="srclang_mine" label="{{ gettext("Translations I own") }}">
                                 </optgroup>
 
-                                <optgroup id="srclang_others" label="Translations others own">
+                                <optgroup id="srclang_others" label="{{ gettext("Translations others own") }}">
                                 </optgroup>
 
-                                <optgroup id="srclang_unclaimed" label="Translations nobody owns yet">
+                                <optgroup id="srclang_unclaimed" label="{{ gettext("Translations nobody owns yet") }}">
 
                                     {# When displaying the languages note that we only show those with GROUP=ALL. This is because otherwise some languages
                                  would appear more than once. Though somewhat kludgey, this approach should always work because a language must always
@@ -126,15 +126,15 @@
 
                                 {# TODO: Clean this up. The design probably needs some changes as well. #}
 
-                                <optgroup id="targetlang_mine" label="Translations I own">
+                                <optgroup id="targetlang_mine" label="{{ gettext("Translations I own") }}">
                                 </optgroup>
 
-                                <optgroup id="targetlang_others" label="Translations others own">
+                                <optgroup id="targetlang_others" label="{{ gettext("Translations others own") }}">
                                 </optgroup>
 
                                 {# The translations within this group will actually be rearranged
                                      automatically into the previous two groups through AJAX #}
-                                <optgroup id="targetlang_unclaimed" label="Translations nobody owns yet">
+                                <optgroup id="targetlang_unclaimed" label="{{ gettext("Translations nobody owns yet") }}">
                                     {# Add the DEFAULT first. #}
                                     <option value="all_ALL" selected="selected">DEFAULT</option>
 
@@ -163,7 +163,7 @@
 
                     <div class="col-lg-6 col-md-6">
                         <div class="form-group">
-                            <label class="control-label" for="srcgroup">Select source group</label>
+                            <label class="control-label" for="srcgroup">{{ gettext("Select source group") }}</label>
                             <select id="srcgroup" name="srcgroup" class="my-select2">
                                 <!-- These are dynamically filled through JavaScript -->
                             </select>
@@ -175,7 +175,7 @@
                         </button>
 
                         <div class="form-group">
-                            <label class="control-label" for="targetgroup">Select target group</label>
+                            <label class="control-label" for="targetgroup">{{ gettext("Select target group") }}</label>
                             <select id="targetgroup" name="targetgroup" class="my-select2">
                                 {% for group in target_groups %}
                                     <option {% if loop.index0 == 0 %}selected="selected"{% endif %}
@@ -190,7 +190,7 @@
 
                                     <div style="float:left">
                                         <a class="btn btn-default" id="backtoindexbtn"
-                                           href="{{ url_for('translate.translate_index') }}">« Go Back to Step 1</a>
+                                           href="{{ url_for('translate.translate_index') }}">{{ gettext("« Go Back to Step 1") }}</a>
                                     </div>
 
                                 <!-- The wrapping div is for the tooltips -->
@@ -324,9 +324,9 @@
         $("#merge_existing").popover(
                 {
                     placement: "top",
-                    title: "Merge existing translations",
+                    title: "{{ gettext("Merge existing translations") }}",
                     html: "true",
-                    content: "This option will let you merge someone else's translations into this one. <br>Note, however, that you need to be careful, because after you select the app to merge with, the merge is automatic, and some translations may get overrided.",
+                    content: "{{ gettext("This option will let you merge someone else's translations into this one. <br>Note, however, that you need to be careful, because after you select the app to merge with, the merge is automatic, and some translations may get overrided.") }}",
                     trigger: "hover"
                 }
         );
@@ -335,7 +335,7 @@
         $("#localisebtndiv").popover(
                 {
                     placement: "top",
-                    title: "Localise",
+                    title: "{{ gettext("Localise") }}",
                     html: "true",
                     content: "", // to be set dynamically
                     trigger: "hover"
@@ -356,14 +356,14 @@
             submits.attr("disabled", "disabled");
             submits.prop('disabled', true);
 
-            $('#localisebtndiv').attr("data-content", "In order to start localising the App, the chosen source language-group and target language-group combinations must be different");
+            $('#localisebtndiv').attr("data-content", "{{ gettext("In order to start localising the App, the chosen source language-group and target language-group combinations must be different") }}");
         }
         else {
             $("#same-lang").hide();
             submits.removeAttr("disabled");
             submits.prop("disabled", false);
 
-            $('#localisebtndiv').attr("data-content", "Click this button to start localising the App. You will be shown the entries in the <b>source</b> language so that you can translate them into the <b>target</b> language.");
+            $('#localisebtndiv').attr("data-content", "{{ gettext("Click this button to start localising the App. You will be shown the entries in the <b>source</b> language so that you can translate them into the <b>target</b> language.") }}");
         }
 
 
@@ -379,9 +379,9 @@
             targetGroup = "anyone";
 
         if (sourceLang == "DEFAULT")
-            sourceLang = "the default language";
+            sourceLang = "{{ gettext("the default language") }}";
         if (targetLang == "DEFAULT")
-            targetLang = "the default language";
+            targetLang = "{{ gettext("the default language") }}";
 
         var translateMsg = "You want to translate the app from " + sourceLang + " (for " + sourceGroup + ") into " +
                 targetLang + " (for " + targetGroup + ").";
