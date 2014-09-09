@@ -78,7 +78,7 @@
                         {# This is necessary so that the next page knows which App to load. #}
                         <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
 
-                        <legend>Step 2: Select the source and target language</legend>
+                        <legend>{{ gettext("Step 3: Translate") }}</legend>
 
                         <div class="col-lg-6 col-md-6">
 
@@ -194,8 +194,11 @@
                                 <!-- The wrapping div is for the tooltips -->
                                 <div id="localisebtndiv" style="">
                                     <button type="submit" id="localisebtn" name="sendurl" class="btn btn-success">
-                                        Step 2 -
-                                        Localise »
+                                        {{ gettext("
+                                        Step 3 -
+                                        Translate »
+                                        ") }}
+
                                     </button>
                                 </div>
 
