@@ -30,32 +30,34 @@
                     {% if app %}
                         <h2 id="appfullname">{{ app.name }}</h2>
                     {% else %}
-                        <h2 id="appfullname">[App name not available]</h2>
+                        <h2 id="appfullname">{{ gettext("[App name not available]") }}</h2>
                     {% endif %}
 
-                    <h4 class="alert alert-info">Original XML: <a href="{{ xmlspec }}">{{ xmlspec }}</a></h4>
+                    <h4 class="alert alert-info">{{ gettext("Original XML: ") }} <a href="{{ xmlspec }}">{{ xmlspec }}</a></h4>
                     {% if is_owner %}
                         <h4 class="alert alert-success">
                             <p>
-                                You are the owner of this App's default translation.
+                                {{ gettext("You are the owner of this App's default translation.") }}
                             </p>
                             <div class="checkbox" style="padding-top:20px">
                                 <label>
                                     <!-- This control is handled through Javascript. It modifies the config through AJAX. -->
-                                    <input type="checkbox" id="accept-proposals" {% if autoaccept %}checked{% endif %}>Accept all translation proposals
-                                    automatically
+                                    <input type="checkbox" id="accept-proposals" {% if autoaccept %}checked{% endif %}>
+                                    {{ gettext("Accept all translation proposals automatically") }}
                                 </label>
                             </div>
                         </h4>
                     {% else %}
-                        <h4 class="alert alert-warning">This App's default translation belongs to {{ owner.name }}
-                            ({{ owner.login }}).</h4>
+                        <h4 class="alert alert-warning">
+                            This App's default translation belongs to {{ owner.name }}
+                            ({{ owner.login }}).
+                        </h4>
                     {% endif %}
 
 
                     <div style="float: right">
                         <a href="{{ url_for(".translate_proposed_list", appid=app.unique_id) }}">
-                            <button class="btn btn-warning">View Proposed Translations
+                            <button class="btn btn-warning">{{ gettext("View Proposed Translations") }}
                                 <span class="badge"
                                       style="{{ "" if proposal_num == 0 else "background-color:#EE2222" }}">{{ proposal_num }}</span>
                             </button>
@@ -84,7 +86,7 @@
 
 
                             <div class="form-group">
-                                <label class="control-label" for="srclang">Select source language</label>
+                                <label class="control-label" for="srclang">{{ gettext("Select source language") }}</label>
 
                             <select id="srclang" name="srclang" class="my-select2"
                                     onchange="onSrcLangChanged()">
@@ -113,12 +115,12 @@
 
                         <button id="editSelectedSourceButton" name="editSelectedSourceButton" type="submit"
                                 class="btn btn-primary" style="margin-bottom:20px">
-                            Edit selected <b>source</b> on its own
+                            {{ gettext("Edit selected <b>source</b> on its own") }}
                         </button>
 
                         <div class="form-group">
 
-                            <label class="control-label" for="targetlang">Select target language</label>
+                            <label class="control-label" for="targetlang">{{ gettext("Select target language") }}</label>
 
                             <select id="targetlang" name="targetlang" class="my-select2">
 
@@ -202,8 +204,7 @@
                                     </button>
                                 </div>
 
-                                <p id="same-lang" class="text-danger">Target and source languages may not be the
-                                    same</p>
+                                <p id="same-lang" class="text-danger">{{ gettext("Target and source languages may not be the same") }}</p>
 
                                     <!--
                     <a class="btn btn-success" id="sendlangsbtn" href="{{ url_for('translate.translate_edit') }}">Step 3 - Translate »</a>
