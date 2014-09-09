@@ -33,6 +33,9 @@
                         <h2 id="appfullname">{{ gettext("[App name not available]") }}</h2>
                     {% endif %}
 
+                    {{ gettext("Advanced mode:") }}
+                    <input type="checkbox" name="advanced-mode" checked>
+
                     <h4 class="alert alert-info">{{ gettext("Original XML: ") }} <a href="{{ xmlspec }}">{{ xmlspec }}</a></h4>
                     {% if is_owner %}
                         <h4 class="alert alert-success">
@@ -258,6 +261,15 @@
     //! Load and initialize what we must.
     $(document).ready(function () {
         console.log("On ready");
+
+        // Initialize the advanced-mode switch.
+        var $advMode = $("[name='advanced-mode']");
+        $advMode.bootstrapSwitch();
+
+        $advMode.on("switchChange.bootstrapSwitch", function(ev, state) {
+            console.log("NOW WE ARE IN THE ADVANCED MODE");
+        });
+
 
         // We need to take a different action if we want to edit the selected source language.
         // We intercept the click.
