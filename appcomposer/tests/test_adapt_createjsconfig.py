@@ -13,6 +13,7 @@ class TestAdaptCreateJsConfig:
     """
     Test the initial adapt screen.
     """
+
     def __init__(self):
         self.flask_app = None
         self.tapp = None
@@ -68,9 +69,9 @@ class TestAdaptCreateJsConfig:
         Ensure that we can create the JSConfig.
         """
         rv = self.flask_app.post("/composers/adapt/create/jsconfig/", data=dict(
-            app_name = "TestApp",
-            adaptor_type = "jsconfig",
-            app_description =" TestDescription"
+            app_name="TestApp",
+            adaptor_type="jsconfig",
+            app_description=" TestDescription"
         ))
 
         # App created successfully.
@@ -81,18 +82,18 @@ class TestAdaptCreateJsConfig:
         Ensure that we can create *and* edit.
         """
         rv = self.flask_app.post("/composers/adapt/create/jsconfig/", data=dict(
-            app_name = "TestApp",
-            adaptor_type = "jsconfig",
-            app_description =" TestDescription"
+            app_name="TestApp",
+            adaptor_type="jsconfig",
+            app_description=" TestDescription"
         ))
 
         # App created successfully.
         assert rv.status_code == 302
 
         rv = self.flask_app.post("/composers/adapt/create/jsconfig/", data=dict(
-            app_name = "TestApp",
-            adaptor_type = "jsconfig",
-            app_description =" TestDescription"
+            app_name="TestApp",
+            adaptor_type="jsconfig",
+            app_description=" TestDescription"
         ))
 
         assert rv.status_code == 200
@@ -101,7 +102,6 @@ class TestAdaptCreateJsConfig:
 
         # Retrieve the app id. Note: This relies on the fact that the last created app appears last.
         finds = re.findall("""/adapt/edit/([a-z0-9\\-]+)""", rv.data)
-        print "FINDS: " + str(finds)
         appid = finds[-1]
         assert len(appid) > 2
 
