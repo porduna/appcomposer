@@ -4,141 +4,172 @@
 
 
 {% block body_content %}
-        <div class="translateblock">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="page-header">
-                        <h1 id="apptitle">Translate</h1>
-                        <h2 id="appfullname">{{ app.name }}</h2>
+    <div class="translateblock">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="page-header">
 
-                        {% if is_owner %}
-                        <div name="ownership_status" class="alert alert-success">
-                            <h3>
-                                You are the owner of this translation
-                            </h3>
-                            <p>
-                                Your translation is the <b>standard</b> for this App and language, and the one which will be globally used by default for this App.
-                                Other translators may propose changes, which you can accept, modify, or deny.
-                            </p>
-                            <p style="padding-top: 10px">
-                                <a href="{{ url_for('.transfer_ownership', appid=app.unique_id, lang=request.values["srclang"]) }}">
-                                    <button class="btn btn-mini btn-info">Transfer Ownership</button>
-                                </a>
-                            </p>
-                        </div>
-                        {% else %}
-                        <div name="ownership_status" class="alert alert-warning">
-                            <h3>
-                                You are not the owner of this translation
-                            </h3>
-                            <p>
-                                Your changes will apply only to your App instance. If you want them to be applied
-                                to the global translation for this App and language, you will need to send a proposal
-                                to the language's owner (this can be done automatically).
-                            </p>
-                        </div>
-                        {% endif %}
-
-                        <h5>You may access the translation for this language:</h5>
-                        <a href="{{ url_for('.translate_publish', appid=app.unique_id, group=request.values["targetgroup"]) }}">
-                            <button class="btn btn-primary">Publish Translation</button>
-                        </a>
-
-                        <a href="{{ url_for('.app_translation_serve', app_url=spec, lang=request.values["targetlang"], target=request.values["targetgroup"]) }}">
-                            <button class="btn btn-primary">View Shindig Translation</button>
-                        </a>
-
+                <div style="width: 100%;">
+                    <div style="margin-left: auto; margin-right: 2%; float:right; clear:both;">
+                        {{ gettext("Advanced mode:") }}
+                        <form>
+                            <input type="checkbox" name="advanced-mode" checked>
+                        </form>
                     </div>
                 </div>
+                <h1 id="apptitle">Translate</h1>
+
+                <h2 id="appfullname">{{ app.name }}</h2>
+
+                {% if is_owner %}
+                    <div name="ownership_status" class="alert alert-success">
+                        <h3>
+                            You are the owner of this translation
+                        </h3>
+
+                        <p>
+                            Your translation is the <b>standard</b> for this App and language, and the one which will be
+                            globally used by default for this App.
+                            Other translators may propose changes, which you can accept, modify, or deny.
+                        </p>
+
+                        <p style="padding-top: 10px">
+                            <a href="{{ url_for('.transfer_ownership', appid=app.unique_id, lang=request.values["srclang"]) }}">
+                                <button class="btn btn-mini btn-info">Transfer Ownership</button>
+                            </a>
+                        </p>
+                    </div>
+                {% else %}
+                    <div name="ownership_status" class="alert alert-warning">
+                        <h3>
+                            You are not the owner of this translation
+                        </h3>
+
+                        <p>
+                            Your changes will apply only to your App instance. If you want them to be applied
+                            to the global translation for this App and language, you will need to send a proposal
+                            to the language's owner (this can be done automatically).
+                        </p>
+                    </div>
+                {% endif %}
+
+                <h5>You may access the translation for this language:</h5>
+                <a href="{{ url_for('.translate_publish', appid=app.unique_id, group=request.values["targetgroup"]) }}">
+                    <button class="btn btn-primary">Publish Translation</button>
+                </a>
+
+                <a href="{{ url_for('.app_translation_serve', app_url=spec, lang=request.values["targetlang"], target=request.values["targetgroup"]) }}">
+                    <button class="btn btn-primary" id="viewShindigTranslation">View Shindig Translation</button>
+                </a>
+
             </div>
+        </div>
+    </div>
 
-          <h5 class="col-lg-12">{{ gettext("Step 3: Validate the proposed translations or provide your own. Save to apply the changes.") }}</h5>
-          <hr>
+    <h5 class="col-lg-12">{{ gettext("Step 3: Validate the proposed translations or provide your own. Save to apply the changes.") }}</h5>
+    <hr>
 
-  <div class="well">
+    <div class="well">
         <div class="row">
-          <div class="col-lg-12">            
+            <div class="col-lg-12">
 
-            <div class="wrap">
-              <ul class="nav nav-tabs" style="margin-bottom: 15px;">
-                <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
-                <li><a href="#preview" data-toggle="tab">Preview</a></li>
-              </ul>              
-              <div id="tabtrans" class="tab-content">
-                <div class="tab-pane fade active in" id="edit">
+                <div class="wrap">
+                    <ul class="nav nav-tabs" style="margin-bottom: 15px;">
+                        <li class="active"><a href="#edit" data-toggle="tab">Edit</a></li>
+                        <li><a href="#preview" data-toggle="tab">Preview</a></li>
+                    </ul>
+                    <div id="tabtrans" class="tab-content">
+                        <div class="tab-pane fade active in" id="edit">
 
-                  <div class="col-lg-12">
-                      <form class="bs-example form-horizontal" method="POST" action="#">
+                            <div class="col-lg-12">
+                                <form class="bs-example form-horizontal" method="POST" action="#">
 
-                        <input type="hidden" name="appid" value="{{ request.values["appid"] }}"/>
-                        <input type="hidden" name="srclang" value="{{ request.values["srclang"] }}"/>
-                        <input type="hidden" name="targetlang" value="{{ request.values["targetlang"] }}"/>
-                        <input type="hidden" name="srcgroup" value="{{ request.values["srcgroup"] }}"/>
-                        <input type="hidden" name="targetgroup" value="{{ request.values["targetgroup"] }}"/>
+                                    <input type="hidden" name="appid" value="{{ request.values["appid"] }}"/>
+                                    <input type="hidden" name="srclang" value="{{ request.values["srclang"] }}"/>
+                                    <input type="hidden" name="targetlang" value="{{ request.values["targetlang"] }}"/>
+                                    <input type="hidden" name="srcgroup" value="{{ request.values["srcgroup"] }}"/>
+                                    <input type="hidden" name="targetgroup"
+                                           value="{{ request.values["targetgroup"] }}"/>
 
-                        <div class="row">
-                            <button id="showidsButton" style="margin-bottom: 20px; margin-left: 30px;" type="button" class="btn btn-default btn-sm">Show identifiers</button>
-                        </div>
+                                    <div class="row">
+                                        <button id="showidsButton" style="margin-bottom: 20px; margin-left: 30px;"
+                                                type="button" class="btn btn-default btn-sm">Show identifiers
+                                        </button>
+                                    </div>
 
-                        <fieldset>
-                          <!-- <legend  class="col-lg-12">Step 3: Validate the proposed translations by pressing "Save" or provide your own translation</legend> -->
+                                    <fieldset>
+                                        <!-- <legend  class="col-lg-12">Step 3: Validate the proposed translations by pressing "Save" or provide your own translation</legend> -->
 
-                            {% for src_name, src_text in srcbundle.get_msgs().items() %}
+                                        {% for src_name, src_text in srcbundle.get_msgs().items() %}
 
-                            <div class="form-group col-lg-12">
-                                <label for="field_{{ loop.index }}" class="_message_label col-lg-1 control-label">
+                                            <div class="form-group col-lg-12">
+                                                <label for="field_{{ loop.index }}"
+                                                       class="_message_label col-lg-1 control-label">
                                     <span class="badge small" title="{{ src_name }}" style="float:left">{{ src_name }}
                                     </span>
-                                    <div style="display:inline" title="{{ src_name }}">
-                                        {{ src_text }}
-                                    </div>
-                                </label>
-                                <div class="_message col-lg-11">
-                                    {# TODO: Find a better way to submit them. This is particularly ugly. #}
-                                    <input type="text" class="form-control" id="field_{{ loop.index }}" name="_message_{{ src_name }}" placeholder="{{ src_text }}" value="{{ targetbundle.get_msg(src_name) or '' }}">
-                                </div>
+
+                                                    <div style="display:inline" title="{{ src_name }}">
+                                                        {{ src_text }}
+                                                    </div>
+                                                </label>
+
+                                                <div class="_message col-lg-11">
+                                                    {# TODO: Find a better way to submit them. This is particularly ugly. #}
+                                                    <input type="text" class="form-control" id="field_{{ loop.index }}"
+                                                           name="_message_{{ src_name }}" placeholder="{{ src_text }}"
+                                                           value="{{ targetbundle.get_msg(src_name) or '' }}">
+                                                </div>
+                                            </div>
+                                        {% endfor %}
+
+
+                                        <div class="form-group">
+                                            <div class="col-lg-10 col-lg-offset-2">
+                                                <a class="btn btn-default" id="backtoindexbtn"
+                                                   href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">«
+                                                    Go Back to Step 2</a>
+
+                                                <button type="submit" id="sendurlbtn" name="save"
+                                                        class="btn btn-success">Save
+                                                </button>
+                                                <button type="submit" id="sendurlbtn" name="save_exit"
+                                                        class="btn btn-warning">Save & Exit
+                                                </button>
+
+                                                {% if not is_owner %}
+                                                    <label class="checkbox" style="float:right">
+                                                        <input name="proposeToOwner" value="true" type="checkbox"
+                                                               style="width: 1em; height: 1em;">Propose translation to
+                                                        owner
+                                                    </label>
+                                                {% endif %}
+
+                                                <!--
+                                                <a class="btn btn-success" id="sendlangsbtn" href="#end">Save</a>
+                                                -->
+                                            </div>
+                                        </div>
+                                    </fieldset>
+
+                                    {{ csrf_field()|safe }}
+
+                                </form>
                             </div>
-                            {% endfor %}
 
-                          
-                          <div class="form-group">
-                            <div class="col-lg-10 col-lg-offset-2">
-                              <a class="btn btn-default" id="backtoindexbtn" href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">« Go Back to Step 2</a>
 
-                              <button type="submit" id="sendurlbtn" name="save" class="btn btn-success">Save</button>
-                              <button type="submit" id="sendurlbtn" name="save_exit" class="btn btn-warning">Save & Exit</button>
-
-                              {% if not is_owner %}
-                              <label class="checkbox" style="float:right">
-                                <input name="proposeToOwner" value="true" type="checkbox" style="width: 1em; height: 1em;">Propose translation to owner
-                              </label>
-                              {% endif %}
-
-                              <!--
-                              <a class="btn btn-success" id="sendlangsbtn" href="#end">Save</a>
-                              -->
-                            </div>
-                          </div>
-                        </fieldset>
-
-                        {{ csrf_field()|safe }}
-
-                      </form>
+                        </div>
+                        <div class="tab-pane fade" id="preview">
+                            <p>Final widget is rendered here.</p>
+                        </div>
                     </div>
-
-
                 </div>
-                <div class="tab-pane fade" id="preview">
-                  <p>Final widget is rendered here.</p>
-                </div>
-              </div>                                          
-            </div><!-- bs-example -->
-                        
-          </div>
-            
-          </div>
+                <!-- bs-example -->
+
+            </div>
+
         </div>
-  
+    </div>
+
 
 {% endblock %}
 
@@ -149,10 +180,45 @@
 
     <script type="text/javascript">
 
-        $(document).ready( function() {
+        function onAdvancedModeChanged(enabled) {
+            var viewShindigTranslation = $("#viewShindigTranslation");
+
+            if (enabled) {
+                viewShindigTranslation.css("visibility", "visible");
+            }
+            else {
+                viewShindigTranslation.css("visibility", "hidden");
+            }
+        }
+
+        $(document).ready(function () {
+
+            // Initialize the advanced-mode switch.
+
+            var configstore = new Persist.Store("configstore");
+
+            var $advMode = $("[name='advanced-mode']");
+            $advMode.bootstrapSwitch();
+
+            configstore.get("advmode", function (ok, value) {
+                if (!ok || value == "false")
+                    value = false;
+                else
+                    value = true;
+
+                onAdvancedModeChanged(value);
+                $advMode.bootstrapSwitch("state", value);
+            });
+
+            $advMode.on("switchChange.bootstrapSwitch", function (ev, state) {
+                console.log("Advanced mode enabled: " + state);
+                onAdvancedModeChanged(state);
+                configstore.set("advmode", state);
+            });
+
             $(".badge").hide();
 
-            $("#showidsButton").click(function(){
+            $("#showidsButton").click(function () {
                 // Initial state: hidden with col-lg-1
                 // Shown state: shown with col-lg-4
                 $(".badge").toggle();
