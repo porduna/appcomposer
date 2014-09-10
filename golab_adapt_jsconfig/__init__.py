@@ -84,6 +84,8 @@ def edit(app_id):
                         new_url = True
                         data['configuration'] = None
                         data['configuration_name'] = None
+
+                        data["initialised"] = True
                         adaptor.save_data(app_id, data)
 
     url = data['url']
@@ -109,7 +111,8 @@ def edit(app_id):
     configuration_name = data['configuration_name']
     configuration = json.dumps(data['configuration'], indent = 4)
 
-    return render_template("jsconfig/edit.html",  
+    return render_template("jsconfig/edit.html",
+                                initialised = data.get("initialised"),  # Indicate whether the first URL was successfully loaded, so that we can prevent further URL changes
                                 url = url or '',
                                 definition_script = definition_script,
                                 app_id = app_id,

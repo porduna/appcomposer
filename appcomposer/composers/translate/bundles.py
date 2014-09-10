@@ -647,7 +647,7 @@ class Bundle(object):
             # BUGFIX #147: parseString can't be passed an unicode string, it has to be passed a properly-encoded
             # byte string. Hence the xml_str.encode('utf-8') thing.
             xmldoc = minidom.parseString(xml_str.encode('utf-8'))
-            
+
             itemlist = xmldoc.getElementsByTagName("msg")
             for elem in itemlist:
                 bundle.add_msg(elem.attributes["name"].nodeValue, elem.firstChild.nodeValue.strip())

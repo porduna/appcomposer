@@ -6,7 +6,15 @@
     <div class="col-lg-10">
         <form class="form" action="." method="POST" enctype="multipart/form-data">
             {{ url_form.hidden_tag() }}
-            {{ url_form.url.label }}: {{ url_form.url(size=100) }} <input type="submit" class="btn btn-primary" value="{{ gettext("Save") }}"/>
+
+            {% if not initialised %}
+                {{ url_form.url.label }}: {{ url_form.url(size=100) }}
+                <input type="submit" class="btn btn-primary" value="{{ gettext("Save") }}"/>
+            {% else %}
+                {{ url_form.url.label }}: {{ url_form.url(size=100, readonly="readonly") }}
+            {% endif %}
+
+
             {% if url_form.url.errors %}
                 <div class="row">
                     <div class="alert alert-danger col-md-5 col-md-offset-3">
