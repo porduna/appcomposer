@@ -104,7 +104,7 @@
 
                                             <div class="form-group col-lg-12">
                                                 <label for="field_{{ loop.index }}"
-                                                       class="_message_label col-lg-1 control-label">
+                                                       class="_message_label col-lg-5 control-label" style="text-align: left">
                                     <span class="badge small" title="{{ src_name }}" style="float:left">{{ src_name }}
                                     </span>
 
@@ -113,7 +113,7 @@
                                                     </div>
                                                 </label>
 
-                                                <div class="_message col-lg-11">
+                                                <div class="_message col-lg-7">
                                                     {# TODO: Find a better way to submit them. This is particularly ugly. #}
                                                     <input type="text" class="form-control" id="field_{{ loop.index }}"
                                                            name="_message_{{ src_name }}" placeholder="{{ src_text }}"
@@ -225,8 +225,8 @@
                 // Initial state: hidden with col-lg-1
                 // Shown state: shown with col-lg-4
                 $(".badge").toggle();
-                $("._message_label").toggleClass("col-lg-1").toggleClass("col-lg-4");
-                $("._message").toggleClass("col-lg-11").toggleClass("col-lg-8");
+                $("._message_label").toggleClass("col-lg-4").toggleClass("col-lg-5");
+                $("._message").toggleClass("col-lg-7").toggleClass("col-lg-7");
                 $("#showidsButton").toggleClass("active");
             });
 
