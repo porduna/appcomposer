@@ -70,10 +70,13 @@ def translate_edit():
     # TODO: Verify that this doesn't break anything.
     is_owner = owner_app == app
 
+    # Get the language names
+    target_translation_name = targetbundle.get_readable_name()
+    source_translation_name = srcbundle.get_readable_name()
+
     # This is a GET request. We are essentially viewing-only.
     if request.method == "GET":
-        return render_template("composers/translate/edit.html", is_owner=is_owner, app=app, srcbundle=srcbundle,
-                               targetbundle=targetbundle, spec=spec)
+        pass
 
     # This is a POST request. We need to save the entries.
     else:
@@ -145,5 +148,9 @@ def translate_edit():
         if "save_exit" in request.values:
             return redirect(url_for("user.apps.index"))
 
-        return render_template("composers/translate/edit.html", is_owner=is_owner, app=app, srcbundle=srcbundle,
-                               targetbundle=targetbundle, spec=spec)
+
+
+
+    return render_template("composers/translate/edit.html", is_owner=is_owner, app=app, srcbundle=srcbundle,
+                           targetbundle=targetbundle, spec=spec, target_translation_name=target_translation_name,
+                           source_translation_name=source_translation_name)

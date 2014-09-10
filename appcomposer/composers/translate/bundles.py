@@ -605,6 +605,16 @@ class Bundle(object):
         json_str = json.dumps(bundle_data)
         return json_str
 
+    # TODO: Add test for this method and add a way to get the readable name in different languages.
+    def get_readable_name(self):
+        """
+        Retrieves the readable name for the Bundle
+        """
+        eng_name = BundleManager.get_locale_english_name(self.lang, self.country)
+        if eng_name is None:
+            eng_name = "Default"
+        return "%s (%s)" % (eng_name, self.group)
+
     @staticmethod
     def from_jsonable(bundle_data):
         """
