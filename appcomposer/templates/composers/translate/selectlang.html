@@ -33,9 +33,6 @@
                         <h2 id="appfullname">{{ gettext("[App name not available]") }}</h2>
                     {% endif %}
 
-                    {{ gettext("Advanced mode:") }}
-                    <input type="checkbox" name="advanced-mode" checked>
-
                     <h4 class="alert alert-info">{{ gettext("Original XML: ") }} <a href="{{ xmlspec }}">{{ xmlspec }}</a></h4>
                     {% if is_owner %}
                         <h4 class="alert alert-success">
@@ -57,8 +54,16 @@
                         </h4>
                     {% endif %}
 
+                    <div style="width: 100%; padding-bottom: 50px;">
+                        <div style="margin-left: auto; margin-right: 0; float:left; clear:both;">
+                            {{ gettext("Advanced mode:") }}
+                            <form>
+                                <input type="checkbox" name="advanced-mode" checked>
+                            </form>
+                        </div>
+                    </div>
 
-                    <div style="float: right">
+                    <div style="float: right; clear: both">
                         <a href="{{ url_for(".translate_proposed_list", appid=app.unique_id) }}">
                             <button class="btn btn-warning">{{ gettext("View Proposed Translations") }}
                                 <span class="badge"
@@ -258,16 +263,46 @@
     <!-- JavaScript source code -->
     <script type="text/javascript">
 
+
+    function onAdvancedModeChanged(enabled)
+    {
+        var editSelectedSource = $("#editSelectedSourceButton");
+
+        if(enabled)
+        {
+            editSelectedSource.css("visibility", "visible");
+        }
+        else
+        {
+            editSelectedSource.css("visibility", "hidden");
+        }
+    }
+
     //! Load and initialize what we must.
     $(document).ready(function () {
         console.log("On ready");
+
+        // Create the config store
+        configstore = new Persist.Store('configstore');
 
         // Initialize the advanced-mode switch.
         var $advMode = $("[name='advanced-mode']");
         $advMode.bootstrapSwitch();
 
+        configstore.get("advmode", function(ok, value) {
+            if(!ok || value == "false")
+                value = false;
+            else
+                value = true;
+
+            onAdvancedModeChanged(value);
+            $advMode.bootstrapSwitch("state", value);
+        });
+
         $advMode.on("switchChange.bootstrapSwitch", function(ev, state) {
-            console.log("NOW WE ARE IN THE ADVANCED MODE");
+            console.log("Advanced mode enabled: " + state);
+            onAdvancedModeChanged(state);
+            configstore.set("advmode", state);
         });
 
 
