@@ -1,6 +1,7 @@
 import StringIO
 import json
 import os
+import traceback
 import urllib
 import urlparse
 from xml.dom import minidom
@@ -229,6 +230,8 @@ class BundleManager(object):
         # Extract the locales from the XML.
         locales = self._extract_locales_from_xml(xml_str)
 
+        print locales
+
         for lang, country, bundle_url in locales:
             try:
                 # TODO: Warning. The provided URL in an xml can be relative (or can it not?).
@@ -250,6 +253,7 @@ class BundleManager(object):
                 # we must do in each case. For instance, sometimes we might wanna ignore the Bundle but sometimes we
                 # might wanna notify the user, etc. Also, there may be some cases of invalid bundles in which no
                 # exception occurs but which are somewhat invalid nonetheless.
+                traceback.print_exc()
                 pass
 
     def to_json(self):
@@ -639,7 +643,11 @@ class Bundle(object):
         """
         try:
             bundle = Bundle(lang, country, group)
-            xmldoc = minidom.parseString(xml_str)
+
+            # BUGFIX #147: parseString can't be passed an unicode string, it has to be passed a properly-encoded
+            # byte string. Hence the xml_str.encode('utf-8') thing.
+            xmldoc = minidom.parseString(xml_str.encode('utf-8'))
+            
             itemlist = xmldoc.getElementsByTagName("msg")
             for elem in itemlist:
                 bundle.add_msg(elem.attributes["name"].nodeValue, elem.firstChild.nodeValue.strip())
