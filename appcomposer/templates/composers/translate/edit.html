@@ -93,7 +93,7 @@
 
                                     <div class="row">
                                         <button id="showidsButton" style="margin-bottom: 20px; margin-left: 30px;"
-                                                type="button" class="btn btn-default btn-sm">Show identifiers
+                                                type="button" class="btn btn-default btn-sm">{{ gettext("Show identifiers") }}
                                         </button>
                                     </div>
 
@@ -182,11 +182,14 @@
 
         function onAdvancedModeChanged(enabled) {
             var viewShindigTranslation = $("#viewShindigTranslation");
+            var showIdentifiers = $("#showidsButton");
 
             if (enabled) {
+                showIdentifiers.show();
                 viewShindigTranslation.css("visibility", "visible");
             }
             else {
+                showIdentifiers.hide();
                 viewShindigTranslation.css("visibility", "hidden");
             }
         }
