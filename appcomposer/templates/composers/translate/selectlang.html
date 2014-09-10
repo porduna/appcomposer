@@ -396,22 +396,23 @@
 
         var submits = $("#localisebtn")
 
+        // THIS LIMITATION HAS BEEN DISABLED. IT IS NOW POSSIBLE TO EDIT A LANGUAGE USING THE SAME LANGUAGE AS A BASE.
         // The same source and target combination was chosen. User should not be allowed
         // to try to translate that, as it makes no sense.
-        if (getChosenSource() == getChosenTarget()) {
-            $("#same-lang").show();
-            submits.attr("disabled", "disabled");
-            submits.prop('disabled', true);
-
-            $('#localisebtndiv').attr("data-content", "{{ gettext("In order to start localising the App, the chosen source language-group and target language-group combinations must be different") }}");
-        }
-        else {
+{#        if (getChosenSource() == getChosenTarget()) {#}
+{#            $("#same-lang").show();#}
+{#            submits.attr("disabled", "disabled");#}
+{#            submits.prop('disabled', true);#}
+{##}
+{#            $('#localisebtndiv').attr("data-content", "{{ gettext("In order to start localising the App, the chosen source language-group and target language-group combinations must be different") }}");#}
+{#        }#}
+{#        else {#}
             $("#same-lang").hide();
             submits.removeAttr("disabled");
             submits.prop("disabled", false);
 
             $('#localisebtndiv').attr("data-content", "{{ gettext("Click this button to start localising the App. You will be shown the entries in the <b>source</b> language so that you can translate them into the <b>target</b> language.") }}");
-        }
+{#        }#}
 
 
         // We will also update the info text here.
