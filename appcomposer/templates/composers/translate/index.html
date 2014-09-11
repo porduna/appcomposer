@@ -2,139 +2,188 @@
 {% set current_link = "home" %}
 {% extends 'composers/translate/layout.html' %}
 {% block body_content %}
-        <div class="translateblock">
-            <div class="row">
-                <div class="col-lg-12">
-                    <div class="page-header">
-                        <h1 id="apptitle">{{ gettext("Translate") }}</h1>
-                    </div>
-                </div>
+    <div class="translateblock">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="page-header">
+                <h1 id="apptitle">{{ gettext("Translate") }}</h1>
             </div>
+        </div>
+    </div>
 
-            <div class="row">
-                <div class="col-lg-6">
-                  <div class="well">
-                        <form class="form-horizontal" id="geturl" name="geturl" action="{{ url_for('translate.translate_selectlang') }}" method="POST">
-                        <fieldset>
-                            <legend>{{ gettext("Step 1 - App creation") }}</legend>
+    <div class="row">
+        <div class="col-lg-6">
+            <div class="well">
+                <form class="form-horizontal" id="geturl" name="geturl"
+                      action="{{ url_for('translate.translate_selectlang') }}" method="POST">
+                    <fieldset>
+                        <legend>{{ gettext("Step 1 - App creation") }}</legend>
 
-                            <div class="form-group">
-                                <label for="appurl" class="col-lg-2 control-label">{{ gettext("URL") }}</label>
-                                <div class="col-lg-10">
-                                    <input type="text" id="appurl" name="appurl" class="form-control" placeholder="{{ gettext("URL of the app") }}">
-                                    <span class="help-block">{{ gettext("Enter the URL of the XML for the app you want to translate.") }}</span>
-                                </div>
+                        <div class="form-group">
+                            <label for="appurl" class="col-lg-2 control-label">{{ gettext("URL") }}</label>
+
+                            <div class="col-lg-10">
+                                <input type="text" id="appurl" name="appurl" class="form-control"
+                                       placeholder="{{ gettext("URL of the app") }}">
+                                <span class="help-block">{{ gettext("Enter the URL of the XML for the app you want to translate.") }}</span>
                             </div>
+                        </div>
 
-                            <div class="form-group">
-                                <label for="appname" class="col-lg-2 control-label">{{ gettext("Name") }}</label>
-                                <div class="col-lg-10">
-                                    <input type="text" id="appname" name="appname" class="form-control" placeholder="{{ gettext("Name of the app") }}">
-                                    <span class="help-block">{{ gettext("Enter the name of the new app that will be created.") }}</span>
-                                </div>
+                        <div class="form-group">
+                            <label for="appname" class="col-lg-2 control-label">{{ gettext("Name") }}</label>
+
+                            <div class="col-lg-10">
+                                <input type="text" id="appname" name="appname" class="form-control"
+                                       placeholder="{{ gettext("Name of the app") }}">
+                                <span class="help-block">{{ gettext("Enter the name of the new app that will be created.") }}</span>
                             </div>
+                        </div>
 
-                            {#
-                            <div class="form-group">
-                                <div class="col-lg-10 col-lg-offset-2">                            
-                                    <label class="control-label" for="searchapp">Or you can search the app on the Go-Lab portal</label>
-                                    <div class="controls">
-                                        <a data-toggle="modal" href="#searchmodal" class="btn btn-primary" id="searchapp">Search app on portal</a>
-                                        <div class="modal fade" id="searchmodal" tabindex="-1" role="dialog" aria-labelledby="searchmodallabel" aria-hidden="true">
-                                            <div class="modal-dialog">
-                                                <div class="modal-content">
-                                                    <div class="modal-header">
-                                                        <button type="button" class="close" data-dismiss="modal" aria-hidden="true">&times;</button>
-                                                        <h4 class="modal-title">List of apps</h4>
-                                                    </div>
-                                                    
-                                                    <div class="modal-body">                                                    
-                                                        <div id="page-content-wrapper">
-                                                          <div class="content-header">
-                                                            <p>Select the app clicking over one of the thumbnails below.</p>
-                                                          </div>                                  
-                                                          <!-- App thumbnails -->
-                                                          <div class="page-content inset">
-                                                            <div class="row">
-                                                              <div class="col-md-4">
-                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>
-                                                              </div>
-                                                              <div class="col-md-4">
-                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>
-                                                              </div>
-                                                              <div class="col-md-4">
-                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>
-                                                              </div>
-                                                              <div class="col-md-4">
-                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>
-                                                              </div>
-                                                              <div class="col-md-4">
-                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>
-                                                              </div>
-                                                              <div class="col-md-4">
-                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>
-                                                              </div>                                                                                                                                                                                                                                        
-                                                            </div>
-                                                          </div>
+
+                        <div class="form-group">
+                            <div class="col-lg-10 col-lg-offset-2">
+                                <label class="control-label" for="searchapp">Or you can search the app on the Go-Lab
+                                    portal</label>
+
+                                <div class="controls">
+                                    <a data-toggle="modal" href="#searchmodal" class="btn btn-primary" id="searchapp">Search
+                                        app on portal</a>
+
+                                    <div class="modal fade" id="searchmodal" tabindex="-1" role="dialog"
+                                         aria-labelledby="searchmodallabel" aria-hidden="true">
+                                        <div class="modal-dialog">
+                                            <div class="modal-content">
+                                                <div class="modal-header">
+                                                    <button type="button" class="close" data-dismiss="modal"
+                                                            aria-hidden="true">&times;</button>
+                                                    <h4 class="modal-title">List of apps</h4>
+                                                </div>
+
+                                                <div class="modal-body">
+                                                    <div id="page-content-wrapper">
+                                                        <div class="content-header">
+                                                            <p>Select the app clicking over one of the thumbnails
+                                                                below.</p>
+                                                        </div>
+
+
+                                                        <!-- App thumbnails -->
+                                                        <div class="page-content inset" style="">
+
+                                                            <table id="appsearch-table" class="display" cellspacing="0"
+                                                                   widdth="100%">
+                                                                <thead>
+                                                                <tr>
+                                                                    <th>Title</th>
+                                                                    <th>Author</th>
+                                                                    <th>Description</th>
+                                                                    <th>Type</th>
+                                                                    <th>App URL</th>
+                                                                </tr>
+                                                                </thead>
+                                                                <tfoot>
+                                                                <tr>
+                                                                    <th>Title</th>
+                                                                    <th>Author</th>
+                                                                    <th>Description</th>
+                                                                    <th>Type</th>
+                                                                    <th>App URL</th>
+                                                                </tr>
+                                                                </tfoot>
+                                                                <tbody>
+
+                                                                </tbody>
+                                                            </table>
+
+                                                            {#                                                            <div class="row">#}
+                                                            {#                                                              <div class="col-md-4 col-xs-height">#}
+                                                            {#                                                                <a class="thumbnail" href="#"><img class="img-responsive" src="http://placehold.it/200x100"></a>#}
+                                                            {##}
+                                                            {#                                                              </div>#}
+                                                            {##}
+                                                            {#                                                            </div>#}
                                                         </div>
                                                     </div>
-                                                    
-                                                    <div class="modal-footer">
-                                                        <button type="button" class="btn btn-warning" id="closemodal" data-dismiss="modal">Close</button>
-                                                        <button type="button" class="btn btn-success" id="addurl">Add App</button>
-                                                    </div>
+                                                </div>
+
+                                                <div class="modal-footer">
+                                                    <button type="button" class="btn btn-warning" id="closemodal"
+                                                            data-dismiss="modal">Close
+                                                    </button>
+                                                    <button type="button" class="btn btn-success" id="addurl">Add App
+                                                    </button>
                                                 </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>                            
-                            </div>
-                            #}
-
-                            <hr>                        
-                            
-                            {% with messages = get_flashed_messages() %}
-                                {% if messages %}
-                                <div class="alert alert-error">
-                                {% for message in messages %}
-                                    <p>{{ message }}</p>
-                                {% endfor %}
                                 </div>
-                                {% endif %}
-                            {% endwith %}
-                                            
-                            <div class="form-group">
-                                <div class="col-lg-10 col-lg-offset-2">                            
-                                    <label class="control-label" for="selectlang"></label>
-                                    <div class="controls">
+                            </div>
+                        </div>
 
-                                        <button type="submit" id="sendurlbtn" name="sendurl" class="btn btn-success">{{ gettext("Step 2 - Select language »") }}</button>
 
-                                        <!--
+                        <hr>
+
+                        {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                                <div class="alert alert-error">
+                                    {% for message in messages %}
+                                        <p>{{ message }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+
+                        <div class="form-group">
+                            <div class="col-lg-10 col-lg-offset-2">
+                                <label class="control-label" for="selectlang"></label>
+
+                                <div class="controls">
+
+                                    <button type="submit" id="sendurlbtn" name="sendurl"
+                                            class="btn btn-success">{{ gettext("Step 2 - Select language »") }}</button>
+
+                                    <!--
                                         <a class="btn btn-success" id="sendurlbtn" href="{{ url_for('translate.translate_selectlang') }}">Step 2 - Select language »</a>
                                         -->
-                                    </div>
-                                </div>                                 
+                                </div>
                             </div>
-                        </fieldset>
+                        </div>
+                    </fieldset>
 
-                        {{ csrf_field()|safe }}
+                    {{ csrf_field()|safe }}
 
-                        </form>
-                    </div>
-                </div>
+                </form>
             </div>
+        </div>
+    </div>
 
-            <div class="row">
-                <br>
-                <div class="alert alert-info col-md-11 col-md-offset-1">
-                    {{ gettext("Put the address of an application to be adapted. Examples:") }}
-                    <ul>
-                    {% for example in ['http://go-lab.gw.utwente.nl/production/conceptmapper_v1/tools/conceptmap/src/main/webapp/conceptmapper.xml', 'http://go-lab.gw.utwente.nl/production/hypothesis_v1/tools/hypothesis/src/main/webapp/hypothesis.xml'] %}
-                        <li>{{ example }}</li>
-                    {% endfor %}
-                    </ul>
-                </div>
-            </div>
-        
+    <div class="row">
+        <br>
+
+        <div class="alert alert-info col-md-11 col-md-offset-1">
+            {{ gettext("Put the address of an application to be adapted. Examples:") }}
+            <ul>
+                {% for example in ['http://go-lab.gw.utwente.nl/production/conceptmapper_v1/tools/conceptmap/src/main/webapp/conceptmapper.xml', 'http://go-lab.gw.utwente.nl/production/hypothesis_v1/tools/hypothesis/src/main/webapp/hypothesis.xml'] %}
+                    <li>{{ example }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+
+    <script type="text/javascript">
+    $(document).ready( function() {
+        appsearch = $("#appsearch-table").DataTable();
+        //appsearch.row.add(["A", "B", "C", "D"]);
+
+        $.getJSON("http://www.golabz.eu/rest/apps/retrieve.json")
+    });
+    </script>
+
+
 {% endblock %}
