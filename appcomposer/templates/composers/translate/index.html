@@ -12,12 +12,35 @@
     </div>
 
     <div class="row">
-        <div class="col-lg-6">
-            <div class="well">
+        <div class="col-lg-12">
+            <legend>{{ gettext("Step 1 - App creation") }}</legend>
+            <div class="" style="width: 100%">
+
+                <table id="appsearch-table" class="appsearch-table display compact" cellspacing="0" width="100%" style="">
+                    <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                    </tr>
+                    </tfoot>
+                    <tbody>
+
+                    </tbody>
+                </table>
+
                 <form class="form-horizontal" id="geturl" name="geturl"
                       action="{{ url_for('translate.translate_selectlang') }}" method="POST">
                     <fieldset>
-                        <legend>{{ gettext("Step 1 - App creation") }}</legend>
 
                         <div class="form-group">
                             <label for="appurl" class="col-lg-2 control-label">{{ gettext("URL") }}</label>
@@ -69,31 +92,6 @@
 
                                                         <!-- App thumbnails -->
                                                         <div class="page-content inset" style="">
-
-                                                            <table id="appsearch-table" class="display" cellspacing="0"
-                                                                   widdth="100%">
-                                                                <thead>
-                                                                <tr>
-                                                                    <th>Title</th>
-                                                                    <th>Author</th>
-                                                                    <th>Description</th>
-                                                                    <th>Type</th>
-                                                                    <th>App URL</th>
-                                                                </tr>
-                                                                </thead>
-                                                                <tfoot>
-                                                                <tr>
-                                                                    <th>Title</th>
-                                                                    <th>Author</th>
-                                                                    <th>Description</th>
-                                                                    <th>Type</th>
-                                                                    <th>App URL</th>
-                                                                </tr>
-                                                                </tfoot>
-                                                                <tbody>
-
-                                                                </tbody>
-                                                            </table>
 
                                                             {#                                                            <div class="row">#}
                                                             {#                                                              <div class="col-md-4 col-xs-height">#}
@@ -177,26 +175,60 @@
     {{ super() }}
 
     <script type="text/javascript">
-    $(document).ready( function() {
+        $(document).ready(function () {
 
-        // Initialize the AppSearch table and fill the values through AJAX.
+            // Initialize the AppSearch table and fill the values through AJAX.
 
-        var appsearch = $("#appsearch-table").DataTable();
+            // To remember which item is selected (if any).
+            var selected = undefined;
 
-        $.getJSON("{{ url_for("translate.appslist_proxy") }}")
-                .done( function(data) {
-                    console.log("AppsList retrieved");
-
-                    var apps = data;
-
-                    for(var i = 0; i < apps.length; i++) {
-                        var app = apps[i];
-                        appsearch.row.add([app["title"], app["author"], app["description"], app["app_type"], app["app_url"]]);
+            appsearch = $("#appsearch-table").DataTable(
+                    {
+                        autoWidth: false,
+                        lengthChange: true,
+                        columnDefs: [
+                            {
+                                "targets": 2,
+                                "sortable": false,
+                                "width": "50%"
+                            }
+                        ]
                     }
+            );
 
-                    appsearch.draw();
-                });
-    });
+
+            $.getJSON("{{ url_for("translate.appslist_proxy") }}")
+                    .done(function (data) {
+                        console.log("AppsList retrieved");
+
+                        var apps = data;
+
+                        for (var i = 0; i < apps.length; i++) {
+                            var app = apps[i];
+                            appsearch.row.add([app["title"], app["author"], app["description"].substring(0, 50), app["app_type"]]);
+                        }
+
+                        appsearch.draw();
+
+                        {# This needs to be done after the table is drawn because otherwise the events don't work. #}
+                        {# TODO: Find a work-around. There is probably a prettier way. #}
+                        $('#appsearch-table tbody').on('click', 'tr', function () {
+                            console.log("CLICK");
+
+                            var tr = this;
+                            row = appsearch.row(tr);
+
+                            if(selected !== undefined) {
+                                $(selected).removeClass("selected");
+                            }
+
+                            $(row.node()).toggleClass("selected");
+                            selected = row.node();
+                        });
+                    });
+
+
+        });
     </script>
 
 
