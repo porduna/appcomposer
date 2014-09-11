@@ -1,10 +1,28 @@
-from flask import request, jsonify, json
+from flask import request, jsonify, json, Response
+import requests
 from appcomposer.appstorage.api import get_app, update_app_data
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, AUTOACCEPT_DEFAULT
 from appcomposer.composers.translate.db_helpers import _db_get_ownerships
 from appcomposer.csrf import verify_ajax_csrf
 from appcomposer.models import AppVar
+
+@translate_blueprint.route("/appslist_proxy", methods=["GET"])
+def appslist_proxy():
+    """
+    Retrieves a list of the App repository through the external GoLabz API.
+    Returns the list in JSON.
+    """
+    list = requests.get("http://www.golabz.eu/rest/apps/retrieve.json")
+    if list.status_code != 200:
+        result = {}
+        result["result"] = "error"
+        result["message"] = "Could not retrieve apps data from the repository"
+        return jsonify(**result)
+
+    ret = list.text
+    return Response(ret, mimetype="application/json")
+
 
 @translate_blueprint.route("/config/autoaccept/<appid>", methods=["GET", "POST"])
 def autoaccept(appid):

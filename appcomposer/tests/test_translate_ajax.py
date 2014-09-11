@@ -135,3 +135,8 @@ class TestTranslateAjax:
 
         owl = json.loads(data)
         assert "all_ALL" in owl["owners"]
+
+    def test_appslist_standard_get(self):
+        url = "/composers/translate/appslist_proxy"
+        rv = self.flask_app.get(url)
+        assert rv.status_code == 200
