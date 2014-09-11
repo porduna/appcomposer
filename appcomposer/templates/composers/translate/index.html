@@ -6,6 +6,15 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="page-header">
+
+                <div style="width: 100%;">
+                    <div style="margin-left: auto; margin-right: 2%; float:right; clear:both;">
+                        {{ gettext("Advanced mode:") }}
+                        <form>
+                            <input type="checkbox" name="advanced-mode" checked>
+                        </form>
+                    </div>
+                </div>
                 <h1 id="apptitle">{{ gettext("Translate") }}</h1>
             </div>
         </div>
@@ -18,7 +27,8 @@
 
                 <legend>{{ gettext("Choose an application to translate: ") }}</legend>
 
-                <table id="appsearch-table" class="appsearch-table display compact" cellspacing="0" width="100%" style="">
+                <table id="appsearch-table" class="appsearch-table display compact" cellspacing="0" width="100%"
+                       style="">
                     <thead>
                     <tr>
                         <th>Title</th>
@@ -45,27 +55,27 @@
                     <fieldset>
 
 
-                        <div id="app-advanced-details" style="display: none">
+                        <div id="app-advanced-details" class="advanced-mode" style="display: none">
 
-                        <div class="form-group">
-                            <label for="appurl" class="col-lg-1 control-label">{{ gettext("URL") }}</label>
+                            <div class="form-group">
+                                <label for="appurl" class="col-lg-1 control-label">{{ gettext("URL") }}</label>
 
-                            <div class="col-lg-10">
-                                <input type="text" id="appurl" name="appurl" class="form-control"
-                                       placeholder="{{ gettext("URL of the app") }}">
-                                <span class="help-block">{{ gettext("The URL of the app you want to translate.") }}</span>
+                                <div class="col-lg-10">
+                                    <input type="text" id="appurl" name="appurl" class="form-control"
+                                           placeholder="{{ gettext("URL of the app") }}">
+                                    <span class="help-block">{{ gettext("The URL of the app you want to translate.") }}</span>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="form-group">
-                            <label for="appname" class="col-lg-1 control-label">{{ gettext("Name") }}</label>
+                            <div class="form-group">
+                                <label for="appname" class="col-lg-1 control-label">{{ gettext("Name") }}</label>
 
-                            <div class="col-lg-10">
-                                <input type="text" id="appname" name="appname" class="form-control"
-                                       placeholder="{{ gettext("Name of the app") }}">
-                                <span class="help-block">{{ gettext("The name of the new app that will be created.") }}</span>
+                                <div class="col-lg-10">
+                                    <input type="text" id="appname" name="appname" class="form-control"
+                                           placeholder="{{ gettext("Name of the app") }}">
+                                    <span class="help-block">{{ gettext("The name of the new app that will be created.") }}</span>
+                                </div>
                             </div>
-                        </div>
 
                         </div>
 
@@ -111,6 +121,18 @@
     {{ super() }}
 
     <script type="text/javascript">
+
+       function onAdvancedModeChanged(enabled) {
+            var advMode = $(".advanced-mode");
+
+            if (enabled) {
+                advMode.show();
+            }
+            else {
+                advMode.hide();
+            }
+        } //! onAdvancedModeChanged
+
         $(document).ready(function () {
 
             // Initialize the AppSearch table and fill the values through AJAX.
@@ -154,7 +176,7 @@
                             var tr = this;
                             row = appsearch.row(tr);
 
-                            if(selected !== undefined) {
+                            if (selected !== undefined) {
                                 $(selected).removeClass("selected");
                             }
 
@@ -163,8 +185,30 @@
                         });
                     });
 
+            // Initialize the advanced-mode switch.
 
-        });
+            var configstore = new Persist.Store("configstore");
+
+            var $advMode = $("[name='advanced-mode']");
+            $advMode.bootstrapSwitch();
+
+            configstore.get("advmode", function (ok, value) {
+                if (!ok || value == "false")
+                    value = false;
+                else
+                    value = true;
+
+                onAdvancedModeChanged(value);
+                $advMode.bootstrapSwitch("state", value);
+            });
+
+            $advMode.on("switchChange.bootstrapSwitch", function (ev, state) {
+                console.log("Advanced mode enabled: " + state);
+                onAdvancedModeChanged(state);
+                configstore.set("advmode", state);
+            });
+
+        }); //! ready()
     </script>
 
 
