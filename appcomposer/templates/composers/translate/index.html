@@ -178,11 +178,23 @@
 
     <script type="text/javascript">
     $(document).ready( function() {
-        appsearch = $("#appsearch-table").DataTable();
-        //appsearch.row.add(["A", "B", "C", "D"]);
 
-        $.getJSON("http://www.golabz.eu/rest/apps/retrieve.json")
+        // Initialize the AppSearch table and fill the values through AJAX.
+
+        var appsearch = $("#appsearch-table").DataTable();
+
+        $.getJSON("{{ url_for("translate.appslist_proxy") }}")
                 .done( function(data) {
+                    console.log("AppsList retrieved");
+
+                    var apps = data;
+
+                    for(var i = 0; i < apps.length; i++) {
+                        var app = apps[i];
+                        appsearch.row.add([app["title"], app["author"], app["description"], app["app_type"], app["app_url"]]);
+                    }
+
+                    appsearch.draw();
                 });
     });
     </script>
