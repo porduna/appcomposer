@@ -55,7 +55,7 @@
                     <fieldset>
 
 
-                        <div id="app-advanced-details" class="advanced-mode" style="display: none">
+                        <div id="app-advanced-details" class="advanced-mode" style="">
 
                             <div class="form-group">
                                 <label for="appurl" class="col-lg-1 control-label">{{ gettext("URL") }}</label>
@@ -122,7 +122,8 @@
 
     <script type="text/javascript">
 
-       function onAdvancedModeChanged(enabled) {
+        // Called by the Advanced Mode code whenever the mode changes.
+        function onAdvancedModeChanged(enabled) {
             var advMode = $(".advanced-mode");
 
             if (enabled) {
@@ -132,6 +133,13 @@
                 advMode.hide();
             }
         } //! onAdvancedModeChanged
+
+        // Called whenever a row in the AppSearch table is selected.
+        function onRowSelected(row) {
+            var fulldata = AppsearchData[row.index()];
+            $("#appurl").val(fulldata["app_url"]);
+            $("#appname").val(fulldata["title"]);
+        } //! onRowSelected
 
         $(document).ready(function () {
 
@@ -161,6 +169,8 @@
 
                         var apps = data;
 
+                        AppsearchData = apps;
+
                         for (var i = 0; i < apps.length; i++) {
                             var app = apps[i];
                             appsearch.row.add([app["title"], app["author"], app["description"].substring(0, 50), app["app_type"]]);
@@ -182,6 +192,8 @@
 
                             $(row.node()).toggleClass("selected");
                             selected = row.node();
+
+                            onRowSelected(row);
                         });
                     });
 
