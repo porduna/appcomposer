@@ -189,7 +189,7 @@ class BundleManager(object):
         if flask_app.config.get("DEBUG") == True:
             handle = urllib.urlopen(url)
             contents = handle.read()
-
+            contents = unicode(contents, "utf-8")
         else:
             r = requests.get(url)
             contents = r.text
@@ -337,6 +337,7 @@ class BundleManager(object):
 
                 locales.append((lang, country, messages_file))
         except:
+            print traceback.print_exc()
             raise InvalidXMLFileException("Could not parse XML file")
 
         return locales
@@ -652,6 +653,7 @@ class Bundle(object):
             for elem in itemlist:
                 bundle.add_msg(elem.attributes["name"].nodeValue, elem.firstChild.nodeValue.strip())
         except:
+            print traceback.print_exc()
             raise InvalidXMLFileException("Could not load an XML translation")
         return bundle
 
