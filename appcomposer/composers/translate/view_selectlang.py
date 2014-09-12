@@ -6,6 +6,7 @@ from collections import defaultdict
 
 from flask import request, flash, redirect, url_for, render_template, json
 from requests.exceptions import MissingSchema
+from appcomposer.babel import lazy_gettext
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 from appcomposer.csrf import verify_csrf
 from appcomposer.utils import get_original_url
@@ -64,7 +65,7 @@ def translate_selectlang():
         # Protect against CSRF attacks.
         if not verify_csrf(request):
             return render_template("composers/errors.html",
-               message="Request does not seem to come from the right source (csrf check)"), 400
+                                   message=lazy_gettext("Request does not seem to come from the right source (csrf check)")), 400
 
         # URL to the XML spec of the gadget.
         appurl = request.form.get("appurl")
@@ -75,13 +76,13 @@ def translate_selectlang():
 
         base_appname = request.values.get("appname")
         if base_appname is None:
-            return render_template("composers/errors.html", message="An appname was not specified")
+            return render_template("composers/errors.html", message=lazy_gettext("An appname was not specified"))
 
         try:
             # XXX FIXME
             # TODO: this makes this method to call twice the app_xml. We shouldn't need
             # that. We should have the contents here downloaded for later.
-            if appurl.startswith(('http://','https://')):
+            if appurl.startswith(('http://', 'https://')):
                 print appurl
                 xmldoc = minidom.parseString(urllib2.urlopen(appurl).read())
                 appurl = get_original_url(xmldoc, appurl)
@@ -103,14 +104,18 @@ def translate_selectlang():
             bm = BundleManager.create_new_app(appurl)
         except InvalidXMLFileException:
             return render_template("composers/errors.html",
-                                   message="Invalid XML in either the XML specification file or the XML translation bundles that it links to."), 400
+                                   message=lazy_gettext(
+                                       "Invalid XML in either the XML specification file or the XML translation bundles that it links to.")), 400
         except MissingSchema:
             return render_template("composers/errors.html",
-                                   message="Failed to retrieve the XML spec. The URL was maybe invalid or not available."), 400
+                                   message=lazy_gettext(
+                                       "Failed to retrieve the XML spec. The URL was maybe invalid or not available.")), 400
 
         if len(bm._bundles) == 0:
+            # TODO: Consider adding a "go-back" screen / button.
             return render_template("composers/errors.html",
-                                   message="The App you have chosen does not seem to have a base translation. The original developer needs to prepare it for internationalization first."), 400
+                                   message=lazy_gettext(
+                                       "The App you have chosen does not seem to have a base translation. The original developer needs to prepare it for internationalization first.")), 400
 
         spec = bm.get_gadget_spec()  # For later
 
@@ -173,7 +178,7 @@ def translate_selectlang():
         app = get_app(appid)
         if app is None:
             return render_template("composers/errors.html",
-                                   message="Specified App doesn't exist"), 404
+                                   message=lazy_gettext("Specified App doesn't exist")), 404
 
         # Load a BundleManager from the app data.
         bm = BundleManager.create_from_existing_app(app.data)
@@ -193,7 +198,6 @@ def translate_selectlang():
             _db_declare_ownership(app, "all_ALL")
             ownerApp = app
 
-
         translated_langs = bm.get_locales_list()
 
 
@@ -210,7 +214,7 @@ def translate_selectlang():
     if not is_owner and owner is None:
         # TODO: Improve this error handling. This should NEVER happen.
         flash("Error: Language Owner is None", "error")
-        return render_template("composers/errors.html", message="Internal Error: Language owner is None"), 500
+        return render_template("composers/errors.html", message=lazy_gettext("Internal Error: Language owner is None")), 500
 
 
     # Just for the count of proposals
@@ -230,14 +234,15 @@ def translate_selectlang():
     # We pass the autoaccept data var so that it can be rendered.
     # TODO: Optimize this once we have this fully covered with tests.
     data = json.loads(app.data)
-    autoaccept = data.get("autoaccept", True)  # We autoaccept by default. Problems may arise if this value changes, because it is used in a couple of places.
+    autoaccept = data.get("autoaccept",
+                          True)  # We autoaccept by default. Problems may arise if this value changes, because it is used in a couple of places.
 
     # We pass some parameters as JSON strings because they are generated dynamically
     # through JavaScript in the template.
     return render_template("composers/translate/selectlang.html",
                            app=app, # Current app object.
                            xmlspec=spec, # URL to the App XML.
-                           autoaccept=autoaccept,  # Whether the app is configured to autoaccept proposals or not.
+                           autoaccept=autoaccept, # Whether the app is configured to autoaccept proposals or not.
                            suggested_target_langs=suggested_target_langs, # Suggested (not already translated) langs
                            source_groups_json=json.dumps(src_groups_dict), # Source groups in a JSON string
                            full_groups_json=json.dumps(full_groups_list), # (To find names etc)
