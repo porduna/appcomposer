@@ -173,7 +173,18 @@
 
                         for (var i = 0; i < apps.length; i++) {
                             var app = apps[i];
-                            appsearch.row.add([app["title"], app["author"], app["description"].substring(0, 50), app["app_type"]]);
+
+                            // Make the description shorter if needed.
+                            var desc = app["description"];
+                            if(desc.length > 50)
+                                desc = desc.substring(0, 50) + "...";
+
+                            appsearch.row.add([app["title"], app["author"], desc, app["app_type"]]);
+
+                            var desc_td = appsearch.cell(i, 2).node();
+                            $(desc_td).attr("title", app["description"]);
+
+                            //$(desc_td).popover({"content": app["description"]});
                         }
 
                         appsearch.draw();
