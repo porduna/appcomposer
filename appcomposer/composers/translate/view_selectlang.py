@@ -103,13 +103,16 @@ def translate_selectlang():
             bm = BundleManager.create_new_app(appurl)
         except InvalidXMLFileException:
             return render_template("composers/errors.html",
-                                   message="Invalid XML in either the XML specification file or the XML translation bundles that it links to"), 400
+                                   message="Invalid XML in either the XML specification file or the XML translation bundles that it links to."), 400
         except MissingSchema:
             return render_template("composers/errors.html",
-                                   message="Failed to retrieve the XML spec. The URL was maybe invalid."), 400
+                                   message="Failed to retrieve the XML spec. The URL was maybe invalid or not available."), 400
+
+        if len(bm._bundles) == 0:
+            return render_template("composers/errors.html",
+                                   message="The App you have chosen does not seem to have a base translation. The original developer needs to prepare it for internationalization first."), 400
 
         spec = bm.get_gadget_spec()  # For later
-
 
         # Build JSON data
         js = bm.to_json()
