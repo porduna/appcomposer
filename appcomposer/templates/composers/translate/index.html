@@ -27,6 +27,7 @@
 
                 <legend>{{ gettext("Choose an application to translate: ") }}</legend>
 
+                <p id="loading-msg" class="alert alert-info">Please, wait. Loading the list of Apps could take a while. You can also add your own URL through the <i>Advanced Mode</i>.
                 <table id="appsearch-table" class="appsearch-table display compact" cellspacing="0" width="100%"
                        style="">
                     <thead>
@@ -166,6 +167,8 @@
             $.getJSON("{{ url_for("translate.appslist_proxy") }}")
                     .done(function (data) {
                         console.log("AppsList retrieved");
+
+                        $("#loading-msg").fadeOut(300);
 
                         var apps = data;
 
