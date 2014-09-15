@@ -1,0 +1,237 @@
+{% set title = "Choose an App to adapt" %}
+{% set current_link = "home" %}
+{% extends 'composers/adapt/layout.html' %}
+
+{% block body_content %}
+    <div class="translateblock">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="page-header">
+
+                <div style="width: 100%;">
+                    <div style="margin-left: auto; margin-right: 2%; float:right; clear:both;">
+                        {{ gettext("Advanced mode:") }}
+                        <form>
+                            <input type="checkbox" name="advanced-mode" checked>
+                        </form>
+                    </div>
+                </div>
+                <h1 id="apptitle">{{ gettext("Adapt") }}</h1>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <div class="col-lg-12">
+            <legend>{{ gettext("Application selection") }}</legend>
+            <div class="well" style="width: 100%">
+
+                <legend>{{ gettext("Choose an application to adapt: ") }}</legend>
+
+                <p id="loading-msg" class="alert alert-info">Please, wait. Loading the list of Apps could take a while. You can also add your own URL through the <i>Advanced Mode</i>.
+                <table id="appsearch-table" class="appsearch-table display compact" cellspacing="0" width="100%"
+                       style="">
+                    <thead>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                    </tr>
+                    </thead>
+                    <tfoot>
+                    <tr>
+                        <th>Title</th>
+                        <th>Author</th>
+                        <th>Description</th>
+                        <th>Type</th>
+                    </tr>
+                    </tfoot>
+                    <tbody>
+
+                    </tbody>
+                </table>
+
+                <form class="form-horizontal" id="geturl" name="geturl"
+                      action="{{ url_for('translate.translate_selectlang') }}" method="POST">
+                    <fieldset>
+
+
+                        <div id="app-advanced-details" class="advanced-mode" style="">
+
+                            <div class="form-group">
+                                <label for="appurl" class="col-lg-1 control-label">{{ gettext("URL") }}</label>
+
+                                <div class="col-lg-10">
+                                    <input type="text" id="appurl" name="appurl" class="form-control"
+                                           placeholder="{{ gettext("URL of the app") }}">
+                                    <span class="help-block">{{ gettext("The URL of the app you want to translate.") }}</span>
+                                </div>
+                            </div>
+
+                            <div class="form-group">
+                                <label for="appname" class="col-lg-1 control-label">{{ gettext("Name") }}</label>
+
+                                <div class="col-lg-10">
+                                    <input type="text" id="appname" name="appname" class="form-control"
+                                           placeholder="{{ gettext("Name of the app") }}">
+                                    <span class="help-block">{{ gettext("The name of the new app that will be created.") }}</span>
+                                </div>
+                            </div>
+
+                        </div>
+
+
+                        {% with messages = get_flashed_messages() %}
+                            {% if messages %}
+                                <div class="alert alert-error">
+                                    {% for message in messages %}
+                                        <p>{{ message }}</p>
+                                    {% endfor %}
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+
+                        <div class="form-group">
+                            <div class="col-lg-10 col-lg-offset-0">
+                                <label class="control-label" for="selectlang"></label>
+
+                                <div class="controls">
+
+                                    <button type="submit" id="sendurlbtn" name="sendurl"
+                                            class="btn btn-success">{{ gettext("Adapt chosen app »") }}</button>
+
+                                </div>
+                            </div>
+                        </div>
+                    </fieldset>
+
+                    {{ csrf_field()|safe }}
+
+                </form>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+
+    <script type="text/javascript">
+
+        // Called by the Advanced Mode code whenever the mode changes.
+        function onAdvancedModeChanged(enabled) {
+            var advMode = $(".advanced-mode");
+
+            if (enabled) {
+                advMode.show();
+            }
+            else {
+                advMode.hide();
+            }
+        } //! onAdvancedModeChanged
+
+        // Called whenever a row in the AppSearch table is selected.
+        function onRowSelected(row) {
+            var fulldata = AppsearchData[row.index()];
+            $("#appurl").val(fulldata["app_url"]);
+            $("#appname").val(fulldata["title"]);
+        } //! onRowSelected
+
+        $(document).ready(function () {
+
+            // Initialize the AppSearch table and fill the values through AJAX.
+
+            // To remember which item is selected (if any).
+            var selected = undefined;
+
+            appsearch = $("#appsearch-table").DataTable(
+                    {
+                        autoWidth: false,
+                        lengthChange: true,
+                        columnDefs: [
+                            {
+                                "targets": 2,
+                                "sortable": false,
+                                "width": "50%"
+                            }
+                        ]
+                    }
+            );
+
+
+            $.getJSON("{{ url_for("translate.appslist_proxy") }}")
+                    .done(function (data) {
+                        console.log("AppsList retrieved");
+
+                        $("#loading-msg").fadeOut(300);
+
+                        var apps = data;
+
+                        AppsearchData = apps;
+
+                        for (var i = 0; i < apps.length; i++) {
+                            var app = apps[i];
+
+                            // Make the description shorter if needed.
+                            var desc = app["description"];
+                            if(desc.length > 50)
+                                desc = desc.substring(0, 50) + "...";
+
+                            appsearch.row.add([app["title"], app["author"], desc, app["app_type"]]);
+
+                            var desc_td = appsearch.cell(i, 2).node();
+                            $(desc_td).attr("title", app["description"]);
+                        }
+
+                        appsearch.draw();
+
+                        {# This needs to be done after the table is drawn because otherwise the events don't work. #}
+                        {# TODO: Find a work-around. There is probably a prettier way. #}
+                        $('#appsearch-table tbody').on('click', 'tr', function () {
+                            console.log("CLICK");
+
+                            var tr = this;
+                            row = appsearch.row(tr);
+
+                            if (selected !== undefined) {
+                                $(selected).removeClass("selected");
+                            }
+
+                            $(row.node()).toggleClass("selected");
+                            selected = row.node();
+
+                            onRowSelected(row);
+                        });
+                    });
+
+            // Initialize the advanced-mode switch.
+
+            var configstore = new Persist.Store("configstore");
+
+            var $advMode = $("[name='advanced-mode']");
+            $advMode.bootstrapSwitch();
+
+            configstore.get("advmode", function (ok, value) {
+                if (!ok || value == "false")
+                    value = false;
+                else
+                    value = true;
+
+                onAdvancedModeChanged(value);
+                $advMode.bootstrapSwitch("state", value);
+            });
+
+            $advMode.on("switchChange.bootstrapSwitch", function (ev, state) {
+                console.log("Advanced mode enabled: " + state);
+                onAdvancedModeChanged(state);
+                configstore.set("advmode", state);
+            });
+
+        }); //! ready()
+    </script>
+
+
+{% endblock %}
