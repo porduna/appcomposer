@@ -1,11 +1,12 @@
 from flask import render_template, request, url_for, redirect
-from wtforms import Form, TextField
+from wtforms import TextField
 from wtforms.validators import Required, Length
-from appcomposer import appstorage
+from appcomposer.appstorage.api import get_app, update_app_data, get_app_by_name, add_var, create_app
 from appcomposer.babel import lazy_gettext
 from appcomposer.composers.adapt import adapt_blueprint
 from appcomposer.csrf import verify_csrf
 from appcomposer.login import requires_login
+from flask_wtf import Form
 
 
 class DuplicationForm(Form):
@@ -15,7 +16,7 @@ class DuplicationForm(Form):
 @adapt_blueprint.route("/duplicate/<appid>/", methods=['GET', 'POST'])
 @requires_login
 def adapt_duplicate(appid):
-    app = appstorage.get_app(appid)
+    app = get_app(appid)
     if app is None:
         return render_template("composers/errors.html", message="Application not found")
 
@@ -28,15 +29,15 @@ def adapt_duplicate(appid):
             return render_template("composers/errors.html",
                                    message="Request does not seem to come from the right source (csrf check)"), 400
 
-        existing_app = appstorage.get_app_by_name(form.name.data)
+        existing_app = get_app_by_name(form.name.data)
         if existing_app:
             if not form.name.errors:
                 form.name.errors = []
             form.name.errors.append(lazy_gettext("You already have an application with this name"))
         else:
-            new_app = appstorage.create_app(form.name.data, 'adapt', app.data)
+            new_app = create_app(form.name.data, 'adapt', app.data)
             for appvar in app.appvars:
-                appstorage.add_var(new_app, appvar.name, appvar.value)
+                add_var(new_app, appvar.name, appvar.value)
 
             return redirect(url_for('.adapt_edit', appid=new_app.unique_id))
 
@@ -46,7 +47,7 @@ def adapt_duplicate(appid):
         while counter < 1000:
             potential_name = '%s (%s)' % (app.name, counter)
 
-            existing_app = appstorage.get_app_by_name(potential_name)
+            existing_app = get_app_by_name(potential_name)
             if not existing_app:
                 break
             counter += 1

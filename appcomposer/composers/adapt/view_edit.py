@@ -4,10 +4,8 @@ from appcomposer.appstorage import api as appstorage
 from appcomposer.composers.adapt import adapt_blueprint, ADAPTORS
 from appcomposer.login import requires_login
 
-__author__ = 'lrg'
 
-
-@adapt_blueprint.route("/edit/<appid>/", methods = ['GET', 'POST'])
+@adapt_blueprint.route("/edit/<appid>/", methods=['GET', 'POST'])
 @requires_login
 def adapt_edit(appid):
     """
@@ -23,7 +21,7 @@ def adapt_edit(appid):
     if app is None:
         return "Error: App not found", 500
 
-    adaptor_types = [ var for var in app.appvars if var.name == 'adaptor_type' ]
+    adaptor_types = [var for var in app.appvars if var.name == 'adaptor_type']
     if not adaptor_types:
         return "Error: no attached adaptor_type variable"
     adaptor_type = adaptor_types[0].value
@@ -33,4 +31,4 @@ def adapt_edit(appid):
 
     adaptor_plugin = ADAPTORS[adaptor_type]['adaptor']
 
-    return redirect(url_for(adaptor_plugin._edit_endpoint, appid = appid))
+    return redirect(url_for(adaptor_plugin._edit_endpoint, appid=appid))
