@@ -98,8 +98,6 @@ class TestAdaptCreateJsConfig:
 
         assert rv.status_code == 200
 
-        print rv.data
-
         # Retrieve the app id. Note: This relies on the fact that the last created app appears last.
         finds = re.findall("""/adapt/edit/([a-z0-9\\-]+)""", rv.data)
         appid = finds[-1]
@@ -109,6 +107,10 @@ class TestAdaptCreateJsConfig:
         url = "/composers/adapt/adaptors/jsconfig/edit/%s/" % appid
         rv = self.flask_app.get(url)
 
+
+        print rv.data
+
+
         assert rv.status_code == 200
-        assert "to be adapted" in rv.data
-        assert "Save" in rv.data
+        assert "Adapt a guidance" in rv.data
+        assert "Preview" in rv.data

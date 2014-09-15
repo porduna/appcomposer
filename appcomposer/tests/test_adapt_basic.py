@@ -56,4 +56,5 @@ class TestBasicAdaptApp:
         rv = self.flask_app.get("/composers/adapt/")
         assert rv.status_code == 200
         print "DATA: " + rv.data
-        assert "Create" in rv.data
+        assert "Choose" in rv.data
+        assert "configstore" in rv.data
