@@ -4,11 +4,11 @@ from appcomposer.csrf import verify_csrf
 from appcomposer.login import requires_login
 
 
-@adapt_blueprint.route("/", methods=["GET", "POST"])
+@adapt_blueprint.route("/type_selection", methods=["GET", "POST"])
 @requires_login
-def adapt_index():
+def adapt_type_selection():
     """
-    adapt_index()
+    adapt_type_selection()
     Loads the main page with the selection of adaptor apps (concept map, hypothesis or experiment design).
     @return: The adaptor type that the user has selected.
     """
@@ -23,8 +23,8 @@ def adapt_index():
 
         if adaptor_type and adaptor_type in ADAPTORS:
             # In order to show the list of apps we redirect to other url
-            return redirect(url_for("adapt.adapt_create", adaptor_type = adaptor_type))
+            return redirect(url_for("adapt.adapt_create", adaptor_type=adaptor_type))
         else:
             # An adaptor_type is required.
             flash("Invalid adaptor type", "error")
-    return render_template("composers/adapt/index.html", adaptors = ADAPTORS)
+    return render_template("composers/adapt/type.html", adaptors=ADAPTORS)

@@ -14,7 +14,7 @@ info = {
     'blueprint': 'adapt',
     'url': '/composers/adapt',
 
-    'new_endpoint': 'adapt.adapt_index',
+    'new_endpoint': 'adapt.adapt_appsearch',
     'edit_endpoint': 'adapt.adapt_edit',
     'create_endpoint': 'adapt.adapt_create',
     'duplicate_endpoint': 'adapt.adapt_duplicate',

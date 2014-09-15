@@ -4,7 +4,7 @@ from appcomposer.csrf import verify_csrf
 from appcomposer.login import requires_login
 
 
-@adapt_blueprint.route("/appsearch", methods=["GET", "POST"])
+@adapt_blueprint.route("/", methods=["GET", "POST"])
 @requires_login
 def adapt_appsearch():
     """
