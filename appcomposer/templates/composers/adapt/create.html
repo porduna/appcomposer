@@ -32,10 +32,13 @@
                     <div class="panel-body">
                         <form class="form-horizontal" method="POST" action=".">
 
+                            <input type="hidden" name="appurl" value="{{ request.values.get("appurl") }}"/>
+                            <input type="hidden" name="appname" value="{{ request.values.get("appname") }}"/>
+
                             <div class="form-group">
                                 <label for="app_name" class="col-lg-4 control-label">{{ gettext("Name") }}: </label>
                                 <div class="col-lg-8">
-                                    <input type="text" name="app_name" class="form-control" placeholder="{{ adaptor_type|replace('_', ' ') }} title" autofocus>
+                                    <input type="text" name="app_name" class="form-control" placeholder="{{ adaptor_type|replace('_', ' ') }} title" value="{{ request.values.get("appname") }}" autofocus>
                                     <input type="hidden" name="adaptor_type" value="{{ adaptor_type }}">
                                 </div>
                             </div>

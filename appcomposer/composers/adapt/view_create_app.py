@@ -5,7 +5,6 @@ from appcomposer.csrf import verify_csrf
 from appcomposer.login import requires_login
 
 
-
 @adapt_blueprint.route("/create/<adaptor_type>/", methods=["GET", "POST"])
 @requires_login
 def adapt_create(adaptor_type):
@@ -14,21 +13,24 @@ def adapt_create(adaptor_type):
     Loads the form for creating new adaptor apps and the list of adaptor apps from a specific type.
     @return: The app unique id.
     """
+
     def build_edit_link(app):
         return url_for("adapt.adapt_edit", appid=app.unique_id)
 
 
     if adaptor_type not in ADAPTORS:
         flash("Invalid adaptor type", "error")
-        return render_template('composers/adapt/create.html', apps=[], adaptor_type = adaptor_type, build_edit_link=build_edit_link)
+        return render_template('composers/adapt/create.html', apps=[], adaptor_type=adaptor_type,
+                               build_edit_link=build_edit_link)
 
     app_plugin = ADAPTORS[adaptor_type]
 
-    apps = appstorage.get_my_apps(adaptor_type = adaptor_type)
+    apps = appstorage.get_my_apps(adaptor_type=adaptor_type)
 
     # If a get request is received, we just show the new app form and the list of adaptor apps
     if request.method == "GET":
-        return render_template('composers/adapt/create.html', apps=apps, adaptor_type = adaptor_type, build_edit_link=build_edit_link)
+        return render_template('composers/adapt/create.html', apps=apps, adaptor_type=adaptor_type,
+                               build_edit_link=build_edit_link)
 
 
     # If a post is received, we are creating an adaptor app.
@@ -36,7 +38,8 @@ def adapt_create(adaptor_type):
 
         # Protect against CSRF attacks.
         if not verify_csrf(request):
-            return render_template("composers/errors.html", message="Request does not seem to come from the right source (csrf check)"), 400
+            return render_template("composers/errors.html",
+                                   message="Request does not seem to come from the right source (csrf check)"), 400
 
         # We read the app details provided by the user
         name = request.form["app_name"]
@@ -44,7 +47,8 @@ def adapt_create(adaptor_type):
 
         if not name:
             flash("An application name is required", "error")
-            return render_template("composers/adapt/create.html", name=name, apps = apps, adaptor_type = adaptor_type, build_edit_link=build_edit_link)
+            return render_template("composers/adapt/create.html", name=name, apps=apps, adaptor_type=adaptor_type,
+                                   build_edit_link=build_edit_link)
 
         if not app_description:
             app_description = "No description"
@@ -60,15 +64,25 @@ def adapt_create(adaptor_type):
         # Fill with the initial structure
         data.update(app_plugin['initial'])
 
+        # URL was originally added in a later stage in case it could be changed, but not anymore.
+        # TODO: The app_plugin["initial"] seems to tend to contain an url field set to NULL. This is why we
+        # initialize the URL here instead of the first data initialization. This should be tidied up to be
+        # less confusing.
+        data['url'] = unicode(request.values.get("appurl"))
+
         #Dump the contents of the previous block and check if an app with the same name exists.
         # (TODO): do we force different names even if the apps belong to another adaptor type?
         app_data = json.dumps(data)
 
+        print "INITIAL DATA: " + app_data
+
         try:
-            app = appstorage.create_app(name, 'adapt', app_data, description = app_description)
+            # This is where the App object itself is created.
+            app = appstorage.create_app(name, 'adapt', app_data, description=app_description)
             appstorage.add_var(app, 'adaptor_type', unicode(adaptor_type))
         except appstorage.AppExistsException:
             flash("An App with that name already exists", "error")
-            return render_template("composers/adapt/create.html", name=name, apps = apps, adaptor_type = adaptor_type, build_edit_link=build_edit_link)
+            return render_template("composers/adapt/create.html", name=name, apps=apps, adaptor_type=adaptor_type,
+                                   build_edit_link=build_edit_link)
 
-        return redirect(url_for("adapt.adapt_edit", appid = app.unique_id))
+        return redirect(url_for("adapt.adapt_edit", appid=app.unique_id))

@@ -7,12 +7,13 @@
         <form class="form" action="." method="POST" enctype="multipart/form-data">
             {{ url_form.hidden_tag() }}
 
-            {% if not initialised %}
-                {{ url_form.url.label }}: {{ url_form.url(size=100) }}
-                <input type="submit" class="btn btn-primary" value="{{ gettext("Save") }}"/>
-            {% else %}
+            <!-- TODO: As of the latest modifications, the URL should always be present. TODO Tidy this up and remove the old code. -->
+{#            {% if not initialised or false %}#}
+{#                {{ url_form.url.label }}: {{ url_form.url(size=100) }}#}
+{#                <input type="submit" class="btn btn-primary" value="{{ gettext("Save") }}"/>#}
+{#            {% else %}#}
                 {{ url_form.url.label }}: {{ url_form.url(size=100, readonly="readonly") }}
-            {% endif %}
+{#            {% endif %}#}
 
 
             {% if url_form.url.errors %}
