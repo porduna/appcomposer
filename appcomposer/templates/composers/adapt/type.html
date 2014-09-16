@@ -31,7 +31,7 @@
                                 <form method="get" action="{{ url_for('.adapt_create', adaptor_type = adaptor_id) }}">
                                     <input type="hidden" name="appname" value="{{ request.values.get("appname") }}"/>
                                     <input type="hidden" name="appurl" value="{{ request.values.get("appurl") }}"/>
-                                    <input type="submit" class="btn btn-primary" type="button" value="{{ gettext("Create") }}"/>
+                                    <input type="submit" class="btn btn-primary" type="button" value="{{ gettext("Start adapting") }}"/>
                                     {% if adaptor.about_endpoint %}
                                         <a href="{{ url_for(adaptor.about_endpoint) }}" class="btn btn-info"
                                            type="button">{{ gettext("Read more") }}</a>
@@ -39,7 +39,7 @@
                                 </form>
                             </div>
                         </div>
-                    </div>  
+                    </div>
                 {% endfor %}
             </div> <!-- row -->
         </div> <!-- adapt block -->

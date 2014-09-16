@@ -107,9 +107,7 @@ class TestAdaptCreateJsConfig:
         url = "/composers/adapt/adaptors/jsconfig/edit/%s/" % appid
         rv = self.flask_app.get(url)
 
-
         print rv.data
-
 
         assert rv.status_code == 200
         assert "Adapt a guidance" in rv.data

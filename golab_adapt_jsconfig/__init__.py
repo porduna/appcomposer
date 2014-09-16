@@ -13,7 +13,7 @@ from appcomposer.babel import gettext, lazy_gettext
 from appcomposer.utils import make_url_absolute, inject_absolute_urls, get_json, inject_original_url_in_xmldoc, inject_absolute_locales_in_xmldoc
 from appcomposer.composers.adapt import create_adaptor
 
-adaptor = create_adaptor('JavaScript configuration',
+adaptor = create_adaptor('Standard App Adatation (JavaScript configuration)',
                          initial={'url': None, 'configuration': None, 'configuration_name': None},
                          description=lazy_gettext("Create adaptations of customizable Go-Lab applications."),
                          about_endpoint='jsconfig.about')

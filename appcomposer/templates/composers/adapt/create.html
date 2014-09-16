@@ -30,6 +30,7 @@
                         <h5 class="panel-title">{{ gettext("Details of the %s" % adaptor_type|replace('_', ' ')) }}</h5>
                     </div>
                     <div class="panel-body">
+                        <h5>{{ gettext("(Optional) Modify the following fields:") }}</h5>
                         <form class="form-horizontal" method="POST" action=".">
 
                             <input type="hidden" name="appurl" value="{{ request.values.get("appurl") }}"/>
@@ -51,7 +52,7 @@
                             </div>
 
                             <a class="btn btn-default" id="returnbtn" href="{{ url_for('adapt.adapt_appsearch') }}">« {{ gettext("Go Back") }}</a>
-                            <input type="submit"  class="btn btn-success" value="{{ gettext("Build it") }} »">
+                            <input type="submit"  class="btn btn-success" value="{{ gettext("Continue adapting") }} »">
 
                         {{ csrf_field()|safe }}
 
@@ -63,7 +64,7 @@
         </div>
 
         {% if apps %}
-        <h4>{{ gettext("...or edit an existing one from the following list:") }}</h4>
+        <h4>{{ gettext("... you could also cancel this adaptation and edit an existing one:") }}</h4>
         <hr>
         {% endif %}
 
