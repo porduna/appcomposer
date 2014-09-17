@@ -13,7 +13,7 @@ from appcomposer.babel import gettext, lazy_gettext
 from appcomposer.utils import make_url_absolute, inject_absolute_urls, get_json, inject_original_url_in_xmldoc, inject_absolute_locales_in_xmldoc
 from appcomposer.composers.adapt import create_adaptor
 
-adaptor = create_adaptor('Gateway4labs configuration', 
+adaptor = create_adaptor('Labs adaptation', 
                 initial = {'url' : None, 'configuration' : None}, 
                 description = lazy_gettext("Create adaptations of customizable gateway4labs laboratories."),
                 about_endpoint = 'gateway4labs.about')
