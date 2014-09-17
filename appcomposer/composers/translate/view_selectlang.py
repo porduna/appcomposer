@@ -15,6 +15,7 @@ from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException
 from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships
+from appcomposer.login import requires_login
 
 
 def do_languages_initial_merge(app, bm):
@@ -38,6 +39,7 @@ def do_languages_initial_merge(app, bm):
 
 
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])
+@requires_login
 def translate_selectlang():
     """ Source language & target language selection."""
 

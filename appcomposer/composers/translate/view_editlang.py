@@ -12,9 +12,11 @@ from appcomposer.composers.translate.bundles import BundleManager, Bundle
 from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_declare_ownership
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 from appcomposer.csrf import verify_csrf
+from appcomposer.login import requires_login
 
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
+@requires_login
 def translate_edit():
     """
     Translation editor for the selected language.

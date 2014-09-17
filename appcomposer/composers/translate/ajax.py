@@ -6,8 +6,10 @@ from appcomposer.composers.translate.bundles import BundleManager, AUTOACCEPT_DE
 from appcomposer.composers.translate.db_helpers import _db_get_ownerships
 from appcomposer.csrf import verify_ajax_csrf
 from appcomposer.models import AppVar
+from appcomposer.login import requires_login
 
 @translate_blueprint.route("/appslist_proxy", methods=["GET"])
+@requires_login
 def appslist_proxy():
     """
     Retrieves a list of the App repository through the external GoLabz API.
@@ -25,6 +27,7 @@ def appslist_proxy():
 
 
 @translate_blueprint.route("/config/autoaccept/<appid>", methods=["GET", "POST"])
+@requires_login
 def autoaccept(appid):
     """
     JSON API to GET or POST whether to auto-accept all proposals for an app or not.
@@ -77,6 +80,7 @@ def autoaccept(appid):
 
 
 @translate_blueprint.route("/get_proposal", methods=["GET"])
+@requires_login
 def get_proposal():
     """
     JSON API to get the contents of a Proposal var.
@@ -118,6 +122,7 @@ def get_proposal():
 
 
 @translate_blueprint.route("/get_ownership_list", methods=["GET"])
+@requires_login
 def get_ownership_list():
     """
     JSON API to get a list of every translated language for the specified
