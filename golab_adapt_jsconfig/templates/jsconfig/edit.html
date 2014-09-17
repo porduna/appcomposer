@@ -4,6 +4,7 @@
 
 {% block edit_tab %}
     <div class="col-lg-10">
+
         <form class="form" action="." method="POST" enctype="multipart/form-data">
             {{ url_form.hidden_tag() }}
 
@@ -52,13 +53,7 @@
         {% if url %}
             <iframe src="{{ preview_url }}" width="750" height="590" frameborder="1px solid gray" scrolling="no"></iframe>
             <br>
-            <div class="alert alert-info">
-                <h4>{{ gettext("Adaptation URL") }}</h4>
-                <p>{{ gettext("Copy the following URL and put it in Graasp to share this adaptation with other people:") }}</p>
-                <br/>
-                <input id="app_url" type="text" value="{{ url_for('.app_xml', app_id = app_id, _external = True) }}" style="width: 90%">
-                <!-- <a target="_blank" href="{{ url_for('.app_xml', app_id = app_id, _external = True) }}">App URL</a> -->
-            </div>
+
             <!-- <a target="_blank" href="{{ preview_url }}">Preview URL</a> -->
         {% else %}
             <div class="alert alert-danger">

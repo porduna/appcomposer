@@ -49,12 +49,6 @@
                 <h3>{{ gettext("No preview available: you must save first.") }}</h3>
             </div>
 
-            <div class="alert alert-info" id="display_url">
-                <h4>{{ gettext("Adaptation URL") }}</h4>
-                <p>{{ gettext("Copy the following URL and put it in Graasp to share this adaptation with other people:") }}</p>
-                <br/>
-                <input id="app_url" type="text" value="{{ url_for('.app_xml', app_id = app_id, _external = True) }}" style="width: 90%">
-            </div>
             <!-- <a target="_blank" href="{{ preview_url }}">Preview URL</a> -->
         {% else %}
             <div class="alert alert-danger">

@@ -290,8 +290,6 @@
         var $advMode = $("[name='advanced-mode']");
         $advMode.bootstrapSwitch();
 
-        debugger;
-
         configstore.get("advmode", function(ok, value) {
             if(!ok || value == "false" || value == null)
                 value = false;
