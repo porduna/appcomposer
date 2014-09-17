@@ -214,7 +214,7 @@
             $advMode.bootstrapSwitch();
 
             configstore.get("advmode", function (ok, value) {
-                if (!ok || value == "false")
+                if (!ok || value == "false" || value == null)
                     value = false;
                 else
                     value = true;
