@@ -55,10 +55,10 @@
 
 
                     {% if config["ACTIVATE_TRANSLATOR"] %}
-                    <li ><a href="{{ url_for('translate.translate_index') }}">{{ gettext('Translate') }}</a></li>
+                    <li {% if current_composer == 'translate' %}class="active"{% endif %}><a href="{{ url_for('translate.translate_index') }}">{{ gettext('Translate') }}</a></li>
                     {% endif %}
 
-                    <li ><a href="{{ url_for('adapt.adapt_appsearch') }}">{{ gettext('Adapt') }}</a></li>
+                    <li {% if current_composer == 'adapt' %}class="active"{% endif %}><a href="{{ url_for('adapt.adapt_appsearch') }}">{{ gettext('Adapt') }}</a></li>
 
                     {#
                        All Composers tab hidden for now:
