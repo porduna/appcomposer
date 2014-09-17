@@ -110,5 +110,4 @@ class TestAdaptCreateJsConfig:
         print rv.data
 
         assert rv.status_code == 200
-        assert "Adapt a guidance" in rv.data
         assert "Preview" in rv.data
