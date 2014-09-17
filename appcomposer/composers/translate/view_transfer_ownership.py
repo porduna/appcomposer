@@ -1,6 +1,6 @@
 from flask import render_template, request, json, redirect, url_for
 from appcomposer.csrf import verify_csrf
-from appcomposer.login import current_user
+from appcomposer.login import current_user, requires_login
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager
@@ -10,6 +10,7 @@ from appcomposer.composers.translate.db_helpers import _db_get_ownerships, _db_g
 # TODO: Add "security" unit-test that verifies ownership.
 
 @translate_blueprint.route("/transfer_ownership", methods=["GET", "POST"])
+@requires_login
 def transfer_ownership():
 
     # No matter if we are handling a GET or POST, we require these parameters.

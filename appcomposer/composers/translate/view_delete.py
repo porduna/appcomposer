@@ -6,9 +6,11 @@ from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.db_helpers import _db_get_ownerships, _db_get_app_ownerships, _db_get_spec_apps
 from appcomposer.csrf import verify_csrf
 from appcomposer.models import AppVar
+from appcomposer.login import requires_login
 
 
 @translate_blueprint.route("/delete", methods=["GET", "POST"])
+@requires_login
 def translate_delete():
     """
     Handles the translate app delete endpoint. Only the user who owns the App can delete it.

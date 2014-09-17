@@ -5,10 +5,12 @@ from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
 from appcomposer.composers.translate.db_helpers import _db_get_proposals
 from appcomposer.models import AppVar
+from appcomposer.login import requires_login
 
 
 # TODO: CHECK THAT THIS WHOLE METHOD REMAINS SECURE & RELEVANT AFTER THE OWNERSHIP REVAMP.
 @translate_blueprint.route("/proposed_list", methods=["POST", "GET"])
+@requires_login
 def translate_proposed_list():
     """
     Displays the list of proposed translations.

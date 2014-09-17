@@ -1,8 +1,10 @@
 from flask import request, render_template, url_for
 from appcomposer.composers.translate import translate_blueprint
+from appcomposer.login import requires_login
 
 
 @translate_blueprint.route("/publish")
+@requires_login
 def translate_publish():
     """
     Show in a somewhat pretty way a link to an XML for a specific translation.
