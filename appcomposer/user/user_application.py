@@ -19,7 +19,7 @@ def initialize_user_component(app):
     url = '/user'
     admin = Admin(index_view=HomeView(url=url, endpoint='user', name=lazy_gettext("Home")),
                   name=lazy_gettext("User Profile"), url=url, endpoint="home-user")
-    admin.add_view(ProfileEditView(name=lazy_gettext("Profile"), url='profile', endpoint='user.profile'))
+#    admin.add_view(ProfileEditView(name=lazy_gettext("Profile"), url='profile', endpoint='user.profile'))
     admin.add_view(AppsView(name=lazy_gettext("Apps"), url="apps", endpoint='user.apps'))
     admin.init_app(app)
 

@@ -51,7 +51,8 @@
           </ul>
 
         <ul class="nav pull-right">
-            <li><a href="{{ url_for('user.profile.index') }}"><i>{{ session.name }}</i></a></li>
+            {# <li><a href="{{ url_for('user.profile.index') }}"><i>{{ session.name }}</i></a></li> #}
+            <li><a href="{{ url_for('user.index') }}"><i>{{ session.name }}</i></a></li>
             <li><a href="{{ url_for('logout') }}">{{ gettext("Log out") }}</a></li>
         </ul>
 
