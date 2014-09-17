@@ -62,7 +62,7 @@ class TestAdaptCreateJsConfig:
         assert rv.status_code == 200
         assert "Description" in rv.data
         assert "Name" in rv.data
-        assert "Build it" in rv.data
+        assert "Continue adapting" in rv.data
 
     def test_create_jsconfig_post(self):
         """
