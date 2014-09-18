@@ -34,7 +34,6 @@
                     <thead>
                     <tr>
                         <th>Title</th>
-                        <th>Author</th>
                         <th>Description</th>
                         <th>Type</th>
                     </tr>
@@ -42,7 +41,6 @@
                     <tfoot>
                     <tr>
                         <th>Title</th>
-                        <th>Author</th>
                         <th>Description</th>
                         <th>Type</th>
                     </tr>
@@ -183,9 +181,9 @@
                             if(desc.length > 50)
                                 desc = desc.substring(0, 50) + "...";
 
-                            appsearch.row.add([app["title"], app["author"], desc, app["app_type"]]);
+                            appsearch.row.add([app["title"], desc, app["app_type"]]);
 
-                            var desc_td = appsearch.cell(i, 2).node();
+                            var desc_td = appsearch.cell(i, 1).node();
                             $(desc_td).attr("title", app["description"]);
                         }
 
