@@ -8,6 +8,7 @@ from appcomposer.csrf import verify_ajax_csrf
 from appcomposer.models import AppVar
 from appcomposer.login import requires_login
 
+
 @translate_blueprint.route("/appslist_proxy", methods=["GET"])
 @requires_login
 def appslist_proxy():
@@ -15,14 +16,39 @@ def appslist_proxy():
     Retrieves a list of the App repository through the external GoLabz API.
     Returns the list in JSON.
     """
-    list = requests.get("http://www.golabz.eu/rest/apps/retrieve.json")
-    if list.status_code != 200:
-        result = {}
-        result["result"] = "error"
-        result["message"] = "Could not retrieve apps data from the repository"
-        return jsonify(**result)
 
-    ret = list.text
+    # For now, if the user specifically wants adaptable Apps we return a hard-coded list.
+    if request.values.get("type") == "adapt":
+        adapt_list = [
+            {
+                "title": "Concept Mapper",
+                "author": "admin",
+                "description": "<p class=\"p1\">The Concept Mapper tool lets you create concept maps, to get an overview of the key concepts and their relations in a scientific domain. Key concepts can be pre-defined to support the learner.</p>",
+                "app_url": "http://go-lab.gw.utwente.nl/production/conceptmapper_v1/tools/conceptmap/src/main/webapp/conceptmapper.xml",
+                "app_type": "OpenSocial gadget",
+                "app_image": "http://www.golabz.eu/sites/default/files/images/app/app-image/conceptmap.png"
+            },
+            {
+                "title": "Hypothesis Tool",
+                "author": "govaerts",
+                "description": "<p>This app allows to create hypotheses</p>",
+                "app_url": "http://go-lab.gw.utwente.nl/production/hypothesis_v1/tools/hypothesis/src/main/webapp/hypothesis.xml",
+                "app_type": "OpenSocial gadget",
+                "app_image": "http://www.golabz.eu/sites/default/files/images/app/app-image/Hypo%20tool.png"
+            }
+        ]
+
+        ret = json.dumps(adapt_list)
+
+    else:
+        list = requests.get("http://www.golabz.eu/rest/apps/retrieve.json")
+        if list.status_code != 200:
+            result = {}
+            result["result"] = "error"
+            result["message"] = "Could not retrieve apps data from the repository"
+            return jsonify(**result)
+
+        ret = list.text
     return Response(ret, mimetype="application/json")
 
 
