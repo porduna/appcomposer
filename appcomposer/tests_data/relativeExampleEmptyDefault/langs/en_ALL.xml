@@ -1,0 +1,12 @@
+<messagebundle>
+  <msg name="hello_world">
+    Hello World.
+  </msg>
+  <msg name="color">Color</msg>
+  <msg name="red">Red</msg>
+  <msg name="green">Green</msg>
+  <msg name="blue">Blue</msg>
+  <msg name="gray">Gray</msg>
+  <msg name="purple">Purple</msg>
+  <msg name="black">Black</msg>
+</messagebundle>

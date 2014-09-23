@@ -256,6 +256,25 @@ class BundleManager(object):
                 traceback.print_exc()
                 pass
 
+        # BUGFIX #168: When attempting to translate an app whose default translation (all_ALL_ALL) is invalid, it was
+        # not being handled gracefully. Though for the app to work probably there should be a default translation, we
+        # will handle it here by simply considering that another Bundle is the default.
+        # TODO: What to do when there is NO VALID bundle at all?
+
+        default_bundle = self.get_bundle("all_ALL_ALL")
+        if default_bundle is None:
+            print "[NO DEFAULT BUNDLE: Making a standard bundle the default]"
+            new_default_bundle = self.get_bundle("en_ALL_ALL")
+            if new_default_bundle is None and len(self._bundles) > 0:
+                new_default_bundle = self._bundles[0]
+            else:
+                # There are no bundles at all. TODO: ABORT SOMEHOW.
+                pass
+
+            self.merge_bundle("all_ALL_ALL", new_default_bundle)
+            # TODO: Notify the user somehow that the real default bundle is broken.
+
+
     def to_json(self):
         """
         Exports everything to JSON. It includes both the JSON for the bundles, and a spec attribute, which

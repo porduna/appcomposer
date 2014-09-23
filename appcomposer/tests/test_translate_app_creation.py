@@ -175,6 +175,57 @@ class TestTranslateAppCreation:
             assert gerBundle is not None
             assert len(gerBundle.get_msgs()) > 6
 
+    def test_translate_create_app_with_empty_default(self):
+        """
+        [REGRESSION TEST: If the DEFAULT XML is an invalid fail or empty, it was not being handled nicely]
+        Ensure that we can create an app normally through a synchronous POST request to SELECTLANG.
+        """
+        url = "appcomposer/tests_data/relativeExampleEmptyDefault/i18n.xml"
+        rv = self.flask_app.post("/composers/translate/selectlang", data={"appname": "UTApp", "appurl": url}, follow_redirects=True)
+
+        # Check whether it seems to be the page we expect.
+        assert rv.status_code == 200  # Page found code.
+        assert rv.data.count("option") > 100  # Lots of them, because of the languages list.
+        assert "submit" in rv.data
+        assert "Localise" in rv.data
+
+        # Check that we did indeed create the app properly.
+        with self.flask_app:
+            self.flask_app.get("/")
+            app = api.get_app_by_name("UTApp")
+
+            assert app is not None
+            appdata = app.data
+            assert len(appdata) > 500
+
+            data = json.loads(appdata)
+
+            assert "spec" in data
+            assert url == data["spec"]
+
+            bm = BundleManager.create_from_existing_app(appdata)
+
+            assert bm.get_gadget_spec() == url
+
+            # The bundles should be 3 (DEFAULT - copied from English, English, German).
+            assert len(bm._bundles) == 3
+
+            defaultBundle = bm.get_bundle("all_ALL_ALL")
+            assert defaultBundle is not None
+            assert len(defaultBundle.get_msgs()) > 6
+
+            gerBundle = bm.get_bundle("de_ALL_ALL")
+            assert gerBundle is not None
+            assert len(gerBundle.get_msgs()) > 6
+
+            enBundle = bm.get_bundle("en_ALL_ALL")
+            assert enBundle is not None
+            assert len(enBundle.get_msgs()) > 6
+
+            # Ensure that the language that got copied as DEFAULT is really english
+            assert enBundle.get_msgs()["hello_world"] == "Hello World."
+            assert defaultBundle.get_msgs()["hello_world"] == "Hello World."
+
     def test_translate_create_with_multi_bundle(self):
         """
         Ensure that we can create an app where the xml contains two different bundles for the same language.
