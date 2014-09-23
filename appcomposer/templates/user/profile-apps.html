@@ -39,13 +39,15 @@
                 <div class="span4 app">
                     <div class="alert alert-info" style="position: relative">
                         <div>
-                            <h2>{{ app.name }}</h2>
-                            <h4>{{ gettext("Composer") }}: {{ app.composer }}</h4><br>
+                            <h3>{{ app.name }}</h3>
+                            <h4>{{ gettext("Composer") }}: {{ app.composer }}</h4>
+
                             {% if app.description %}
                                 <p>{{ app.description }}</p>
                             {% else %}
                                 <p></p>
                             {% endif %}
+
                         </div>
                         <div style="position: absolute; bottom: 10px"> <!-- Place it at the bottom of the rectangle -->
                             <div>
@@ -91,7 +93,7 @@
 
             var maxHeight = Math.max.apply(null, heights);
 
-            $(".app>.alert").height(maxHeight);
+            $(".app>.alert").height(maxHeight+30);
         });
     </script>
 
