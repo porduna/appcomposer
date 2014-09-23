@@ -82,6 +82,23 @@
 
     {% endblock %}
 
+    {# For the JS that certain macros need to work #}
+    {% block jsmacros %}
+    <!-- Convert all __iso_date to a local date through JS -->
+    <script type="text/javascript">
+        $(document).ready( function(){
+            var isodates = $("span.__utc_date");
+
+            isodates.each(function(){
+                var isodate = $(this);
+                var locdate = new Date(isodate.text());
+                isodate.text(locdate.toLocaleString());
+                isodate.removeClass("__utc_date");
+                isodate.addClass("__loc_date");
+            });
+        });
+    </script>
+    {% endblock %}
 
     {% block tail %}
     {% endblock %}

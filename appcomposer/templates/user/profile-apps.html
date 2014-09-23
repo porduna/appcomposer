@@ -51,7 +51,7 @@
                             <div>
                                 {# {{ gettext("Created") }}: {{ app.creation_date.strftime("%Y-%m-%d %H:%M") }}<br> #}
                                 <div>
-                                    <h6>{{ gettext("Last modified") }}: {{ app.modification_date.strftime("%Y-%m-%d %H:%M") }}</h6>
+                                    <h6>{{ gettext("Last modified") }}: {{ layout.locdate(app.modification_date) }}</h6>
                                 </div>
                                 {# {{ gettext("Accessed") }}: {{ app.last_access_date.strftime("%Y-%m-%d %H:%M") }}<br> #}
                             </div>

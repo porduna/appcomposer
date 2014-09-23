@@ -61,3 +61,11 @@
     {% endif %}
   {% endwith %}
 {% endmacro %}
+
+
+
+{# To semi-automatically place a <span> containing an UTC date which will automatically be
+ replaced with a local date through a JavaScript script in the template #}
+{% macro locdate(utc_date) %}
+    <span class="__utc_date">{{ utc_date.isoformat() }}</span>
+{% endmacro %}
