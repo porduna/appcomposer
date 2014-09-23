@@ -5,7 +5,7 @@
 
     <div class="row">
 
-        <div class="span4 offset2 app">
+        <div class="span4 offset2 app _comp-box">
             <div class="alert alert-success" style="position: static">
                 <div>
                     <h3>{{ gettext("Translate") }}</h3>
@@ -14,21 +14,21 @@
                 </div>
                 <div style="position: static;"> <!-- Place it at the bottom of the rectangle -->
                     <div class="text-center">
-                        <a href="{{ url_for("translate.translate_index") }}" class="btn btn-large btn-primary"
+                        <a href="{{ url_for("translate.translate_index") }}" class="_comp-btn btn btn-large btn-primary"
                            type="button">{{ gettext("TRANSLATE") }}</a>
                     </div>
                 </div>
             </div>
         </div>
-        <div class="span4 app">
+        <div class="span4 app _comp-box">
             <div class="alert alert-info" style="position: static">
                 <div>
                     <h3>{{ gettext("Adapt") }}</h3>
                     <h5>{{ gettext("Adapt applications. Configure them to fit the needs of your students.") }}</h5>
                 </div>
-                <div style="position: static;"> <!-- Place it at the bottom of the rectangle -->
+                <div style="position: relative;"> <!-- Place it at the bottom of the rectangle -->
                     <div class="text-center">
-                        <a href="{{ url_for("adapt.adapt_appsearch") }}" class="btn btn-large btn-primary"
+                        <a href="{{ url_for("adapt.adapt_appsearch") }}" class="_comp-btn btn btn-large btn-primary"
                            type="button">{{ gettext("ADAPT") }}</a>
                     </div>
                 </div>
@@ -129,8 +129,23 @@
 
     <script type="text/javascript">
 
-        // Ensure that the height of the App rectangles is always the same
         $(document).ready(function () {
+
+            // Prettify also the Translate and Adapt rectangles.
+
+            var buttons = $("._comp-btn");
+            var max = Math.max($(buttons[0]).width(), $(buttons[1]).width());
+            $(buttons[0]).width(max);
+            $(buttons[1]).width(max);
+
+            var boxes = $("._comp-box");
+            var boxes_height = $(boxes[0]).height();
+            var offset = $(boxes[0]).offset().top + boxes_height - $(buttons[0]).offset().top - boxes_height;
+            boxes.css("bottom", offset - $(buttons[0]).height());
+
+            console.log("OFFSET: " + offset);
+
+            // Ensure that the height of the App rectangles is always the same (so that they look prettier)
 
             var heights = $(".app").map(function () {
                 return $(this).height();
