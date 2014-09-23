@@ -8,13 +8,13 @@
         <div class="span4 offset2 app">
             <div class="alert alert-success" style="position: static">
                 <div>
-                    <h3>Translate</h3>
-                    <h5>Translate OpenSocial applications easily. Share the translations with other teachers or
-                        students.</h5>
+                    <h3>{{ gettext("Translate") }}</h3>
+                    <h5>{{ gettext("Translate OpenSocial applications easily. Share the translations with other teachers or
+                        students.") }}</h5>
                 </div>
                 <div style="position: static;"> <!-- Place it at the bottom of the rectangle -->
                     <div class="text-center">
-                        <a href="#" class="btn btn-large btn-primary"
+                        <a href="{{ url_for("translate.translate_index") }}" class="btn btn-large btn-primary"
                            type="button">{{ gettext("TRANSLATE") }}</a>
                     </div>
                 </div>
@@ -23,12 +23,12 @@
         <div class="span4 app">
             <div class="alert alert-info" style="position: static">
                 <div>
-                    <h3>Adapt</h3>
-                    <h5>Adapt applications. Configure them to fit the needs of your students.</h5>
+                    <h3>{{ gettext("Adapt") }}</h3>
+                    <h5>{{ gettext("Adapt applications. Configure them to fit the needs of your students.") }}</h5>
                 </div>
                 <div style="position: static;"> <!-- Place it at the bottom of the rectangle -->
                     <div class="text-center">
-                        <a href="#" class="btn btn-large btn-primary"
+                        <a href="{{ url_for("adapt.adapt_appsearch") }}" class="btn btn-large btn-primary"
                            type="button">{{ gettext("ADAPT") }}</a>
                     </div>
                 </div>
@@ -40,7 +40,7 @@
 
     <div class="row">
 
-    <h1>Your Applications</h1>
+    <h1>{{ gettext("Your Applications") }}</h1>
 
     {% if apps|length == 0 %}
         <div class="span6 offset3">
