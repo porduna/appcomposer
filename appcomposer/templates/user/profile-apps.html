@@ -3,6 +3,44 @@
 {% extends 'user/base.html' %}
 {% block body %}
 
+    <div class="row">
+
+        <div class="span4 offset2 app">
+            <div class="alert alert-success" style="position: static">
+                <div>
+                    <h3>Translate</h3>
+                    <h5>Translate OpenSocial applications easily. Share the translations with other teachers or
+                        students.</h5>
+                </div>
+                <div style="position: static;"> <!-- Place it at the bottom of the rectangle -->
+                    <div class="text-center">
+                        <a href="#" class="btn btn-large btn-primary"
+                           type="button">{{ gettext("TRANSLATE") }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="span4 app">
+            <div class="alert alert-info" style="position: static">
+                <div>
+                    <h3>Adapt</h3>
+                    <h5>Adapt applications. Configure them to fit the needs of your students.</h5>
+                </div>
+                <div style="position: static;"> <!-- Place it at the bottom of the rectangle -->
+                    <div class="text-center">
+                        <a href="#" class="btn btn-large btn-primary"
+                           type="button">{{ gettext("ADAPT") }}</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div> <!-- /row -->
+
+    <hr>
+
+    <div class="row">
+
+    <h1>Your Applications</h1>
 
     {% if apps|length == 0 %}
         <div class="span6 offset3">
@@ -12,32 +50,36 @@
         </div>
 
         <div class="row">
-        {% for composer in composers %}
-            <div class="span4 {% if composers|length == 1 %}offset5{% endif %} {% if composers|length == 2 and loop.index0 == 0 %}offset3{% endif %}">
-                <h2>{{composer.name}}
-                </h2>
-                <p>
-                    {{composer.description}}
-                </p>
-                <p>
-                    <a class="btn" href="{{url_for(composer.new_endpoint)}}">{{ gettext("Start composing") }} &raquo;
-                    </a>
-                </p>
-            </div>
-        {% endfor %}
+            {% for composer in composers %}
+                <div class="span4 {% if composers|length == 1 %}offset5{% endif %} {% if composers|length == 2 and loop.index0 == 0 %}offset3{% endif %}">
+                    <h2>{{ composer.name }}
+                    </h2>
+
+                    <p>
+                        {{ composer.description }}
+                    </p>
+
+                    <p>
+                        <a class="btn"
+                           href="{{ url_for(composer.new_endpoint) }}">{{ gettext("Start composing") }} &raquo;
+                        </a>
+                    </p>
+                </div>
+            {% endfor %}
         </div>
 
-        {% else %}
+    {% else %}
         <div class="row">
             <div class="col-md-3 pull-right">
-                <input name="text" maxlength="50" placeholder="Search..." type="text" class="form-control" id="search_box" />
+                <input name="text" maxlength="50" placeholder="Search..." type="text" class="form-control"
+                       id="search_box"/>
             </div>
         </div>
 
         <div class="row">
             {% for app in apps %}
                 <div class="span4 app">
-                    <div class="alert alert-info" style="position: relative">
+                    <div class="alert {% if app.composer == "translate" %}alert-success{% else %}alert-info{% endif %}" style="position: relative">
                         <div>
                             <h3>{{ app.name }}</h3>
                             <h4>{{ gettext("Composer") }}: {{ app.composer }}</h4>
@@ -59,13 +101,16 @@
                             </div>
                             <div>
                                 {% if build_edit_link(app) %}
-                                    <a href="{{ build_edit_link(app) }}" class="btn btn-primary" type="button">{{ gettext("Open") }}</a>
+                                    <a href="{{ build_edit_link(app) }}" class="btn btn-primary"
+                                       type="button">{{ gettext("Open") }}</a>
                                 {% endif %}
                                 {% if build_duplicate_link(app) %}
-                                    <a href="{{ build_duplicate_link(app) }}" class="btn btn-info" type="button">{{ gettext("Duplicate") }}</a>
+                                    <a href="{{ build_duplicate_link(app) }}" class="btn btn-info"
+                                       type="button">{{ gettext("Duplicate") }}</a>
                                 {% endif %}
                                 {% if build_delete_link(app) %}
-                                    <a href="{{ build_delete_link(app) }}" class="btn btn-danger" type="button">{{ gettext("Delete") }}</a>
+                                    <a href="{{ build_delete_link(app) }}" class="btn btn-danger"
+                                       type="button">{{ gettext("Delete") }}</a>
                                 {% endif %}
                             </div>
                         </div>
@@ -85,15 +130,15 @@
     <script type="text/javascript">
 
         // Ensure that the height of the App rectangles is always the same
-        $(document).ready( function() {
+        $(document).ready(function () {
 
-            var heights = $(".app").map( function() {
+            var heights = $(".app").map(function () {
                 return $(this).height();
             }).get();
 
             var maxHeight = Math.max.apply(null, heights);
 
-            $(".app>.alert").height(maxHeight+30);
+            $(".app>.alert").height(maxHeight + 30);
         });
     </script>
 
@@ -101,15 +146,15 @@
 
 {% block tail %}
     {{ super() }}
-<script>
+    <script>
         // If activated, in mobile phones it scrolls down, which is kind of weird
         // $('#search_box').focus();
-        $('#search_box').keyup( function(e) {
+        $('#search_box').keyup(function (e) {
             var current_value = $(this).val().toLowerCase();
             if (current_value == "") {
                 $(".app").show();
             } else {
-                $(".app").each(function(pos, element) {
+                $(".app").each(function (pos, element) {
                     var title = $(element).find("h2").text().toLowerCase();
                     var adaptor_name = $(element).find("h4").text().toLowerCase();
                     var description = $(element).find("p").text().toLowerCase();
