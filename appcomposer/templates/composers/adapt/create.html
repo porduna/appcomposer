@@ -9,15 +9,6 @@
         <div class="row">
             <div class="col-lg-12">
             {% from "user/wl_form_helpers.html" import render_field %}
-
-            {% with messages = get_flashed_messages() %}
-                {% for message in messages %}
-                    <div class="alert alert-success">
-                        <button type="button" class="close" data-dismiss="alert">×</button>
-                        {{ message }}
-                    </div>
-                {% endfor %}
-            {% endwith %}
             </div>
         </div>
 
