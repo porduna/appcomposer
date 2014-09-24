@@ -3,7 +3,6 @@ import os
 from flask import Flask, request
 from flask import escape
 
-
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(32)
 app.config['SESSION_COOKIE_NAME'] = 'appcompsession'
@@ -34,6 +33,26 @@ else:
         if locale is None:
             locale = 'en'
         return locale
+
+
+# Initialize the logging mechanism to send error 500 mails to the administrators
+if not app.debug and app.config.get("ADMINS") is not None and app.config.get("SMTP_SERVER") is not None:
+    import logging
+    from logging.handlers import SMTPHandler
+
+    smtp_server = app.config.get("SMTP_SERVER")
+    from_addr = app.config.get("SENDER_ADDR")
+    to_addrs = app.config.get("ADMINS")
+    mail_handler = SMTPHandler(smtp_server,
+                                from_addr,
+                                to_addrs,
+                                "AppComposer Application Error Report")
+    mail_handler.setLevel(logging.ERROR)
+    app.logger.addHandler(mail_handler)
+
+
+
+
 
 ###
 # Composers info

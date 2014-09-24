@@ -29,3 +29,13 @@ MONGODB_SYNC_PERIOD = 3600
 
 # Adaptor plug-ins (the defaults are loaded by default)
 ADAPT_PLUGINS = []
+
+
+# Where will the notification mails come from.
+SENDER_ADDR = "APPCOMPOSER@no-reply.com"
+
+# SMTP Server through which to send mails.
+SMTP_SERVER = None
+
+# List of Admins to send mails to when an error occurs.
+ADMINS = []

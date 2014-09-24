@@ -175,3 +175,12 @@ def get_ownership_list():
         result["owners"][language] = {"owner_id": owner.id, "owner_login": owner.login, "owner_app": ownership.app.id}
 
     return jsonify(**result)
+
+
+@translate_blueprint.route("/test_error", methods=["GET"])
+def test_error():
+    """
+    Simply for erroring-out for testing purposes.
+    """
+    raise Exception("OOHM")
+    return Response("A FAKE ERROR HERE", 500), 500
