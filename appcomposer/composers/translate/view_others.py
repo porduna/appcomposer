@@ -10,3 +10,4 @@ def translate_about():
     Information about the translator application.
     """
     return render_template("composers/translate/about.html")
+

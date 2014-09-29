@@ -49,6 +49,8 @@ def run():
 
     parser.add_option('--testing', dest='testing', help="Enter in testing mode", default=False, action='store_true')
 
+    parser.add_option('--release', dest='release', help="Enter in a release mode", default=False, action="store_true")
+
     args, _ = parser.parse_args()
 
     register_dummy()
@@ -57,6 +59,10 @@ def run():
         app.config['TESTING'] = True
         app.config['CSRF_ENABLED'] = False
         app.config['DEBUG'] = False
+    elif args.release:
+        app.config["TESTING"] = False
+        app.config["CSRF_ENABLED"] = True
+        app.config["DEBUG"] = False
     else:
         app.config['DEBUG'] = True
         app.config["CSRF_ENABLED"] = True

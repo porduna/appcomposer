@@ -1,6 +1,6 @@
 import os
 
-from flask import Flask, request
+from flask import Flask, request, render_template
 from flask import escape
 
 app = Flask(__name__)
@@ -138,3 +138,18 @@ def site_map():
 
     ret = "<br>".join(lines)
     return ret
+
+
+
+@app.route("/error")
+def error():
+    a = 2/0
+    return "ERROR", 404
+
+@app.errorhandler(500)
+def error500(err):
+    return render_template("composers/errors.html", message="An internal error occurred. You may try a different action, or contact the administrators."), 500
+
+
+# app.run(debug=False, port=8000)
+
