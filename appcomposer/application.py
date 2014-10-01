@@ -38,7 +38,16 @@ else:
 # Initialize the logging mechanism to send error 500 mails to the administrators
 if not app.debug and app.config.get("ADMINS") is not None and app.config.get("SMTP_SERVER") is not None:
     import logging
+    import pprint
     from logging.handlers import SMTPHandler
+
+    class MailLoggingFilter(logging.Filter):
+        def filter(self, record):
+            pass
+            record.environ = pprint.pformat(request.environ)
+            return True
+
+    app.logger.addFilter(MailLoggingFilter())
 
     smtp_server = app.config.get("SMTP_SERVER")
     from_addr = app.config.get("SENDER_ADDR")
@@ -47,6 +56,25 @@ if not app.debug and app.config.get("ADMINS") is not None and app.config.get("SM
                                 from_addr,
                                 to_addrs,
                                 "AppComposer Application Error Report")
+    formatter = logging.Formatter(
+        '''
+        Message type:       %(levelname)s
+        Location:           %(pathname)s:%(lineno)d
+        Module:             %(module)s
+        Function:           %(funcName)s
+        Time:               %(asctime)s
+
+        Message:
+
+        %(message)s
+
+        Environment:
+
+        %(environ)s
+
+        Stack Trace:
+        ''')
+    mail_handler.setFormatter(formatter)
     mail_handler.setLevel(logging.ERROR)
     app.logger.addHandler(mail_handler)
 
