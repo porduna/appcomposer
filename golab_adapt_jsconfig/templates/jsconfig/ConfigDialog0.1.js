@@ -1,5 +1,7 @@
 // Original code developed by University of Twente, taken and adapted from:
 // http://go-lab.gw.utwente.nl/sources/tools/conceptmap/src/main/webapp/coffee/ConfigDialog0.1.js
+//
+// TODO: This needs some clean-up and refactoring.
 
 (function () {
     "use strict";
@@ -64,12 +66,70 @@
                 }
                 $form.append($current_line);
             });
+
             $form.submit(function () {
                 event.preventDefault();
             });
+
             $dialogElement.append($form);
 
-            var $saveBtn = $('<button class="btn">{{ gettext("Save") }}</button>');
+            // Listen for changes in the forms so that we know when to activate the auto-save feature.
+            $form.find("input").change(function(ev){
+                console.log("CHANGE: " + ev);
+                onChangeOccurred();
+            });
+            $form.find("input[type=text]").bind("input propertychange", function(ev) {
+                console.log("TCHANGE: " + ev);
+                onChangeOccurred();
+            });
+
+            // To display the saving state.
+            var $status = $('<input type="text" class="form-control" readonly/>');
+            $status.val("Saving changes...");
+
+
+            function onChangeOccurred() {
+                $status.val("Saving changes...");
+                window.last_change = new Date();
+            }
+
+            // Every second, consider saving if we need to and we have not saved lately.
+            var considerSaving = function() {
+                // If we have never saved we need to save straightaway. This could actually be done
+                // on server-side initialization only, but for now this is the easiest.
+                if(window.last_save == undefined)
+                {
+                    if(window.saving == undefined || window.saving.state() == "resolved")
+                        window.saving = doSave();
+                }
+
+                // If there have been no changes at all, we do nothing.
+                else if(window.last_change == undefined)
+                {
+                }
+
+                // If there have been changes we check whether we should save now.
+                // Only if we are not already saving, though.
+                else if(window.saving == undefined || window.saving.state() === "resolved")
+                {
+                    var now = new Date();
+                    var between_saves = window.last_save.getTime() - window.last_change.getTime();
+                    var since_last_save = now.getTime() - window.last_save.getTime();
+
+                    // If more than 3 seconds have elapsed since the last save, and if there are changes at all, then we save.
+                    if(between_saves <= 0 && since_last_save > 3000) {
+                        if(window.saving == undefined || window.saving.state() === "resolved")
+                            window.saving = doSave();
+                    }
+                } //!else
+
+
+                // We program ourselves to try again in a second.
+                setTimeout(considerSaving, 500);
+            };
+
+            // Save for the firs time and start the save-loop.
+            considerSaving();
 
             function extractConfiguration() {
                 $.each(currentConfiguration, function (id, settings) {
@@ -91,28 +151,30 @@
                 });
             }
 
-            var auto_saver = function() {
+            function doSave() {
+                console.log("Saving...");
+                $status.val("Saving changes...");
+
+                var promise = $.Deferred();
                 extractConfiguration();
 
                 // Save without reloading the page.
                 configurationCallback({ 'appName': appName, 'config': currentConfiguration }, false)
                     .done(function(){
-                        // Save again in some time.
-                        setTimeout(auto_saver, 4000);
+                        // Store the date of the last successful save
+                        window.last_save = new Date();
+                        $status.val("All changes saved");
+                        promise.resolve();
                     })
                     .fail(function(){
-                        // STOP AUTO SAVING.
+                        promise.reject();
                     });
-            };
 
-            setTimeout(auto_saver, 500);
+                return promise.promise();
+            }
 
-            $saveBtn.click(function () {
-                extractConfiguration();
-                configurationCallback({ 'appName': appName, 'config': currentConfiguration });
-            });
 
-            $dialogElement.append($saveBtn);
+            $form.append($status);
         };
 
         return ConfigDialog;

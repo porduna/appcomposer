@@ -146,7 +146,7 @@ def save_json_config(app_id):
             data['configuration'] = json_contents.get('config', {})
 
             # Not fully sure that is_xhr is standard.
-            if request.is_xhr:
+            if not request.is_xhr:
                 flash("Saved")
 
             adaptor.save_data(app_id, data)
