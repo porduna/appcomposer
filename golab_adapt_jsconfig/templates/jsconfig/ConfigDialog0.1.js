@@ -84,12 +84,33 @@
             });
 
             // To display the saving state.
-            var $status = $('<input type="text" class="form-control" readonly/>');
-            $status.val("Saving changes...");
+
+            // TextBox on the end:
+            //var $status = $('<input type="text" class="form-control" readonly/>');
+
+            // Alert box on the top, fixed pos:
+            var $status = $('<div class="alert alert-dismissible alert-success" role="alert" style="position: fixed; top: 5%; left: 5%; width: 90%; opacity: 0.9;"/>');
+            $status.hide();
+            $("body").append($status);
+
+
+            // Shows and changes the status.
+            function status(s, fade) {
+                var cur = $status.text();
+                if(cur !== s) {
+                    $status.fadeIn(300);
+                    $status.text(s);
+
+                    if(fade)
+                        $status.delay(1000).fadeOut(1000);
+                }
+            }
+
+            //status("Saving changes...", false);
 
 
             function onChangeOccurred() {
-                $status.val("Saving changes...");
+                status("Saving changes...", false);
                 window.last_change = new Date();
             }
 
@@ -153,7 +174,7 @@
 
             function doSave() {
                 console.log("Saving...");
-                $status.val("Saving changes...");
+                status("Saving changes...", false);
 
                 var promise = $.Deferred();
                 extractConfiguration();
@@ -163,7 +184,7 @@
                     .done(function(){
                         // Store the date of the last successful save
                         window.last_save = new Date();
-                        $status.val("All changes saved");
+                        status("All changes saved", true);
                         promise.resolve();
                     })
                     .fail(function(){
@@ -173,8 +194,6 @@
                 return promise.promise();
             }
 
-
-            $form.append($status);
         };
 
         return ConfigDialog;
