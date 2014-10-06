@@ -144,7 +144,11 @@ def save_json_config(app_id):
             data = adaptor.load_data(app_id)
             data['configuration_name'] = json_contents.get('appName', 'appName not found')
             data['configuration'] = json_contents.get('config', {})
-            flash("Saved")
+
+            # Not fully sure that is_xhr is standard.
+            if request.is_xhr:
+                flash("Saved")
+
             adaptor.save_data(app_id, data)
         else:
             return 'error: malformed json content'

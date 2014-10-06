@@ -13,10 +13,13 @@
 {#                {{ url_form.url.label }}: {{ url_form.url(size=100) }}#}
 {#                <input type="submit" class="btn btn-primary" value="{{ gettext("Save") }}"/>#}
 {#            {% else %}#}
+
+                {# This is the URL text box in the Edit tab #}
                 {{ url_form.url.label }}: {{ url_form.url(size=100, readonly="readonly") }}
 {#            {% endif %}#}
 
 
+            {# Show the errors if there have been any #}
             {% if url_form.url.errors %}
                 <div class="row">
                     <div class="alert alert-danger col-md-5 col-md-offset-3">
@@ -28,20 +31,24 @@
                     </div>
                 </div>
             {% endif %}
-            {% if not url_form.url.data %}
-                <div class="row">
-                    <br>
-                    <div class="alert alert-info col-md-11 col-md-offset-1">
-                        {{ gettext("Put the address of an application to be adapted. Examples:") }}
-                        <ul>
-                        {% for example in ['http://go-lab.gw.utwente.nl/production/conceptmapper_v1/tools/conceptmap/src/main/webapp/conceptmapper.xml', 'http://go-lab.gw.utwente.nl/production/hypothesis_v1/tools/hypothesis/src/main/webapp/hypothesis.xml'] %}
-                            <li>{{ example }}</li>
-                        {% endfor %}
-                        </ul>
-                    </div>
-                </div>
-            {% endif %}
+
+        {# The code that follows and is commented out could probably be removed because now we enforce that if we reach this screen the app is partially loaded. #}
+{#            {% if not url_form.url.data %}#}
+{#                <div class="row">#}
+{#                    <br>#}
+{#                    <div class="alert alert-info col-md-11 col-md-offset-1">#}
+{#                        {{ gettext("Put the address of an application to be adapted. Examples:") }}#}
+{#                        <ul>#}
+{#                        {% for example in ['http://go-lab.gw.utwente.nl/production/conceptmapper_v1/tools/conceptmap/src/main/webapp/conceptmapper.xml', 'http://go-lab.gw.utwente.nl/production/hypothesis_v1/tools/hypothesis/src/main/webapp/hypothesis.xml'] %}#}
+{#                            <li>{{ example }}</li>#}
+{#                        {% endfor %}#}
+{#                        </ul>#}
+{#                    </div>#}
+{#                </div>#}
+{#            {% endif %}#}
         </form>
+
+        {# TODO: This ID should probably be made generic. #}
         <div id='ut_tools_conceptmapper_ConfigDialog'>
         </div>
 
@@ -73,10 +80,30 @@
                 this.select();
             });
 
-            function golabConfigurationSavedCallback(newConfiguration) {
+            //! golabConfigurationSavedCallback
+            //!
+            //! @param object newConfiguration: Configuration to save.
+            //! @param bool reload: If undefined or true, the page will be reloaded after the save POST succeeds.
+            //! @return: A promise.
+            function golabConfigurationSavedCallback(newConfiguration, reload)
+            {
+                var promise = $.Deferred();
                 var url = "{{ url_for('.save_json_config', app_id = app_id) }}";
                 // TODO: add json2.js if MSIE
-                $.post(url, JSON.stringify(newConfiguration)).done(function() { location.reload(); });
+                $.post(url, JSON.stringify(newConfiguration))
+                        .done(function()
+                            {
+                                promise.resolve();
+                                if(reload == undefined || reload == true)
+                                    location.reload();
+
+                            })
+                        .fail(function()
+                        {
+                            console.error("golabConfigurationSavedCallback failed.")
+                            promise.reject();
+                        });
+                return promise;
             }
             
             // foo ={{ configuration_name }}=
