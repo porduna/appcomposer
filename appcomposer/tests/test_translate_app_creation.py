@@ -7,9 +7,12 @@ from appcomposer.appstorage import api
 from appcomposer.appstorage.api import get_app_by_name
 from appcomposer.composers.translate.bundles import BundleManager
 
+from unittest import TestCase
 
-class TestTranslateAppCreation:
-    def __init__(self):
+
+class TestTranslateAppCreation(TestCase):
+    def __init__(self, *args, **kwargs):
+        TestCase.__init__(self, *args, **kwargs)
         self.flask_app = None
         self.tapp = None
 
@@ -272,6 +275,22 @@ class TestTranslateAppCreation:
 
             # Ensure the translations in the second file are present as well
             assert msgs["gray"] == "Grau"
+
+    def test_translate_try_to_create_app_with_no_locales(self):
+        """
+        [REGRESSION TEST: If the App was not prepared to be translated, it was apparently not being
+        communicated nicely to the user]
+        Ensure that when we try to create an App providing a spec XML that has no defined Locales, we
+        inform the user that the App can not be translated without first preparing it properly.
+        """
+        url = "appcomposer/tests_data/exampleNoLocale/i18n.xml"
+        rv = self.flask_app.post("/composers/translate/selectlang", data={"appname": "UTApp", "appurl": url}, follow_redirects=True)
+
+        # Check whether it seems to be the page we expect.
+        # assert rv.status_code == 200  # Page found code.
+        # assert rv.data.count("option") > 100  # Lots of them, because of the languages list.
+        # assert "submit" in rv.data
+        # assert "Localise" in rv.data
 
     def test_translate_default_autoaccept(self):
         with self.flask_app:

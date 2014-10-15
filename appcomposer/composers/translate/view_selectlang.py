@@ -13,8 +13,9 @@ from appcomposer.utils import get_original_url
 from appcomposer.appstorage import create_app, set_var
 from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint
-from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException
-from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships
+from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException, NoValidTranslationsException
+from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, \
+    _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships
 from appcomposer.login import requires_login
 
 
@@ -67,7 +68,8 @@ def translate_selectlang():
         # Protect against CSRF attacks.
         if not verify_csrf(request):
             return render_template("composers/errors.html",
-                                   message=lazy_gettext("Request does not seem to come from the right source (csrf check)")), 400
+                                   message=lazy_gettext(
+                                       "Request does not seem to come from the right source (csrf check)")), 400
 
         # URL to the XML spec of the gadget.
         appurl = request.form.get("appurl")
@@ -104,7 +106,14 @@ def translate_selectlang():
         # Create a fully new App. It will be automatically generated from a XML.
         try:
             bm = BundleManager.create_new_app(appurl)
+        except NoValidTranslationsException:
+            return render_template("composers/errors.html",
+                                   message=lazy_gettext(
+                                       "The App you have chosen does not seem to have any translation. At least a base translation is required, which will often be"
+                                       "prepared by the original developer.")
+            ), 400
         except InvalidXMLFileException:
+            # TODO: As of now, not sure that this exception can actually ever arise. Maybe it should be merged with NoValidTranslationsException.
             return render_template("composers/errors.html",
                                    message=lazy_gettext(
                                        "Invalid XML in either the XML specification file or the XML translation bundles that it links to.")), 400
@@ -216,7 +225,8 @@ def translate_selectlang():
     if not is_owner and owner is None:
         # TODO: Improve this error handling. This should NEVER happen.
         flash("Error: Language Owner is None", "error")
-        return render_template("composers/errors.html", message=lazy_gettext("Internal Error: Language owner is None")), 500
+        return render_template("composers/errors.html",
+                               message=lazy_gettext("Internal Error: Language owner is None")), 500
 
 
     # Just for the count of proposals
@@ -242,14 +252,14 @@ def translate_selectlang():
     # We pass some parameters as JSON strings because they are generated dynamically
     # through JavaScript in the template.
     return render_template("composers/translate/selectlang.html",
-                           app=app, # Current app object.
-                           xmlspec=spec, # URL to the App XML.
-                           autoaccept=autoaccept, # Whether the app is configured to autoaccept proposals or not.
-                           suggested_target_langs=suggested_target_langs, # Suggested (not already translated) langs
-                           source_groups_json=json.dumps(src_groups_dict), # Source groups in a JSON string
-                           full_groups_json=json.dumps(full_groups_list), # (To find names etc)
-                           target_groups=full_groups_list, # Target groups in a JSON string
-                           translated_langs=translated_langs, # Already translated langs
-                           is_owner=is_owner, # Whether the loaded app has the "Owner" status
-                           owner=owner, # Reference to the Owner
+                           app=app,  # Current app object.
+                           xmlspec=spec,  # URL to the App XML.
+                           autoaccept=autoaccept,  # Whether the app is configured to autoaccept proposals or not.
+                           suggested_target_langs=suggested_target_langs,  # Suggested (not already translated) langs
+                           source_groups_json=json.dumps(src_groups_dict),  # Source groups in a JSON string
+                           full_groups_json=json.dumps(full_groups_list),  # (To find names etc)
+                           target_groups=full_groups_list,  # Target groups in a JSON string
+                           translated_langs=translated_langs,  # Already translated langs
+                           is_owner=is_owner,  # Whether the loaded app has the "Owner" status
+                           owner=owner,  # Reference to the Owner
                            proposal_num=proposal_num)  # Number of pending translation proposals
