@@ -42,7 +42,15 @@ def do_languages_initial_merge(app, bm):
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])
 @requires_login
 def translate_selectlang():
-    """ Source language & target language selection."""
+    """
+    Source language & target language selection.
+
+    Different cases when creating an App:
+        - Default translation exists; other translations exist -> Created normally
+        - Default translation DOES NOT exist or is invalid; english translations exist or is invalid -> English is the default
+        - Default translation DOES NOT exist or is invalid; english translation DOES NOT exist or is invalid; other translations exist -> First Other translation is the default
+        - Default translation, english translation, and other translations DO NOT exist or are invalid -> NoValidTranslations page; App is not created
+    """
 
     # Note: The name pcode refers to the fact that the codes we deal with here are partial (do not include
     # the group).
@@ -110,7 +118,7 @@ def translate_selectlang():
             return render_template("composers/errors.html",
                                    message=lazy_gettext(
                                        "The App you have chosen does not seem to have any translation. At least a base translation is required, which will often be"
-                                       "prepared by the original developer.")
+                                       " prepared by the original developer.")
             ), 400
         except InvalidXMLFileException:
             # TODO: As of now, not sure that this exception can actually ever arise. Maybe it should be merged with NoValidTranslationsException.
