@@ -47,7 +47,7 @@
                     <ul class="nav nav-tabs" style="margin-bottom: 15px;">
                         {% block tab_links %}
                             <li class="active"><a href="#edit" data-toggle="tab">{{ gettext("Edit") }}</a></li>
-                            <li><a href="#preview" data-toggle="tab">{{ gettext("Preview") }}</a></li>
+                            <li><a id="preview-tab" href="#preview" data-toggle="tab">{{ gettext("Preview") }}</a></li>
                         {% endblock %}
                     </ul>
 
@@ -70,4 +70,18 @@
         </div>
     </div>
 {% endblock %}
+
+{% block scripts %}
+{{ super() }}
+
+    <script type="text/javascript">
+    $(document).ready(function(){
+        $("#preview-tab").click(function(ev){
+            // Reload the frame when the user clicks on preview.
+            console.log("[DBG]: Reloading frame");
+            $("#preview-frame").attr("src", function(i, val) { return val; });
+        });
+    });
+    </script>
+{% endblock scripts %}
 

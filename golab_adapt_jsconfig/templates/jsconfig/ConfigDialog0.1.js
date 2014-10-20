@@ -89,7 +89,7 @@
             //var $status = $('<input type="text" class="form-control" readonly/>');
 
             // Alert box on the top, fixed pos:
-            var $status = $('<div class="alert alert-dismissible alert-success" role="alert" style="position: fixed; top: 5%; left: 5%; width: 90%; opacity: 0.9;"/>');
+            var $status = $('<div class="alert alert-dismissible alert-success" role="alert" style="padding: 2px; position: fixed; top: 97%; right: 5%; left:0%; width: 30%; opacity: 0.9; overflow: visible"/>');
             $status.hide();
             $("body").append($status);
 
