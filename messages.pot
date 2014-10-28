@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-09-08 10:57+0200\n"
+"POT-Creation-Date: 2014-10-28 16:44+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -47,7 +47,7 @@ msgid "Users"
 msgstr ""
 
 #: appcomposer/admin/admin_application.py:34
-#: appcomposer/templates/composers/layout.html:50
+#: appcomposer/templates/composers/layout.html:53
 #: appcomposer/user/user_application.py:23
 msgid "Apps"
 msgstr ""
@@ -115,15 +115,16 @@ msgid "ID"
 msgstr ""
 
 #: appcomposer/admin/admin_application.py:194
-#: appcomposer/composers/adapt/__init__.py:267
-#: appcomposer/templates/composers/adapt/create.html:36
+#: appcomposer/composers/adapt/view_duplicate.py:13
+#: appcomposer/templates/composers/adapt/appsearch.html:72
+#: appcomposer/templates/composers/adapt/create.html:32
 #: appcomposer/templates/composers/dummy/new.html:42
-#: appcomposer/templates/composers/translate/index.html:30
+#: appcomposer/templates/composers/translate/index.html:71
 msgid "Name"
 msgstr ""
 
 #: appcomposer/admin/admin_application.py:194
-#: appcomposer/templates/user/profile-apps.html:43
+#: appcomposer/templates/user/profile-apps.html:85
 msgid "Composer"
 msgstr ""
 
@@ -139,15 +140,15 @@ msgstr ""
 msgid "dummy"
 msgstr ""
 
-#: appcomposer/composers/adapt/__init__.py:28
+#: appcomposer/composers/adapt/__init__.py:23
 msgid "Adaptor Composer"
 msgstr ""
 
-#: appcomposer/composers/adapt/__init__.py:29
+#: appcomposer/composers/adapt/__init__.py:24
 msgid "Adapt an existing app."
 msgstr ""
 
-#: appcomposer/composers/adapt/__init__.py:289
+#: appcomposer/composers/adapt/view_duplicate.py:36
 msgid "You already have an application with this name"
 msgstr ""
 
@@ -163,7 +164,7 @@ msgid "Pretend that you are composing an app. For testing purposes."
 msgstr ""
 
 #: appcomposer/composers/dummy/__init__.py:53
-#: appcomposer/composers/translate/view_delete.py:76
+#: appcomposer/composers/translate/view_delete.py:78
 msgid "App successfully deleted."
 msgstr ""
 
@@ -183,9 +184,50 @@ msgstr ""
 msgid "Translate an existing app."
 msgstr ""
 
+#: appcomposer/composers/translate/view_selectlang.py:79
+msgid "Request does not seem to come from the right source (csrf check)"
+msgstr ""
+
+#: appcomposer/composers/translate/view_selectlang.py:91
+msgid "An appname was not specified"
+msgstr ""
+
+#: appcomposer/composers/translate/view_selectlang.py:119
+msgid ""
+"The App you have chosen does not seem to have any translation. At least a"
+" base translation is required, which will often be prepared by the "
+"original developer."
+msgstr ""
+
+#: appcomposer/composers/translate/view_selectlang.py:126
+msgid ""
+"Invalid XML in either the XML specification file or the XML translation "
+"bundles that it links to."
+msgstr ""
+
+#: appcomposer/composers/translate/view_selectlang.py:130
+msgid ""
+"Failed to retrieve the XML spec. The URL was maybe invalid or not "
+"available."
+msgstr ""
+
+#: appcomposer/composers/translate/view_selectlang.py:136
+msgid ""
+"The App you have chosen does not seem to have a base translation. The "
+"original developer needs to prepare it for internationalization first."
+msgstr ""
+
+#: appcomposer/composers/translate/view_selectlang.py:200
+msgid "Specified App doesn't exist"
+msgstr ""
+
+#: appcomposer/composers/translate/view_selectlang.py:237
+msgid "Internal Error: Language owner is None"
+msgstr ""
+
 #: appcomposer/templates/about.html:10 appcomposer/templates/master.html:28
 #: appcomposer/templates/composers/adapt/about.html:1
-#: appcomposer/templates/composers/adapt/about.html:10
+#: appcomposer/templates/composers/adapt/about.html:11
 #: golab_adapt_gateway4labs/templates/gateway4labs/about.html:1
 #: golab_adapt_jsconfig/templates/jsconfig/about.html:1
 msgid "About"
@@ -230,7 +272,7 @@ msgid "Learn more"
 msgstr ""
 
 #: appcomposer/templates/master.html:26
-#: appcomposer/templates/composers/layout.html:48
+#: appcomposer/templates/composers/layout.html:51
 #: appcomposer/user/user_application.py:20
 msgid "Home"
 msgstr ""
@@ -240,8 +282,8 @@ msgid "Admin"
 msgstr ""
 
 #: appcomposer/templates/master.html:42
-#: appcomposer/templates/composers/layout.html:88
-#: appcomposer/templates/user/base.html:60
+#: appcomposer/templates/composers/layout.html:105
+#: appcomposer/templates/user/base.html:71
 #, python-format
 msgid "the %(link)s application creator for teachers"
 msgstr ""
@@ -267,80 +309,161 @@ msgstr ""
 msgid "Proceed"
 msgstr ""
 
-#: appcomposer/templates/composers/layout.html:49
-#: appcomposer/user/user_application.py:22
-msgid "Profile"
+#: appcomposer/templates/composers/layout.html:58
+#: appcomposer/templates/composers/translate/index.html:19
+#: appcomposer/templates/composers/translate/selectlang.html:37
+#: appcomposer/templates/user/base.html:34
+#: appcomposer/templates/user/profile-apps.html:11
+msgid "Translate"
 msgstr ""
 
-#: appcomposer/templates/composers/layout.html:63
-#: appcomposer/templates/user/base.html:45
+#: appcomposer/templates/composers/layout.html:61
+#: appcomposer/templates/composers/adapt/appsearch.html:20
+#: appcomposer/templates/composers/adapt/edit.html:34
+#: appcomposer/templates/user/base.html:37
+#: appcomposer/templates/user/profile-apps.html:26
+msgid "Adapt"
+msgstr ""
+
+#: appcomposer/templates/composers/layout.html:80
+#: appcomposer/templates/user/base.html:56
 msgid "Log out"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/create.html:23
-msgid "Create a new {adaptor_type}"
+#: appcomposer/templates/composers/adapt/appsearch.html:14
+#: appcomposer/templates/composers/translate/edit.html:15
+#: appcomposer/templates/composers/translate/index.html:13
+#: appcomposer/templates/composers/translate/selectlang.html:30
+msgid "Advanced mode:"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/create.html:44
+#: appcomposer/templates/composers/adapt/appsearch.html:27
+msgid "Application selection"
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/appsearch.html:30
+msgid "Choose an application to adapt: "
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/appsearch.html:32
+msgid ""
+"Please, wait. Loading the list of Apps could take a while. You can also "
+"add your own URL through the <i>Advanced Mode</i>."
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/appsearch.html:37
+#: appcomposer/templates/composers/adapt/appsearch.html:44
+msgid "Title"
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/appsearch.html:38
+#: appcomposer/templates/composers/adapt/appsearch.html:45
+#: appcomposer/templates/composers/adapt/create.html:40
 msgid "Description"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/create.html:50
+#: appcomposer/templates/composers/adapt/appsearch.html:39
+#: appcomposer/templates/composers/adapt/appsearch.html:46
+msgid "Type"
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/appsearch.html:62
+#: appcomposer/templates/composers/translate/index.html:61
+#: golab_adapt_gateway4labs/__init__.py:30 golab_adapt_jsconfig/__init__.py:60
+msgid "URL"
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/appsearch.html:66
+#: appcomposer/templates/composers/translate/index.html:65
+msgid "URL of the app"
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/appsearch.html:67
+#: appcomposer/templates/composers/translate/index.html:66
+msgid "The URL of the app you want to translate."
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/appsearch.html:76
+#: appcomposer/templates/composers/translate/index.html:75
+msgid "Name of the app"
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/appsearch.html:77
+#: appcomposer/templates/composers/translate/index.html:76
+msgid "The name of the new app that will be created."
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/appsearch.html:101
+msgid "Adapt chosen app »"
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/create.html:15
+msgid "Create a new adaptation"
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/create.html:25
+msgid "(Optional) Modify the following fields:"
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/create.html:46
 msgid "Go Back"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/create.html:51
-msgid "Build it"
+#: appcomposer/templates/composers/adapt/create.html:47
+msgid "Continue adapting"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/create.html:63
-msgid "...or edit an existing one from the following list:"
+#: appcomposer/templates/composers/adapt/create.html:59
+msgid "... you could also cancel this adaptation and edit an existing one:"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/create.html:83
+#: appcomposer/templates/composers/adapt/create.html:79
 msgid "Last modified:"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/create.html:85
-#: appcomposer/templates/composers/adapt/edit.html:31
+#: appcomposer/templates/composers/adapt/create.html:81
+#: appcomposer/templates/composers/adapt/edit.html:49
 msgid "Edit"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/duplicate.html:10
+#: appcomposer/templates/composers/adapt/duplicate.html:11
 msgid "Duplication of an application"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/duplicate.html:11
+#: appcomposer/templates/composers/adapt/duplicate.html:12
 msgid ""
 "You are going to duplicate the App {app} of the user {user}. What name do"
 " you want to use?"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/duplicate.html:27
+#: appcomposer/templates/composers/adapt/duplicate.html:28
 #: appcomposer/templates/composers/dummy/edit.html:81
 #: appcomposer/templates/user/profile-edit.html:47
 #: appcomposer/templates/user/profile-edit.html:49
 #: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:9
 #: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:38
-#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:69
-#: golab_adapt_jsconfig/templates/jsconfig/edit.html:9
 msgid "Save"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/edit.html:16
-#: appcomposer/templates/composers/adapt/index.html:16
-msgid "Adapt a guidance app"
+#: appcomposer/templates/composers/adapt/edit.html:19
+msgid "Adaptation URL"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/edit.html:32
+#: appcomposer/templates/composers/adapt/edit.html:21
+msgid ""
+"Copy the following URL and put it in Graasp to share this adaptation with"
+" other people:"
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/edit.html:50
 msgid "Preview"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/index.html:31
-msgid "Create"
+#: appcomposer/templates/composers/adapt/type.html:27
+msgid "Start adapting"
 msgstr ""
 
-#: appcomposer/templates/composers/adapt/index.html:33
+#: appcomposer/templates/composers/adapt/type.html:30
 msgid "Read more"
 msgstr ""
 
@@ -350,19 +473,19 @@ msgstr ""
 
 #: appcomposer/templates/composers/dummy/delete.html:67
 #: appcomposer/templates/composers/dummy/edit.html:68
-#: appcomposer/templates/composers/translate/delete.html:23
+#: appcomposer/templates/composers/translate/delete.html:24
 #, python-format
 msgid "Note: Your application is %(app)s %(id)s"
 msgstr ""
 
 #: appcomposer/templates/composers/dummy/delete.html:78
-#: appcomposer/templates/composers/translate/delete.html:51
-#: appcomposer/templates/user/profile-apps.html:63
+#: appcomposer/templates/composers/translate/delete.html:52
+#: appcomposer/templates/user/profile-apps.html:113
 msgid "Delete"
 msgstr ""
 
 #: appcomposer/templates/composers/dummy/delete.html:79
-#: appcomposer/templates/composers/translate/delete.html:52
+#: appcomposer/templates/composers/translate/delete.html:53
 msgid "Cancel"
 msgstr ""
 
@@ -386,47 +509,133 @@ msgstr ""
 msgid "App name"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/delete.html:22
+#: appcomposer/templates/composers/translate/delete.html:23
 msgid "Are you really sure you want to delete this application?"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/index.html:9
-msgid "Translate"
+#: appcomposer/templates/composers/translate/edit.html:70
+msgid ""
+"Step 3: Validate the proposed translations or provide your own. Save to "
+"apply the changes."
 msgstr ""
 
-#: appcomposer/templates/composers/translate/index.html:19
+#: appcomposer/templates/composers/translate/edit.html:97
+msgid "Show identifiers"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/index.html:26
 msgid "Step 1 - App creation"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/index.html:22
-#: golab_adapt_gateway4labs/__init__.py:30 golab_adapt_jsconfig/__init__.py:51
-msgid "URL"
+#: appcomposer/templates/composers/translate/index.html:29
+msgid "Choose an application to translate: "
 msgstr ""
 
-#: appcomposer/templates/composers/translate/index.html:24
-msgid "URL of the app"
-msgstr ""
-
-#: appcomposer/templates/composers/translate/index.html:25
-msgid "Enter the URL of the XML for the app you want to translate."
-msgstr ""
-
-#: appcomposer/templates/composers/translate/index.html:32
-msgid "Name of the app"
-msgstr ""
-
-#: appcomposer/templates/composers/translate/index.html:33
-msgid "Enter the name of the new app that will be created."
-msgstr ""
-
-#: appcomposer/templates/composers/translate/index.html:111
+#: appcomposer/templates/composers/translate/index.html:100
 msgid "Step 2 - Select language »"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/index.html:131
-#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:25
-#: golab_adapt_jsconfig/templates/jsconfig/edit.html:25
-msgid "Put the address of an application to be adapted. Examples:"
+#: appcomposer/templates/composers/translate/selectlang.html:43
+msgid "[App name not available]"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:46
+msgid "Original XML: "
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:50
+msgid "You are the owner of this App's default translation."
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:56
+msgid "Accept all translation proposals automatically"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:69
+msgid "View Proposed Translations"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:92
+msgid "Step 3: Translate"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:98
+msgid "Select source language"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:103
+#: appcomposer/templates/composers/translate/selectlang.html:138
+msgid "Translations I own"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:106
+#: appcomposer/templates/composers/translate/selectlang.html:141
+msgid "Translations others own"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:109
+#: appcomposer/templates/composers/translate/selectlang.html:146
+msgid "Translations nobody owns yet"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:127
+msgid "Edit selected <b>source</b> on its own"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:132
+msgid "Select target language"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:175
+msgid "Select source group"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:187
+msgid "Select target group"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:202
+msgid "« Go Back to Step 1"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:208
+msgid ""
+"\n"
+"                                        Step 3 -\n"
+"                                        Translate »\n"
+"                                        "
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:216
+msgid "Target and source languages may not be the same"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:375
+msgid "Merge existing translations"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:377
+msgid ""
+"This option will let you merge someone else's translations into this one."
+" <br>Note, however, that you need to be careful, because after you select"
+" the app to merge with, the merge is automatic, and some translations may"
+" get overrided."
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:386
+msgid "Localise"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:415
+msgid ""
+"Click this button to start localising the App. You will be shown the "
+"entries in the <b>source</b> language so that you can translate them into"
+" the <b>target</b> language."
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:431
+#: appcomposer/templates/composers/translate/selectlang.html:433
+msgid "the default language"
 msgstr ""
 
 #: appcomposer/templates/login/errors.html:7
@@ -518,23 +727,46 @@ msgid "Go to My Apps"
 msgstr ""
 
 #: appcomposer/templates/user/index.html:26
-#: appcomposer/templates/user/profile-apps.html:23
+#: appcomposer/templates/user/profile-apps.html:64
 msgid "Start composing"
 msgstr ""
 
-#: appcomposer/templates/user/profile-apps.html:10
+#: appcomposer/templates/user/profile-apps.html:12
+msgid ""
+"Translate OpenSocial applications easily. Share the translations with "
+"other teachers or\n"
+"                        students."
+msgstr ""
+
+#: appcomposer/templates/user/profile-apps.html:18
+msgid "TRANSLATE"
+msgstr ""
+
+#: appcomposer/templates/user/profile-apps.html:27
+msgid "Adapt applications. Configure them to fit the needs of your students."
+msgstr ""
+
+#: appcomposer/templates/user/profile-apps.html:32
+msgid "ADAPT"
+msgstr ""
+
+#: appcomposer/templates/user/profile-apps.html:43
+msgid "Your Applications"
+msgstr ""
+
+#: appcomposer/templates/user/profile-apps.html:48
 msgid "No application."
 msgstr ""
 
-#: appcomposer/templates/user/profile-apps.html:51
+#: appcomposer/templates/user/profile-apps.html:98
 msgid "Last modified"
 msgstr ""
 
-#: appcomposer/templates/user/profile-apps.html:57
+#: appcomposer/templates/user/profile-apps.html:105
 msgid "Open"
 msgstr ""
 
-#: appcomposer/templates/user/profile-apps.html:60
+#: appcomposer/templates/user/profile-apps.html:109
 msgid "Duplicate"
 msgstr ""
 
@@ -596,24 +828,16 @@ msgstr ""
 msgid "Developers"
 msgstr ""
 
+#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:25
+msgid "Put the address of an application to be adapted. Examples:"
+msgstr ""
+
 #: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:49
 msgid "No preview available: you must save first."
 msgstr ""
 
-#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:53
-#: golab_adapt_jsconfig/templates/jsconfig/edit.html:47
-msgid "Adaptation URL"
-msgstr ""
-
-#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:54
-#: golab_adapt_jsconfig/templates/jsconfig/edit.html:48
-msgid ""
-"Copy the following URL and put it in Graasp to share this adaptation with"
-" other people:"
-msgstr ""
-
-#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:61
-#: golab_adapt_jsconfig/templates/jsconfig/edit.html:56
+#: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:55
+#: golab_adapt_jsconfig/templates/jsconfig/edit.html:67
 msgid "No preview available: you must set a URL first"
 msgstr ""
 
@@ -621,39 +845,39 @@ msgstr ""
 msgid "Create adaptations of customizable Go-Lab applications."
 msgstr ""
 
-#: golab_adapt_jsconfig/__init__.py:32
+#: golab_adapt_jsconfig/__init__.py:35
 msgid ""
 "Too many scripts with data-configuration-definition found. This may "
 "happen if you have commented one. There can be a single one."
 msgstr ""
 
-#: golab_adapt_jsconfig/__init__.py:34
+#: golab_adapt_jsconfig/__init__.py:38
 msgid ""
 "No script with data-configuration-definition found. Is the app adapted "
 "for the Go-Lab JavaScript configuration tools?"
 msgstr ""
 
-#: golab_adapt_jsconfig/__init__.py:38
+#: golab_adapt_jsconfig/__init__.py:43
 msgid ""
 "In the data-configuration-definition tag, there must be a single src "
 "attribute"
 msgstr ""
 
-#: golab_adapt_jsconfig/__init__.py:40
+#: golab_adapt_jsconfig/__init__.py:45
 msgid ""
 "In the data-configuration-definition tag, there must be at least an src "
 "attribute. None found"
 msgstr ""
 
-#: golab_adapt_jsconfig/__init__.py:73 golab_adapt_jsconfig/__init__.py:97
+#: golab_adapt_jsconfig/__init__.py:83 golab_adapt_jsconfig/__init__.py:109
 msgid "Could not download the provided URL"
 msgstr ""
 
-#: golab_adapt_jsconfig/__init__.py:80
+#: golab_adapt_jsconfig/__init__.py:90
 msgid "The provided URL is not a valid XML!"
 msgstr ""
 
-#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:17
+#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:19
 msgid "Application options"
 msgstr ""
 
