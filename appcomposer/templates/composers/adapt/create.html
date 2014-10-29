@@ -19,7 +19,7 @@
             <div class="col-lg-4">
                 <div class="panel panel-success">
                     <div class="panel-heading">
-                        <h5 class="panel-title">{{ gettext("Details of the %s") % (adaptor_type|replace('_', ' ')) }}</h5>
+                        <h5 class="panel-title">{{ gettext("Details of the %(type)s", type = adaptor_type) }}</h5>
                     </div>
                     <div class="panel-body">
                         <h5>{{ gettext("(Optional) Modify the following fields:") }}</h5>

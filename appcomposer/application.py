@@ -3,12 +3,16 @@ import os
 from flask import Flask, request, render_template
 from flask import escape
 
+
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(32)
 app.config['SESSION_COOKIE_NAME'] = 'appcompsession'
 app.config['SQLALCHEMY_NATIVE_UNICODE'] = True
 app.config['SQLALCHEMY_POOL_RECYCLE'] = 3600
 app.config.from_object('config')
+
+# Add an extension to jinja2
+app.jinja_env.add_extension("jinja2.ext.i18n")
 
 # Support old deployments
 if not app.config.get('SQLALCHEMY_DATABASE_URI', False):

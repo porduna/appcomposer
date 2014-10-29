@@ -5,7 +5,9 @@
 {% block edit_tab %}
     <div class="col-lg-10">
 
-        <form class="form" action="." method="POST" enctype="multipart/form-data">
+        <!-- SET TO DISPLAY NONE BECAUSE WE WANT TO HIDE IT FOR NOW. HOWEVER, THE CODE IS NOT READY
+        TO BE REMOVED AS OF NOW -->
+        <form class="form" action="." method="POST" enctype="multipart/form-data" style="display: none">
             {{ url_form.hidden_tag() }}
 
             <!-- TODO: As of the latest modifications, the URL should always be present. TODO Tidy this up and remove the old code. -->
@@ -15,8 +17,7 @@
 {#            {% else %}#}
 
                 {# This is the URL text box in the Edit tab #}
-        {# For now, the URL within the Well is disabled. To re-enable, for now we would only need to uncomment the next line. #}
-{#                {{ url_form.url.label }}: {{ url_form.url(size=100, readonly="readonly") }}#}
+                {{ url_form.url.label }}: {{ url_form.url(size=100, readonly="readonly") }}
 {#            {% endif %}#}
 
 
