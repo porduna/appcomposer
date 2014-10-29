@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-28 16:44+0100\n"
+"POT-Creation-Date: 2014-10-29 12:10+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -164,7 +164,7 @@ msgid "Pretend that you are composing an app. For testing purposes."
 msgstr ""
 
 #: appcomposer/composers/dummy/__init__.py:53
-#: appcomposer/composers/translate/view_delete.py:78
+#: appcomposer/composers/translate/view_delete.py:79
 msgid "App successfully deleted."
 msgstr ""
 
@@ -184,45 +184,140 @@ msgstr ""
 msgid "Translate an existing app."
 msgstr ""
 
-#: appcomposer/composers/translate/view_selectlang.py:79
+#: appcomposer/composers/translate/view_delete.py:50
+#: appcomposer/composers/translate/view_editlang.py:90
+#: appcomposer/composers/translate/view_selectlang.py:80
+#: appcomposer/composers/translate/view_transfer_ownership.py:53
 msgid "Request does not seem to come from the right source (csrf check)"
 msgstr ""
 
-#: appcomposer/composers/translate/view_selectlang.py:91
+#: appcomposer/composers/translate/view_delete.py:64
+msgid "transfer parameter missing"
+msgstr ""
+
+#: appcomposer/composers/translate/view_delete.py:67
+msgid "could not retrieve app"
+msgstr ""
+
+#: appcomposer/composers/translate/view_delete.py:82
+msgid "Not Authorized"
+msgstr ""
+
+#: appcomposer/composers/translate/view_editlang.py:38
+#: appcomposer/composers/translate/view_transfer_ownership.py:22
+msgid "App not found"
+msgstr ""
+
+#: appcomposer/composers/translate/view_editlang.py:52
+msgid "The source language and group combination does not exist"
+msgstr ""
+
+#: appcomposer/composers/translate/view_editlang.py:104
+msgid "Changes have been saved."
+msgstr ""
+
+#: appcomposer/composers/translate/view_editlang.py:114
+msgid ""
+"Changes are being applied instantly because the owner has auto-accept "
+"enabled"
+msgstr ""
+
+#: appcomposer/composers/translate/view_editlang.py:142
+msgid "Changes have been proposed to the owner"
+msgstr ""
+
+#: appcomposer/composers/translate/view_proposed_list.py:47
+#: appcomposer/composers/translate/view_proposed_list.py:81
+msgid "Proposal not selected"
+msgstr ""
+
+#: appcomposer/composers/translate/view_proposed_list.py:51
+msgid "Merge data was not provided"
+msgstr ""
+
+#: appcomposer/composers/translate/view_proposed_list.py:57
+msgid "Proposals not found"
+msgstr ""
+
+#: appcomposer/composers/translate/view_proposed_list.py:69
+msgid "Merge done."
+msgstr ""
+
+#: appcomposer/composers/translate/view_proposed_list.py:85
+msgid "Proposal not found"
+msgstr ""
+
+#: appcomposer/composers/translate/view_selectlang.py:87
+msgid "An application URL is required"
+msgstr ""
+
+#: appcomposer/composers/translate/view_selectlang.py:92
 msgid "An appname was not specified"
 msgstr ""
 
-#: appcomposer/composers/translate/view_selectlang.py:119
+#: appcomposer/composers/translate/view_selectlang.py:113
+msgid "Too many Apps with the same name. Please, choose another."
+msgstr ""
+
+#: appcomposer/composers/translate/view_selectlang.py:120
 msgid ""
 "The App you have chosen does not seem to have any translation. At least a"
 " base translation is required, which will often be prepared by the "
 "original developer."
 msgstr ""
 
-#: appcomposer/composers/translate/view_selectlang.py:126
+#: appcomposer/composers/translate/view_selectlang.py:127
 msgid ""
 "Invalid XML in either the XML specification file or the XML translation "
 "bundles that it links to."
 msgstr ""
 
-#: appcomposer/composers/translate/view_selectlang.py:130
+#: appcomposer/composers/translate/view_selectlang.py:131
 msgid ""
 "Failed to retrieve the XML spec. The URL was maybe invalid or not "
 "available."
 msgstr ""
 
-#: appcomposer/composers/translate/view_selectlang.py:136
+#: appcomposer/composers/translate/view_selectlang.py:137
 msgid ""
 "The App you have chosen does not seem to have a base translation. The "
 "original developer needs to prepare it for internationalization first."
 msgstr ""
 
-#: appcomposer/composers/translate/view_selectlang.py:200
+#: appcomposer/composers/translate/view_selectlang.py:193
+msgid "appid not received"
+msgstr ""
+
+#: appcomposer/composers/translate/view_selectlang.py:201
 msgid "Specified App doesn't exist"
 msgstr ""
 
-#: appcomposer/composers/translate/view_selectlang.py:237
+#: appcomposer/composers/translate/view_selectlang.py:236
+msgid "Error: Language Owner is None"
+msgstr ""
+
+#: appcomposer/composers/translate/view_selectlang.py:238
 msgid "Internal Error: Language owner is None"
+msgstr ""
+
+#: appcomposer/composers/translate/view_transfer_ownership.py:27
+msgid "Not Authorized: User does not own app"
+msgstr ""
+
+#: appcomposer/composers/translate/view_transfer_ownership.py:36
+msgid "Lang not specified"
+msgstr ""
+
+#: appcomposer/composers/translate/view_transfer_ownership.py:41
+msgid "Not Authorized: App does not own language"
+msgstr ""
+
+#: appcomposer/composers/translate/view_transfer_ownership.py:58
+msgid "Target app not specified"
+msgstr ""
+
+#: appcomposer/composers/translate/view_transfer_ownership.py:64
+msgid "Target app does not have the same spec"
 msgstr ""
 
 #: appcomposer/templates/about.html:10 appcomposer/templates/master.html:28
@@ -310,6 +405,7 @@ msgid "Proceed"
 msgstr ""
 
 #: appcomposer/templates/composers/layout.html:58
+#: appcomposer/templates/composers/translate/edit.html:25
 #: appcomposer/templates/composers/translate/index.html:19
 #: appcomposer/templates/composers/translate/selectlang.html:37
 #: appcomposer/templates/user/base.html:34
@@ -331,7 +427,7 @@ msgid "Log out"
 msgstr ""
 
 #: appcomposer/templates/composers/adapt/appsearch.html:14
-#: appcomposer/templates/composers/translate/edit.html:15
+#: appcomposer/templates/composers/translate/edit.html:19
 #: appcomposer/templates/composers/translate/index.html:13
 #: appcomposer/templates/composers/translate/selectlang.html:30
 msgid "Advanced mode:"
@@ -346,6 +442,7 @@ msgid "Choose an application to adapt: "
 msgstr ""
 
 #: appcomposer/templates/composers/adapt/appsearch.html:32
+#: appcomposer/templates/composers/translate/index.html:31
 msgid ""
 "Please, wait. Loading the list of Apps could take a while. You can also "
 "add your own URL through the <i>Advanced Mode</i>."
@@ -353,17 +450,23 @@ msgstr ""
 
 #: appcomposer/templates/composers/adapt/appsearch.html:37
 #: appcomposer/templates/composers/adapt/appsearch.html:44
+#: appcomposer/templates/composers/translate/index.html:36
+#: appcomposer/templates/composers/translate/index.html:43
 msgid "Title"
 msgstr ""
 
 #: appcomposer/templates/composers/adapt/appsearch.html:38
 #: appcomposer/templates/composers/adapt/appsearch.html:45
 #: appcomposer/templates/composers/adapt/create.html:40
+#: appcomposer/templates/composers/translate/index.html:37
+#: appcomposer/templates/composers/translate/index.html:44
 msgid "Description"
 msgstr ""
 
 #: appcomposer/templates/composers/adapt/appsearch.html:39
 #: appcomposer/templates/composers/adapt/appsearch.html:46
+#: appcomposer/templates/composers/translate/index.html:38
+#: appcomposer/templates/composers/translate/index.html:45
 msgid "Type"
 msgstr ""
 
@@ -438,6 +541,7 @@ msgstr ""
 
 #: appcomposer/templates/composers/adapt/duplicate.html:28
 #: appcomposer/templates/composers/dummy/edit.html:81
+#: appcomposer/templates/composers/translate/edit.html:148
 #: appcomposer/templates/user/profile-edit.html:47
 #: appcomposer/templates/user/profile-edit.html:49
 #: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:9
@@ -513,14 +617,73 @@ msgstr ""
 msgid "Are you really sure you want to delete this application?"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/edit.html:70
+#: appcomposer/templates/composers/translate/edit.html:32
+msgid "You are the owner of this translation"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/edit.html:36
+msgid ""
+"Your translation is the <b>standard</b> for this App and language, and "
+"the one which will be\n"
+"                            globally used by default for this App.\n"
+"                            Other translators may propose changes, which "
+"you can accept, modify, or deny."
+msgstr ""
+
+#: appcomposer/templates/composers/translate/edit.html:43
+msgid "Transfer Ownership"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/edit.html:50
+msgid "You are not the owner of this translation"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/edit.html:54
+msgid ""
+"Your changes will apply only to your App instance. If you want them to be"
+" applied\n"
+"                            to the global translation for this App and "
+"language, you will need to send a proposal\n"
+"                            to the language's owner (this can be done "
+"automatically)."
+msgstr ""
+
+#: appcomposer/templates/composers/translate/edit.html:61
+msgid "You may access the translation for this language:"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/edit.html:63
+msgid "Publish Translation"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/edit.html:67
+msgid "View Shindig Translation"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/edit.html:74
 msgid ""
 "Step 3: Validate the proposed translations or provide your own. Save to "
 "apply the changes."
 msgstr ""
 
-#: appcomposer/templates/composers/translate/edit.html:97
+#: appcomposer/templates/composers/translate/edit.html:101
 msgid "Show identifiers"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/edit.html:145
+msgid "« Go Back to Step 2"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/edit.html:151
+msgid "Save & Exit"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/edit.html:157
+msgid "Propose translation to owner"
+msgstr ""
+
+#: appcomposer/templates/composers/translate/edit.html:176
+msgid "Final widget is rendered here."
 msgstr ""
 
 #: appcomposer/templates/composers/translate/index.html:26
@@ -758,6 +921,14 @@ msgstr ""
 msgid "No application."
 msgstr ""
 
+#: appcomposer/templates/user/profile-apps.html:59
+msgid "No description"
+msgstr ""
+
+#: appcomposer/templates/user/profile-apps.html:74
+msgid "Search..."
+msgstr ""
+
 #: appcomposer/templates/user/profile-apps.html:98
 msgid "Last modified"
 msgstr ""
@@ -839,6 +1010,10 @@ msgstr ""
 #: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:55
 #: golab_adapt_jsconfig/templates/jsconfig/edit.html:67
 msgid "No preview available: you must set a URL first"
+msgstr ""
+
+#: golab_adapt_jsconfig/__init__.py:16
+msgid "App adaptation"
 msgstr ""
 
 #: golab_adapt_jsconfig/__init__.py:18
