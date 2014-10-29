@@ -2,14 +2,14 @@ import json
 import urllib2
 import traceback
 import xml.dom.minidom as minidom
+
 from flask import render_template, make_response, request
-from appcomposer import db
+
 from appcomposer.appstorage.api import get_app
 from appcomposer.utils import get_original_url
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import Bundle, BundleManager
 from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_get_ownerships, _db_get_diff_specs
-from appcomposer.models import AppVar
 
 
 """

@@ -1,12 +1,13 @@
-import babel
 import urllib2
 import traceback
 import xml.dom.minidom as minidom
 from collections import defaultdict
 
+import babel
 from flask import request, flash, redirect, url_for, render_template, json
 from requests.exceptions import MissingSchema
-from appcomposer.babel import lazy_gettext
+
+from appcomposer.babel import gettext
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 from appcomposer.csrf import verify_csrf
 from appcomposer.utils import get_original_url
@@ -76,19 +77,19 @@ def translate_selectlang():
         # Protect against CSRF attacks.
         if not verify_csrf(request):
             return render_template("composers/errors.html",
-                                   message=lazy_gettext(
+                                   message=gettext(
                                        "Request does not seem to come from the right source (csrf check)")), 400
 
         # URL to the XML spec of the gadget.
         appurl = request.form.get("appurl")
         spec = appurl
         if appurl is None or len(appurl) == 0:
-            flash("An application URL is required", "error")
+            flash(gettext("An application URL is required"), "error")
             return redirect(url_for("translate.translate_index"))
 
         base_appname = request.values.get("appname")
         if base_appname is None:
-            return render_template("composers/errors.html", message=lazy_gettext("An appname was not specified"))
+            return render_template("composers/errors.html", message=gettext("An appname was not specified"))
 
         try:
             # XXX FIXME
@@ -109,31 +110,31 @@ def translate_selectlang():
         appname = _find_unique_name_for_app(base_appname)
         if appname is None:
             return render_template("composers/errors.html",
-                                   message="Too many Apps with the same name. Please, choose another.")
+                                   message=gettext("Too many Apps with the same name. Please, choose another."))
 
         # Create a fully new App. It will be automatically generated from a XML.
         try:
             bm = BundleManager.create_new_app(appurl)
         except NoValidTranslationsException:
             return render_template("composers/errors.html",
-                                   message=lazy_gettext(
+                                   message=gettext(
                                        "The App you have chosen does not seem to have any translation. At least a base translation is required, which will often be"
                                        " prepared by the original developer.")
             ), 400
         except InvalidXMLFileException:
             # TODO: As of now, not sure that this exception can actually ever arise. Maybe it should be merged with NoValidTranslationsException.
             return render_template("composers/errors.html",
-                                   message=lazy_gettext(
+                                   message=gettext(
                                        "Invalid XML in either the XML specification file or the XML translation bundles that it links to.")), 400
         except MissingSchema:
             return render_template("composers/errors.html",
-                                   message=lazy_gettext(
+                                   message=gettext(
                                        "Failed to retrieve the XML spec. The URL was maybe invalid or not available.")), 400
 
         if len(bm._bundles) == 0:
             # TODO: Consider adding a "go-back" screen / button.
             return render_template("composers/errors.html",
-                                   message=lazy_gettext(
+                                   message=gettext(
                                        "The App you have chosen does not seem to have a base translation. The original developer needs to prepare it for internationalization first.")), 400
 
         spec = bm.get_gadget_spec()  # For later
@@ -189,7 +190,7 @@ def translate_selectlang():
 
         appid = request.args.get("appid")
         if appid is None:
-            flash("appid not received", "error")
+            flash(gettext("appid not received"), "error")
 
             # An appid is required.
             return redirect(url_for("user.apps.index"))
@@ -197,7 +198,7 @@ def translate_selectlang():
         app = get_app(appid)
         if app is None:
             return render_template("composers/errors.html",
-                                   message=lazy_gettext("Specified App doesn't exist")), 404
+                                   message=gettext("Specified App doesn't exist")), 404
 
         # Load a BundleManager from the app data.
         bm = BundleManager.create_from_existing_app(app.data)
@@ -232,9 +233,9 @@ def translate_selectlang():
     owner = ownerApp.owner
     if not is_owner and owner is None:
         # TODO: Improve this error handling. This should NEVER happen.
-        flash("Error: Language Owner is None", "error")
+        flash(gettext("Error: Language Owner is None"), "error")
         return render_template("composers/errors.html",
-                               message=lazy_gettext("Internal Error: Language owner is None")), 500
+                               message=gettext("Internal Error: Language owner is None")), 500
 
 
     # Just for the count of proposals

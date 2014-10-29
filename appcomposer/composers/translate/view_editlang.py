@@ -7,6 +7,7 @@ from flask import request, render_template, flash, json, url_for, redirect
 
 from appcomposer import db
 from appcomposer.appstorage.api import get_app, update_app_data, add_var
+from appcomposer.babel import gettext
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
 from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_declare_ownership
@@ -34,7 +35,7 @@ def translate_edit():
     # Retrieve the application we want to view or edit.
     app = get_app(appid)
     if app is None:
-        return render_template("composers/errors.html", message="App not found"), 404
+        return render_template("composers/errors.html", message=gettext("App not found")), 404
 
     bm = BundleManager.create_from_existing_app(app.data)
     spec = bm.get_gadget_spec()
@@ -48,7 +49,7 @@ def translate_edit():
     # Ensure the existence of the source bundle.
     if srcbundle is None:
         return render_template("composers/errors.html",
-                               message="The source language and group combination does not exist"), 400
+                               message=gettext("The source language and group combination does not exist")), 400
 
     targetbundle = bm.get_bundle(targetbundle_code)
 
@@ -86,7 +87,7 @@ def translate_edit():
         # Protect against CSRF attacks.
         if not verify_csrf(request):
             return render_template("composers/errors.html",
-                                   message="Request does not seem to come from the right source (csrf check)"), 400
+                                   message=gettext("Request does not seem to come from the right source (csrf check)")), 400
 
         # Retrieve a list of all the key-values to save. That is, the parameters which start with _message_.
         messages = [(k[len("_message_"):], v) for (k, v) in request.values.items() if k.startswith("_message_")]
@@ -100,7 +101,7 @@ def translate_edit():
         json_str = bm.to_json()
         update_app_data(app, json_str)
 
-        flash("Changes have been saved.", "success")
+        flash(gettext("Changes have been saved."), "success")
 
         propose_to_owner = request.values.get("proposeToOwner")
         if propose_to_owner is not None and owner_app != app:
@@ -110,7 +111,7 @@ def translate_edit():
             # right here and now.
             obm = BundleManager.create_from_existing_app(owner_app.data)
             if obm.get_autoaccept():
-                flash("Changes are being applied instantly because the owner has auto-accept enabled")
+                flash(gettext("Changes are being applied instantly because the owner has auto-accept enabled"))
 
                 # Merge into the owner app.
                 obm.merge_bundle(targetbundle_code, targetbundle)
@@ -138,7 +139,7 @@ def translate_edit():
                 # Link the proposal with the Owner app.
                 add_var(owner_app, "proposal", proposal_json)
 
-                flash("Changes have been proposed to the owner")
+                flash(gettext("Changes have been proposed to the owner"))
 
         # If we are the owner app.
         if owner_app == app:

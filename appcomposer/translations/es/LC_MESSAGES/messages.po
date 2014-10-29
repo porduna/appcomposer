@@ -179,7 +179,7 @@ msgstr "Ya hay una App con ese nombre"
 
 #: appcomposer/composers/translate/__init__.py:15
 msgid "Translate Composer"
-msgstr "Componedor de traducciones"
+msgstr "Creador de traducciones"
 
 #: appcomposer/composers/translate/__init__.py:16
 msgid "Translate an existing app."
@@ -493,7 +493,7 @@ msgstr "Previsualizar"
 #: appcomposer/templates/composers/adapt/type.html:27
 #, fuzzy
 msgid "Start adapting"
-msgstr "Comienza a componer"
+msgstr "Comienza a adaptar"
 
 #: appcomposer/templates/composers/adapt/type.html:30
 #, fuzzy

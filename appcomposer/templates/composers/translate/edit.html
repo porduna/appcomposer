@@ -3,6 +3,10 @@
 {% set current_composer = "translate" %}
 {% extends 'composers/translate/layout.html' %}
 
+{# TRANSLATE EDIT TEMPLATE #}
+{# This is the template for the page in which you can edit the translation for each invididual message #}
+{# within a Bundle. #}
+
 
 {% block body_content %}
     <div class="translateblock">
@@ -18,49 +22,49 @@
                         </form>
                     </div>
                 </div>
-                <h1 id="apptitle">Translate</h1>
+                <h1 id="apptitle">{{ gettext("Translate") }}</h1>
 
                 <h2 id="appfullname">{{ app.name }}</h2>
 
                 {% if is_owner %}
                     <div name="ownership_status" class="alert alert-success">
                         <h3>
-                            You are the owner of this translation
+                            {{ gettext("You are the owner of this translation") }}
                         </h3>
 
                         <p>
-                            Your translation is the <b>standard</b> for this App and language, and the one which will be
+                            {{ gettext("Your translation is the <b>standard</b> for this App and language, and the one which will be
                             globally used by default for this App.
-                            Other translators may propose changes, which you can accept, modify, or deny.
+                            Other translators may propose changes, which you can accept, modify, or deny.") }}
                         </p>
 
                         <p style="padding-top: 10px">
                             <a href="{{ url_for('.transfer_ownership', appid=app.unique_id, lang=request.values["srclang"]) }}">
-                                <button class="btn btn-mini btn-info">Transfer Ownership</button>
+                                <button class="btn btn-mini btn-info">{{ gettext("Transfer Ownership") }}</button>
                             </a>
                         </p>
                     </div>
                 {% else %}
                     <div name="ownership_status" class="alert alert-warning">
                         <h3>
-                            You are not the owner of this translation
+                            {{ gettext("You are not the owner of this translation") }}
                         </h3>
 
                         <p>
-                            Your changes will apply only to your App instance. If you want them to be applied
+                            {{ gettext("Your changes will apply only to your App instance. If you want them to be applied
                             to the global translation for this App and language, you will need to send a proposal
-                            to the language's owner (this can be done automatically).
+                            to the language's owner (this can be done automatically).") }}
                         </p>
                     </div>
                 {% endif %}
 
-                <h5>You may access the translation for this language:</h5>
+                <h5>{{ gettext("You may access the translation for this language:") }}</h5>
                 <a href="{{ url_for('.translate_publish', appid=app.unique_id, group=request.values["targetgroup"]) }}">
-                    <button class="btn btn-primary">Publish Translation</button>
+                    <button class="btn btn-primary">{{ gettext("Publish Translation") }}</button>
                 </a>
 
                 <a href="{{ url_for('.app_translation_serve', app_url=spec, lang=request.values["targetlang"], target=request.values["targetgroup"]) }}">
-                    <button class="btn btn-primary" id="viewShindigTranslation">View Shindig Translation</button>
+                    <button class="btn btn-primary" id="viewShindigTranslation">{{ gettext("View Shindig Translation") }}</button>
                 </a>
 
             </div>
@@ -137,21 +141,20 @@
                                         <div class="form-group">
                                             <div class="col-lg-10 col-lg-offset-2">
                                                 <a class="btn btn-default" id="backtoindexbtn"
-                                                   href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">«
-                                                    Go Back to Step 2</a>
+                                                   href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">
+                                                    {{ gettext("« Go Back to Step 2") }}</a>
 
                                                 <button type="submit" id="sendurlbtn" name="save"
-                                                        class="btn btn-success">Save
+                                                        class="btn btn-success">{{ gettext("Save") }}
                                                 </button>
                                                 <button type="submit" id="sendurlbtn" name="save_exit"
-                                                        class="btn btn-warning">Save & Exit
+                                                        class="btn btn-warning">{{ gettext("Save & Exit") }}
                                                 </button>
 
                                                 {% if not is_owner %}
                                                     <label class="checkbox" style="float:right">
                                                         <input name="proposeToOwner" value="true" type="checkbox"
-                                                               style="width: 1em; height: 1em;" checked>Propose translation to
-                                                        owner
+                                                               style="width: 1em; height: 1em;" checked>{{ gettext("Propose translation to owner") }}
                                                     </label>
                                                 {% endif %}
 
@@ -170,7 +173,7 @@
 
                         </div>
                         <div class="tab-pane fade" id="preview">
-                            <p>Final widget is rendered here.</p>
+                            <p>{{ gettext("Final widget is rendered here.") }}</p>
                         </div>
                     </div>
                 </div>

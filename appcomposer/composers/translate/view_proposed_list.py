@@ -1,6 +1,7 @@
 from flask import request, json, render_template, flash
 from appcomposer.appstorage import remove_var
 from appcomposer.appstorage.api import get_app, update_app_data
+from appcomposer.babel import gettext
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
 from appcomposer.composers.translate.db_helpers import _db_get_proposals
@@ -43,17 +44,17 @@ def translate_proposed_list():
     if request.method == "POST" and request.values.get("acceptButton") is not None:
         proposal_id = request.values.get("proposals")
         if proposal_id is None:
-            return render_template("composers/errors.html", message="Proposal not selected")
+            return render_template("composers/errors.html", message=gettext("Proposal not selected"))
 
         merge_data = request.values.get("data")
         if merge_data is None:
-            return render_template("composers/errors.html", message="Merge data was not provided")
+            return render_template("composers/errors.html", message=gettext("Merge data was not provided"))
         merge_data = json.loads(merge_data)
 
         # TODO: Optimize this. We already have the vars.
         proposal = AppVar.query.filter_by(app=app, var_id=proposal_id).first()
         if proposal is None:
-            return render_template("composers/errors.html", message="Proposals not found")
+            return render_template("composers/errors.html", message=gettext("Proposals not found"))
 
         data = json.loads(proposal.value)
         bundle_code = data["bundle_code"]
@@ -65,7 +66,7 @@ def translate_proposed_list():
 
         update_app_data(app, bm.to_json())
 
-        flash("Merge done.", "success")
+        flash(gettext("Merge done."), "success")
 
         # Remove the proposal from the DB.
         remove_var(proposal)
@@ -77,11 +78,11 @@ def translate_proposed_list():
     elif request.method == "POST" and request.values.get("denyButton") is not None:
         proposal_id = request.values.get("proposals")
         if proposal_id is None:
-            return render_template("composers/errors.html", message="Proposal not selected")
+            return render_template("composers/errors.html", message=gettext("Proposal not selected"))
 
         proposal = AppVar.query.filter_by(app=app, var_id=proposal_id).first()
         if proposal is None:
-            return render_template("composers/errors.html", message="Proposal not found")
+            return render_template("composers/errors.html", message=gettext("Proposal not found"))
 
         remove_var(proposal)
 

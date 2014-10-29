@@ -1,9 +1,10 @@
-from flask import request, flash, redirect, url_for, render_template, json
+from flask import request, flash, redirect, url_for, render_template
+
 from appcomposer import db
 from appcomposer.appstorage.api import get_app, delete_app, NotAuthorizedException
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import translate_blueprint
-from appcomposer.composers.translate.db_helpers import _db_get_ownerships, _db_get_app_ownerships, _db_get_spec_apps
+from appcomposer.composers.translate.db_helpers import _db_get_app_ownerships, _db_get_spec_apps
 from appcomposer.csrf import verify_csrf
 from appcomposer.models import AppVar
 from appcomposer.login import requires_login
@@ -46,7 +47,7 @@ def translate_delete():
         # Protect against CSRF attacks.
         if not verify_csrf(request):
             return render_template("composers/errors.html",
-                                   message="Request does not seem to come from the right source (csrf check)"), 400
+                                   message=gettext("Request does not seem to come from the right source (csrf check)")), 400
 
         # If the user didn't click delete he probably clicked cancel.
         # We return to the Apps View page.
@@ -60,10 +61,10 @@ def translate_delete():
             if len(ownerships) > 0 and len(transfer_apps) > 0:
                 transfer_app_id = request.values.get("transfer")
                 if transfer_app_id is None:
-                    return render_template("composers/errors.html", message="transfer parameter missing"), 400
+                    return render_template("composers/errors.html", message=gettext("transfer parameter missing")), 400
                 transfer_app = get_app(transfer_app_id)
                 if transfer_app is None:
-                    return render_template("composers/errors.html", message="could not retrieve app"), 400
+                    return render_template("composers/errors.html", message=gettext("could not retrieve app")), 400
 
                 # Transfer all ownerships to the selected app.
                 for o in ownerships:
@@ -78,7 +79,7 @@ def translate_delete():
             flash(gettext("App successfully deleted."), "success")
 
         except NotAuthorizedException:
-            return render_template("composers/errors.html", message="Not Authorized"), 401
+            return render_template("composers/errors.html", message=gettext("Not Authorized")), 401
 
         return redirect(url_for("user.apps.index"))
 

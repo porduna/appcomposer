@@ -51,7 +51,7 @@ def adapt_create(adaptor_type):
                                    build_edit_link=build_edit_link)
 
         if not app_description:
-            app_description = "No description"
+            app_description = ""
 
         # Build the basic JSON schema of the adaptor app
         data = {

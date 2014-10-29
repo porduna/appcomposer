@@ -21,6 +21,7 @@ def _db_get_diff_specs():
     specs = [val[0] for val in spec_values]
     return specs
 
+
 def _db_get_ownerships(spec):
     """
     Gets every single ownership for a spec. It will only work on "translate" specs.
