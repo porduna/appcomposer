@@ -19,7 +19,7 @@
             <div class="col-lg-4">
                 <div class="panel panel-success">
                     <div class="panel-heading">
-                        <h5 class="panel-title">{{ gettext("Details of the %s" % adaptor_type|replace('_', ' ')) }}</h5>
+                        <h5 class="panel-title">{{ gettext("Details of the %s") % (adaptor_type|replace('_', ' ')) }}</h5>
                     </div>
                     <div class="panel-body">
                         <h5>{{ gettext("(Optional) Modify the following fields:") }}</h5>
@@ -39,7 +39,7 @@
                             <div class="form-group">
                                 <label for="app_description" class="col-lg-4 control-label">{{ gettext("Description") }}: </label>
                                 <div class="col-lg-8">
-                                    <input type="text" name="app_description" class="form-control" placeholder="{{ adaptor_type|replace('_', ' ') }} description">
+                                    <input type="text" name="app_description" class="form-control" placeholder="{{ adaptor_type|replace('_', ' ') }} {{ gettext("description") }}">
                                 </div>
                             </div>
 

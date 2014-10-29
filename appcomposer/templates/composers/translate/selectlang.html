@@ -59,8 +59,9 @@
                         </h4>
                     {% else %}
                         <h4 class="alert alert-warning">
-                            This App's default translation belongs to {{ owner.name }}
-                            ({{ owner.login }}).
+                            {{ gettext("This App's default translation belongs to %s (%s).")
+                            % (owner.name, owner.login) }}
+
                         </h4>
                     {% endif %}
 

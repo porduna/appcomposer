@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-29 12:10+0100\n"
+"POT-Creation-Date: 2014-10-29 12:49+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -504,8 +504,17 @@ msgstr ""
 msgid "Create a new adaptation"
 msgstr ""
 
+#: appcomposer/templates/composers/adapt/create.html:22
+#, python-format
+msgid "Details of the %s"
+msgstr ""
+
 #: appcomposer/templates/composers/adapt/create.html:25
 msgid "(Optional) Modify the following fields:"
+msgstr ""
+
+#: appcomposer/templates/composers/adapt/create.html:42
+msgid "description"
 msgstr ""
 
 #: appcomposer/templates/composers/adapt/create.html:46
@@ -714,54 +723,59 @@ msgstr ""
 msgid "Accept all translation proposals automatically"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:69
+#: appcomposer/templates/composers/translate/selectlang.html:62
+#, python-format
+msgid "This App's default translation belongs to %s (%s)."
+msgstr ""
+
+#: appcomposer/templates/composers/translate/selectlang.html:70
 msgid "View Proposed Translations"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:92
+#: appcomposer/templates/composers/translate/selectlang.html:93
 msgid "Step 3: Translate"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:98
+#: appcomposer/templates/composers/translate/selectlang.html:99
 msgid "Select source language"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:103
-#: appcomposer/templates/composers/translate/selectlang.html:138
+#: appcomposer/templates/composers/translate/selectlang.html:104
+#: appcomposer/templates/composers/translate/selectlang.html:139
 msgid "Translations I own"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:106
-#: appcomposer/templates/composers/translate/selectlang.html:141
+#: appcomposer/templates/composers/translate/selectlang.html:107
+#: appcomposer/templates/composers/translate/selectlang.html:142
 msgid "Translations others own"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:109
-#: appcomposer/templates/composers/translate/selectlang.html:146
+#: appcomposer/templates/composers/translate/selectlang.html:110
+#: appcomposer/templates/composers/translate/selectlang.html:147
 msgid "Translations nobody owns yet"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:127
+#: appcomposer/templates/composers/translate/selectlang.html:128
 msgid "Edit selected <b>source</b> on its own"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:132
+#: appcomposer/templates/composers/translate/selectlang.html:133
 msgid "Select target language"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:175
+#: appcomposer/templates/composers/translate/selectlang.html:176
 msgid "Select source group"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:187
+#: appcomposer/templates/composers/translate/selectlang.html:188
 msgid "Select target group"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:202
+#: appcomposer/templates/composers/translate/selectlang.html:203
 msgid "« Go Back to Step 1"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:208
+#: appcomposer/templates/composers/translate/selectlang.html:209
 msgid ""
 "\n"
 "                                        Step 3 -\n"
@@ -769,15 +783,15 @@ msgid ""
 "                                        "
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:216
+#: appcomposer/templates/composers/translate/selectlang.html:217
 msgid "Target and source languages may not be the same"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:375
+#: appcomposer/templates/composers/translate/selectlang.html:376
 msgid "Merge existing translations"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:377
+#: appcomposer/templates/composers/translate/selectlang.html:378
 msgid ""
 "This option will let you merge someone else's translations into this one."
 " <br>Note, however, that you need to be careful, because after you select"
@@ -785,19 +799,19 @@ msgid ""
 " get overrided."
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:386
+#: appcomposer/templates/composers/translate/selectlang.html:387
 msgid "Localise"
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:415
+#: appcomposer/templates/composers/translate/selectlang.html:416
 msgid ""
 "Click this button to start localising the App. You will be shown the "
 "entries in the <b>source</b> language so that you can translate them into"
 " the <b>target</b> language."
 msgstr ""
 
-#: appcomposer/templates/composers/translate/selectlang.html:431
-#: appcomposer/templates/composers/translate/selectlang.html:433
+#: appcomposer/templates/composers/translate/selectlang.html:432
+#: appcomposer/templates/composers/translate/selectlang.html:434
 msgid "the default language"
 msgstr ""
 
@@ -1054,6 +1068,15 @@ msgstr ""
 
 #: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:19
 msgid "Application options"
+msgstr ""
+
+#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:113
+#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:177
+msgid "Saving changes..."
+msgstr ""
+
+#: golab_adapt_jsconfig/templates/jsconfig/ConfigDialog0.1.js:187
+msgid "All changes saved"
 msgstr ""
 
 #: golab_adapt_jsconfig/templates/jsconfig/about.html:6

@@ -16,6 +16,9 @@
             var $dialogElement, $fieldset, $form,
                 _this = this;
             $dialogElement = $(document.body).find("#ut_tools_conceptmapper_ConfigDialog");
+
+            $dialogElement.append('<h4 class="alert alert-info">{{ gettext("Note: Changes will be saved automatically") }}</h4>')
+
             $dialogElement.append("<h3>{{ gettext('Application options') }}</h3>");
             $form = $("<form class='form-horizontal' role='form'></form>");
 
@@ -89,7 +92,7 @@
             //var $status = $('<input type="text" class="form-control" readonly/>');
 
             // Alert box on the top, fixed pos:
-            var $status = $('<div class="alert alert-dismissible alert-success" role="alert" style="padding: 2px; position: fixed; top: 97%; right: 5%; left:0%; width: 30%; opacity: 0.9; overflow: visible"/>');
+            var $status = $('<div class="alert alert-dismissible alert-success" role="alert" style="padding: 10px; position: fixed; top: 95%; right: 5%; left:0%; width: 30%; opacity: 0.9; overflow: visible"/>');
             $status.hide();
             $("body").append($status);
 
@@ -102,7 +105,7 @@
                     $status.text(s);
 
                     if(fade)
-                        $status.delay(1000).fadeOut(1000);
+                        $status.delay(3000).fadeOut(3000);
                 }
             }
 
@@ -110,7 +113,7 @@
 
 
             function onChangeOccurred() {
-                status("Saving changes...", false);
+                status("{{ gettext('Saving changes...') }}", false);
                 window.last_change = new Date();
             }
 
@@ -174,7 +177,7 @@
 
             function doSave() {
                 console.log("Saving...");
-                status("Saving changes...", false);
+                status("{{ gettext('Saving changes...') }}", false);
 
                 var promise = $.Deferred();
                 extractConfiguration();
@@ -184,7 +187,7 @@
                     .done(function(){
                         // Store the date of the last successful save
                         window.last_save = new Date();
-                        status("All changes saved", true);
+                        status("{{ gettext('All changes saved') }}", true);
                         promise.resolve();
                     })
                     .fail(function(){
