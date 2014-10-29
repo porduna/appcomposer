@@ -11,7 +11,7 @@ install:
     - echo ACTIVATE_TRANSLATOR_MONGODB_PUSHES = True >> config.py
     - alembic upgrade head
 before_script:
-    - python run.py
+    - nohup python run.py &
     - export SELENIUM_HEADLESS=
 script:
     - nosetests appcomposer
