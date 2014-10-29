@@ -10,5 +10,8 @@ install:
     - echo ACTIVATE_TRANSLATOR = True >> config.py
     - echo ACTIVATE_TRANSLATOR_MONGODB_PUSHES = True >> config.py
     - alembic upgrade head
+before_script:
+    - python run.py
 script:
     - nosetests appcomposer
+    - nosetests appcomposer/selenium/*.py
