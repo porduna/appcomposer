@@ -12,7 +12,7 @@ install:
     - alembic upgrade head
 before_script:
     - nohup python run.py &
-    - export SELENIUM_HEADLESS=
+    - export SELENIUM_HEADLESS=ENABLE
 script:
     - nosetests appcomposer
     - nosetests appcomposer/selenium/*.py
