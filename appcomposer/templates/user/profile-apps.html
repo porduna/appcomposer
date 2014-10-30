@@ -70,7 +70,7 @@
 
     {% else %}
         <div class="row">
-            <div class="col-md-3 pull-right">
+            <div class="span3 pull-right">
                 <input name="text" maxlength="50" placeholder="{{ gettext("Search...") }}" type="text" class="form-control"
                        id="search_box"/>
             </div>
@@ -143,8 +143,6 @@
             var offset = $(boxes[0]).offset().top + boxes_height - $(buttons[0]).offset().top - boxes_height;
             boxes.css("bottom", offset - $(buttons[0]).height());
 
-            console.log("OFFSET: " + offset);
-
             // Ensure that the height of the App rectangles is always the same (so that they look prettier)
 
             var heights = $(".app").map(function () {
@@ -170,7 +168,7 @@
                 $(".app").show();
             } else {
                 $(".app").each(function (pos, element) {
-                    var title = $(element).find("h2").text().toLowerCase();
+                    var title = $(element).find("h3").text().toLowerCase();
                     var adaptor_name = $(element).find("h4").text().toLowerCase();
                     var description = $(element).find("p").text().toLowerCase();
 

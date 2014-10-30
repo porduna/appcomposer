@@ -3,7 +3,7 @@
 
 {% block body %}
     <div class="hero-unit" align="center">
-        <h1>App Composer</h1>
+        <h1>{{ gettext("App Composer") }}</h1>
         <p style="margin: 15px">{{ gettext('Build supercool apps for your students!') }}</p>
         <p>
         <a class="btn btn-success btn-large" href="{{ url_for('user.index') }}"> {{ gettext('Use it!') }} </a>
