@@ -10,6 +10,7 @@
 <tr><td><b>Test Suite</b></td></tr>
 <tr><td><a href="basic">basic</a></td></tr>
 <tr><td><a href="basic_translate.py">basic_translate</a></td></tr>
+<tr><td><a href="basic_adapt">basic_adapt</a></td></tr>
 </tbody></table>
 </body>
 </html>
