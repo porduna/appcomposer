@@ -14,12 +14,12 @@
     <div class="row">
         <div class="col-lg-12">
             <div class="page-header">
-                <h1 id="apptitle">Proposals for this App</h1>
+                <h1 id="apptitle">{{ gettext("Proposals for this App") }}</h1>
 
                 {% if app %}
                     <h2 id="appfullname">{{ app.name }}</h2>
                 {% else %}
-                    <h2 id="appfullname">[App name not available]</h2>
+                    <h2 id="appfullname">{{ gettext("[App name not available]") }}</h2>
                 {% endif %}
 
             </div>
@@ -46,16 +46,16 @@
                     <input type="hidden" id="data" name="data" value=""/>
 
                     {% if proposals|length > 0 %}
-                    <legend>Select a proposal and choose or edit the translations</legend>
+                    <legend>{{ gettext("Select a proposal and choose or edit the translations") }}</legend>
                     {% else %}
-                    <legend>There are currently no translation proposals for this app</legend>
+                    <legend>{{ gettext("There are currently no translation proposals for this app") }}</legend>
                     {% endif %}
 
                     <div class="col-lg-4 col-md-4">
 
 
                         <div class="form-group">
-                            <label class="control-label" for="proposals">Select the translation ({{ proposals|length }})</label>
+                            <label class="control-label" for="proposals">{{ gettext("Select the translation") }} ({{ proposals|length }})</label>
 
                             <select size="20" id="proposals" multiple="" name="proposals" class="form-control">
 
@@ -71,14 +71,15 @@
                             <div class="controls">
                                 <!--<span class="help-block">You want to translate the app from General English into Elementary School German.</span>-->
                                 <a class="btn btn-default" id="backtoindexbtn"
-                                   href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">« Go Back</a>
+                                   href="{{ url_for('translate.translate_selectlang', appid=app.unique_id) }}">
+                                    {{ gettext("« Go Back") }}</a>
 
                                 <button type="submit" id="acceptButton" name="acceptButton" class="btn btn-success">
-                                    Accept
+                                    {{ gettext("Accept") }}
                                 </button>
 
                                 <button type="submit" id="denyButton" name="denyButton" class="btn btn-warning">
-                                    Discard
+                                    {{ gettext("Discard") }}
                                 </button>
                             </div>
                         </div>
@@ -87,7 +88,7 @@
 
                     <div class="col-lg-8 col-md-8">
 
-                        <label class="control-label" id="previewlabel" for="preview">Preview</label>
+                        <label class="control-label" id="previewlabel" for="preview">{{ gettext("Preview") }}</label>
                         <!--<textarea rows="1" readonly class="uneditable-input" style="width:100%;height:100%" id="preview"></textarea>
                         -->
 
@@ -211,14 +212,14 @@
         // Clean old elements within the div, we need load new ones.
         previewDiv.html("");
 
-        $("#previewlabel").text("Translation (Loading...)");
+        $("#previewlabel").text("{{ gettext("Translation (Loading...)") }}");
 
         $.getJSON( requestURL+"?proposal_id="+translationCode, function(data){
             dbgel = data;
             var messages = data["proposal"]["bundle_contents"]["messages"];
             var originals = data.original;
 
-            $("#previewlabel").text("Translation");
+            $("#previewlabel").text("{{ gettext("Translation") }}");
             $.each(messages, function(ident, newMsg){
 
                 // Find the original msg (undefined if it doesn't exist).
