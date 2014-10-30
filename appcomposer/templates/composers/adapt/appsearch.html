@@ -29,7 +29,8 @@
 
                 <legend>{{ gettext("Choose an application to adapt: ") }}</legend>
 
-                <p id="loading-msg" class="alert alert-info">{{ gettext("Please, wait. Loading the list of Apps could take a while. You can also add your own URL through the <i>Advanced Mode</i>.") }}
+                <p id="loading-msg"
+                   class="alert alert-info">{{ gettext("Please, wait. Loading the list of Apps could take a while. You can also add your own URL through the <i>Advanced Mode</i>.") }}
                 <table id="appsearch-table" class="appsearch-table display compact" cellspacing="0" width="100%"
                        style="">
                     <thead>
@@ -148,16 +149,31 @@
 
             appsearch = $("#appsearch-table").DataTable(
                     {
-                        autoWidth: false,
-                        lengthChange: true,
-                        columnDefs: [
-                            {
-                                "targets": 2,
-                                "sortable": false,
-                                "width": "50%"
-                            }
-                        ]
-                    }
+                        language: {
+                            "search": "{{ gettext("Search:") }}",
+                            "processing": "{{ gettext("Processing...") }}",
+                            "info": "Showing page _PAGE_ of _PAGES_",
+                            "lengthMenu": "Display _MENU_ records per page",
+                            "zeroRecords": "Nothing found",
+                            "infoEmpty": "No records available",
+                            "infoFiltered": "(filtered from _MAX_ total records)",
+                            "paginate": {
+                                first: "{{ gettext("First") }}",
+                                previous: "{{ gettext("Previous") }}",
+                                next: "{{ gettext("Next") }}",
+                                last: "{{ gettext("Last") }}"
+                            },
+
+                            autoWidth: false,
+                            lengthChange: true,
+                            columnDefs: [
+                                {
+                                    "targets": 2,
+                                    "sortable": false,
+                                    "width": "50%"
+                                }
+                            ]
+                        }
             );
 
 
@@ -176,7 +192,7 @@
 
                             // Make the description shorter if needed.
                             var desc = app["description"];
-                            if(desc.length > 50)
+                            if (desc.length > 50)
                                 desc = desc.substring(0, 50) + "...";
 
                             appsearch.row.add([app["title"], desc, app["app_type"]]);
