@@ -127,7 +127,7 @@ msgstr "Nombre"
 #: appcomposer/admin/admin_application.py:194
 #: appcomposer/templates/user/profile-apps.html:85
 msgid "Composer"
-msgstr "Tipo de componedor"
+msgstr "Tipo de creador"
 
 #: appcomposer/admin/admin_application.py:201
 msgid "translate"
@@ -432,7 +432,7 @@ msgstr "Continúa"
 #: appcomposer/templates/user/profile-apps.html:11
 #, fuzzy
 msgid "Translate"
-msgstr "traductor"
+msgstr "Traductor"
 
 #: appcomposer/templates/composers/layout.html:61
 #: appcomposer/templates/composers/adapt/appsearch.html:20
@@ -441,7 +441,7 @@ msgstr "traductor"
 #: appcomposer/templates/user/profile-apps.html:26
 #, fuzzy
 msgid "Adapt"
-msgstr "adaptador"
+msgstr "Adaptador"
 
 #: appcomposer/templates/composers/layout.html:80
 #: appcomposer/templates/user/base.html:56
@@ -668,7 +668,7 @@ msgstr "¿Estás seguro de querer eliminar esta aplicación?"
 #: appcomposer/templates/composers/translate/edit.html:32
 #, fuzzy
 msgid "You are the owner of this translation"
-msgstr "Eres ahora el dueño de la traducción por defecto de ésta App."
+msgstr "Eres ahora el dueño de la traducción por defecto de esta App."
 
 #: appcomposer/templates/composers/translate/edit.html:36
 msgid ""
@@ -773,7 +773,7 @@ msgstr "[Nombre de la App no disponible]"
 
 #: appcomposer/templates/composers/translate/selectlang.html:46
 msgid "Original XML: "
-msgstr "XML Original: "
+msgstr "XML original: "
 
 #: appcomposer/templates/composers/translate/selectlang.html:50
 msgid "You are the owner of this App's default translation."
@@ -781,7 +781,7 @@ msgstr "Eres ahora el dueño de la traducción por defecto de ésta App."
 
 #: appcomposer/templates/composers/translate/selectlang.html:56
 msgid "Accept all translation proposals automatically"
-msgstr "Acaptar todas las propuestas de traducción automáticamente"
+msgstr "Aceptar todas las propuestas de traducción automáticamente"
 
 #: appcomposer/templates/composers/translate/selectlang.html:62
 #, python-format
@@ -795,7 +795,7 @@ msgstr "Ver Traducciones Propuestas"
 #: appcomposer/templates/composers/translate/selectlang.html:91
 #, fuzzy
 msgid "Step 3: Translate"
-msgstr "traductor"
+msgstr "Paso 3: Traducir"
 
 #: appcomposer/templates/composers/translate/selectlang.html:97
 msgid "Select source language"
@@ -985,7 +985,7 @@ msgid ""
 msgstr ""
 "Esta es la página principal del App Composer. El App Composer te permite "
 "customizar una aplicación fácilmente, de diferentes formas. Elige el tipo"
-" de componedor de aplicaciones que quieres usar y ¡comienza a construir "
+" de creador de aplicaciones que quieres usar y ¡comienza a construir "
 "aplicaciones!"
 
 #: appcomposer/templates/user/index.html:12
@@ -995,7 +995,7 @@ msgstr "Ir a Mis Apps"
 #: appcomposer/templates/user/index.html:26
 #: appcomposer/templates/user/profile-apps.html:64
 msgid "Start composing"
-msgstr "Comienza a componer"
+msgstr "Comienza a crear"
 
 #: appcomposer/templates/user/profile-apps.html:12
 msgid ""
