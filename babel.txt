@@ -2,6 +2,7 @@
 pybabel extract -F babel.cfg -k lazy_gettext -o messages.pot --project appcomposer .
 
 # Then, if you want to generate for a certain language (es for Spanish in this case), run:
+# Optional: -N to avoid generating fuzzy matches (which apparently are 99% of the time seriously wrong)
 pybabel update -i messages.pot -d appcomposer/translations -l es
 
 # If it was the first time, run:

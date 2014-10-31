@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2014-10-29 14:18+0100\n"
+"POT-Creation-Date: 2014-10-31 10:06+0100\n"
 "PO-Revision-Date: 2013-12-16 17:02+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -117,10 +117,10 @@ msgstr "Identificador"
 
 #: appcomposer/admin/admin_application.py:194
 #: appcomposer/composers/adapt/view_duplicate.py:13
-#: appcomposer/templates/composers/adapt/appsearch.html:72
+#: appcomposer/templates/composers/adapt/appsearch.html:73
 #: appcomposer/templates/composers/adapt/create.html:32
 #: appcomposer/templates/composers/dummy/new.html:42
-#: appcomposer/templates/composers/translate/index.html:71
+#: appcomposer/templates/composers/translate/index.html:72
 msgid "Name"
 msgstr "Nombre"
 
@@ -326,14 +326,12 @@ msgid "Not Authorized: App does not own language"
 msgstr "No Autorizado: La aplicación no es dueña del lenguaje"
 
 #: appcomposer/composers/translate/view_transfer_ownership.py:58
-#, fuzzy
 msgid "Target app not specified"
-msgstr "No se especificó el nombre de la aplicación"
+msgstr "No se especificó la app objetivo"
 
 #: appcomposer/composers/translate/view_transfer_ownership.py:64
-#, fuzzy
 msgid "Target app does not have the same spec"
-msgstr "Los lenguajes objetivo y fuente no pueden ser el mismo"
+msgstr "La aplicación objetivo no tiene la misma especificación"
 
 #: appcomposer/templates/about.html:10 appcomposer/templates/master.html:28
 #: appcomposer/templates/composers/adapt/about.html:1
@@ -368,6 +366,10 @@ msgstr "Puedes acceder al código en %(link)s."
 #: appcomposer/templates/contact.html:14
 msgid "Documentation is still not provided"
 msgstr "Documentación todavía no disponible"
+
+#: appcomposer/templates/index.html:6
+msgid "App Composer"
+msgstr "App Composer"
 
 #: appcomposer/templates/index.html:7
 msgid "Build supercool apps for your students!"
@@ -430,7 +432,6 @@ msgstr "Continúa"
 #: appcomposer/templates/composers/translate/selectlang.html:37
 #: appcomposer/templates/user/base.html:34
 #: appcomposer/templates/user/profile-apps.html:11
-#, fuzzy
 msgid "Translate"
 msgstr "Traductor"
 
@@ -439,7 +440,6 @@ msgstr "Traductor"
 #: appcomposer/templates/composers/adapt/edit.html:34
 #: appcomposer/templates/user/base.html:37
 #: appcomposer/templates/user/profile-apps.html:26
-#, fuzzy
 msgid "Adapt"
 msgstr "Adaptador"
 
@@ -456,17 +456,15 @@ msgid "Advanced mode:"
 msgstr "Modo Avanzado:"
 
 #: appcomposer/templates/composers/adapt/appsearch.html:27
-#, fuzzy
 msgid "Application selection"
-msgstr "Opciones de la aplicación"
+msgstr "Selección de aplicación"
 
 #: appcomposer/templates/composers/adapt/appsearch.html:30
-#, fuzzy
 msgid "Choose an application to adapt: "
-msgstr "Opciones de la aplicación"
+msgstr "Elige una aplicación que adaptar: "
 
-#: appcomposer/templates/composers/adapt/appsearch.html:32
-#: appcomposer/templates/composers/translate/index.html:31
+#: appcomposer/templates/composers/adapt/appsearch.html:33
+#: appcomposer/templates/composers/translate/index.html:32
 msgid ""
 "Please, wait. Loading the list of Apps could take a while. You can also "
 "add your own URL through the <i>Advanced Mode</i>."
@@ -475,59 +473,112 @@ msgstr ""
 "Es también posible añadir tu propia URL a través del <i>Modo "
 "Avanzado</i>."
 
-#: appcomposer/templates/composers/adapt/appsearch.html:37
-#: appcomposer/templates/composers/adapt/appsearch.html:44
-#: appcomposer/templates/composers/translate/index.html:36
-#: appcomposer/templates/composers/translate/index.html:43
+#: appcomposer/templates/composers/adapt/appsearch.html:38
+#: appcomposer/templates/composers/adapt/appsearch.html:45
+#: appcomposer/templates/composers/translate/index.html:37
+#: appcomposer/templates/composers/translate/index.html:44
 msgid "Title"
 msgstr "Título"
 
-#: appcomposer/templates/composers/adapt/appsearch.html:38
-#: appcomposer/templates/composers/adapt/appsearch.html:45
+#: appcomposer/templates/composers/adapt/appsearch.html:39
+#: appcomposer/templates/composers/adapt/appsearch.html:46
 #: appcomposer/templates/composers/adapt/create.html:40
-#: appcomposer/templates/composers/translate/index.html:37
-#: appcomposer/templates/composers/translate/index.html:44
+#: appcomposer/templates/composers/translate/index.html:38
+#: appcomposer/templates/composers/translate/index.html:45
 msgid "Description"
 msgstr "Descripción"
 
-#: appcomposer/templates/composers/adapt/appsearch.html:39
-#: appcomposer/templates/composers/adapt/appsearch.html:46
-#: appcomposer/templates/composers/translate/index.html:38
-#: appcomposer/templates/composers/translate/index.html:45
+#: appcomposer/templates/composers/adapt/appsearch.html:40
+#: appcomposer/templates/composers/adapt/appsearch.html:47
+#: appcomposer/templates/composers/translate/index.html:39
+#: appcomposer/templates/composers/translate/index.html:46
 msgid "Type"
 msgstr "Tipo"
 
-#: appcomposer/templates/composers/adapt/appsearch.html:62
-#: appcomposer/templates/composers/translate/index.html:61
+#: appcomposer/templates/composers/adapt/appsearch.html:63
+#: appcomposer/templates/composers/translate/index.html:62
 #: golab_adapt_gateway4labs/__init__.py:30 golab_adapt_jsconfig/__init__.py:60
 msgid "URL"
 msgstr "Dirección"
 
-#: appcomposer/templates/composers/adapt/appsearch.html:66
-#: appcomposer/templates/composers/translate/index.html:65
+#: appcomposer/templates/composers/adapt/appsearch.html:67
+#: appcomposer/templates/composers/translate/index.html:66
 msgid "URL of the app"
 msgstr "URL de la app"
 
-#: appcomposer/templates/composers/adapt/appsearch.html:67
-#: appcomposer/templates/composers/translate/index.html:66
-#, fuzzy
+#: appcomposer/templates/composers/adapt/appsearch.html:68
+#: appcomposer/templates/composers/translate/index.html:67
 msgid "The URL of the app you want to translate."
 msgstr "Introduce la URL del XML de la app que quieres traducir."
 
-#: appcomposer/templates/composers/adapt/appsearch.html:76
-#: appcomposer/templates/composers/translate/index.html:75
+#: appcomposer/templates/composers/adapt/appsearch.html:77
+#: appcomposer/templates/composers/translate/index.html:76
 msgid "Name of the app"
 msgstr "Nombre de la app"
 
-#: appcomposer/templates/composers/adapt/appsearch.html:77
-#: appcomposer/templates/composers/translate/index.html:76
-#, fuzzy
+#: appcomposer/templates/composers/adapt/appsearch.html:78
+#: appcomposer/templates/composers/translate/index.html:77
 msgid "The name of the new app that will be created."
 msgstr "Introduce el nombre de la nueva App a ser creada"
 
-#: appcomposer/templates/composers/adapt/appsearch.html:101
+#: appcomposer/templates/composers/adapt/appsearch.html:102
 msgid "Adapt chosen app »"
 msgstr "Adaptar la App elegida »"
+
+#: appcomposer/templates/composers/adapt/appsearch.html:153
+#: appcomposer/templates/composers/translate/index.html:155
+msgid "Search:"
+msgstr "Buscar..."
+
+#: appcomposer/templates/composers/adapt/appsearch.html:154
+#: appcomposer/templates/composers/translate/index.html:156
+msgid "Processing..."
+msgstr "Procesando..."
+
+#: appcomposer/templates/composers/adapt/appsearch.html:155
+#: appcomposer/templates/composers/translate/index.html:157
+msgid "Showing page _PAGE_ of _PAGES_"
+msgstr "Mostrando página _PAGE_ de _PAGES_"
+
+#: appcomposer/templates/composers/adapt/appsearch.html:156
+#: appcomposer/templates/composers/translate/index.html:158
+msgid "Display _MENU_ records per page"
+msgstr "Mostrar _MENU_ registros por página"
+
+#: appcomposer/templates/composers/adapt/appsearch.html:157
+#: appcomposer/templates/composers/translate/index.html:159
+msgid "Nothing found"
+msgstr "No se ha encontrado nada"
+
+#: appcomposer/templates/composers/adapt/appsearch.html:158
+#: appcomposer/templates/composers/translate/index.html:160
+msgid "No records available"
+msgstr "No hay registros disponibles"
+
+#: appcomposer/templates/composers/adapt/appsearch.html:159
+#: appcomposer/templates/composers/translate/index.html:161
+msgid "(filtered from _MAX_ total records)"
+msgstr "(filtrado desde _MAX_ registros totales)"
+
+#: appcomposer/templates/composers/adapt/appsearch.html:161
+#: appcomposer/templates/composers/translate/index.html:163
+msgid "First"
+msgstr "Primero"
+
+#: appcomposer/templates/composers/adapt/appsearch.html:162
+#: appcomposer/templates/composers/translate/index.html:164
+msgid "Previous"
+msgstr "Anterior"
+
+#: appcomposer/templates/composers/adapt/appsearch.html:163
+#: appcomposer/templates/composers/translate/index.html:165
+msgid "Next"
+msgstr "Siguiente"
+
+#: appcomposer/templates/composers/adapt/appsearch.html:164
+#: appcomposer/templates/composers/translate/index.html:166
+msgid "Last"
+msgstr "Último"
 
 #: appcomposer/templates/composers/adapt/create.html:15
 msgid "Create a new adaptation"
@@ -543,9 +594,8 @@ msgid "(Optional) Modify the following fields:"
 msgstr "(Opcional) Modifica los siguientes campos:"
 
 #: appcomposer/templates/composers/adapt/create.html:42
-#, fuzzy
 msgid "description"
-msgstr "Descripción"
+msgstr "descripción"
 
 #: appcomposer/templates/composers/adapt/create.html:46
 msgid "Go Back"
@@ -560,7 +610,6 @@ msgid "... you could also cancel this adaptation and edit an existing one:"
 msgstr "... también podrías cancelar esta adaptación y editar una existente:"
 
 #: appcomposer/templates/composers/adapt/create.html:79
-#, fuzzy
 msgid "Last modified:"
 msgstr "Modificada:"
 
@@ -570,7 +619,6 @@ msgid "Edit"
 msgstr "Editar"
 
 #: appcomposer/templates/composers/adapt/duplicate.html:11
-#, fuzzy
 msgid "Duplication of an application"
 msgstr "Duplicación de la aplicación"
 
@@ -605,16 +653,15 @@ msgstr ""
 "aplicación con otras personas:"
 
 #: appcomposer/templates/composers/adapt/edit.html:50
+#: appcomposer/templates/composers/translate/proposed_list.html:91
 msgid "Preview"
 msgstr "Previsualizar"
 
 #: appcomposer/templates/composers/adapt/type.html:27
-#, fuzzy
 msgid "Start adapting"
 msgstr "Comienza a adaptar"
 
 #: appcomposer/templates/composers/adapt/type.html:30
-#, fuzzy
 msgid "Read more"
 msgstr "Leer más"
 
@@ -661,14 +708,12 @@ msgid "App name"
 msgstr "Nombre de la App"
 
 #: appcomposer/templates/composers/translate/delete.html:23
-#, fuzzy
 msgid "Are you really sure you want to delete this application?"
 msgstr "¿Estás seguro de querer eliminar esta aplicación?"
 
 #: appcomposer/templates/composers/translate/edit.html:32
-#, fuzzy
 msgid "You are the owner of this translation"
-msgstr "Eres ahora el dueño de la traducción por defecto de esta App."
+msgstr "Eres el dueño de esta traducción"
 
 #: appcomposer/templates/composers/translate/edit.html:36
 msgid ""
@@ -686,13 +731,13 @@ msgstr ""
 "cambios, que podrás aceptar, modificar o rechazar."
 
 #: appcomposer/templates/composers/translate/edit.html:43
+#: appcomposer/templates/composers/translate/transfer_ownership.html:35
 msgid "Transfer Ownership"
 msgstr "Transferir Propiedad"
 
 #: appcomposer/templates/composers/translate/edit.html:50
-#, fuzzy
 msgid "You are not the owner of this translation"
-msgstr "Eres ahora el dueño de la traducción por defecto de ésta App."
+msgstr "No eres el dueño de esta traducción"
 
 #: appcomposer/templates/composers/translate/edit.html:54
 msgid ""
@@ -715,14 +760,12 @@ msgid "You may access the translation for this language:"
 msgstr "Puedes acceder a la traducción para este lenguaje:"
 
 #: appcomposer/templates/composers/translate/edit.html:63
-#, fuzzy
 msgid "Publish Translation"
-msgstr "Mezclar las traducciones existentes"
+msgstr "Publicar Traducción"
 
 #: appcomposer/templates/composers/translate/edit.html:67
-#, fuzzy
 msgid "View Shindig Translation"
-msgstr "Mezclar las traducciones existentes"
+msgstr "Ver la traducción de Shindig"
 
 #: appcomposer/templates/composers/translate/edit.html:74
 msgid ""
@@ -737,19 +780,16 @@ msgid "Show identifiers"
 msgstr "Mostrar identificadores"
 
 #: appcomposer/templates/composers/translate/edit.html:145
-#, fuzzy
 msgid "« Go Back to Step 2"
-msgstr "« Volver al Paso 1"
+msgstr "« Volver al Paso 2"
 
 #: appcomposer/templates/composers/translate/edit.html:151
-#, fuzzy
 msgid "Save & Exit"
 msgstr "Guardar y salir"
 
 #: appcomposer/templates/composers/translate/edit.html:157
-#, fuzzy
 msgid "Propose translation to owner"
-msgstr "Traducciones Propias"
+msgstr "Proponer traducciones al dueño"
 
 #: appcomposer/templates/composers/translate/edit.html:176
 msgid "Final widget is rendered here."
@@ -763,13 +803,51 @@ msgstr "Paso 1 - Creación de la App"
 msgid "Choose an application to translate: "
 msgstr "Elige una aplicación para traducir: "
 
-#: appcomposer/templates/composers/translate/index.html:100
+#: appcomposer/templates/composers/translate/index.html:101
 msgid "Step 2 - Select language »"
 msgstr "Paso 2 - Selecciona el lenguaje"
 
+#: appcomposer/templates/composers/translate/proposed_list.html:17
+msgid "Proposals for this App"
+msgstr "Propuestas para esta aplicación"
+
+#: appcomposer/templates/composers/translate/proposed_list.html:22
 #: appcomposer/templates/composers/translate/selectlang.html:43
+#: appcomposer/templates/composers/translate/transfer_ownership.html:40
 msgid "[App name not available]"
 msgstr "[Nombre de la App no disponible]"
+
+#: appcomposer/templates/composers/translate/proposed_list.html:49
+msgid "Select a proposal and choose or edit the translations"
+msgstr "Selecciona una propuesta y elige o edita las traducciones"
+
+#: appcomposer/templates/composers/translate/proposed_list.html:51
+msgid "There are currently no translation proposals for this app"
+msgstr "Actualmente no hay propuestas de traducciones para ésta aplicación"
+
+#: appcomposer/templates/composers/translate/proposed_list.html:58
+msgid "Select the translation"
+msgstr "Seleccionar la traducción"
+
+#: appcomposer/templates/composers/translate/proposed_list.html:75
+msgid "« Go Back"
+msgstr "« Volver atrás"
+
+#: appcomposer/templates/composers/translate/proposed_list.html:78
+msgid "Accept"
+msgstr "Aceptar"
+
+#: appcomposer/templates/composers/translate/proposed_list.html:82
+msgid "Discard"
+msgstr "Descartar"
+
+#: appcomposer/templates/composers/translate/proposed_list.html:215
+msgid "Translation (Loading...)"
+msgstr "Traducción (Cargando...)"
+
+#: appcomposer/templates/composers/translate/proposed_list.html:222
+msgid "Translation"
+msgstr "Traducción"
 
 #: appcomposer/templates/composers/translate/selectlang.html:46
 msgid "Original XML: "
@@ -793,7 +871,6 @@ msgid "View Proposed Translations"
 msgstr "Ver Traducciones Propuestas"
 
 #: appcomposer/templates/composers/translate/selectlang.html:91
-#, fuzzy
 msgid "Step 3: Translate"
 msgstr "Paso 3: Traducir"
 
@@ -869,7 +946,6 @@ msgstr ""
 "algunas traducciones podrían sobreescribirse."
 
 #: appcomposer/templates/composers/translate/selectlang.html:385
-#, fuzzy
 msgid "Localise"
 msgstr "Localizar"
 
@@ -885,9 +961,20 @@ msgstr ""
 
 #: appcomposer/templates/composers/translate/selectlang.html:430
 #: appcomposer/templates/composers/translate/selectlang.html:432
-#, fuzzy
 msgid "the default language"
 msgstr "el lenguaje por defecto"
+
+#: appcomposer/templates/composers/translate/transfer_ownership.html:43
+msgid "Original XML:"
+msgstr "XML original: "
+
+#: appcomposer/templates/composers/translate/transfer_ownership.html:56
+msgid "Select target:"
+msgstr "Selecciona objetivo:"
+
+#: appcomposer/templates/composers/translate/transfer_ownership.html:66
+msgid "Transfer"
+msgstr "Transferir"
 
 #: appcomposer/templates/login/errors.html:7
 msgid "Error"
@@ -1007,7 +1094,6 @@ msgstr ""
 " otros profesores o estudiantes."
 
 #: appcomposer/templates/user/profile-apps.html:18
-#, fuzzy
 msgid "TRANSLATE"
 msgstr "TRADUCIR"
 
@@ -1018,12 +1104,10 @@ msgstr ""
 " estudiantes."
 
 #: appcomposer/templates/user/profile-apps.html:32
-#, fuzzy
 msgid "ADAPT"
 msgstr "ADAPTAR"
 
 #: appcomposer/templates/user/profile-apps.html:43
-#, fuzzy
 msgid "Your Applications"
 msgstr "Tus Aplicaciones"
 
@@ -1032,16 +1116,14 @@ msgid "No application."
 msgstr "No hay aplicación."
 
 #: appcomposer/templates/user/profile-apps.html:59
-#, fuzzy
 msgid "No description"
-msgstr "Descripción"
+msgstr "Sin descripción"
 
 #: appcomposer/templates/user/profile-apps.html:74
 msgid "Search..."
 msgstr "Buscar..."
 
 #: appcomposer/templates/user/profile-apps.html:98
-#, fuzzy
 msgid "Last modified"
 msgstr "Modificada"
 
@@ -1074,9 +1156,8 @@ msgid "E-mail:"
 msgstr "E-mail:"
 
 #: appcomposer/user/user_application.py:73
-#, fuzzy
 msgid "Password again:"
-msgstr "Contraseña:"
+msgstr "Contraseña de nuevo:"
 
 #: appcomposer/user/user_application.py:74
 msgid "Organization:"
@@ -1117,7 +1198,6 @@ msgid "Put the address of an application to be adapted. Examples:"
 msgstr "Introduce la dirección de la aplicación a daptar. Ejemplos:"
 
 #: golab_adapt_gateway4labs/templates/gateway4labs/edit.html:49
-#, fuzzy
 msgid "No preview available: you must save first."
 msgstr "No hay previsualización disponible: debes introducir una dirección primero"
 
@@ -1127,9 +1207,8 @@ msgid "No preview available: you must set a URL first"
 msgstr "No hay previsualización disponible: debes introducir una dirección primero"
 
 #: golab_adapt_jsconfig/__init__.py:16
-#, fuzzy
 msgid "App adaptation"
-msgstr "Crear una nueva adaptación"
+msgstr "Adaptación de aplicación"
 
 #: golab_adapt_jsconfig/__init__.py:18
 msgid "Create adaptations of customizable Go-Lab applications."
