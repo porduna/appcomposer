@@ -79,7 +79,7 @@ class AdaptExistingapps(unittest.TestCase):
         # self.assertEqual("App adaptation Create adaptations of customizable Go-Lab applications.\n \n Read more \n \n \n \n \n \n Existing Adaptations: View or Duplicate an existing Adaptation instead of creating your own \n Display 102550100 records per page\nSearch:\n TitleDescriptionOwnerType TitleDescriptionOwnerType Concept MapperTest Useradapt Showing page 1 of 1\nPrevious1Next\n\n View Duplicate", driver.find_element_by_xpath("//body/div[2]").text.replace("\n", " "))
 
         self.assertEqual("Test User", driver.find_element_by_xpath("//table[@id='appsearch-table']/tbody/tr/td[3]").text)
-        self.assertEqual("", driver.find_element_by_xpath("//table[@id='appsearch-table']/tbody/tr/td[2]").text)
+        self.assertEqual("A concept mapper adaptation", driver.find_element_by_xpath("//table[@id='appsearch-table']/tbody/tr/td[2]").text)
         driver.find_element_by_css_selector("td.sorting_1").click()
         self.assertEqual("Duplicate", driver.find_element_by_id("duplicate-btn").text)
         driver.find_element_by_id("duplicate-btn").click()
