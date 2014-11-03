@@ -74,6 +74,11 @@
         </tbody>
     </table>
 
+    <button class="btn-existing-adapts btn btn-success" disabled>View</button>
+
+    <!-- URL to be set dynamically" -->
+    <a id="duplicate-btn" href="#" class="btn-existing-adapts btn btn-primary" disabled>Duplicate</a>
+
 {% endblock %}
 
 
@@ -82,12 +87,15 @@
 
     <script type="text/javascript">
 
+        var appdata = {{ apps|tojson|safe }};
 
         // Called whenever a row in the AppSearch table is selected.
         function onRowSelected(row) {
-            var fulldata = AppsearchData[row.index()];
-            $("#appurl").val(fulldata["app_url"]);
-            $("#appname").val(fulldata["title"]);
+            var fulldata = appdata[row.index()];
+            $(".btn-existing-adapts").removeAttr("disabled");
+
+            // Update the link to Duplicate.
+            $("#duplicate-btn").prop("href", "{{ url_for("adapt.adapt_duplicate", appid="") }}".replace(/\/$/, fulldata["app_id"]));
         } //! onRowSelected
 
         $(document).ready(function () {
@@ -119,7 +127,7 @@
                         lengthChange: true,
                         columnDefs: [
                             {
-                                "targets": 2,
+                                "targets": 1, // Define width of column number 1
                                 "sortable": false,
                                 "width": "50%"
                             }
@@ -127,25 +135,24 @@
                     }
             );
 
+            for(var i = 0; i < appdata.length; i++)
+            {
+                var data = appdata[i];
 
-            {% for app in apps %}
-                // Add the data to the table.
-                appsearch.row.add(["{{ app.name }}", "{{ app.desc }}", "{{ app.owner.name }}", "{{ app.type }}"]);
-            {% endfor %}
+                // Make the description shorter if needed.
+                var desc = data["description"];
+                if(!desc)
+                    desc = "";
+                if (desc.length > 50)
+                    desc = desc.substring(0, 50) + "...";
 
-            {#                        for (var i = 0; i < apps.length; i++) {#}
-            {#                            var app = apps[i];#}
-            {##}
-            {#                            // Make the description shorter if needed.#}
-            {#                            var desc = app["description"];#}
-            {#                            if (desc.length > 50)#}
-            {#                                desc = desc.substring(0, 50) + "...";#}
-            {##}
-            {#                            appsearch.row.add([app["title"], desc, app["app_type"]]);#}
-            {##}
-            {#                            var desc_td = appsearch.cell(i, 1).node();#}
-            {#                            $(desc_td).attr("title", app["description"]);#}
-            {#                        }#}
+                // Append the row to the table
+                appsearch.row.add([data["name"], desc, data["owner"], data["type"]]);
+
+                // Add a long description to appear on mouse over.
+                var desc_td = appsearch.cell(i, 1).node();
+                $(desc_td).attr("title", data["description"]);
+            }
 
             appsearch.draw();
 

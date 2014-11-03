@@ -68,7 +68,8 @@ def adapt_create(adaptor_type):
         # TODO: The app_plugin["initial"] seems to tend to contain an url field set to NULL. This is why we
         # initialize the URL here instead of the first data initialization. This should be tidied up to be
         # less confusing.
-        data['url'] = unicode(request.values.get("appurl"))
+        appurl = unicode(request.values.get("appurl"))
+        data['url'] = appurl
 
         #Dump the contents of the previous block and check if an app with the same name exists.
         # (TODO): do we force different names even if the apps belong to another adaptor type?
@@ -80,6 +81,7 @@ def adapt_create(adaptor_type):
             # This is where the App object itself is created.
             app = appstorage.create_app(name, 'adapt', app_data, description=app_description)
             appstorage.add_var(app, 'adaptor_type', unicode(adaptor_type))
+            appstorage.add_var(app, 'spec', appurl)
         except appstorage.AppExistsException:
             flash("An App with that name already exists", "error")
             return render_template("composers/adapt/create.html", name=name, apps=apps, adaptor_type=adaptor_type,

@@ -23,7 +23,18 @@ def adapt_type_selection():
 
     # Obtain a list of every adaptation that exists in the database for the specified appurl.
     # TODO: Move db_helpers somewhere else. Makes no sense to use translator files in the adaptor.
-    apps = _db_get_spec_apps(appurl)
+    apps_list = _db_get_spec_apps(appurl)
+    apps = []
+    for app in apps_list:
+        if app.composer != "adapt":
+            continue
+        apps.append({
+            "name": app.name,
+            "desc": app.description,
+            "owner": app.owner.name,
+            "type": "adapt",  # TO-DO: Specify the specific adaptor sub-type.
+            "app_id": app.unique_id
+        })
 
     if request.method == "POST":
 
