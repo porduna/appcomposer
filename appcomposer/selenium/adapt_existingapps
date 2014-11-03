@@ -1,0 +1,317 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:5000/" />
+<title>adapt_existingapps</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">adapt_existingapps</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Use it!</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=login</td>
+	<td>testuser</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=password</td>
+	<td>password</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'Start composing »')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>css=td.sorting_1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=td.sorting_1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>id=sendurlbtn</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>App Composer :: Adaptation tool</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=div.container &gt; h3</td>
+	<td>Existing Adaptations: View or Duplicate an existing Adaptation instead of creating your own</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=td.dataTables_empty</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=td.dataTables_empty</td>
+	<td>Nothing found</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>id=view-btn</td>
+	<td>View</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>id=duplicate-btn</td>
+	<td>Duplicate</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>name=app_description</td>
+	<td>A concept mapper adaptation</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.btn.btn-success</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Log out</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Use it!</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=login</td>
+	<td>admin</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=password</td>
+	<td>password</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'Start composing »')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>css=td.sorting_1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=td.sorting_1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>id=sendurlbtn</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=td.sorting_1</td>
+	<td>Concept Mapper</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=input.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//body/div[2]</td>
+	<td>App adaptation Create adaptations of customizable Go-Lab applications.<br /> <br /> Read more <br /> <br /> <br /> <br /> <br /> <br /> Existing Adaptations: View or Duplicate an existing Adaptation instead of creating your own <br /> Display 102550100 records per page<br />Search:<br /> TitleDescriptionOwnerType TitleDescriptionOwnerType Concept MapperTest Useradapt Showing page 1 of 1<br />Previous1Next<br /><br /> View Duplicate</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//body/div[2]</td>
+	<td>App adaptation Create adaptations of customizable Go-Lab applications.<br /> <br /> Read more <br /> <br /> <br /> <br /> <br /> <br /> Existing Adaptations: View or Duplicate an existing Adaptation instead of creating your own <br /> Display 102550100 records per page<br />Search:<br /> TitleDescriptionOwnerType TitleDescriptionOwnerType Concept MapperTest Useradapt Showing page 1 of 1<br />Previous1Next<br /><br /> View Duplicate</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//table[@id='appsearch-table']/tbody/tr/td[3]</td>
+	<td>Test User</td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>//table[@id='appsearch-table']/tbody/tr/td[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=td.sorting_1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>id=duplicate-btn</td>
+	<td>Duplicate</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>id=duplicate-btn</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=button.btn</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Apps</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=div.row &gt; div.row &gt; div.span4.app &gt; div.alert.alert-info &gt; div &gt; h3</td>
+	<td>Concept Mapper (2)</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Delete</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>name=delete</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'Start composing »')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>css=td.sorting_1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=td.sorting_1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>id=sendurlbtn</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=td.sorting_1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>id=view-btn</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>App Composer :: Preview the app</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>id=preview-tab</td>
+	<td>Preview</td>
+</tr>
+<tr>
+	<td>assertElementPresent</td>
+	<td>css=iframe</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Apps</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Log out</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Use it!</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=login</td>
+	<td>testuser</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=password</td>
+	<td>password</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Apps</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Delete</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>name=delete</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Log out</td>
+	<td></td>
+</tr>
+
+</tbody></table>
+</body>
+</html>

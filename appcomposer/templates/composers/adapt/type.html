@@ -74,9 +74,9 @@
         </tbody>
     </table>
 
-    <button class="btn-existing-adapts btn btn-success" disabled>View</button>
 
     <!-- URL to be set dynamically" -->
+    <a id="view-btn" href="#" class="btn-existing-adapts btn btn-success" disabled>View</a>
     <a id="duplicate-btn" href="#" class="btn-existing-adapts btn btn-primary" disabled>Duplicate</a>
 
 {% endblock %}
@@ -96,6 +96,7 @@
 
             // Update the link to Duplicate.
             $("#duplicate-btn").prop("href", "{{ url_for("adapt.adapt_duplicate", appid="") }}".replace(/\/$/, fulldata["app_id"]));
+            $("#view-btn").prop("href", "{{ url_for("adapt.adapt_preview", appid="") }}".replace(/\/$/, fulldata["app_id"]));
         } //! onRowSelected
 
         $(document).ready(function () {
