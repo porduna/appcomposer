@@ -10,19 +10,15 @@ from wtforms import TextField
 from wtforms.validators import url, required
 
 from appcomposer.babel import gettext, lazy_gettext
+from appcomposer.composers.adapt.utils import shindig_url
 from appcomposer.utils import make_url_absolute, inject_absolute_urls, get_json, inject_original_url_in_xmldoc, inject_absolute_locales_in_xmldoc
 from appcomposer.composers.adapt import create_adaptor
+
 
 adaptor = create_adaptor(lazy_gettext('App adaptation'),
                          initial={'url': None, 'configuration': None, 'configuration_name': None},
                          description=lazy_gettext("Create adaptations of customizable Go-Lab applications."),
                          about_endpoint='jsconfig.about')
-
-SHINDIG_SERVER = 'http://shindig.epfl.ch'
-
-
-def shindig_url(relative_url):
-    return '%s%s' % (SHINDIG_SERVER, relative_url)
 
 
 CONFIG_DEFINITION_REGEX = re.compile(r"""(<\s*script[^<]*\sdata-configuration-definition(?:>|\s[^>]*>))""")

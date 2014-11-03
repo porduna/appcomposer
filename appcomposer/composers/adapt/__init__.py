@@ -42,6 +42,7 @@ import view_create_app
 import view_duplicate
 import view_edit
 import view_appsearch
+import view_preview
 
 
 #
