@@ -9,7 +9,10 @@ Create Date: 2014-11-04 09:57:23.710248
 
 # revision identifiers, used by Alembic.
 import json
+import traceback
+
 from appcomposer.models import App
+
 
 revision = '561b1cc23d6'
 down_revision = '4211b3736e90'
@@ -33,13 +36,15 @@ def upgrade():
     for oldapp_id, data in oldapp_ids:
         try:
             data = json.loads(data)
-            spec = data["spec"]
+            spec = data["url"]
             op.execute(
-                App.update().where(id==op.inline_literal(oldapp_id)).values({"spec_url": op.inline_literal(spec)})
+                App.__table__.update().where(App.__table__.c.id==oldapp_id).values({"spec_url": spec})
             )
         except:
+            traceback.print_exc()
             print "Exception on an app: %r" % oldapp_id
-            
+
+
 def downgrade():
 
     # To downgrade we need to add an AppVar with the spec to every App.
