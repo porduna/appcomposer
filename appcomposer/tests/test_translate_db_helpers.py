@@ -128,7 +128,7 @@ class TestTranslateDbHelpers:
         add_var(self.tapp, "proposal", "{}")
 
         # We now create a non-translate app.
-        app2 = api.create_app("UTApp2", "dummy", "{'spec':'http://justatest.com'}")
+        app2 = api.create_app("UTApp2", "dummy", "http://justatest.com", "{'spec':'http://justatest.com'}")
         # We add 1 proposal to the app with the same spec but different composer type.
         add_var(app2, "proposal", "{}")
 
