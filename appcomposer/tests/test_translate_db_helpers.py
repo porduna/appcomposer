@@ -168,12 +168,12 @@ class TestTranslateDbHelpers:
         assert len(apps) == 1
 
         # Add a second spec (which should NOT be retrieved) for further testing.
-        app2 = api.create_app("UTApp (1)", "translate", "http://justatest.com", "{'spec':'http://different.com'}")
+        app2 = api.create_app("UTApp (1)", "translate", "http://different.com", "{'spec':'http://different.com'}")
         apps = _db_get_spec_apps("http://justatest.com")
         # Should still be 1. The new app is of a different spec.
         assert len(apps) == 1
 
-        # Add a second spec (which should NOT be retrieved) for further testing.
+        # Add a second spec (which should be retrieved) for further testing.
         app2 = api.create_app("UTApp2", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
         apps = _db_get_spec_apps("http://justatest.com")
         # Should now be 2.
@@ -205,7 +205,7 @@ class TestTranslateDbHelpers:
         specs = _db_get_diff_specs()
         assert "http://justatest.com" in specs
 
-        app2 = api.create_app("UTApp2", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
+        app2 = api.create_app("UTApp2", "translate", "ATESTSPEC", "{'spec':'ATESTSPEC'}")
 
         specs = _db_get_diff_specs()
         assert "http://justatest.com" in specs

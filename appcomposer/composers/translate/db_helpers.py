@@ -28,7 +28,7 @@ def _db_get_ownerships(spec):
     @param spec: The spec whose ownerships to retrieve.
     @return: List of ownerships.
     """
-    related_apps_ids = db.session.query(App.unique_id).filter(App.spec_url == spec).subquery()
+    related_apps_ids = db.session.query(App.id).filter(App.spec_url == spec).subquery()
 
     # Among those AppVars for our Spec, we try to locate an ownership AppVar.
     owner_apps = db.session.query(AppVar).filter(AppVar.name == "ownership",
@@ -70,7 +70,7 @@ def _db_get_lang_owner_app(spec, lang_code):
     language without the territory is NOT enough.
     @return: The owner for the App and language. None if no owner is found.
     """
-    related_apps_ids = db.session.query(App.unique_id).filter_by(spec_url=spec).subquery()
+    related_apps_ids = db.session.query(App.id).filter_by(spec_url=spec).subquery()
 
     # TODO: Check whether we can optimize this code thanks to the spec_url update.
 

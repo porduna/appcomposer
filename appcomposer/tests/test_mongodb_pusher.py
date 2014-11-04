@@ -159,7 +159,7 @@ class TestMongoDBPusher:
 
         bundles = pusher.mongo_bundles.find({"spec": appurl})
         bundles = {b["bundle"]: b for b in bundles}
-        print bundles
+        print "BUNDLES: ", bundles
         assert len(bundles) == 2
 
         data = bundles["all_ALL_ALL"]["data"]
