@@ -22,7 +22,7 @@ def upgrade():
     ### end Alembic commands ###
 
     # To upgrade we need to take every AppVar with spec, remove it, and add it to the App itself.
-    op.execute("UPDATE Apps SET spec_url = (SELECT value FROM AppVars WHERE name = 'spec')")
+    op.execute("UPDATE Apps SET spec_url = (SELECT value FROM AppVars WHERE name = 'spec' and app_id = Apps.id)")
     op.execute("DELETE FROM AppVars WHERE name = 'spec'")
 
 def downgrade():
