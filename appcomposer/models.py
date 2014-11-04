@@ -20,7 +20,7 @@ class User(db.Model, UserMixin):
     name = db.Column(db.Unicode(50), nullable=False)
     password = db.Column(db.Unicode(50), nullable=False)  # NOT USED!!!
     email = db.Column(db.Unicode(254), nullable=False)
-    organization = db.Column(db.Unicode(50))
+    organization = db.Column(db.Unicode(50))  # Organization and role aren't used either.
     role = db.Column(db.Unicode(50))
     creation_date = db.Column(db.DateTime, nullable=False, index=True)
     last_access_date = db.Column(db.DateTime, nullable=False, index=True)
@@ -90,6 +90,7 @@ class App(db.Model):
     modification_date = db.Column(db.DateTime, nullable=False, index=True)
     last_access_date = db.Column(db.DateTime, nullable=False, index=True)
     description = db.Column(db.Unicode(1000), nullable=True)
+    spec_url = db.Column(db.Unicode(600), nullable=True)  # URL of the XML spec for the App.
 
     # TODO: Find out why this relationships seems to not work sometimes.
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
@@ -97,7 +98,7 @@ class App(db.Model):
     def __repr__(self):
         return self.to_json()
 
-    def __init__(self, name=None, owner=None, composer=None, description = None):
+    def __init__(self, name=None, owner=None, composer=None, description=None):
         self.name = name
         self.owner = owner
         self.composer = composer
@@ -121,7 +122,8 @@ class App(db.Model):
             "data": self.data,
             "creation_date": self.creation_date.__str__(),
             "modification_date": self.modification_date.__str__(),
-            "last_access_date": self.last_access_date.__str__()
+            "last_access_date": self.last_access_date.__str__(),
+            "spec_url": self.spec_url
         }
         return d
 
