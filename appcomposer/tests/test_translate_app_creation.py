@@ -295,8 +295,7 @@ class TestTranslateAppCreation(TestCase):
     def test_translate_default_autoaccept(self):
         with self.flask_app:
             rv = self.login("testuser", "password")
-            app = api.create_app("UTApp", "translate", '{"spec":"http://justatest.com", "bundles":{}}')
-            api.add_var(app, "spec", "http://justatest.com")
+            app = api.create_app("UTApp", "translate", "http://justatest.com", '{"spec":"http://justatest.com", "bundles":{}}')
 
             # Test that autoaccept is True (it's the default).
             bm = BundleManager.create_from_existing_app(json.loads(app.data))

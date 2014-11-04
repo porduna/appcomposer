@@ -50,7 +50,7 @@ class TestAppstorageAppvars:
         # shell.interact()
 
         # Create an App for the tests.
-        self.tapp = api.create_app("UTApp", "dummy", "{}")
+        self.tapp = api.create_app("UTApp", "dummy", None, "{}")
 
     def tearDown(self):
         self._cleanup()

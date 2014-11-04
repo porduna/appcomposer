@@ -17,7 +17,7 @@ def _db_get_diff_specs():
     Gets a list of the different specs that are in the database.
     @return: List of different specs. (The specs themselves, not the AppVar objects).
     """
-    spec_values = db.session.query(AppVar.value).filter_by(name="spec").distinct()
+    spec_values = db.session.query(App.spec_url).distinct()
     specs = [val[0] for val in spec_values]
     return specs
 
@@ -28,8 +28,7 @@ def _db_get_ownerships(spec):
     @param spec: The spec whose ownerships to retrieve.
     @return: List of ownerships.
     """
-    related_apps_ids = db.session.query(AppVar.app_id).filter(AppVar.name == "spec",
-                                                              AppVar.value == spec).subquery()
+    related_apps_ids = db.session.query(App.id).filter(App.spec_url == spec).subquery()
 
     # Among those AppVars for our Spec, we try to locate an ownership AppVar.
     owner_apps = db.session.query(AppVar).filter(AppVar.name == "ownership",
@@ -59,8 +58,7 @@ def _db_get_spec_apps(spec):
     @param spec: String to the App's original XML.
     @return: List of apps with the specified spec."
     """
-    appvars = db.session.query(AppVar).filter(AppVar.name == "spec", AppVar.value == spec).all()
-    apps = [appvar.app for appvar in appvars]
+    apps = db.session.query(App).filter_by(spec_url=spec).all()
     return apps
 
 
@@ -72,8 +70,9 @@ def _db_get_lang_owner_app(spec, lang_code):
     language without the territory is NOT enough.
     @return: The owner for the App and language. None if no owner is found.
     """
-    related_apps_ids = db.session.query(AppVar.app_id).filter(AppVar.name == "spec",
-                                                              AppVar.value == spec).subquery()
+    related_apps_ids = db.session.query(App.id).filter_by(spec_url=spec).subquery()
+
+    # TODO: Check whether we can optimize this code thanks to the spec_url update.
 
     # Among those AppVars for our Spec, we try to locate an ownership AppVar for our
     # lang code.

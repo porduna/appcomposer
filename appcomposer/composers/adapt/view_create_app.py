@@ -79,9 +79,8 @@ def adapt_create(adaptor_type):
 
         try:
             # This is where the App object itself is created.
-            app = appstorage.create_app(name, 'adapt', app_data, description=app_description)
+            app = appstorage.create_app(name, 'adapt', appurl, app_data, description=app_description)
             appstorage.add_var(app, 'adaptor_type', unicode(adaptor_type))
-            appstorage.add_var(app, 'spec', appurl)
         except appstorage.AppExistsException:
             flash("An App with that name already exists", "error")
             return render_template("composers/adapt/create.html", name=name, apps=apps, adaptor_type=adaptor_type,

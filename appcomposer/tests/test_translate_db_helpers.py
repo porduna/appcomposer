@@ -51,10 +51,7 @@ class TestTranslateDbHelpers:
         self._cleanup()
 
         # Create an App for the tests.
-        self.tapp = api.create_app("UTApp", "translate", "{'spec':'http://justatest.com'}")
-
-        # Because it's a translate app it needs an spec when it is created, and that is in fact required by some of the tests.
-        api.add_var(self.tapp, "spec", "http://justatest.com")
+        self.tapp = api.create_app("UTApp", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
 
     def tearDown(self):
         self._cleanup()
@@ -89,8 +86,7 @@ class TestTranslateDbHelpers:
         assert len(ownerships) == 1
 
         # We now create a second app for further testing.
-        app2 = api.create_app("UTApp2", "translate", "{'spec':'http://justatest.com'}")
-        api.add_var(app2, "spec", "http://justatest.com")
+        app2 = api.create_app("UTApp2", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
 
         # Ensure we still have 1 ownership.
         ownerships = _db_get_ownerships("http://justatest.com")
@@ -117,8 +113,7 @@ class TestTranslateDbHelpers:
         assert len(ownerships) == 1
 
         # We now create a non-translate app.
-        app2 = api.create_app("UTApp2", "dummy", "{'spec':'http://justatest.com'}")
-        api.add_var(app2, "spec", "http://justatest.com")
+        app2 = api.create_app("UTApp2", "dummy", "http://justatest.com", "{'spec':'http://justatest.com'}")
         api.add_var(app2, "ownership", "test_TEST")
 
         # Make sure that even though we added an ownership on an app with the same spec, it won't be
@@ -133,7 +128,7 @@ class TestTranslateDbHelpers:
         add_var(self.tapp, "proposal", "{}")
 
         # We now create a non-translate app.
-        app2 = api.create_app("UTApp2", "dummy", "{'spec':'http://justatest.com'}")
+        app2 = api.create_app("UTApp2", "dummy", "http://justatest.com", "{'spec':'http://justatest.com'}")
         # We add 1 proposal to the app with the same spec but different composer type.
         add_var(app2, "proposal", "{}")
 
@@ -152,8 +147,7 @@ class TestTranslateDbHelpers:
         assert name == "UTApp (1)"
 
         # We create a new app so that we can force a second conflict.
-        app2 = api.create_app("UTApp (1)", "translate", "{'spec':'http://justatest.com'}")
-        api.add_var(app2, "spec", "http://justatest.com")
+        app2 = api.create_app("UTApp (1)", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
         name = _find_unique_name_for_app("UTApp")
         assert name == "UTApp (2)"
 
@@ -174,15 +168,13 @@ class TestTranslateDbHelpers:
         assert len(apps) == 1
 
         # Add a second spec (which should NOT be retrieved) for further testing.
-        app2 = api.create_app("UTApp (1)", "translate", "{'spec':'http://different.com'}")
-        api.add_var(app2, "spec", "http://different.com")
+        app2 = api.create_app("UTApp (1)", "translate", "http://different.com", "{'spec':'http://different.com'}")
         apps = _db_get_spec_apps("http://justatest.com")
         # Should still be 1. The new app is of a different spec.
         assert len(apps) == 1
 
-        # Add a second spec (which should NOT be retrieved) for further testing.
-        app2 = api.create_app("UTApp2", "translate", "{'spec':'http://justatest.com'}")
-        api.add_var(app2, "spec", "http://justatest.com")
+        # Add a second spec (which should be retrieved) for further testing.
+        app2 = api.create_app("UTApp2", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
         apps = _db_get_spec_apps("http://justatest.com")
         # Should now be 2.
         assert len(apps) == 2
@@ -196,8 +188,7 @@ class TestTranslateDbHelpers:
         ownerships = _db_get_ownerships("http://justatest.com")
         assert len(ownerships) == 1
         # We now create a second app for further testing.
-        app2 = api.create_app("UTApp2", "translate", "{'spec':'http://justatest.com'}")
-        api.add_var(app2, "spec", "http://justatest.com")
+        app2 = api.create_app("UTApp2", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
 
         # We transfer the ownership to the second app.
         _db_transfer_ownership("test_TEST", self.tapp, app2)
@@ -214,8 +205,7 @@ class TestTranslateDbHelpers:
         specs = _db_get_diff_specs()
         assert "http://justatest.com" in specs
 
-        app2 = api.create_app("UTApp2", "translate", "{'spec':'http://justatest.com'}")
-        api.add_var(app2, "spec", "ATESTSPEC")
+        app2 = api.create_app("UTApp2", "translate", "ATESTSPEC", "{'spec':'ATESTSPEC'}")
 
         specs = _db_get_diff_specs()
         assert "http://justatest.com" in specs

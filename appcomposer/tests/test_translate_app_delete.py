@@ -54,8 +54,7 @@ class TestTranslateAppDelete:
     def test_translate_app_delete_confirmation(self):
         with self.flask_app:
             rv = self.login("testuser", "password")
-            app = api.create_app("UTApp", "translate", "{'spec':'http://justatest.com'}")
-            api.add_var(app, "spec", "http://justatest.com")
+            app = api.create_app("UTApp", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
 
             # Test that a confirmation appears.
             rv = self.flask_app.get("/composers/translate/delete?appid=" + app.unique_id)
@@ -66,8 +65,7 @@ class TestTranslateAppDelete:
     def test_translate_app_delete(self):
         with self.flask_app:
             rv = self.login("testuser", "password")
-            app = api.create_app("UTApp", "translate", "{'spec':'http://justatest.com'}")
-            api.add_var(app, "spec", "http://justatest.com")
+            app = api.create_app("UTApp", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
 
             # Test that cancel works.
             rv = self.flask_app.post("/composers/translate/delete", data={"appid": app.unique_id, "cancel": "Cancel"},
@@ -87,8 +85,7 @@ class TestTranslateAppDelete:
         """
         with self.flask_app:
             rv = self.login("testuser", "password")
-            app = api.create_app("UTApp", "translate", "{'spec':'http://justatest.com'}")
-            api.add_var(app, "spec", "http://justatest.com")
+            app = api.create_app("UTApp", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
 
             # Test that a confirmation appears.
             rv = self.flask_app.get("/composers/translate/delete?appid=" + app.unique_id)
@@ -103,12 +100,10 @@ class TestTranslateAppDelete:
         """
         with self.flask_app:
             rv = self.login("testuser", "password")
-            app = api.create_app("UTApp", "translate", "{'spec':'http://justatest.com'}")
-            api.add_var(app, "spec", "http://justatest.com")
+            app = api.create_app("UTApp", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
             api.add_var(app, "ownership", "all_ALL_ALL")
 
-            app2 = api.create_app("UTApp2", "translate", "{'spec':'http://justatest.com'}")
-            api.add_var(app2, "spec", "http://justatest.com")
+            app2 = api.create_app("UTApp2", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
             app2id = app2.unique_id
 
             rv = self.flask_app.get("/composers/translate/delete?appid=" + app.unique_id)
@@ -123,12 +118,10 @@ class TestTranslateAppDelete:
         """
         with self.flask_app:
             rv = self.login("testuser", "password")
-            app = api.create_app("UTApp", "translate", "{'spec':'http://justatest.com'}")
-            api.add_var(app, "spec", "http://justatest.com")
+            app = api.create_app("UTApp", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
             api.add_var(app, "ownership", "all_ALL_ALL")
 
-            app2 = api.create_app("UTApp2", "translate", "{'spec':'http://justatest.com'}")
-            api.add_var(app2, "spec", "http://justatest.com")
+            app2 = api.create_app("UTApp2", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
             app2id = app2.unique_id
 
             # Test that cancel still works.

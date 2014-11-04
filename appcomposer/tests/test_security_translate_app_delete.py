@@ -71,8 +71,7 @@ class TestSecurityAppDelete:
         with self.flask_app:
             rv = self.login("utuser1", "password")
             assert session["logged_in"] == True
-            app = api.create_app("utapp1", "translate", '{"spec":"http://justatest.com", "bundles":{}}')
-            api.add_var(app, "spec", "http://justatest.com")
+            app = api.create_app("utapp1", "translate", "http://justatest.com", '{"spec":"http://justatest.com", "bundles":{}}')
             self.appid = app.unique_id
 
         # Login as utuser2 to check whether he can indeed view the app.
@@ -90,8 +89,7 @@ class TestSecurityAppDelete:
         # Create utapp1 in utuser1
         with self.flask_app:
             rv = self.login("utuser1", "password")
-            app = api.create_app("utapp1", "translate", '{"spec":"http://justatest.com"}')
-            api.add_var(app, "spec", "http://justatest.com")
+            app = api.create_app("utapp1", "translate", "http://justatest.com", '{"spec":"http://justatest.com"}')
             self.appid = app.unique_id
 
         # Login as utuser2 to check whether he can indeed view the app.
@@ -126,8 +124,7 @@ class TestSecurityAppDelete:
         with self.flask_app:
             rv = self.login("utuser1", "password")
             assert session["logged_in"] == True
-            app = api.create_app("utapp1", "translate", '{"spec":"http://justatest.com", "bundles":{}}')
-            api.add_var(app, "spec", "http://justatest.com")
+            app = api.create_app("utapp1", "translate", "http://justatest.com", '{"spec":"http://justatest.com", "bundles":{}}')
             self.appid = app.unique_id
 
         # GET the app delete view with CSRF enabled.
@@ -148,8 +145,7 @@ class TestSecurityAppDelete:
         with self.flask_app:
             rv = self.login("utuser1", "password")
             assert session["logged_in"] == True
-            app = api.create_app("utapp1", "translate", '{"spec":"http://justatest.com", "bundles":{}}')
-            api.add_var(app, "spec", "http://justatest.com")
+            app = api.create_app("utapp1", "translate", "http://justatest.com", '{"spec":"http://justatest.com", "bundles":{}}')
             self.appid = app.unique_id
 
         # Try to delete the app with the CSRF enabled.

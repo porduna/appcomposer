@@ -60,7 +60,7 @@ class TestAppstorageBasic:
         assert cu.login == "testuser"
 
     def test_create_app(self):
-        app = api.create_app("UTApp", "dummy", "{}")
+        app = api.create_app("UTApp", "dummy", None, "{}")
         assert app is not None
         assert app.name == "UTApp"
 
@@ -72,7 +72,7 @@ class TestAppstorageBasic:
         assert app.owner == current_user()
 
     def test_delete_app(self):
-        app = api.create_app("UTAppDel", "dummy", "{}")
+        app = api.create_app("UTAppDel", "dummy", None, "{}")
         assert app is not None
 
         api.delete_app(app)

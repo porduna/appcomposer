@@ -53,7 +53,7 @@ class TestAppstoragePersistence:
             # shell.interact()
 
             # Create an App for the tests.
-            self.tapp = api.create_app("UTApp", "dummy", "{}")
+            self.tapp = api.create_app("UTApp", "dummy", None, "{}")
             self.tapp = api.get_app_by_name("UTApp")
             api.set_var(self.tapp, "TestVar", "TestValue")
 
