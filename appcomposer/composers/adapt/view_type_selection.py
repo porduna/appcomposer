@@ -4,17 +4,24 @@ from appcomposer.babel import gettext
 from appcomposer.composers.adapt import adapt_blueprint, ADAPTORS
 from appcomposer.composers.translate.db_helpers import _db_get_spec_apps
 from appcomposer.csrf import verify_csrf
-from appcomposer.login import requires_login
+from appcomposer.login import requires_login, current_user
 
 
 @adapt_blueprint.route("/type_selection", methods=["GET", "POST"])
-@requires_login
 def adapt_type_selection():
     """
     adapt_type_selection()
     Loads the page that lets the user choose the adaptation type, and that lets the user view or duplicate
-    an existing adaptation instead.
+    an existing adaptation instead. This method DOES NOT REQUIRE LOGIN but will display a different view when
+    not logged in.
     """
+
+    # Check if we are logged in.
+    logged_in = current_user() is not None
+
+    # If we are not logged in disallow POST.
+    if not logged_in and request.method == "POST":
+        return render_template("composers/errors.html", message=gettext("Cannot POST to this URL if not logged in")), 403
 
     # We require the appurl parameter.
     appurl = request.values.get("appurl")
@@ -36,6 +43,7 @@ def adapt_type_selection():
             "app_id": app.unique_id
         })
 
+    # We will only get here if we are logged in
     if request.method == "POST":
 
         # Protect against CSRF attacks.
@@ -51,4 +59,10 @@ def adapt_type_selection():
         else:
             # An adaptor_type is required.
             flash("Invalid adaptor type", "error")
-    return render_template("composers/adapt/type.html", adaptors=ADAPTORS, apps=apps)
+
+    if logged_in:
+        return render_template("composers/adapt/type.html", adaptors=ADAPTORS, apps=apps)
+
+    # Version for the public
+    else:
+        return render_template("composers/adapt/public_type.html", adaptors=ADAPTORS, apps=apps)
