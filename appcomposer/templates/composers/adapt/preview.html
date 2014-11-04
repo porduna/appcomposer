@@ -1,7 +1,12 @@
 {% set title = "Preview the app" %}
 {% set current_link = "home" %}
 {% set current_composer = "adapt" %}
-{% extends 'composers/adapt/layout.html' %}
+
+{% if logged_in %}
+    {% extends 'composers/adapt/layout.html' %}
+{% else %}
+    {% extends 'composers/public_layout.html' %}
+{% endif %}
 
 {% block styles %}
     {{ super() }}
