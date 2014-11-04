@@ -55,10 +55,7 @@ class TestTranslateAjax:
         self._cleanup()
 
         # Create an App for the tests.
-        self.tapp = api.create_app("UTApp", "translate", '{"spec":"http://justatest.com"}')
-
-        # Because it's a translate app it needs an spec when it is created, and that is in fact required by some of the tests.
-        api.add_var(self.tapp, "spec", "http://justatest.com")
+        self.tapp = api.create_app("UTApp", "translate", "http://justatest.com", '{"spec":"http://justatest.com"}')
 
     def tearDown(self):
         self._cleanup()

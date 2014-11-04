@@ -10,21 +10,8 @@ from appcomposer.application import app as flask_app
 from appcomposer.models import App
 
 
-@flask_app.route('/appstorage', methods=["GET", "POST"])
-def appstorage():
-    return "Hello appstorage"
 
-
-@flask_app.route('/appstorage/new', methods=["GET", "POST"])
-def new():
-    next_url = request.args.get('next', '') or request.form.get('next', '')
-    name = request.args.get("name")
-    if name is None:
-        return "Missing parameter: name", 400
-    owner = current_user()
-    app = create_app(name, owner, "dummy", "{'message':'Hello world'}")
-    return "Application created"
-
+# TODO: Consider removing all of this.
 
 @flask_app.route('/appstorage/list', methods=["GET", "POST"])
 def list():

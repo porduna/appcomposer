@@ -127,9 +127,8 @@ class TestSecurityTranslateTransferOwnership:
         data["spec"] = "TESTSPEC"
         secondApp.data = json.dumps(data)
         update_app_data(secondApp, data)
-        specVar = db.session.query(AppVar).filter(AppVar.app == secondApp, AppVar.name == "spec").first()
-        specVar.value = "TESTSPEC"
-        db.session.add(specVar)
+        secondApp.spec_url = "TESTSPEC"
+        db.session.add(secondApp)
         db.session.commit()
 
 

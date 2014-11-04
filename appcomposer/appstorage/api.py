@@ -35,13 +35,15 @@ class NonUniqueVarException(Exception):
         self.message = message
 
 
-def create_app(name, composer, data, find_new_name=False, description = None):
+def create_app(name, composer, spec_url, data, find_new_name=False, description=None):
     """
-    create_app(name, data)
-    @param name: Unique name to give to the application.
-    @param composer: Composer identifier.
-    @param data: JSON-able dictionary with the composer-specific data, or the JSON string itself.
-    @return: The app that has been created.
+    @param {str} name: Unique name to give to the application.
+    @param {str} composer: Composer identifier.
+    @param {str} spec_url: Spec URL that the app is linked to. It can be None.
+    @param {dict} data: JSON-able dictionary with the composer-specific data, or the JSON string itself.
+    @param {bool} find_new_name: Whether the name should be auto-modified with a number to make it unique or throw an exception.
+    @param {str} description: Description of the app.
+    @return {App}: The app that has been created.
 
     @note: This function can be used by any logged-on user. There are no restrictions other than
     unique (name, owner) combination.
@@ -79,8 +81,9 @@ def create_app(name, composer, data, find_new_name=False, description = None):
             raise AppExistsException()
 
     # Create it
-    new_app = App(name, owner, composer, description = description)
+    new_app = App(name, owner, composer, description=description)
     new_app.data = data
+    new_app.spec_url = spec_url
 
     # Insert the new app into the database
     db.session.add(new_app)
@@ -120,7 +123,7 @@ def _get_app_obj(app):
     actually accepting both.
 
     @param app: Unique identifier of the app as a string, or the app object itself.
-    @return: The app object.
+    @return {App} The app object.
     """
     if type(app) is str or type(app) is unicode:
         return get_app(app)
@@ -144,6 +147,7 @@ def get_app_by_name(app_name):
     retrieved_app = App.query.filter_by(owner=user, name=app_name).first()
     return retrieved_app
 
+
 def get_my_apps(**filters):
     """
     get_my_apps(**filters)
@@ -158,13 +162,14 @@ def get_my_apps(**filters):
     if filters:
         app_vars_query_obj = db.session.query(AppVar.app_id)
         for filter_name, filter_value in filters.iteritems():
-            app_vars_query_obj = app_vars_query_obj.filter_by(name = filter_name, value = filter_value)
+            app_vars_query_obj = app_vars_query_obj.filter_by(name=filter_name, value=filter_value)
 
         subquery = app_vars_query_obj.subquery()
 
         return App.query.filter(App.id.in_(subquery), App.owner == current_user()).all()
     else:
         return App.query.filter(App.owner == current_user()).all()
+
 
 def save_app(composed_app):
     """

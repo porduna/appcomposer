@@ -143,12 +143,7 @@ def translate_selectlang():
         js = bm.to_json()
 
         # Create a new App from the specified XML
-        app = create_app(appname, "translate", js)
-
-        # Register our appurl as the "spec" in an app-specific variable in the DB. This will let us search later, for
-        # certain advanced features.
-        set_var(app, "spec", appurl)
-
+        app = create_app(appname, "translate", appurl, js)
 
         # Handle Ownership-related logic here.
         # Locate the owner for the App's DEFAULT language.

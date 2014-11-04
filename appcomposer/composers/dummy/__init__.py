@@ -105,7 +105,7 @@ def new():
         name = request.form["name"]
 
         try:
-            app = appstorage.create_app(name, "dummy", data='{"text":""}')
+            app = appstorage.create_app(name, "dummy", spec_url=None, data='{"text":""}')
         except appstorage.AppExistsException:
             flash(gettext("An App with that name exists already"), "error")
             return render_template("composers/dummy/new.html", name=name)
