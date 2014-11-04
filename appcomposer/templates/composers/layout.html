@@ -16,8 +16,18 @@
     {% endblock meta %}
     {% block styles %}
         <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+        {% if request.args.get('graaspstyle') %}
+            <link rel="stylesheet" href="http://graasp.eu/cdn/lib/lib_5c06c8b563a7523549c8421f2ec5c1b4f3aabe08.min.css">
+            <link rel="stylesheet" href="http://graasp.eu/cdn/css/app_0e0e498ef37c5cd3077916602b979ad41cbb28ee.min.css">
+            <style>
+                .container {
+                    background: rgb(235, 235, 235);
+                }
+            </style>
+        {% else %}
         <link rel="stylesheet" href="{{ url_for('static', filename='initializr/css/bootstrap.min.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='initializr/css/bootstrap-theme.min.css') }}">
+        {% endif %}
         <link rel="stylesheet" href="{{ url_for('static', filename='initializr/js/vendor/select2/select2.css') }}">
         <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap-switch.min.css') }}">
 <!--        <link rel="stylesheet" href="{{ url_for('static', filename='initializr/css/main.css') }}"> -->
