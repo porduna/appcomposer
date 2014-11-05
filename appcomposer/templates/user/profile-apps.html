@@ -5,14 +5,14 @@
 
     <div class="row">
 
-        <div class="span4 offset2 app _comp-box">
-            <div class="alert alert-success" style="position: static">
+        <div class="col-sm-4 col-sm-offset-2 app _comp-box">
+            <div class="alert alert-success" style="position: relative">
                 <div>
                     <h3>{{ gettext("Translate") }}</h3>
                     <h5>{{ gettext("Translate OpenSocial applications easily. Share the translations with other teachers or
                         students.") }}</h5>
                 </div>
-                <div style="position: static;"> <!-- Place it at the bottom of the rectangle -->
+                <div style="left: 0px; right: 0px; bottom: 20px; position: absolute;"> <!-- Place it at the bottom of the rectangle -->
                     <div class="text-center">
                         <a href="{{ url_for("translate.translate_index") }}" class="_comp-btn btn btn-large btn-primary"
                            type="button">{{ gettext("TRANSLATE") }}</a>
@@ -20,13 +20,13 @@
                 </div>
             </div>
         </div>
-        <div class="span4 app _comp-box">
-            <div class="alert alert-info" style="position: static">
+        <div class="col-sm-4 app _comp-box">
+            <div class="alert alert-info" style="position: relative">
                 <div>
                     <h3>{{ gettext("Adapt") }}</h3>
-                    <h5>{{ gettext("Adapt applications. Configure them to fit the needs of your students.") }}</h5>
+                    <h5>{{ gettext("Adapt applications. Configure them to fit the needs of your students.") }} this is just a test lorem ipsum dolor sit amet</h5>
                 </div>
-                <div style="position: relative;"> <!-- Place it at the bottom of the rectangle -->
+                <div style="left: 0px; right: 0px; bottom: 20px; position: absolute;"> <!-- Place it at the bottom of the rectangle -->
                     <div class="text-center">
                         <a href="{{ url_for("adapt.adapt_appsearch") }}" class="_comp-btn btn btn-large btn-primary"
                            type="button">{{ gettext("ADAPT") }}</a>
@@ -69,8 +69,8 @@
         </div>
 
     {% else %}
-        <div class="row">
-            <div class="span3 pull-right">
+        <div class="row" style="padding-bottom: 2em">
+            <div class="col-sm-3 pull-right">
                 <input name="text" maxlength="50" placeholder="{{ gettext("Search...") }}" type="text" class="form-control"
                        id="search_box"/>
             </div>
@@ -78,7 +78,7 @@
 
         <div class="row">
             {% for app in apps %}
-                <div class="span4 app">
+                <div class="col-sm-4 app">
                     <div class="alert {% if app.composer == "translate" %}alert-success{% else %}alert-info{% endif %}" style="position: relative">
                         <div>
                             <h3>{{ app.name }}</h3>
@@ -131,27 +131,20 @@
 
         $(document).ready(function () {
 
-            // Prettify also the Translate and Adapt rectangles.
+            // Prettify also the Translate and Adapt rectangles.#}
 
             var buttons = $("._comp-btn");
             var max = Math.max($(buttons[0]).width(), $(buttons[1]).width());
             $(buttons[0]).width(max);
             $(buttons[1]).width(max);
 
-            var boxes = $("._comp-box");
-            var boxes_height = $(boxes[0]).height();
-            var offset = $(boxes[0]).offset().top + boxes_height - $(buttons[0]).offset().top - boxes_height;
-            boxes.css("bottom", offset - $(buttons[0]).height());
-
-            // Ensure that the height of the App rectangles is always the same (so that they look prettier)
-
-            var heights = $(".app").map(function () {
+            var heights = $(".app>.alert").map(function () {
                 return $(this).height();
             }).get();
 
             var maxHeight = Math.max.apply(null, heights);
 
-            $(".app>.alert").height(maxHeight + 30);
+            $(".app>.alert").height(maxHeight + 50);
         });
     </script>
 
