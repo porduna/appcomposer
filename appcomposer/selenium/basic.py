@@ -26,6 +26,8 @@ class Basic(unittest.TestCase):
             self.profile.set_preference("intl.accept_languages", "en")
             self.driver = webdriver.Firefox(self.profile)
 
+        self.driver.set_window_size(1300, 1000)
+
         self.driver.implicitly_wait(30)
         self.base_url = "http://localhost:5000/"
         self.verificationErrors = []
