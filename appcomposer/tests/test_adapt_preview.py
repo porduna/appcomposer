@@ -9,10 +9,9 @@ from appcomposer.composers.translate.bundles import BundleManager
 import re
 
 
-class TestAdaptTypeSelection:
+class TestAdaptPreview:
     """
-    Test the type selection screen, which has different logged-in and public modes and which shows
-    a list of adaptable apps of the same spec.
+    Test the initial adapt screen.
     """
 
     def __init__(self):
@@ -40,16 +39,28 @@ class TestAdaptTypeSelection:
                 api.delete_app(app)
 
     def setUp(self):
+
         appcomposer.app.config['DEBUG'] = True
         appcomposer.app.config['TESTING'] = True
         appcomposer.app.config['CSRF_ENABLED'] = False
         appcomposer.app.config["SECRET_KEY"] = 'secret'
         self.flask_app = appcomposer.app.test_client()
         self.flask_app.get("/")
-        rv = self.login("testuser", "password")
 
         # In case the test failed before, start from a clean state.
         self._cleanup()
+
+        rv = self.login("testuser", "password")
+
+        # Create the test app.
+        rv = self.flask_app.post("/composers/adapt/create/jsconfig/", data=dict(
+            app_name="TestApp",
+            adaptor_type="jsconfig",
+            app_description=" TestDescription"
+        ))
+        finds = re.findall("""/adapt/edit/([a-z0-9\\-]+)""", rv.data)
+        self.appid = finds[-1]
+
 
     def tearDown(self):
         self._cleanup()
@@ -57,30 +68,39 @@ class TestAdaptTypeSelection:
     def test_pass(self):
         pass
 
-    def test_base_screen_logged_in(self):
+    def test_loggedin_preview(self):
         """
-        Check that the type selection screen looks somewhat right when logged in.
+        Check that we can load that app's preview screen
         """
-        # TODO: Should we detect precissely non-existing app specs?
-        rv = self.flask_app.get("/composers/adapt/type_selection?appurl=fake.xml")
-        page = rv.data
-        assert "View" in page
-        assert "Duplicate" in page
-        assert "Start adapting" in page
-        assert "Read more" in page
-        assert "Apps" in page
-        assert "table" in page
 
-    def test_base_screen_public(self):
+        url = "/composers/adapt/preview/%s/" % self.appid
+        rv = self.flask_app.get(url)
+
+        print rv.data
+
+        assert rv.status_code == 200
+        assert "Preview" in rv.data
+        assert "Adapt" in rv.data
+        assert "iframe" in rv.data
+        assert "Adaptation URL" in rv.data
+        assert "Apps" in rv.data
+
+    def test_public_preview(self):
         """
-        Check that the type selection screen looks somewhat right when not logged in.
+        Check that we can load that app's preview screen even when logged out
+        (and that we see it differently)
         """
+
         self.logout()
-        rv = self.flask_app.get("/composers/adapt/type_selection?appurl=fake.xml")
-        page = rv.data
-        assert "View" in page
-        assert "Duplicate" in page
-        assert "Start adapting" in page
-        assert "Read more" in page
-        assert "Apps" not in page  # Logged in header should no longer be present
-        assert "table" in page
+
+        url = "/composers/adapt/preview/%s/" % self.appid
+        rv = self.flask_app.get(url)
+
+        print rv.data
+
+        assert rv.status_code == 200
+        assert "Preview" in rv.data
+        assert "Adapt" in rv.data
+        assert "iframe" in rv.data
+        assert "Adaptation URL" in rv.data
+        assert "Apps" not in rv.data
