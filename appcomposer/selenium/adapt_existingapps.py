@@ -85,7 +85,7 @@ class AdaptExistingapps(unittest.TestCase):
         driver.find_element_by_id("duplicate-btn").click()
         driver.find_element_by_css_selector("button.btn").click()
         driver.find_element_by_link_text("Apps").click()
-        self.assertEqual("Concept Mapper (2)", driver.find_element_by_css_selector("div.row > div.row > div.span4.app > div.alert.alert-info > div > h3").text)
+        self.assertEqual("Concept Mapper (2)", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-info > div > h3").text)
         driver.find_element_by_link_text("Delete").click()
         driver.find_element_by_name("delete").click()
         driver.find_element_by_xpath(u"(//a[contains(text(),'Start composing »')])[2]").click()

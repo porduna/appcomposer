@@ -50,7 +50,7 @@ class AppScreen(unittest.TestCase):
             driver.find_element_by_name("saveexit").click()
             self.assertEqual("Apps - User Profile", driver.title)
             self.assertEqual("dummy1", driver.find_element_by_xpath("//div[3]/div[2]/div[2]/div/div/h3").text)
-            self.assertEqual("dummy2", driver.find_element_by_css_selector("div.row > div.row > div.span4.app > div.alert.alert-info > div > h3").text)
+            self.assertEqual("dummy2", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-info > div > h3").text)
             driver.find_element_by_link_text("Translate").click()
             for i in range(60):
                 try:
@@ -61,8 +61,8 @@ class AppScreen(unittest.TestCase):
             driver.find_element_by_css_selector("p.p1").click()
             driver.find_element_by_id("sendurlbtn").click()
             driver.find_element_by_link_text("Apps").click()
-            self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("div.row > div.row > div.span4.app > div.alert.alert-success > div > h3").text)
-            self.assertEqual("dummy2", driver.find_element_by_css_selector("div.row > div.row > div.span4.app > div.alert.alert-info > div > h3").text)
+            self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-success > div > h3").text)
+            self.assertEqual("dummy2", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-info > div > h3").text)
             self.assertEqual("dummy1", driver.find_element_by_xpath("//div[3]/div/div/h3").text)
             self.assertEqual("Composer: translate", driver.find_element_by_css_selector("h4").text)
             self.assertEqual("Open", driver.find_element_by_link_text("Open").text)
@@ -70,7 +70,7 @@ class AppScreen(unittest.TestCase):
             self.assertEqual("Open", driver.find_element_by_xpath("(//a[contains(text(),'Open')])[3]").text)
             driver.find_element_by_id("search_box").send_keys("map")
             self.assertEqual("Open", driver.find_element_by_link_text("Open").text)
-            self.assertFalse(driver.find_element_by_css_selector("div.row > div.row > div.span4.app > div.alert.alert-info > div > h3").is_displayed())
+            self.assertFalse(driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-info > div > h3").is_displayed())
             driver.find_element_by_id("search_box").clear()
 
             # MODIFICATION/FIX: In Python empty send_keys does not raise a javascript event. So I put a space and delete
@@ -79,8 +79,8 @@ class AppScreen(unittest.TestCase):
             driver.find_element_by_id("search_box").send_keys(Keys.BACKSPACE)
 
 
-            self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("div.row > div.row > div.span4.app > div.alert.alert-success > div > h3").text)
-            self.assertEqual("dummy2", driver.find_element_by_css_selector("div.row > div.row > div.span4.app > div.alert.alert-info > div > h3").text)
+            self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-success > div > h3").text)
+            self.assertEqual("dummy2", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-info > div > h3").text)
             self.assertEqual("dummy1", driver.find_element_by_xpath("//div[3]/div/div/h3").text)
 
             self.assertEqual("Translate", driver.find_element_by_css_selector("h3").text)
@@ -93,10 +93,10 @@ class AppScreen(unittest.TestCase):
             driver.find_element_by_link_text("Home").click()
             driver.find_element_by_link_text("Apps").click()
             self.assertEqual("Apps - User Profile", driver.title)
-            self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("div.row > div.row > div.span4.app > div.alert.alert-success > div > h3").text)
+            self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-success > div > h3").text)
             driver.find_element_by_id("search_box").clear()
             driver.find_element_by_id("search_box").send_keys("translate")
-            self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("div.row > div.row > div.span4.app > div.alert.alert-success > div > h3").text)
+            self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-success > div > h3").text)
             driver.find_element_by_link_text("Apps").click()
             driver.find_element_by_link_text("Delete").click()
             driver.find_element_by_name("delete").click()
@@ -115,7 +115,7 @@ class AppScreen(unittest.TestCase):
             self.assertEqual("Concept Mapper (2)", driver.find_element_by_id("name").get_attribute("value"))
             driver.find_element_by_css_selector("button.btn").click()
             driver.find_element_by_link_text("Apps").click()
-            self.assertEqual("Concept Mapper (2)", driver.find_element_by_css_selector("div.row > div.row > div.span4.app > div.alert.alert-info > div > h3").text)
+            self.assertEqual("Concept Mapper (2)", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-info > div > h3").text)
             self.assertEqual("Concept Mapper", driver.find_element_by_xpath("//div[2]/div[2]/div/div/h3").text)
             driver.find_element_by_link_text("Delete").click()
             driver.find_element_by_name("delete").click()

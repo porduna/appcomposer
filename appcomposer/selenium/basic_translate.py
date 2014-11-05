@@ -85,7 +85,7 @@ class BasicTranslate(unittest.TestCase):
         self.assertEqual("TRANSLATE", driver.find_element_by_link_text("TRANSLATE").text)
         self.assertEqual("ADAPT", driver.find_element_by_link_text("ADAPT").text)
         self.assertEqual("Your Applications", driver.find_element_by_css_selector("h1").text)
-        self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("div.row > div.row > div.span4.app > div.alert.alert-success > div > h3").text)
+        self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-success > div > h3").text)
         driver.find_element_by_link_text("Open").click()
         driver.find_element_by_id("localisebtn").click()
         self.assertEqual("Concept Map Modified", driver.find_element_by_id("field_1").get_attribute("value"))
