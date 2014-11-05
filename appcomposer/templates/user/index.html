@@ -4,7 +4,7 @@
 
     <div class="container">
 
-        <div class="hero-unit">
+        <div class="jumbotron">
             <h1>{{ gettext("Welcome %(user)s!", user = session.name) }}</h1>
             <p>{{ gettext("This is the main page of the App Composer. The App Composer lets you customize an application easily, in different ways. Choose the type of App Composer you want to use, and get started!") }}</p>
             <p>
@@ -16,14 +16,14 @@
 
         <div class="row">
                 {% for composer in composers %}
-            <div class="span4">
+            <div class="col-sm-4 bg-info">
                 <h2>{{composer.name}}
                 </h2>
                 <p>
                     {{composer.description}}
                 </p>
                 <p>
-                    <a class="btn" href="{{url_for(composer.new_endpoint)}}">{{ gettext("Start composing") }} &raquo;
+                    <a class="btn btn-primary" href="{{url_for(composer.new_endpoint)}}">{{ gettext("Start composing") }} &raquo;
                     </a>
                 </p>
             </div>
