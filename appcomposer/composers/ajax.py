@@ -32,8 +32,12 @@ def change_appname(appid):
     app.name = name
     save_app(app)
 
+    result["result"] = "success"
+    result["message"] = ""
+    return jsonify(**result)
 
-@flask_app.route("/change/appname/<appid>", methods=["POST"])
+
+@flask_app.route("/change/appdescription/<appid>", methods=["POST"])
 @requires_login
 def change_appdescription(appid):
     """
@@ -55,4 +59,8 @@ def change_appdescription(appid):
 
     app.description = description
     save_app(app)
+
+    result["result"] = "success"
+    result["message"] = ""
+    return jsonify(**result)
 
