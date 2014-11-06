@@ -1,7 +1,13 @@
 {# This template contains macros for adding input boxes which can be used, for instance, to change
 the name of applications dynamically, in the Google Docs title style #}
 
-{% macro render_input_modal_html() %}
+{#{% macro render_input_modal_html() %}#}
+
+    <!-- Button trigger modal -->
+<button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#modalid">
+  Launch demo modal
+</button>
+
 
 <!-- Modal -->
 <div class="modal fade" id="modalid" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
