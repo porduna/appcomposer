@@ -175,3 +175,4 @@ def get_ownership_list():
         result["owners"][language] = {"owner_id": owner.id, "owner_login": owner.login, "owner_app": ownership.app.id}
 
     return jsonify(**result)
+

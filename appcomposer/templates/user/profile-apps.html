@@ -4,7 +4,7 @@
 {% block body %}
 
 
-    {{ modal.render_input_modal_html("appname-modal", "appname-field", "Change App name", "Insert the new name: ", "") }}
+    {{ modal.render_input_modal_html("appname-modal", "appname-field", "Change App name", "Insert the new name: ", "onAppTitleSave()") }}
 
 
     <div class="row">
@@ -82,14 +82,14 @@
 
         <div class="row">
             {% for app in apps %}
-                <div class="col-sm-4 app">
+                <div class="col-sm-4 app" data-appuid="{{ app.unique_id }}">
                     <div class="alert {% if app.composer == "translate" %}alert-success{% else %}alert-info{% endif %}" style="position: relative">
                         <div>
-                            <h3>{{ app.name }}</h3>
+                            <h3 class="app-title dyn-changeable">{{ app.name }}</h3>
                             <h4>{{ gettext("Composer") }}: {{ app.composer }}</h4>
 
                             {% if app.description %}
-                                <p>{{ app.description }}</p>
+                                <p class="app-description dyn-changeable">{{ app.description }}</p>
                             {% else %}
                                 <p></p>
                             {% endif %}
@@ -133,6 +133,8 @@
 
     <script type="text/javascript">
 
+
+        // Prettify things.
         $(document).ready(function () {
 
             // Prettify also the Translate and Adapt rectangles.#}
@@ -150,6 +152,27 @@
 
             $(".app>.alert").height(maxHeight + 50);
         });
+
+
+        // To handle the dynamic modal changers.
+
+        var _modal = {}; // To save modal data.
+
+        {# This is referenced by the modal generation macro #}
+        function onAppTitleSave() {
+            alert("YA");
+        }
+
+        // Initialize the dynamic app and description changers.
+        $(document).ready(function () {
+            $(".app-title").click(function (ev){
+                var appuid = $(ev.target).closest(".app").data("appuid");
+                _modal.appuid = appuid;
+                $("#appname-field").val($(ev.target).text());
+                $("#appname-modal").modal({show: true});
+            });
+        });
+
     </script>
 
 {% endblock %}

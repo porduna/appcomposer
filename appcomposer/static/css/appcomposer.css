@@ -11,3 +11,22 @@
 .appsearch-table {
     cursor: pointer; cursor: hand;
 }
+
+
+
+/* To indicate that a particular field can be dynamically changed by clicking */
+.dyn-changeable {
+    cursor: pointer; cursor: hand;
+}
+
+
+
+/* For the App screen and similar */
+
+.app-title {
+
+}
+
+.app-description {
+
+}
