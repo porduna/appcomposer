@@ -1,6 +1,13 @@
 {# This template contains macros for adding input boxes which can be used, for instance, to change
 the name of applications dynamically, in the Google Docs title style #}
 
+{% macro input_modal_autofocus_fix() %}
+    // Every time a modal is shown, if it has an autofocus element, focus on it.
+    $('.modal').on('shown.bs.modal', function() {
+      $(this).find('[autofocus]').focus();
+    });
+{% endmacro %}
+
 {% macro render_input_modal_html(modalid, textfieldid, title, requesttext, onsave) %}
 
 {#    <!-- Button trigger modal -->#}
@@ -14,24 +21,24 @@ the name of applications dynamically, in the Google Docs title style #}
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <button type="button" class="close" data-dismiss="modal"><span
-                            aria-hidden="true">&times;</span><span class="sr-only">Close</span></button>
+                    <a type="button" class="close" data-dismiss="modal"><span
+                            aria-hidden="true">&times;</span><span class="sr-only">Close</span></a>
                     <h4 class="modal-title" id="myModalLabel">{{ title }}</h4>
                 </div>
-                <div class="modal-body">
+                <form>
+                    <div class="modal-body">
 
-                    <form role="form">
                         <div class="form-group">
                             <label for="name-field">{{ requesttext }}</label>
-                            <input type="text" class="form-control" id="{{ textfieldid }}" placeholder=""/>
+                            <input type="text" autofocus="true" class="form-control" id="{{ textfieldid }}" placeholder=""/>
                         </div>
-                    </form>
 
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" onclick="{{ onsave }}">Save changes</button>
-                </div>
+                    </div>
+                    <div class="modal-footer">
+                        <a type="button" class="btn btn-default" data-dismiss="modal">Close</a>
+                        <button type="submit" class="btn btn-primary" onclick="{{ onsave }}">Save changes</button>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

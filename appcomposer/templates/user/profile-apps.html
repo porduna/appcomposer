@@ -190,6 +190,10 @@
 
         // Initialize the dynamic app and description changers.
         $(document).ready(function () {
+
+            {# Required for autofocus to work properly #}
+            {{ modal.input_modal_autofocus_fix() }}
+
             $(".app-title").click(function (ev){
                 var appuid = $(ev.target).closest(".app").data("appuid");
                 _modal.appuid = appuid;
