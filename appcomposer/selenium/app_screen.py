@@ -49,8 +49,9 @@ class AppScreen(unittest.TestCase):
             driver.find_element_by_css_selector("input.btn.btn-primary").click()
             driver.find_element_by_name("saveexit").click()
             self.assertEqual("Apps - User Profile", driver.title)
-            self.assertEqual("dummy1", driver.find_element_by_xpath("//div[3]/div[2]/div[2]/div/div/h3").text)
-            self.assertEqual("dummy2", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-info > div > h3").text)
+
+            self.assertEqual("dummy1", driver.find_elements_by_css_selector(".app-title")[1].text)
+            self.assertEqual("dummy2", driver.find_elements_by_css_selector(".app-title")[0].text)
             driver.find_element_by_link_text("Translate").click()
             for i in range(60):
                 try:
@@ -62,9 +63,9 @@ class AppScreen(unittest.TestCase):
             driver.find_element_by_id("sendurlbtn").click()
             driver.find_element_by_link_text("Apps").click()
             self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-success > div > h3").text)
-            self.assertEqual("dummy2", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-info > div > h3").text)
-            self.assertEqual("dummy1", driver.find_element_by_xpath("//div[3]/div/div/h3").text)
-            self.assertEqual("Composer: translate", driver.find_element_by_css_selector("h4").text)
+            self.assertEqual("dummy2", driver.find_elements_by_css_selector(".app-title")[1].text)
+            self.assertEqual("dummy1", driver.find_elements_by_css_selector(".app-title")[2].text)
+            self.assertEqual("Composer: translate", driver.find_element_by_css_selector(".app-composer-type").text)
             self.assertEqual("Open", driver.find_element_by_link_text("Open").text)
             self.assertEqual("Open", driver.find_element_by_xpath("(//a[contains(text(),'Open')])[2]").text)
             self.assertEqual("Open", driver.find_element_by_xpath("(//a[contains(text(),'Open')])[3]").text)
@@ -80,8 +81,8 @@ class AppScreen(unittest.TestCase):
 
 
             self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-success > div > h3").text)
-            self.assertEqual("dummy2", driver.find_element_by_css_selector("div.row > div.row > div.app > div.alert.alert-info > div > h3").text)
-            self.assertEqual("dummy1", driver.find_element_by_xpath("//div[3]/div/div/h3").text)
+            self.assertEqual("dummy2", driver.find_elements_by_css_selector(".app-title")[1].text)
+            self.assertEqual("dummy1", driver.find_elements_by_css_selector(".app-title")[2].text)
 
             self.assertEqual("Translate", driver.find_element_by_css_selector("h3").text)
             self.assertEqual("Adapt", driver.find_element_by_css_selector("div.alert.alert-info > div > h3").text)

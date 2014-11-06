@@ -86,7 +86,7 @@
                     <div class="alert {% if app.composer == "translate" %}alert-success{% else %}alert-info{% endif %}" style="position: relative">
                         <div>
                             <h3 class="app-title dyn-changeable">{{ app.name }}</h3>
-                            <h4>{{ gettext("Composer") }}: {{ app.composer }}</h4>
+                            <h4 class="app-composer-type">{{ gettext("Composer") }}: {{ app.composer }}</h4>
 
                             {# TODO: Remove this but guarantee something can always be clicked for the description. Not so easy. #}
                             <label id="desclabel" for="descfield" class="dyn-changeable">{{ gettext("Description:") }}</label>
