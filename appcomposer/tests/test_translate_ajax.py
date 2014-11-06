@@ -1,13 +1,9 @@
-import urllib
 from flask import json
-from werkzeug.utils import escape
+
 import appcomposer
 import appcomposer.application
-
-from appcomposer.appstorage import api, add_var
+from appcomposer.appstorage import api
 from appcomposer.appstorage.api import get_app
-from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals
-from appcomposer.login import current_user
 
 
 class TestTranslateAjax:

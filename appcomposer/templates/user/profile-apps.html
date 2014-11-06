@@ -5,7 +5,7 @@
 
 
     {{ modal.render_input_modal_html("appname-modal", "appname-field", "Change App name", "Insert the new name: ", "onAppTitleSave()") }}
-
+    {{ modal.render_input_modal_html("appdesc-modal", "appdesc-field", "Change App description", "Insert the new description: ", "onAppDescriptionSave()") }}
 
     <div class="row">
 
@@ -88,11 +88,9 @@
                             <h3 class="app-title dyn-changeable">{{ app.name }}</h3>
                             <h4>{{ gettext("Composer") }}: {{ app.composer }}</h4>
 
-                            {% if app.description %}
-                                <p class="app-description dyn-changeable">{{ app.description }}</p>
-                            {% else %}
-                                <p></p>
-                            {% endif %}
+                            {# TODO: Remove this but guarantee something can always be clicked for the description. Not so easy. #}
+                            <label id="desclabel" for="descfield" class="dyn-changeable">{{ gettext("Description:") }}</label>
+                            <p id="descfield" class="app-description dyn-changeable">{{ app.description or gettext("No description") }}</p>
 
                         </div>
                         <div style="position: absolute; bottom: 10px"> <!-- Place it at the bottom of the rectangle -->
@@ -160,8 +158,35 @@
 
         {# This is referenced by the modal generation macro #}
         function onAppTitleSave() {
-            alert("YA");
+            var requrl = "{{ url_for("index", _external=True) }}" + "change/appname/" + _modal.appuid;
+            var newname = $("#appname-field").val();
+            $.post(requrl, {"name": newname})
+                    .done(function(result){
+                        // TODO: Handle this dynamically instead of just reloading.
+                        window.location.reload();
+                    })
+                    .fail(function(result){
+                        console.error(result);
+                        alert("Could not change the name: " + result)
+                    });
         }
+
+
+        {# This is referenced by the modal generation macro #}
+        function onAppDescriptionSave() {
+            var requrl = "{{ url_for("index", _external=True) }}" + "change/appdescription/" + _modal.appuid;
+            var newdesc = $("#appdesc-field").val();
+            $.post(requrl, {"description": newdesc})
+                    .done(function(result){
+                        // TODO: Handle this dynamically instead of just reloading.
+                        window.location.reload();
+                    })
+                    .fail(function(result){
+                        console.error(result);
+                        alert("Could not change the description: " + result)
+                    });
+        }
+
 
         // Initialize the dynamic app and description changers.
         $(document).ready(function () {
@@ -170,6 +195,20 @@
                 _modal.appuid = appuid;
                 $("#appname-field").val($(ev.target).text());
                 $("#appname-modal").modal({show: true});
+            });
+
+            $(".app-description").click(function (ev){
+                var appuid = $(ev.target).closest(".app").data("appuid");
+                _modal.appuid = appuid;
+                $("#appdesc-field").val($(ev.target).text());
+                $("#appdesc-modal").modal({show: true});
+            });
+
+            $("#desclabel").click(function (ev){
+                var appuid = $(ev.target).siblings(".app-description").closest(".app").data("appuid");
+                _modal.appuid = appuid;
+                $("#appdesc-field").val($(ev.target).siblings(".app-description").text());
+                $("#appdesc-modal").modal({show: true});
             });
         });
 
