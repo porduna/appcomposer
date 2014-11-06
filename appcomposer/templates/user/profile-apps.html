@@ -167,7 +167,9 @@
                     })
                     .fail(function(result){
                         console.error(result);
-                        alert("Could not change the name: " + result)
+
+                        // TODO: IMPROVE THIS.
+                        alert("Could not change the name. Please ensure that the new name is valid and unique.");
                     });
         }
 
@@ -183,7 +185,9 @@
                     })
                     .fail(function(result){
                         console.error(result);
-                        alert("Could not change the description: " + result)
+
+                        // TODO: Improve this.
+                        alert("Could not change the description.");
                     });
         }
 
