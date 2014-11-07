@@ -1,0 +1,297 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
+<head profile="http://selenium-ide.openqa.org/profiles/test-case">
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<link rel="selenium.base" href="http://localhost:5000/" />
+<title>dyn_modals</title>
+</head>
+<body>
+<table cellpadding="1" cellspacing="1" border="1">
+<thead>
+<tr><td rowspan="1" colspan="3">dyn_modals</td></tr>
+</thead><tbody>
+<tr>
+	<td>open</td>
+	<td>/</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Use it!</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=login</td>
+	<td>admin</td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=password</td>
+	<td>password</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>//button[@type='submit']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'Start composing »')])[2]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForElementPresent</td>
+	<td>css=td.sorting_1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=td.sorting_1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>id=sendurlbtn</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=input.btn.btn-success</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Apps</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=h3.app-title.dyn-changeable</td>
+	<td>Concept Mapper</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=h3.app-title.dyn-changeable</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=appname-field</td>
+	<td>The Best Concept Mapper</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=button.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>Apps - User Profile</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=h3.app-title.dyn-changeable</td>
+	<td>The Best Concept Mapper</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=desclabel</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=appdesc-field</td>
+	<td>The description for the app</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=#appdesc-modal &gt; div.modal-dialog &gt; div.modal-content &gt; form &gt; div.modal-footer &gt; button.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>id=descfield</td>
+	<td>The description for the app</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Open</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>App Composer :: Edit the app content</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>id=apptitle</td>
+	<td>Adapt - The Best Concept Mapper</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=apptitle</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=appname-field</td>
+	<td>The new name for Concept Mapper</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=button.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertTitle</td>
+	<td>App Composer :: Edit the app content</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>id=apptitle</td>
+	<td>Adapt - The new name for Concept Mapper</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Apps</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Delete</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>name=delete</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>xpath=(//a[contains(text(),'Start composing »')])[3]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>waitForText</td>
+	<td>css=p.p1</td>
+	<td>The Concept Mapper tool lets you cre...</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=p.p1</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>id=sendurlbtn</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Apps</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Open</td>
+	<td></td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=appfullname</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=appname-field</td>
+	<td>My Concept Mapper</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=button.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>id=appfullname</td>
+	<td>My Concept Mapper</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Apps</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=h3.app-title.dyn-changeable</td>
+	<td>My Concept Mapper</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>css=h3.app-title.dyn-changeable</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=appname-field</td>
+	<td>My Concept Mapper Name</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=button.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>css=h3.app-title.dyn-changeable</td>
+	<td>My Concept Mapper Name</td>
+</tr>
+<tr>
+	<td>click</td>
+	<td>id=descfield</td>
+	<td></td>
+</tr>
+<tr>
+	<td>type</td>
+	<td>id=appdesc-field</td>
+	<td>This is quite a great Concept Mapper</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>css=#appdesc-modal &gt; div.modal-dialog &gt; div.modal-content &gt; form &gt; div.modal-footer &gt; button.btn.btn-primary</td>
+	<td></td>
+</tr>
+<tr>
+	<td>assertText</td>
+	<td>id=descfield</td>
+	<td>This is quite a great Concept Mapper</td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Delete</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>name=delete</td>
+	<td></td>
+</tr>
+<tr>
+	<td>clickAndWait</td>
+	<td>link=Log out</td>
+	<td></td>
+</tr>
+
+</tbody></table>
+</body>
+</html>
