@@ -107,7 +107,7 @@
                         console.error(result);
 
                         // TODO: IMPROVE THIS.
-                        alert({{ gettext("Could not change the name. Please ensure that the new name is valid and unique.") }});
+                        alert("{{ gettext("Could not change the name. Please ensure that the new name is valid and unique.") }}");
                     });
         }
 
@@ -118,6 +118,8 @@
             {{ modal.input_modal_autofocus_fix() }}
 
             $("#apptitle").click(function (ev){
+
+                console.log("CALLED ONCE");
                 var appuid = "{{ app_id }}";
                 _modal.appuid = appuid;
                 $("#appname-field").val($(ev.target).data("appname"));
