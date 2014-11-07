@@ -14,7 +14,7 @@
 {% block body_content %}
 
 
-    {{ modal.render_input_modal_html("appname-modal", "appname-field", "Change App name", "Insert the new name: ", "onAppTitleSave()") }}
+    {{ modal.render_input_modal_html("appname-modal", "appname-field", gettext("Change App name"), gettext("Insert the new name: "), "onAppTitleSave()") }}
 
 
     <div class="col-lg-10">
@@ -107,7 +107,7 @@
                         console.error(result);
 
                         // TODO: IMPROVE THIS.
-                        alert("Could not change the name. Please ensure that the new name is valid and unique.");
+                        alert({{ gettext("Could not change the name. Please ensure that the new name is valid and unique.") }});
                     });
         }
 

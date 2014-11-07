@@ -18,6 +18,8 @@
 
 {% block body_content %}
 
+    {{ modal.render_input_modal_html("appname-modal", "appname-field", gettext("Change App name"), gettext("Insert the new name: "), "onAppTitleSave()") }}
+
     <div class="translateblock">
 
 
@@ -38,7 +40,7 @@
 
 
                     {% if app %}
-                        <h2 id="appfullname">{{ app.name }}</h2>
+                        <h2 id="appfullname" class="dyn-changeable">{{ app.name }}</h2>
                     {% else %}
                         <h2 id="appfullname">{{ gettext("[App name not available]") }}</h2>
                     {% endif %}
@@ -349,7 +351,7 @@
                 console.log("Autoaccept changed");
 
                 if(data.result == "error")
-                    alert("Error: Could not change autoaccept state");
+                    alert("{{ gettext("Error: Could not change autoaccept state") }}");
             });
         });
 
@@ -566,6 +568,47 @@
             }
         });
     }
+
+
+
+
+    // To be able to dynamically edit the app name.
+
+        // To handle the dynamic modal changers.
+
+        var _modal = {}; // To save modal data.
+
+        {# This is referenced by the modal generation macro #}
+        function onAppTitleSave() {
+            var requrl = "{{ url_for("index", _external=True) }}" + "change/appname/" + _modal.appuid;
+            var newname = $("#appname-field").val();
+            $.post(requrl, {"name": newname})
+                    .done(function(result){
+                        // TODO: Handle this dynamically instead of just reloading.
+                        window.location.reload();
+                    })
+                    .fail(function(result){
+                        console.error(result);
+
+                        // TODO: IMPROVE THIS.
+                        alert("Could not change the name. Please ensure that the new name is valid and unique.");
+                    });
+        }
+
+        // Initialize the dynamic app and description changers.
+        $(document).ready(function () {
+
+            {# Required for autofocus to work properly #}
+            {{ modal.input_modal_autofocus_fix() }}
+
+            $("#appfullname").click(function (ev){
+                var appuid = "{{ app.unique_id }}";
+                _modal.appuid = appuid;
+                $("#appname-field").val($(ev.target).text());
+                $("#appname-modal").modal({show: true});
+            });
+
+        });
 
     </script>
 

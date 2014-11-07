@@ -4,8 +4,8 @@
 {% block body %}
 
 
-    {{ modal.render_input_modal_html("appname-modal", "appname-field", "Change App name", "Insert the new name: ", "onAppTitleSave()") }}
-    {{ modal.render_input_modal_html("appdesc-modal", "appdesc-field", "Change App description", "Insert the new description: ", "onAppDescriptionSave()") }}
+    {{ modal.render_input_modal_html("appname-modal", "appname-field", gettext("Change App name"), gettext("Insert the new name: "), "onAppTitleSave()") }}
+    {{ modal.render_input_modal_html("appdesc-modal", "appdesc-field", gettext("Change App description"), gettext("Insert the new description: "), "onAppDescriptionSave()") }}
 
     <div class="row">
 
