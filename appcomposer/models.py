@@ -8,6 +8,8 @@ from sqlalchemy.orm import relation, backref
 
 from appcomposer.db import db
 
+import base64
+
 import json
 
 
@@ -104,9 +106,11 @@ class App(db.Model):
         self.composer = composer
         self.creation_date = self.modification_date = self.last_access_date = datetime.datetime.now()
 
-        self.unique_id = str(uuid.uuid4())
+        # Generate a not-too-long unique id.
+        uid = base64.urlsafe_b64encode(uuid.uuid4().bytes[0:15])
+        self.unique_id = uid
         while App.find_by_unique_id(self.unique_id) is not None:
-            self.unique_id = str(uuid.uuid4())
+            self.unique_id = base64.urlsafe_b64encode(uuid.uuid4().bytes[0:15])
 
         self.description = description
 

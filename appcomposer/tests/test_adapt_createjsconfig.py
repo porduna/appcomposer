@@ -99,7 +99,7 @@ class TestAdaptCreateJsConfig:
         assert rv.status_code == 200
 
         # Retrieve the app id. Note: This relies on the fact that the last created app appears last.
-        finds = re.findall("""/adapt/edit/([a-z0-9\\-]+)""", rv.data)
+        finds = re.findall("""/adapt/edit/([A-Za-z0-9_\\-]+)""", rv.data)
         appid = finds[-1]
         assert len(appid) > 2
 

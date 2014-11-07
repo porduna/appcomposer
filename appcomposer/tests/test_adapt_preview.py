@@ -58,7 +58,7 @@ class TestAdaptPreview:
             adaptor_type="jsconfig",
             app_description=" TestDescription"
         ))
-        finds = re.findall("""/adapt/edit/([a-z0-9\\-]+)""", rv.data)
+        finds = re.findall("""/adapt/edit/([A-Za-z0-9_\\-]+)""", rv.data)
         self.appid = finds[-1]
 
 
@@ -94,6 +94,7 @@ class TestAdaptPreview:
         self.logout()
 
         url = "/composers/adapt/preview/%s/" % self.appid
+        print "URL: " + url
         rv = self.flask_app.get(url)
 
         print rv.data
