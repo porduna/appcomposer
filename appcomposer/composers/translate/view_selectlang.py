@@ -18,6 +18,7 @@ from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFil
 from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, \
     _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships
 from appcomposer.login import requires_login
+from appcomposer.application import app as flask_app
 
 
 def do_languages_initial_merge(app, bm):
@@ -144,6 +145,8 @@ def translate_selectlang():
 
         # Create a new App from the specified XML
         app = create_app(appname, "translate", appurl, js)
+        flask_app.logger.info("[translate]: App created for %s" % appurl)
+
 
         # Handle Ownership-related logic here.
         # Locate the owner for the App's DEFAULT language.
