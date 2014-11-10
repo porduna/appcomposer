@@ -39,3 +39,6 @@ SMTP_SERVER = None
 
 # List of Admins to send mails to when an error occurs.
 ADMINS = []
+
+# Logfile
+LOGFILE = "logfile.log"

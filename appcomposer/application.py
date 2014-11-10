@@ -1,7 +1,11 @@
+from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
 
 from flask import Flask, request, render_template
 from flask import escape
+
+import logging
+import pprint
 
 
 app = Flask(__name__)
@@ -41,9 +45,6 @@ else:
 
 # Initialize the logging mechanism to send error 500 mails to the administrators
 if not app.debug and app.config.get("ADMINS") is not None and app.config.get("SMTP_SERVER") is not None:
-    import logging
-    import pprint
-    from logging.handlers import SMTPHandler
 
     class MailLoggingFilter(logging.Filter):
         def filter(self, record):
@@ -83,6 +84,27 @@ if not app.debug and app.config.get("ADMINS") is not None and app.config.get("SM
     app.logger.addHandler(mail_handler)
 
 
+line_formatter = logging.Formatter("%(asctime)s - %(name)s - %(levelname)s - %(message)s")
+
+# Register the file handler.
+if(app.config.get("LOGFILE") is not None):
+    file_handler = RotatingFileHandler(app.config.get("LOGFILE"))
+    file_handler.setLevel(logging.DEBUG)
+    file_handler.setFormatter(line_formatter)
+    app.logger.addHandler(file_handler)
+
+# Register the cmd handler.
+stream_handler = logging.StreamHandler()
+stream_handler.setLevel(logging.DEBUG)
+stream_handler.setFormatter(line_formatter)
+app.logger.addHandler(stream_handler)
+
+
+# This seems to be required for the logging of sub-warning messages to work, though
+# it doesn't seem to be mentioned in the flask documentation.
+app.logger.setLevel(logging.DEBUG)
+
+
 
 
 
@@ -120,12 +142,12 @@ app.config['COMPOSERS'] = COMPOSERS
 
 
 #####
-# Main components 
+# Main components
 #####
 
 #
 # Initialize administration panels
-# 
+#
 
 # User component
 from .user.user_application import initialize_user_component
@@ -181,6 +203,11 @@ def error():
 @app.errorhandler(500)
 def error500(err):
     return render_template("composers/errors.html", message="An internal error occurred. You may try a different action, or contact the administrators."), 500
+
+
+
+
+app.logger.info("Flask App object is ready")
 
 
 # app.run(debug=False, port=8000)
