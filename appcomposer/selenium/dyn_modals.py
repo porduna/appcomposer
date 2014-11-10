@@ -12,7 +12,7 @@ import unittest, time, re
 class DynModals(unittest.TestCase):
     def setUp(self):
 
-        if os.environ.get("SELENIUM_HEADLESS") or True:
+        if os.environ.get("SELENIUM_HEADLESS"):
             self.driver = webdriver.PhantomJS()
         else:
             self.profile = FirefoxProfile();
