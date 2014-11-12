@@ -48,8 +48,12 @@ if not app.debug and app.config.get("ADMINS") is not None and app.config.get("SM
 
     class MailLoggingFilter(logging.Filter):
         def filter(self, record):
-            pass
-            record.environ = pprint.pformat(request.environ)
+            try:
+                record.environ = pprint.pformat(request.environ)
+            except RuntimeError:
+                # This on production will raise an "out of request context" error. We ignore it.
+                # TODO: Check if there is some way to detect that we are outside, rather than rely on an exception.
+                return False
             return True
 
     app.logger.addFilter(MailLoggingFilter())
