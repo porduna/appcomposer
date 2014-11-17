@@ -41,6 +41,7 @@ class BasicAdapt(unittest.TestCase):
                 except: pass
                 time.sleep(1)
             else: self.fail("time out")
+            time.sleep(0.5)
             driver.find_element_by_css_selector("td.sorting_1").click()
             driver.find_element_by_id("sendurlbtn").click()
             self.assertEqual("App adaptation", driver.find_element_by_css_selector("h3").text)
@@ -48,6 +49,7 @@ class BasicAdapt(unittest.TestCase):
             driver.find_element_by_css_selector("input.btn.btn-primary").click()
             self.assertEqual("App Composer :: Create/edit an app", driver.title)
             self.assertEqual("Details of the jsconfig", driver.find_element_by_css_selector("h5.panel-title").text)
+            time.sleep(0.5)
             driver.find_element_by_css_selector("input.btn.btn-success").click()
             self.assertEqual("App Composer :: Edit the app content", driver.title)
             self.assertTrue(self.is_element_present(By.CSS_SELECTOR, "iframe"))
@@ -73,12 +75,16 @@ class BasicAdapt(unittest.TestCase):
             driver.find_element_by_name("relations").click()
             driver.find_element_by_name("relations").clear()
             driver.find_element_by_name("relations").send_keys("relation1, relation2, relation3")
+
+            driver.find_element_by_name("combobox_concepts").click()
             for i in range(60):
                 try:
                     if "All changes saved" == driver.find_element_by_xpath("//body/div[3]").text: break
                 except: pass
                 time.sleep(1)
             else: self.fail("time out")
+            time.sleep(2)
+
             driver.find_element_by_link_text("Apps").click()
             driver.find_element_by_link_text("Open").click()
             for i in range(60):
@@ -89,6 +95,8 @@ class BasicAdapt(unittest.TestCase):
                 except: pass
                 time.sleep(1)
             else: self.fail("time out")
+
+            time.sleep(2)
             self.assertEqual("relation1, relation2, relation3", driver.find_element_by_name("relations").get_attribute("value"))
             self.assertTrue(self.is_element_present(By.CSS_SELECTOR, "iframe"))
             driver.find_element_by_link_text("Apps").click()
