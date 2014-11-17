@@ -101,6 +101,10 @@
                                     <button type="submit" id="sendurlbtn" name="sendurl"
                                             class="btn btn-success">{{ gettext("Adapt chosen app »") }}</button>
 
+                                    <p id="notfilled-message" class="text-danger">
+                                        {{ gettext("Please, choose an app or provide a name and URL") }}
+                                    </p>
+
                                 </div>
                             </div>
                         </div>
@@ -119,6 +123,36 @@
 
     <script type="text/javascript">
 
+
+
+        // Disable the "Adapt chosen app" button if the name and/or URL fields are empty.
+        function checkCanProceed()
+        {
+            var url = $("#appurl").val();
+            var name = $("#appname").val();
+
+            if(url.length == 0 || name.length == 0)
+            {
+                $("#sendurlbtn").attr("disabled", "disabled");
+                $("#notfilled-message").show();
+            }
+            else
+            {
+                $("#sendurlbtn").removeAttr("disabled");
+                $("#notfilled-message").hide();
+            }
+        }
+
+        $(document).ready(function() {
+            $("input[type=text]").on("input", function() {
+                checkCanProceed();
+            });
+
+            checkCanProceed();
+        });
+
+
+
         // Called by the Advanced Mode code whenever the mode changes.
         function onAdvancedModeChanged(enabled) {
             var advMode = $(".advanced-mode");
@@ -136,6 +170,8 @@
             var fulldata = AppsearchData[row.index()];
             $("#appurl").val(fulldata["app_url"]);
             $("#appname").val(fulldata["title"]);
+
+            checkCanProceed();
         } //! onRowSelected
 
         $(document).ready(function () {
