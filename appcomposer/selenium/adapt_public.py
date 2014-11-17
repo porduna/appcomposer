@@ -23,7 +23,7 @@ class AdaptPublic(unittest.TestCase):
             self.profile.set_preference("intl.accept_languages", "en")
             self.driver = webdriver.Firefox(self.profile)
 
-        self.driver.set_window_size(1300, 1000)
+        self.driver.set_window_size(1600, 1000)
 
         self.driver.implicitly_wait(30)
         self.base_url = "http://localhost:5000/"
@@ -53,6 +53,15 @@ class AdaptPublic(unittest.TestCase):
         driver.find_element_by_css_selector("input.btn.btn-primary").click()
         driver.find_element_by_css_selector("input.btn.btn-success").click()
         driver.find_element_by_link_text("Log out").click()
+
+        # Wait until "Learn more" is visible.
+        for i in range(60):
+            try:
+                lm = driver.find_element_by_link_text("Learn more")
+                break
+            except:
+                time.sleep(1)
+
         driver.get("http://localhost:5000/composers/adapt/type_selection?appurl=http%3A%2F%2Fgo-lab.gw.utwente.nl%2Fproduction%2Fconceptmapper_v1%2Ftools%2Fconceptmap%2Fsrc%2Fmain%2Fwebapp%2Fconceptmapper.xml&appname=Concept+Mapper&sendurl=")
         self.assertEqual("App Composer :: Adaptation tool (public)", driver.title)
         self.assertEqual("View", driver.find_element_by_id("view-btn").text)
