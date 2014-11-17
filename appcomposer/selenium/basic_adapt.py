@@ -19,7 +19,7 @@ class BasicAdapt(unittest.TestCase):
         if os.environ.get("SELENIUM_HEADLESS"):
             self.driver = webdriver.PhantomJS()
         else:
-            self.profile = FirefoxProfile();
+            self.profile = FirefoxProfile()
             self.profile.set_preference("intl.accept_languages", "en")
             self.driver = webdriver.Firefox(self.profile)
 

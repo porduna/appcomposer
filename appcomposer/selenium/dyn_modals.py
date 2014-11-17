@@ -48,7 +48,13 @@ class DynModals(unittest.TestCase):
             except: pass
             time.sleep(1)
         else: self.fail("time out")
+
+        time.sleep(0.5)
+
         driver.find_element_by_css_selector("td.sorting_1").click()
+
+        time.sleep(0.5)
+
         driver.find_element_by_id("sendurlbtn").click()
         driver.find_element_by_css_selector("input.btn.btn-primary").click()
         driver.find_element_by_css_selector("input.btn.btn-success").click()
@@ -105,6 +111,9 @@ class DynModals(unittest.TestCase):
             except: pass
             time.sleep(1)
         else: self.fail("time out")
+
+        time.sleep(1)
+
         driver.find_element_by_css_selector("p.p1").click()
         driver.find_element_by_id("sendurlbtn").click()
         driver.find_element_by_link_text("Apps").click()

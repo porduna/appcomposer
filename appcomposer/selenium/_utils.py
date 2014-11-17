@@ -23,7 +23,8 @@ def module_path():
 def reset_database():
     """
     Removes the sqlite database and creates a new one.
-    :return:
+    :return: None
+    :rtype: None
     """
 
     path = module_path()
