@@ -17,10 +17,10 @@ class BasicTranslate(unittest.TestCase):
         
         reset_database()
 
-        if os.environ.get("SELENIUM_HEADLESS"):
+        if os.environ.get("SELENIUM_HEADLESS") or True:
             self.driver = webdriver.PhantomJS()
         else:
-            self.profile = FirefoxProfile();
+            self.profile = FirefoxProfile()
             self.profile.set_preference("intl.accept_languages", "en")
             self.driver = webdriver.Firefox(self.profile)
 
@@ -69,7 +69,9 @@ class BasicTranslate(unittest.TestCase):
             time.sleep(1)
         else: self.fail("time out")
         driver.find_element_by_css_selector("td.sorting_1").click()
+        time.sleep(0.5)
         driver.find_element_by_id("sendurlbtn").click()
+        time.sleep(0.5)
         try: self.assertEqual("Concept Mapper", driver.find_element_by_id("appfullname").text)
         except AssertionError as e: self.verificationErrors.append(str(e))
         self.assertEqual("You are the owner of this App's default translation.", driver.find_element_by_css_selector("p").text)

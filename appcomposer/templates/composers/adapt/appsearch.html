@@ -250,10 +250,12 @@
                                 $(selected).removeClass("selected");
                             }
 
-                            $(row.node()).toggleClass("selected");
                             selected = row.node();
-
                             onRowSelected(row);
+
+                            // It is advisable to not toggle until all the callbacks are called, so that in the
+                            // selenium tests we can use the presence or absence of "selected" to Wait().
+                            $(row.node()).toggleClass("selected");
                         });
                     });
 

@@ -46,6 +46,7 @@ class BasicAdapt(unittest.TestCase):
                 except: pass
                 time.sleep(1)
             else: self.fail("time out")
+
             time.sleep(0.5)
             driver.find_element_by_css_selector("td.sorting_1").click()
             driver.find_element_by_id("sendurlbtn").click()
