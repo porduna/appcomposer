@@ -97,12 +97,12 @@
 
                                 <div class="controls">
 
+                                    <p id="notfilled-message" class="text-danger">
+                                        {{ gettext("Please, choose an app or provide a name and URL") }}
+                                    </p>
+
                                     <button type="submit" id="sendurlbtn" name="sendurl"
                                             class="btn btn-success">{{ gettext("Step 2 - Select language »") }}</button>
-
-                                    <!--
-                                        <a class="btn btn-success" id="sendurlbtn" href="{{ url_for('translate.translate_selectlang') }}">Step 2 - Select language »</a>
-                                        -->
                                 </div>
                             </div>
                         </div>
@@ -123,6 +123,32 @@
 
     <script type="text/javascript">
 
+        // Disable the "Adapt chosen app" button if the name and/or URL fields are empty.
+        function checkCanProceed()
+        {
+            var url = $("#appurl").val();
+            var name = $("#appname").val();
+
+            if(url.length == 0 || name.length == 0)
+            {
+                $("#sendurlbtn").attr("disabled", "disabled");
+                $("#notfilled-message").show();
+            }
+            else
+            {
+                $("#sendurlbtn").removeAttr("disabled");
+                $("#notfilled-message").hide();
+            }
+        }
+
+        $(document).ready(function(){
+            $("input[type=text]").on("input", function() {
+                checkCanProceed();
+            });
+
+            checkCanProceed();
+        });
+
         // Called by the Advanced Mode code whenever the mode changes.
         function onAdvancedModeChanged(enabled) {
             var advMode = $(".advanced-mode");
@@ -140,6 +166,8 @@
             var fulldata = AppsearchData[row.index()];
             $("#appurl").val(fulldata["app_url"]);
             $("#appname").val(fulldata["title"]);
+
+            checkCanProceed();
         } //! onRowSelected
 
         $(document).ready(function () {
@@ -209,7 +237,7 @@
                         {# This needs to be done after the table is drawn because otherwise the events don't work. #}
                         {# TODO: Find a work-around. There is probably a prettier way. #}
                         $('#appsearch-table tbody').on('click', 'tr', function () {
-                            console.log("CLICK");
+                            console.debug("CLICK");
 
                             var tr = this;
                             row = appsearch.row(tr);
