@@ -30,7 +30,7 @@ def reset_database():
     basepath = os.path.join(path, "../../")
 
     try:
-        os.remove(os.path.join(basepath), "database.db")
+        os.remove(os.path.join(basepath, "database.db"))
     except:
         pass
 
