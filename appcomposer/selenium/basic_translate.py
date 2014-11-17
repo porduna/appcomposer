@@ -73,6 +73,7 @@ class BasicTranslate(unittest.TestCase):
         try: self.assertEqual("View Proposed Translations 0", driver.find_element_by_css_selector("button.btn.btn-warning").text)
         except AssertionError as e: self.verificationErrors.append(str(e))
         driver.find_element_by_css_selector("span.select2-chosen").click()
+        driver.find_element_by_css_selector("span.select2-chosen").click()
         driver.find_element_by_id("localisebtn").click()
         self.assertEqual("standard", driver.find_element_by_css_selector("b").text)
         self.assertEqual("Transfer Ownership", driver.find_element_by_xpath("//a/button").text)
