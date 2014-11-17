@@ -8,9 +8,13 @@ from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
 import unittest, time, re
+from _utils import reset_database
+
 
 class AdaptExistingapps(unittest.TestCase):
     def setUp(self):
+
+        reset_database()
 
         if os.environ.get("SELENIUM_HEADLESS"):
             self.driver = webdriver.PhantomJS()
@@ -41,6 +45,9 @@ class AdaptExistingapps(unittest.TestCase):
             except: pass
             time.sleep(1)
         else: self.fail("time out")
+
+        time.sleep(1)
+
         driver.find_element_by_css_selector("td.sorting_1").click()
         driver.find_element_by_id("sendurlbtn").click()
         self.assertEqual("App Composer :: Adaptation tool", driver.title)
@@ -71,6 +78,9 @@ class AdaptExistingapps(unittest.TestCase):
             time.sleep(1)
         else: self.fail("time out")
         driver.find_element_by_css_selector("td.sorting_1").click()
+
+        time.sleep(1)
+
         driver.find_element_by_id("sendurlbtn").click()
         self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("td.sorting_1").text)
         self.assertEqual("", driver.find_element_by_css_selector("input.btn.btn-primary").text)

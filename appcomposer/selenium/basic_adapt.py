@@ -8,9 +8,14 @@ from selenium.webdriver.support.ui import Select
 from selenium.common.exceptions import NoSuchElementException
 from selenium.common.exceptions import NoAlertPresentException
 import unittest, time, re
+from _utils import reset_database
+
 
 class BasicAdapt(unittest.TestCase):
     def setUp(self):
+
+        reset_database()
+
         if os.environ.get("SELENIUM_HEADLESS"):
             self.driver = webdriver.PhantomJS()
         else:

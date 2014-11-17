@@ -9,9 +9,13 @@ from selenium.common.exceptions import NoAlertPresentException
 import unittest, time, re
 
 import os
+from _utils import reset_database
+
 
 class BasicTranslate(unittest.TestCase):
     def setUp(self):
+        
+        reset_database()
 
         if os.environ.get("SELENIUM_HEADLESS"):
             self.driver = webdriver.PhantomJS()
