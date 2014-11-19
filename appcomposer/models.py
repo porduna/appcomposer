@@ -101,6 +101,9 @@ class App(db.Model):
     spec_id = db.Column(db.Integer, ForeignKey("Specs.id"))
     spec = relation("Spec", backref="apps")  # declare the relation and place a backref to the apps on the Spec objects.
 
+    # An app can have many bundles (one-to-many).
+    bundles = relation("Bundle", backref="app")
+
     def __repr__(self):
         return self.to_json()
 
@@ -185,6 +188,16 @@ class Spec(db.Model):
     url = db.Column(db.Unicode(500), nullable=False, unique=True)
     pid = db.Column(db.Unicode(100), nullable=False, unique=True)
 
+    # Translator specs can have a special base bundle which links to a special bundle
+    # with the most up-to-date default translation for an App. (By most up-to-date
+    # we actually mean, with respect to the other Bundles. Remotely the actual spec XML
+    # could still contain newer translations, if it wasn't updated in the composer).
+    #spec_id = db.Column(db.Integer, ForeignKey("Bundles.id"), nullable=True)
+    #base_bundle = relation("Bundle")
+
+    # TODO: The relationship above currently leads to a circular dependency in SQLAlchemy,
+    # that's why it is currently disabled.
+
     def __init__(self, url):
         self.url = url
         self.pid = self._gen_unique_id()
@@ -196,6 +209,38 @@ class Spec(db.Model):
 
     def __repr__(self):
         return "Spec(%r, %r, %r)" % (self.id, self.url, self.pid)
+
+
+class Bundle(db.Model):
+    """
+    Represents a Bundle, which is a set of messages. Bundles are linked to a language and a target group.
+    """
+    __tablename__ = "Bundles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    lang = db.Column(db.Unicode(15))
+    target = db.Column(db.Unicode(30))
+
+    # A bundle can have many messages. (one-to-many).
+    messages = relation("Message", backref="bundle")
+
+    # We have a backref to our parent App.
+    app_id = db.Column(db.Integer, ForeignKey("Apps.id"))
+
+
+class Message(db.Model):
+    """
+    Represents a Message, which is the translation for a specific key within a Bundle.
+    """
+    __tablename__ = "Messages"
+
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.Unicode(50))
+    value = db.Column(db.Text)  # TODO: Check whether this is the best type for value.
+
+    # Ref to the Bundle we belong to. (many-to-one).
+    bundle_id = db.Column(db.Integer, ForeignKey("Bundles.id"))
+
 
 
 
