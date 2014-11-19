@@ -227,6 +227,16 @@ class Bundle(db.Model):
     # We have a backref to our parent App.
     app_id = db.Column(db.Integer, ForeignKey("Apps.id"))
 
+    def __init__(self, lang, target):
+        """
+        Creates a new Bundle object.
+        :param lang: The language (which is really language_TERRITORY).
+        :type lang: str
+        :param target: The target group.
+        :type target: str
+        """
+        self.lang = lang
+        self.target = target
 
 class Message(db.Model):
     """
