@@ -58,6 +58,7 @@ class User(db.Model, UserMixin):
     def find_by_id(cls, id):
         return cls.query.filter_by(id=id).first()
 
+
 class AppVersion(db.Model):
     __tablename__ = 'AppVersions'
 
@@ -94,8 +95,11 @@ class App(db.Model):
     description = db.Column(db.Unicode(1000), nullable=True)
     spec_url = db.Column(db.Unicode(600), nullable=True)  # URL of the XML spec for the App.
 
-    # TODO: Find out why this relationships seems to not work sometimes.
+    # TODO: Find out why these relationships seems to not work sometimes.
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
+
+    spec_id = db.Column(db.Integer, ForeignKey("Specs.id"))
+    spec = relation("Spec", backref="apps")  # declare the relation and place a backref to the apps on the Spec objects.
 
     def __repr__(self):
         return self.to_json()
@@ -167,5 +171,26 @@ class AppVar(db.Model):
     @classmethod
     def find_by_var_id(cls, var_id):
         return cls.query.filter_by(var_id=var_id).first()
+
+
+class Spec(db.Model):
+    """
+    Represents an OpenSocial application. The most significant attribute is the Spec URL,
+    which is unique.
+    """
+
+    __tablename__ = "Specs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    url = db.Column(db.Unicode(500), nullable=False)
+    pid = db.Column(db.Unicode(50))
+
+    def __init__(self, url):
+        self.url = url
+        self.pid = None  # TODO: To be assigned a hash or similar later.
+
+    def __repr__(self):
+        return "Spec(%r, %r, %r)" % (self.id, self.url, self.pid)
+
 
 
