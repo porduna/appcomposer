@@ -86,16 +86,16 @@ class App(db.Model):
 
     unique_id = db.Column(db.Unicode(50), index=True, unique=True)
     name = db.Column(db.Unicode(50), index=True)
-    owner_id = db.Column(db.Integer, ForeignKey("Users.id"), nullable=False, index=True)
+
     composer = db.Column(db.Unicode(50), index=True, nullable=False, server_default=u'expert')
     data = db.Column(db.Text, nullable=False, server_default=u'{}')
     creation_date = db.Column(db.DateTime, nullable=False, index=True)
     modification_date = db.Column(db.DateTime, nullable=False, index=True)
     last_access_date = db.Column(db.DateTime, nullable=False, index=True)
     description = db.Column(db.Unicode(1000), nullable=True)
-    spec_url = db.Column(db.Unicode(600), nullable=True)  # URL of the XML spec for the App.
 
     # TODO: Find out why these relationships seems to not work sometimes.
+    owner_id = db.Column(db.Integer, ForeignKey("Users.id"), nullable=False, index=True)
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
 
     spec_id = db.Column(db.Integer, ForeignKey("Specs.id"))
@@ -182,12 +182,17 @@ class Spec(db.Model):
     __tablename__ = "Specs"
 
     id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.Unicode(500), nullable=False)
-    pid = db.Column(db.Unicode(50))
+    url = db.Column(db.Unicode(500), nullable=False, unique=True)
+    pid = db.Column(db.Unicode(100), nullable=False, unique=True)
 
     def __init__(self, url):
         self.url = url
-        self.pid = None  # TODO: To be assigned a hash or similar later.
+        self.pid = self._gen_unique_id()
+
+    def _gen_unique_id(self):
+        # Generate a not-too-long unique and permanent id.
+        uid = base64.urlsafe_b64encode(uuid.uuid4().bytes[0:15])
+        return uid
 
     def __repr__(self):
         return "Spec(%r, %r, %r)" % (self.id, self.url, self.pid)
