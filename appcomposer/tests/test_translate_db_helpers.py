@@ -179,6 +179,14 @@ class TestTranslateDbHelpers:
         # Should now be 2.
         assert len(apps) == 2
 
+    def test_get_spec_apps_empty(self):
+        """
+        Calling test_get_spec_apps on a non-existing spec gets an empty list.
+        :return:
+        """
+        apps = _db_get_spec_apps("http://doesnt-exist.com")
+        assert len(apps) == 0
+
     def test_transfer_ownership(self):
         """
         Tests the method to transfer ownership.

@@ -1,7 +1,7 @@
 from appcomposer import db
 from appcomposer.appstorage.api import get_app_by_name, add_var
 from appcomposer.composers.translate import CFG_SAME_NAME_LIMIT
-from appcomposer.models import AppVar, App
+from appcomposer.models import AppVar, App, Spec
 
 """
 REMARKS ABOUT APPVARS FOR THE TRANSLATOR:
@@ -15,9 +15,9 @@ ca_ES) as its value.
 def _db_get_diff_specs():
     """
     Gets a list of the different specs that are in the database.
-    @return: List of different specs. (The specs themselves, not the AppVar objects).
+    @return: List of different specs.
     """
-    spec_values = db.session.query(App.spec_url).distinct()
+    spec_values = db.session.query(Spec.url).distinct()
     specs = [val[0] for val in spec_values]
     return specs
 
@@ -28,7 +28,7 @@ def _db_get_ownerships(spec):
     @param spec: The spec whose ownerships to retrieve.
     @return: List of ownerships.
     """
-    related_apps_ids = db.session.query(App.id).filter(App.spec_url == spec).subquery()
+    related_apps_ids = db.session.query(App.id).filter(App.spec.has(Spec.url == spec)).subquery()
 
     # Among those AppVars for our Spec, we try to locate an ownership AppVar.
     owner_apps = db.session.query(AppVar).filter(AppVar.name == "ownership",
@@ -52,14 +52,17 @@ def _db_get_app_ownerships(app):
     return ownerships
 
 
-def _db_get_spec_apps(spec):
+def _db_get_spec_apps(spec_url):
     """
     Gets from the database the list of apps with the specified spec.
-    @param spec: String to the App's original XML.
+    @param spec_url: String to the App's original XML.
     @return: List of apps with the specified spec."
     """
-    apps = db.session.query(App).filter_by(spec_url=spec).all()
-    return apps
+    spec = db.session.query(Spec).filter_by(url=spec_url).first()
+    if spec is None:
+        return []
+    else:
+        return spec.apps
 
 
 def _db_get_lang_owner_app(spec, lang_code):
@@ -70,7 +73,7 @@ def _db_get_lang_owner_app(spec, lang_code):
     language without the territory is NOT enough.
     @return: The owner for the App and language. None if no owner is found.
     """
-    related_apps_ids = db.session.query(App.id).filter_by(spec_url=spec).subquery()
+    related_apps_ids = db.session.query(App.id).filter(App.spec.has(Spec.url == spec)).subquery()
 
     # TODO: Check whether we can optimize this code thanks to the spec_url update.
 
