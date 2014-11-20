@@ -10,7 +10,7 @@ from appcomposer.appstorage.api import get_app, update_app_data, add_var
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
-from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_declare_ownership
+from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_declare_ownership, save_bundles_to_db
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 from appcomposer.csrf import verify_csrf
 from appcomposer.login import requires_login
@@ -100,6 +100,7 @@ def translate_edit():
         # Now we need to save the changes into the database.
         json_str = bm.to_json()
         update_app_data(app, json_str)
+        save_bundles_to_db(app, bm)
 
         flash(gettext("Changes have been saved."), "success")
 
@@ -121,6 +122,7 @@ def translate_edit():
                 owner_app.data = obm.to_json()
                 db.session.add(owner_app)
                 db.session.commit()
+                save_bundles_to_db(owner_app, obm)
 
                 # [Context: We are not the leading Bundles, but our changes are merged directly into the leading Bundle]
                 # We report the change to a "leading" bundle.
