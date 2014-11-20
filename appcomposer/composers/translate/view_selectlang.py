@@ -16,7 +16,7 @@ from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException, NoValidTranslationsException
 from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, \
-    _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships, save_bundles_to_db
+    _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships, save_bundles_to_db, load_appdata_from_db
 from appcomposer.login import requires_login
 from appcomposer.application import app as flask_app
 
@@ -201,7 +201,11 @@ def translate_selectlang():
                                    message=gettext("Specified App doesn't exist")), 404
 
         # Load a BundleManager from the app data.
-        bm = BundleManager.create_from_existing_app(app.data)
+
+        # Retrieve the app.data mostly from DB (new method) to stop relying to the legacy appdata.
+        # TODO: Clear this up once the port is done.
+        appdata = load_appdata_from_db(app)
+        bm = BundleManager.create_from_existing_app(appdata)
         save_bundles_to_db(app, bm)
 
         spec = bm.get_gadget_spec()
