@@ -224,15 +224,19 @@ def load_appdata_from_db(app):
 
     # Load the list of bundles for the app from the DB
     bundles = db.session.query(Bundle).filter_by(app=app).all()
-
     for bundle in bundles:
         # Add the bundle to our dictionary.
         b = {}
+        m = {}
+        b["messages"] = m
+        b["group"] = bundle.target
+        b["lang"] = bundle.lang.split("_")[0]
+        b["country"] = bundle.lang.split("_")[1]
         appdata_bundles["%s_%s" % (bundle.lang, bundle.target)] = b
 
         # Load every message for the bundle.
-        messages = db.session.query(Message).filter_by(bundle=b).all()
+        messages = db.session.query(Message).filter_by(bundle=bundle).all()
         for message in messages:
-            b[message.key] = message.value
+            m[message.key] = message.value
 
     return appdata

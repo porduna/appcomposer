@@ -291,8 +291,27 @@ class TestTranslateDbHelpers(unittest.TestCase):
 
         appdata = load_appdata_from_db(self.tapp)
 
+        # The bundles should now be empty, because load_appdata_from_db should not rely on the data's bundles, but
+        # on the db information (and for now there is none). The settings should be respected.
         self.assertIsNotNone(appdata)
+        self.assertIn("random_setting", appdata)
+        self.assertIn("bundles", appdata)
+        self.assertTrue(len(appdata["bundles"]) == 0)
 
-        # TODO: More tests
+
+        # To further test info retrieval, we need to add info to the db.
+        testBundle = Bundle("all", "ALL", "ALL")
+        testBundle._msgs["key.three"] = "Three"
+        testBundle._msgs["key.four"] = "Four"
+        bm = BundleManager()
+        bm._bundles = {}
+        bm._bundles["all_ALL_ALL"] = testBundle
+        save_bundles_to_db(self.tapp, bm)
+
+
+        appdata = load_appdata_from_db(self.tapp)
+        self.assertTrue(appdata["bundles"]["all_ALL_ALL"]["messages"]["key.three"] == "Three")
+        self.assertTrue(appdata["bundles"]["all_ALL_ALL"]["messages"]["key.four"] == "Four")
+
 
 
