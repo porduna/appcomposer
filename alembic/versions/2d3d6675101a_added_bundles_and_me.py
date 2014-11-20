@@ -64,8 +64,16 @@ def upgrade():
 
                 # For each message in the bundle, create a Message object and link it to the bundle we just created.
                 for key, value in messages.items():
-                    result = connection.execute(text("INSERT INTO Messages (`key`, `value`, bundle_id) VALUES (:key, :value, :bundle_id)"),
-                                                key=key, value=value, bundle_id=bundle_id)
+                    # print "Value: %r" % value
+                    result = connection.execute(text(u"INSERT INTO Messages (`key`, `value`, bundle_id) VALUES (:key, :value, :bundle_id)"),
+                                                key=key, value=value.encode("utf8"), bundle_id=bundle_id)
+
+            # Delete the bundles.
+            del data["bundles"]
+
+            # Save the changes.
+            datastr = json.dumps(data)
+            result = connection.execute(text(u"UPDATE Apps SET `data` = :data WHERE id = :app_id"), data=datastr, app_id=app_id)
 
         except:
             traceback.print_exc()

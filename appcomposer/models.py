@@ -246,7 +246,7 @@ class Message(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
     key = db.Column(db.Unicode(50))
-    value = db.Column(db.Text)  # TODO: Check whether this is the best type for value.
+    value = db.Column(db.UnicodeText)  # TODO: Check whether this is the best type for value.
 
     # Ref to the Bundle we belong to. (many-to-one).
     bundle_id = db.Column(db.Integer, ForeignKey("Bundles.id"))
