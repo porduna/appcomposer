@@ -146,6 +146,7 @@ def translate_selectlang():
 
         # Create a new App from the specified XML
         app = create_app(appname, "translate", appurl, js)
+        save_bundles_to_db(app, bm)
         flask_app.logger.info("[translate]: App created for %s" % appurl)
 
 
@@ -201,6 +202,7 @@ def translate_selectlang():
 
         # Load a BundleManager from the app data.
         bm = BundleManager.create_from_existing_app(app.data)
+        save_bundles_to_db(app, bm)
 
         spec = bm.get_gadget_spec()
 
