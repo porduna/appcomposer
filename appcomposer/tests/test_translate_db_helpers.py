@@ -6,7 +6,7 @@ import appcomposer.application
 from appcomposer.appstorage import api, add_var
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
 from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals, _db_get_spec_apps, _db_transfer_ownership, _db_get_app_ownerships, _db_get_diff_specs, \
-    save_bundles_to_db
+    save_bundles_to_db, load_appdata_from_db
 from appcomposer.login import current_user
 import appcomposer.models
 from appcomposer import db
@@ -265,5 +265,34 @@ class TestTranslateDbHelpers(unittest.TestCase):
         self.assertEquals(2, len(messages))
         self.assertEquals("One", messages["key.one"])
         self.assertEquals("Two", messages["key.two"])
+
+    def test_load_appdata_from_db(self):
+        """
+        Test the method to load the appdata as if it was the old legacy JSON object from the database.
+        :return:
+        """
+        data = {
+            "spec": "http://justatest.com",
+            "random_setting": 1,
+            "bundles": {
+                "all_ALL_ALL": {
+                    "lang": "all",
+                    "country": "ALL",
+                    "target": "ALL",
+                    "messages" : {
+                        "key.one": "One"
+                    }
+                }
+            }
+        }
+        self.tapp.data = json.dumps(data)
+        db.session.add(self.tapp)
+        db.session.commit()
+
+        appdata = load_appdata_from_db(self.tapp)
+
+        self.assertIsNotNone(appdata)
+
+        # TODO: More tests
 
 

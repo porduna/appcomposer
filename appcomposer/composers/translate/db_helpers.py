@@ -162,6 +162,7 @@ def _db_get_proposals(app):
 
 def save_bundles_to_db(app, bm):
     """
+    TEMPORARY FUNCTION (should eventually be removed once port is complete)
     Saves the translation data in the Bundle Manager to the DB.
     :param app: The App object to save to.
     :type app: App
@@ -202,3 +203,36 @@ def save_bundles_to_db(app, bm):
 
         db.session.commit()
 
+
+def load_appdata_from_db(app):
+    """
+    TEMPORARY FUNCTION (should eventually be removed once port is complete)
+    Using the DB it loads a somewhat *fake* appdata JSONable object which resembles
+    the legacy translator app data object.
+    :param app:
+    :return:
+    """
+    # First, access to the real appdata object, which is still used to store some
+    # configuration options.
+    appdata = json.loads(app.data)
+
+    # Remove the "bundles" dictionary from it because we want to retrieve it from the database.
+    if "bundles" in appdata:
+        del appdata["bundles"]
+    appdata_bundles = {}
+    appdata["bundles"] = appdata_bundles
+
+    # Load the list of bundles for the app from the DB
+    bundles = db.session.query(Bundle).filter_by(app=app).all()
+
+    for bundle in bundles:
+        # Add the bundle to our dictionary.
+        b = {}
+        appdata_bundles["%s_%s" % (bundle.lang, bundle.target)] = b
+
+        # Load every message for the bundle.
+        messages = db.session.query(Message).filter_by(bundle=b).all()
+        for message in messages:
+            b[message.key] = message.value
+
+    return appdata
