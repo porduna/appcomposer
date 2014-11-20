@@ -1,9 +1,9 @@
-{% set title = "Translation tool" %}
+{% set title = "AppComposer translation tool" %}
 {% set current_link = "home" %}
 {% set current_composer = "translate" %}
 {% extends 'composers/translate/layout.html' %}
 {% block body_content %}
-    <div class="translateblock">
+    <div class="translateblock" ng-app="translateIndex" ng-controller="NextStepCtrl">
     <div class="row">
         <div class="col-lg-12">
             <div class="page-header">
@@ -51,8 +51,8 @@
                     </tbody>
                 </table>
 
-                <form class="form-horizontal" id="geturl" name="geturl"
-                      action="{{ url_for('translate.translate_selectlang') }}" method="POST">
+                <form name="nextStepForm" class="form-horizontal" id="geturl" name="geturl"
+                      action="{{ url_for('translate.translate_selectlang') }}" method="POST" novalidate>
                     <fieldset>
 
 
@@ -62,7 +62,7 @@
                                 <label for="appurl" class="col-lg-1 control-label">{{ gettext("URL") }}</label>
 
                                 <div class="col-lg-10">
-                                    <input type="text" id="appurl" name="appurl" class="form-control"
+                                    <input ng-model="url" required type="text" id="appurl" name="appurl" class="form-control"
                                            placeholder="{{ gettext("URL of the app") }}">
                                     <span class="help-block">{{ gettext("The URL of the app you want to translate.") }}</span>
                                 </div>
@@ -72,7 +72,7 @@
                                 <label for="appname" class="col-lg-1 control-label">{{ gettext("Name") }}</label>
 
                                 <div class="col-lg-10">
-                                    <input type="text" id="appname" name="appname" class="form-control"
+                                    <input ng-model="name" required type="text" id="appname" name="appname" class="form-control"
                                            placeholder="{{ gettext("Name of the app") }}">
                                     <span class="help-block">{{ gettext("The name of the new app that will be created.") }}</span>
                                 </div>
@@ -97,11 +97,11 @@
 
                                 <div class="controls">
 
-                                    <p id="notfilled-message" class="text-danger">
+                                    <p id="notfilled-message" class="text-danger" ng-hide="isValid()">
                                         {{ gettext("Please, choose an app or provide a name and URL") }}
                                     </p>
 
-                                    <button type="submit" id="sendurlbtn" name="sendurl"
+                                    <button ng-disabled="!isValid()" type="submit" id="sendurlbtn" name="sendurl"
                                             class="btn btn-success">{{ gettext("Step 2 - Select language »") }}</button>
                                 </div>
                             </div>
@@ -121,33 +121,27 @@
 {% block scripts %}
     {{ super() }}
 
+
+
+    <!-- AngularJS code -->
     <script type="text/javascript">
 
-        // Disable the "Adapt chosen app" button if the name and/or URL fields are empty.
-        function checkCanProceed()
-        {
-            var url = $("#appurl").val();
-            var name = $("#appname").val();
+        // Create a selectLang module for this app.
+        var translateIndex = angular.module("translateIndex", []);
 
-            if(url.length == 0 || name.length == 0)
-            {
-                $("#sendurlbtn").attr("disabled", "disabled");
-                $("#notfilled-message").show();
+        var nextStepCtrl = translateIndex.controller("NextStepCtrl", ["$scope", function($scope){
+            $scope.isValid = function() {
+                var valid = $scope.nextStepForm.appurl.$valid && $scope.nextStepForm.appname.$valid;
+                return valid;
             }
-            else
-            {
-                $("#sendurlbtn").removeAttr("disabled");
-                $("#notfilled-message").hide();
-            }
-        }
+        }]);
 
-        $(document).ready(function() {
-            $("input[type=text]").on("input", function() {
-                checkCanProceed();
-            });
+    </script>
 
-            checkCanProceed();
-        });
+
+
+
+    <script type="text/javascript">
 
         // Called by the Advanced Mode code whenever the mode changes.
         function onAdvancedModeChanged(enabled) {
@@ -167,7 +161,9 @@
             $("#appurl").val(fulldata["app_url"]);
             $("#appname").val(fulldata["title"]);
 
-            checkCanProceed();
+            $("#appurl").trigger("input");
+            $("#appname").trigger("input");
+
         } //! onRowSelected
 
         $(document).ready(function () {

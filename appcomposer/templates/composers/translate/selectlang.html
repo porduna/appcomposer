@@ -20,7 +20,7 @@
 
     {{ modal.render_input_modal_html("appname-modal", "appname-field", gettext("Change App name"), gettext("Insert the new name: "), "onAppTitleSave()") }}
 
-    <div class="translateblock">
+    <div class="translateblock" ng-app="selectLang">
 
 
         <div class="row">
@@ -260,6 +260,21 @@
 {% block scripts %}
 
     {{ super() }}
+
+
+
+
+    <!-- AngularJS code -->
+    <script type="text/javascript">
+
+        // Create a selectLang module for this app.
+        var selectLang = angular.module("selectLang", []);
+
+    </script>
+
+
+
+
 
 
     <!-- JavaScript source code -->
