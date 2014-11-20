@@ -1,13 +1,20 @@
+import json
+import unittest
 import appcomposer
 import appcomposer.application
 
 from appcomposer.appstorage import api, add_var
-from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals, _db_get_spec_apps, _db_transfer_ownership, _db_get_app_ownerships, _db_get_diff_specs
+from appcomposer.composers.translate.bundles import BundleManager, Bundle
+from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals, _db_get_spec_apps, _db_transfer_ownership, _db_get_app_ownerships, _db_get_diff_specs, \
+    save_bundles_to_db
 from appcomposer.login import current_user
+import appcomposer.models
+from appcomposer import db
 
 
-class TestTranslateDbHelpers:
-    def __init__(self):
+class TestTranslateDbHelpers(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestTranslateDbHelpers, self).__init__(*args, **kwargs)
         self.flask_app = None
         self.tapp = None
 
@@ -226,3 +233,37 @@ class TestTranslateDbHelpers:
         _db_declare_ownership(self.tapp, "test_TEST")
         ownerships = _db_get_app_ownerships(self.tapp)
         assert len(ownerships) == 1
+
+    def test_save_bundles_to_db(self):
+        """
+        Test the method to save a Bundle Manager of an App to the database, using
+        the revamped DB.
+        :return:
+        """
+
+        testBundle = Bundle("all", "ALL", "ALL")
+        testBundle._msgs["key.one"] = "One"
+        testBundle._msgs["key.two"] = "Two"
+
+        bm = BundleManager()
+        bm._bundles = {}
+        bm._bundles["all_ALL_ALL"] = testBundle
+
+        save_bundles_to_db(self.tapp, bm)
+
+        # Retrieve the bundles from the DB.
+        bundle = db.session.query(appcomposer.models.Bundle).filter_by(app=self.tapp, lang="all_ALL", target="ALL").first()
+        assert bundle is not None
+
+        self.assertIsNotNone(bundle)
+        self.assertEquals("all_ALL", bundle.lang)
+        self.assertEquals("ALL", bundle.target)
+
+        messages = db.session.query(appcomposer.models.Message).filter_by(bundle=bundle).all()
+        messages = {m.key: m.value for m in messages}
+
+        self.assertEquals(2, len(messages))
+        self.assertEquals("One", messages["key.one"])
+        self.assertEquals("Two", messages["key.two"])
+
+
