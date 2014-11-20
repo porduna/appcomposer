@@ -16,7 +16,7 @@ from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException, NoValidTranslationsException
 from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, \
-    _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships
+    _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships, save_bundles_to_db
 from appcomposer.login import requires_login
 from appcomposer.application import app as flask_app
 
@@ -39,6 +39,7 @@ def do_languages_initial_merge(app, bm):
         bm.merge_language(language, ownerapp)
 
     update_app_data(app, bm.to_json())
+    save_bundles_to_db(app, bm)
 
 
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])

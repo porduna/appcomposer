@@ -1,7 +1,8 @@
+import json
 from appcomposer import db
 from appcomposer.appstorage.api import get_app_by_name, add_var
 from appcomposer.composers.translate import CFG_SAME_NAME_LIMIT
-from appcomposer.models import AppVar, App, Spec
+from appcomposer.models import AppVar, App, Spec, Bundle, Message
 
 """
 REMARKS ABOUT APPVARS FOR THE TRANSLATOR:
@@ -157,3 +158,47 @@ def _find_unique_name_for_app(base_name):
 
 def _db_get_proposals(app):
     return AppVar.query.filter_by(name="proposal", app=app).all()
+
+
+def save_bundles_to_db(app, bm):
+    """
+    Saves the translation data in the Bundle Manager to the DB.
+    :param app: The App object to save to.
+    :type app: App
+    :param bm: BundleManager whose data to use.
+    :type bm: BundleManager
+    :return:
+
+    TO-DO: Optimize this. It exists mostly because of the DB changes.
+    """
+    j = bm.to_json()
+
+    data = json.loads(j)
+    bundles = data["bundles"]
+    for bundle_code, bundle in bundles.items():
+        country, lang, group, messages = bundle["country"], bundle["lang"], bundle["group"], bundle["messages"]
+        full_lang = "%s_%s" % (lang, country)
+
+        # Create the bundle if we need to.
+        bundleObj = db.session.query(Bundle).filter_by(lang=full_lang, target=group).first()
+        if bundleObj is None:
+            # We create a new bundle.
+            bundleObj = Bundle(full_lang, group)
+        bundleObj.app = app
+
+        db.session.add(bundleObj)
+
+        # Create each message if we need to.
+        for key, value in bundle["messages"].items():
+            messageObj = db.session.query(Message).filter_by(key=key).first()
+            if messageObj is None:
+                # We create a new message.
+                messageObj = Message(key, value)
+            messageObj.bundle = bundleObj
+            messageObj.value = value
+
+            db.session.add(messageObj)
+
+
+        db.session.commit()
+

@@ -18,6 +18,8 @@ AUTOACCEPT_DEFAULT = True
 class BundleManager(object):
     """
     To manage the set of bundles for an App, and to provide common functionality.
+
+    DEPENDENCIES: The BundleManager is mostly independent though some methods rely on the app_data JSON structure.
     """
 
     def __init__(self, original_gadget_spec=None):
@@ -529,6 +531,8 @@ class Bundle(object):
     The default language, group and country is ANY.
     By convention, language is in lowercase while country is in uppercase.
     Group is uppercase too.
+
+    DEPENDENCIES: The Bundle class is self-sufficient and does not depend on the Apps themselves.
     """
 
     def __init__(self, lang, country, group="ALL"):

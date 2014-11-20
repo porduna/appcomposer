@@ -251,6 +251,14 @@ class Message(db.Model):
     # Ref to the Bundle we belong to. (many-to-one).
     bundle_id = db.Column(db.Integer, ForeignKey("Bundles.id"))
 
-
+    def __init__(self, key, value):
+        """
+        Creates a new message object.
+        :param key:
+        :param value:
+        :return:
+        """
+        self.key = key
+        self.value = value
 
 
