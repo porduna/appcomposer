@@ -169,9 +169,8 @@ def app_langfile(appid, langfile):
                                message="Error 500: The composer for the specified App is not a Translate composer."), 500
 
     # Parse the appdata
-    appdata = json.loads(app.data)
-
-    bundles = appdata["bundles"]
+    full_app_data = load_appdata_from_db(app)
+    bundles = full_app_data["bundles"]
     if langfile not in bundles:
         dbg_info = str(bundles.keys())
         return render_template("composers/errors.html",

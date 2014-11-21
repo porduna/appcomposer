@@ -237,7 +237,8 @@ def update_app_data(composed_app, data):
         data = json.loads(data)
 
     if type(data) is not str and type(data) is not unicode:
-        del data["bundles"]
+        if "bundles" in data:
+            del data["bundles"]
         data = json.dumps(data)
 
     if composed_app.owner != current_user():
