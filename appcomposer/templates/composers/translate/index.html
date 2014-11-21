@@ -8,14 +8,8 @@
         <div class="col-lg-12">
             <div class="page-header">
 
-                <div style="width: 100%;">
-                    <div style="margin-left: auto; margin-right: 2%; float:right; clear:both;">
-                        {{ gettext("Advanced mode:") }}
-                        <form>
-                            <input type="checkbox" name="advanced-mode" checked>
-                        </form>
-                    </div>
-                </div>
+                <mng-advanced-mode advanced-mode="advancedMode"></mng-advanced-mode>
+
                 <h1 id="apptitle">{{ gettext("Translate") }}</h1>
             </div>
         </div>
@@ -56,7 +50,7 @@
                     <fieldset>
 
 
-                        <div id="app-advanced-details" class="advanced-mode" style="">
+                        <div id="app-advanced-details" ng-show="advancedMode" style="">
 
                             <div class="form-group">
                                 <label for="appurl" class="col-lg-1 control-label">{{ gettext("URL") }}</label>
@@ -127,7 +121,7 @@
     <script type="text/javascript">
 
         // Create a selectLang module for this app.
-        var translateIndex = angular.module("translateIndex", []);
+        var translateIndex = angular.module("translateIndex", ["mngCommon"]);
 
         var nextStepCtrl = translateIndex.controller("NextStepCtrl", ["$scope", function($scope){
             $scope.isValid = function() {
@@ -142,18 +136,6 @@
 
 
     <script type="text/javascript">
-
-        // Called by the Advanced Mode code whenever the mode changes.
-        function onAdvancedModeChanged(enabled) {
-            var advMode = $(".advanced-mode");
-
-            if (enabled) {
-                advMode.show();
-            }
-            else {
-                advMode.hide();
-            }
-        } //! onAdvancedModeChanged
 
         // Called whenever a row in the AppSearch table is selected.
         function onRowSelected(row) {
@@ -251,29 +233,6 @@
                             $(row.node()).toggleClass("selected");
                         });
                     });
-
-            // Initialize the advanced-mode switch.
-
-            var configstore = new Persist.Store("configstore");
-
-            var $advMode = $("[name='advanced-mode']");
-            $advMode.bootstrapSwitch();
-
-            configstore.get("advmode", function (ok, value) {
-                if (!ok || value == "false" || value == null)
-                    value = false;
-                else
-                    value = true;
-
-                onAdvancedModeChanged(value);
-                $advMode.bootstrapSwitch("state", value);
-            });
-
-            $advMode.on("switchChange.bootstrapSwitch", function (ev, state) {
-                console.log("Advanced mode enabled: " + state);
-                onAdvancedModeChanged(state);
-                configstore.set("advmode", state);
-            });
 
         }); //! ready()
     </script>
