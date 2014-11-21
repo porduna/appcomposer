@@ -1,5 +1,6 @@
 # Configuration example
 
+import logging
 import os
 
 SQLALCHEMY_DATABASE_URI = 'sqlite:////%s/database.db' % os.getcwd()
@@ -42,3 +43,5 @@ ADMINS = []
 
 # Logfile
 LOGFILE = "logfile.log"
+
+LOGGING_LEVEL = logging.warning

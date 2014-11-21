@@ -97,16 +97,18 @@ if(app.config.get("LOGFILE") is not None):
     file_handler.setFormatter(line_formatter)
     app.logger.addHandler(file_handler)
 
+logging_level = app.config.get("LOGGING_LEVEL", logging.DEBUG)
+
 # Register the cmd handler.
 stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)
+stream_handler.setLevel(logging_level)
 stream_handler.setFormatter(line_formatter)
 app.logger.addHandler(stream_handler)
 
 
 # This seems to be required for the logging of sub-warning messages to work, though
 # it doesn't seem to be mentioned in the flask documentation.
-app.logger.setLevel(logging.DEBUG)
+app.logger.setLevel(logging_level)
 
 
 
