@@ -30,3 +30,12 @@
 .app-description {
 
 }
+
+input.ng-invalid.ng-dirty {
+    background-color: #FED4D4;
+    border-color: red;
+}
+
+input.ng-valid.ng-dirty {
+    border-color: green;
+}
