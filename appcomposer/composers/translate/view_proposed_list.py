@@ -4,7 +4,7 @@ from appcomposer.appstorage.api import get_app, update_app_data
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
-from appcomposer.composers.translate.db_helpers import _db_get_proposals, load_appdata_from_db
+from appcomposer.composers.translate.db_helpers import _db_get_proposals, load_appdata_from_db, save_bundles_to_db
 from appcomposer.models import AppVar
 from appcomposer.login import requires_login
 
@@ -65,6 +65,8 @@ def translate_proposed_list():
         bm = BundleManager.create_from_existing_app(full_app_data)
         bm.merge_bundle(bundle_code, proposed_bundle)
 
+        # TODO: Tidy-up
+        save_bundles_to_db(app, bm)
         update_app_data(app, bm.to_json())
 
         flash(gettext("Merge done."), "success")

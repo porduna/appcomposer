@@ -188,6 +188,9 @@ class TestTranslateAppMerge:
         assert rv.status_code == 200
         data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
         # Ensure that the change has been really saved by the post.
+
+        print "DATA IS %r" % data
+
         assert "Hello Yet Again Testing" in data
         assert "Color Test" in data
         # Ensure that the translations that have not been specified remain as they are.
