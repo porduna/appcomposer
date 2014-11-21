@@ -44,4 +44,4 @@ ADMINS = []
 # Logfile
 LOGFILE = "logfile.log"
 
-LOGGING_LEVEL = logging.warning
+APPCOMP_LOGGING_LEVEL = logging.warning

@@ -97,7 +97,7 @@ if(app.config.get("LOGFILE") is not None):
     file_handler.setFormatter(line_formatter)
     app.logger.addHandler(file_handler)
 
-logging_level = app.config.get("LOGGING_LEVEL", logging.DEBUG)
+logging_level = app.config.get("APPCOMP_LOGGING_LEVEL", logging.DEBUG)
 
 # Register the cmd handler.
 stream_handler = logging.StreamHandler()
