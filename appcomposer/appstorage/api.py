@@ -231,7 +231,13 @@ def update_app_data(composed_app, data):
     # Convert ID to App if not done already (otherwise it's NOP).
     composed_app = _get_app_obj(composed_app)
 
+    # TODO: Remove this
+    # As a preliminary step towards db migration, we remove bundles information which may be present in the data.
+    if type(data) is str or type(data) is unicode:
+        data = json.loads(data)
+
     if type(data) is not str and type(data) is not unicode:
+        del data["bundles"]
         data = json.dumps(data)
 
     if composed_app.owner != current_user():

@@ -10,7 +10,8 @@ from appcomposer.appstorage.api import get_app, update_app_data, add_var
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
-from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_declare_ownership, save_bundles_to_db
+from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_declare_ownership, save_bundles_to_db, \
+    load_appdata_from_db
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 from appcomposer.csrf import verify_csrf
 from appcomposer.login import requires_login
@@ -37,7 +38,9 @@ def translate_edit():
     if app is None:
         return render_template("composers/errors.html", message=gettext("App not found")), 404
 
-    bm = BundleManager.create_from_existing_app(app.data)
+    # TODO: To change
+    full_app_data = load_appdata_from_db(app)
+    bm = BundleManager.create_from_existing_app(full_app_data)
     spec = bm.get_gadget_spec()
 
     # Retrieve the bundles for our lang. For this, we build the code from the info we have.
@@ -110,7 +113,8 @@ def translate_edit():
             # Normally we will add the proposal to the queue. However, sometimes the owner wants to auto-accept
             # all proposals. We check for this. If the autoaccept mode is enabled on the app, we do the merge
             # right here and now.
-            obm = BundleManager.create_from_existing_app(owner_app.data)
+            full_app_data = load_appdata_from_db(owner_app)
+            obm = BundleManager.create_from_existing_app(full_app_data)
             if obm.get_autoaccept():
                 flash(gettext("Changes are being applied instantly because the owner has auto-accept enabled"))
 

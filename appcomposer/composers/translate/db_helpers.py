@@ -177,7 +177,8 @@ def save_bundles_to_db(app, bm):
     data = json.loads(j)
     bundles = data["bundles"]
     for bundle_code, bundle in bundles.items():
-        country, lang, group, messages = bundle["country"], bundle["lang"], bundle["group"], bundle["messages"]
+        splits = bundle_code.split("_", 2)
+        lang, country, group = splits[0], splits[1], splits[2]
         full_lang = "%s_%s" % (lang, country)
 
         # Create the bundle if we need to.

@@ -6,7 +6,8 @@ from appcomposer.login import current_user, requires_login
 from appcomposer.appstorage.api import get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager
-from appcomposer.composers.translate.db_helpers import _db_get_spec_apps, _db_get_lang_owner_app, _db_transfer_ownership
+from appcomposer.composers.translate.db_helpers import _db_get_spec_apps, _db_get_lang_owner_app, _db_transfer_ownership, \
+    load_appdata_from_db
 
 
 @translate_blueprint.route("/transfer_ownership", methods=["GET", "POST"])
@@ -27,7 +28,8 @@ def transfer_ownership():
         return render_template("composers/errors.html", message=gettext("Not Authorized: User does not own app")), 403
 
     # Get the XMLSPEC
-    bm = BundleManager.create_from_existing_app(app.data)
+    full_app_data = load_appdata_from_db(app)
+    bm = BundleManager.create_from_existing_app(full_app_data)
     spec = bm.get_gadget_spec()
 
     # Get the language

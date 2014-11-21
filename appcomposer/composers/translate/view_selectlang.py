@@ -143,6 +143,13 @@ def translate_selectlang():
 
         # Build JSON data
         js = bm.to_json()
+        # TODO: Remove this.
+        # As an intermediate step towards db migration we remove the bundles from the app.data.
+        # We cannot remove it from the bm to_json itself.
+        jsdata = json.loads(js)
+        if "bundles" in jsdata:
+            del jsdata["bundles"]
+        js = json.dumps(jsdata)
 
         # Create a new App from the specified XML
         app = create_app(appname, "translate", appurl, js)
@@ -204,8 +211,8 @@ def translate_selectlang():
 
         # Retrieve the app.data mostly from DB (new method) to stop relying to the legacy appdata.
         # TODO: Clear this up once the port is done.
-        appdata = load_appdata_from_db(app)
-        bm = BundleManager.create_from_existing_app(appdata)
+        full_app_data = load_appdata_from_db(app)
+        bm = BundleManager.create_from_existing_app(full_app_data)
         save_bundles_to_db(app, bm)
 
         spec = bm.get_gadget_spec()

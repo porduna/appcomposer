@@ -23,7 +23,7 @@ from appcomposer.application import app as flask_app
 
 # Fix the path so it can be run more easily, etc.
 from appcomposer.composers.translate.bundles import BundleManager
-from appcomposer.composers.translate.db_helpers import _db_get_diff_specs, _db_get_ownerships
+from appcomposer.composers.translate.db_helpers import _db_get_diff_specs, _db_get_ownerships, load_appdata_from_db
 
 
 MONGODB_SYNC_PERIOD = flask_app.config.get("MONGODB_SYNC_PERIOD", 60*15)  # Every 15 min by default.
@@ -112,7 +112,8 @@ def sync(self):
 
             for ownership in ownerships:
                 lang = ownership.value
-                bm = BundleManager.create_from_existing_app(ownership.app.data)
+                full_app_data = load_appdata_from_db(ownership.app)
+                bm = BundleManager.create_from_existing_app(full_app_data)
 
                 # Get a list of fullcodes (including the group).
                 keys = [key for key in bm._bundles.keys() if BundleManager.fullcode_to_partialcode(key) == lang]

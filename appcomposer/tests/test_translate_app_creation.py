@@ -8,6 +8,7 @@ from appcomposer.appstorage.api import get_app_by_name
 from appcomposer.composers.translate.bundles import BundleManager
 
 from unittest import TestCase
+from appcomposer.composers.translate.db_helpers import load_appdata_from_db
 
 
 class TestTranslateAppCreation(TestCase):
@@ -83,16 +84,18 @@ class TestTranslateAppCreation(TestCase):
 
             assert app is not None
             appdata = app.data
-            assert len(appdata) > 1000
 
             data = json.loads(appdata)
 
             assert "spec" in data
             assert url == data["spec"]
 
-            bm = BundleManager.create_from_existing_app(appdata)
+            full_app_data = load_appdata_from_db(app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
 
             assert bm.get_gadget_spec() == url
+
+            # Check that we have more than 3 bundles
             assert len(bm._bundles) > 3
 
             defaultBundle = bm.get_bundle("all_ALL_ALL")
@@ -120,14 +123,14 @@ class TestTranslateAppCreation(TestCase):
 
             assert app is not None
             appdata = app.data
-            assert len(appdata) > 1000
 
             data = json.loads(appdata)
 
             assert "spec" in data
             assert url == data["spec"]
 
-            bm = BundleManager.create_from_existing_app(appdata)
+            full_app_data = load_appdata_from_db(app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
 
             assert bm.get_gadget_spec() == url
             assert len(bm._bundles) > 3
@@ -158,14 +161,14 @@ class TestTranslateAppCreation(TestCase):
 
             assert app is not None
             appdata = app.data
-            assert len(appdata) > 500
 
             data = json.loads(appdata)
 
             assert "spec" in data
             assert url == data["spec"]
 
-            bm = BundleManager.create_from_existing_app(appdata)
+            full_app_data = load_appdata_from_db(app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
 
             assert bm.get_gadget_spec() == url
             assert len(bm._bundles) == 2
@@ -199,18 +202,19 @@ class TestTranslateAppCreation(TestCase):
 
             assert app is not None
             appdata = app.data
-            assert len(appdata) > 500
 
             data = json.loads(appdata)
 
             assert "spec" in data
             assert url == data["spec"]
 
-            bm = BundleManager.create_from_existing_app(appdata)
+            full_app_data = load_appdata_from_db(app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
 
             assert bm.get_gadget_spec() == url
 
             # The bundles should be 3 (DEFAULT - copied from English, English, German).
+            print "BUNDLES: %r" % bm._bundles
             assert len(bm._bundles) == 3
 
             defaultBundle = bm.get_bundle("all_ALL_ALL")
@@ -249,14 +253,14 @@ class TestTranslateAppCreation(TestCase):
 
             assert app is not None
             appdata = app.data
-            assert len(appdata) > 500
 
             data = json.loads(appdata)
 
             assert "spec" in data
             assert url == data["spec"]
 
-            bm = BundleManager.create_from_existing_app(appdata)
+            full_app_data = load_appdata_from_db(app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
 
             assert bm.get_gadget_spec() == url
             assert len(bm._bundles) == 2
@@ -298,5 +302,6 @@ class TestTranslateAppCreation(TestCase):
             app = api.create_app("UTApp", "translate", "http://justatest.com", '{"spec":"http://justatest.com", "bundles":{}}')
 
             # Test that autoaccept is True (it's the default).
-            bm = BundleManager.create_from_existing_app(json.loads(app.data))
+            full_app_data = load_appdata_from_db(app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
             assert bm.get_autoaccept() == True
