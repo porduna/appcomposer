@@ -60,8 +60,7 @@ def transfer_ownership():
             return render_template("composers/errors.html", message=gettext("Target app not specified")), 400
 
         # Verify that the target app is of the same spec.
-        targetappdata = json.loads(targetapp.data)
-        targetspec = targetappdata["spec"]
+        targetspec = targetapp.spec.url
         if targetspec != spec:
             return render_template("composers/errors.html", message=gettext("Target app does not have the same spec")), 400
 
