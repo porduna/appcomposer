@@ -97,7 +97,7 @@ class DynModals(unittest.TestCase):
         driver.find_element_by_id("appname-field").send_keys("The new name for Concept Mapper")
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
 
-        time.sleep(1)
+        time.sleep(2)
 
         self.assertEqual("App Composer :: Edit the app content", driver.title)
         self.assertEqual("Adapt - The new name for Concept Mapper", driver.find_element_by_id("apptitle").text)
@@ -120,13 +120,13 @@ class DynModals(unittest.TestCase):
         driver.find_element_by_link_text("Open").click()
         driver.find_element_by_id("appfullname").click()
 
-        time.sleep(0.2)
+        time.sleep(1)
 
         driver.find_element_by_id("appname-field").clear()
         driver.find_element_by_id("appname-field").send_keys("My Concept Mapper")
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
 
-        time.sleep(0.2)
+        time.sleep(1)
 
         self.assertEqual("My Concept Mapper", driver.find_element_by_id("appfullname").text)
         driver.find_element_by_link_text("Apps").click()
