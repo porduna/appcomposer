@@ -10,9 +10,11 @@ from appcomposer.appstorage.api import get_app_by_name, create_app, get_app
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import CFG_SAME_NAME_LIMIT
 from appcomposer.composers.translate.bundles import BundleManager
-from appcomposer.composers.translate.db_helpers import save_bundles_to_db, _db_get_lang_owner_app, _db_declare_ownership, \
+from appcomposer.composers.translate.db_helpers import save_bundles_to_db, _db_get_lang_owner_app, \
+    _db_declare_ownership, \
     load_appdata_from_db, _db_get_proposals
-from appcomposer.composers.translate.operations.ops_exceptions import AppNotFoundException, InternalError
+from appcomposer.composers.translate.operations.ops_exceptions import AppNotFoundException, InternalError, \
+    AppNotValidException
 from appcomposer.composers.translate.operations.ops_lowlevel import do_languages_initial_merge
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 
@@ -105,6 +107,10 @@ def create_new_app(name, spec_url):
     # Advanced merge. Merge owner languages into our bundles.
     do_languages_initial_merge(app, bm)
 
+    # Check that we have at least one bundle.
+    if len(bm._bundles) == 0:
+        raise AppNotValidException()
+
     return app, bm
 
 
@@ -182,7 +188,6 @@ def load_app(appid, targetlangs_list):
     data = json.loads(app.data)
     autoaccept = data.get("autoaccept",
                           True)  # We autoaccept by default. Problems may arise if this value changes, because it is used in a couple of places.
-
 
     return app, bm, owner, is_owner, proposal_num, src_groups_dict, suggested_target_langs, translated_langs, autoaccept
 
