@@ -17,7 +17,7 @@ class BasicTranslate(unittest.TestCase):
         
         reset_database()
 
-        if os.environ.get("SELENIUM_HEADLESS") or True:
+        if os.environ.get("SELENIUM_HEADLESS"):
             self.driver = webdriver.PhantomJS()
         else:
             self.profile = FirefoxProfile()
@@ -99,6 +99,8 @@ class BasicTranslate(unittest.TestCase):
         driver.find_element_by_id("sendurlbtn").click()
         driver.find_element_by_id("backtoindexbtn").click()
         driver.find_element_by_id("localisebtn").click()
+
+        time.sleep(1)
         self.assertEqual("", driver.find_element_by_id("field_3").text)
         self.assertEqual("", driver.find_element_by_id("field_1").text)
         driver.find_element_by_name("save_exit").click()
