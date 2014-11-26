@@ -8,6 +8,7 @@ from flask import request, flash, redirect, url_for, render_template, json
 from requests.exceptions import MissingSchema
 
 from appcomposer.babel import gettext
+from appcomposer.composers.translate.operations import ops_highlevel
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 from appcomposer.csrf import verify_csrf
 from appcomposer.utils import get_original_url
@@ -15,7 +16,7 @@ from appcomposer.appstorage import create_app, set_var
 from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException, NoValidTranslationsException
-from appcomposer.composers.translate.db_helpers import _find_unique_name_for_app, _db_get_proposals, \
+from appcomposer.composers.translate.db_helpers import _db_get_proposals, \
     _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships, save_bundles_to_db, load_appdata_from_db
 from appcomposer.login import requires_login
 from appcomposer.application import app as flask_app
@@ -109,14 +110,19 @@ def translate_selectlang():
         # Generates a unique (for the current user) name for the App,
         # based on the base name that the user himself chose. Note that
         # this method can actually return None under certain conditions.
-        appname = _find_unique_name_for_app(base_appname)
+        appname = ops_highlevel.find_unique_name_for_app(base_appname)
         if appname is None:
             return render_template("composers/errors.html",
                                    message=gettext("Too many Apps with the same name. Please, choose another."))
 
+
+        # THE FOLLOWING SHOULD PROB BE REPLACED BY A SINGLE LINE (Not counting exception handling).
+
         # Create a fully new App. It will be automatically generated from a XML.
         try:
-            bm = BundleManager.create_new_app(appurl)
+
+            app, bm = ops_highlevel.create_new_app(appname, appurl)
+
         except NoValidTranslationsException:
             return render_template("composers/errors.html",
                                    message=gettext(
@@ -139,47 +145,9 @@ def translate_selectlang():
                                    message=gettext(
                                        "The App you have chosen does not seem to have a base translation. The original developer needs to prepare it for internationalization first.")), 400
 
-        spec = bm.get_gadget_spec()  # For later
-
-        # Build JSON data
-        js = bm.to_json()
-        # TODO: Remove this.
-        # As an intermediate step towards db migration we remove the bundles from the app.data.
-        # We cannot remove it from the bm to_json itself.
-        jsdata = json.loads(js)
-        if "bundles" in jsdata:
-            del jsdata["bundles"]
-        js = json.dumps(jsdata)
-
-        # Create a new App from the specified XML
-        app = create_app(appname, "translate", appurl, js)
-        save_bundles_to_db(app, bm)
         flask_app.logger.info("[translate]: App created for %s" % appurl)
 
 
-        # Handle Ownership-related logic here.
-        # Locate the owner for the App's DEFAULT language.
-        ownerApp = _db_get_lang_owner_app(appurl, "all_ALL")
-        # If there isn't already an owner for the default languages, we declare ourselves
-        # as the owner for this App's default language.
-        if ownerApp is None:
-            _db_declare_ownership(app, "all_ALL")
-            ownerApp = app
-
-            # Report initial bundle creation. Needed for the MongoDB replica.
-            for bundle in bm.get_bundles("all_ALL"):
-                on_leading_bundle_updated(spec, bundle)
-
-        # We do the same for the other included languages which are not owned already.
-        # If the other languages have a translation but no owner, then we declare ourselves as their owner.
-        for partialcode in bm.get_langs_list():
-            otherOwner = _db_get_lang_owner_app(appurl, partialcode)
-            if otherOwner is None:
-                _db_declare_ownership(app, partialcode)
-
-                # Report initial bundle creation. Needed for the MongoDB replica.
-                for bundle in bm.get_bundles(partialcode):
-                    on_leading_bundle_updated(spec, bundle)
 
         # Advanced merge. Merge owner languages into our bundles.
         do_languages_initial_merge(app, bm)
@@ -209,7 +177,7 @@ def translate_selectlang():
 
         # Load a BundleManager from the app data.
 
-        # Retrieve the app.data mostly from DB (new method) to stop relying to the legacy appdata.
+        # Retrieve the app.data mostly from DB (new method) to stop relying on the legacy appdata.
         # TODO: Clear this up once the port is done.
         full_app_data = load_appdata_from_db(app)
         bm = BundleManager.create_from_existing_app(full_app_data)

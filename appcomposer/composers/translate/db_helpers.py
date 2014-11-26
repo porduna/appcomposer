@@ -1,8 +1,9 @@
 import json
+
 from appcomposer import db
-from appcomposer.appstorage.api import get_app_by_name, add_var
-from appcomposer.composers.translate import CFG_SAME_NAME_LIMIT
+from appcomposer.appstorage.api import add_var
 from appcomposer.models import AppVar, App, Spec, Bundle, Message
+
 
 """
 REMARKS ABOUT APPVARS FOR THE TRANSLATOR:
@@ -124,37 +125,6 @@ def _db_transfer_ownership(lang, from_app, target_app):
     ownership.app = target_app
     db.session.add(ownership)
     db.session.commit()
-
-
-def _find_unique_name_for_app(base_name):
-    """
-    Generates a unique (for the current user) name for the app, using a base name.
-    Because two apps for the same user cannot have the same name, if the base_name that the user chose
-    exists already then we append (#num) to it. The number starts at 1.
-
-    @param base_name: Name to use as base. If it's not unique (for the user) then we will append the counter.
-    @return: The generated name, guaranteed to be unique for the current user, or None, if it was not possible
-    to obtain the unique name. The failure would most likely be that the limit of apps with the same name has
-    been reached. This limit is specified through the CFG_SAME_NAME_LIMIT variable.
-    """
-    if base_name is None:
-        return None
-
-    if get_app_by_name(base_name) is None:
-        return base_name
-    else:
-        app_name_counter = 1
-        while True:
-            # Just in case, enforce a limit.
-            if app_name_counter > CFG_SAME_NAME_LIMIT:
-                return None
-            composed_app_name = "%s (%d)" % (base_name, app_name_counter)
-            if get_app_by_name(composed_app_name) is not None:
-                app_name_counter += 1
-            else:
-                # Success. We found a unique name.
-                return composed_app_name
-
 
 def _db_get_proposals(app):
     return AppVar.query.filter_by(name="proposal", app=app).all()

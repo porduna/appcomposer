@@ -5,8 +5,10 @@ import appcomposer.application
 
 from appcomposer.appstorage import api, add_var
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
-from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals, _db_get_spec_apps, _db_transfer_ownership, _db_get_app_ownerships, _db_get_diff_specs, \
+from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, \
+    _db_get_proposals, _db_get_spec_apps, _db_transfer_ownership, _db_get_app_ownerships, _db_get_diff_specs, \
     save_bundles_to_db, load_appdata_from_db
+from appcomposer.composers.translate.operations.ops_highlevel import find_unique_name_for_app
 from appcomposer.login import current_user
 import appcomposer.models
 from appcomposer import db
@@ -146,16 +148,16 @@ class TestTranslateDbHelpers(unittest.TestCase):
 
     def test_find_unique_name_for_app(self):
         # There is no conflict, so the name should be exactly the chosen one.
-        name = _find_unique_name_for_app("UTAPPDoesntExist")
+        name = find_unique_name_for_app("UTAPPDoesntExist")
         assert name == "UTAPPDoesntExist"
 
         # There is a conflict, so the name should include a number, starting at 1.
-        name = _find_unique_name_for_app("UTApp")
+        name = find_unique_name_for_app("UTApp")
         assert name == "UTApp (1)"
 
         # We create a new app so that we can force a second conflict.
         app2 = api.create_app("UTApp (1)", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
-        name = _find_unique_name_for_app("UTApp")
+        name = find_unique_name_for_app("UTApp")
         assert name == "UTApp (2)"
 
     def test_get_proposals(self):
