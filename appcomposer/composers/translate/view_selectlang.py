@@ -2,11 +2,10 @@ import urllib2
 import traceback
 import xml.dom.minidom as minidom
 
-import babel
-from flask import request, flash, redirect, url_for, render_template, json
+from flask import request, redirect, url_for, render_template, json
 from requests.exceptions import MissingSchema
-from appcomposer.composers.translate import exceptions
 
+from appcomposer.composers.translate import exceptions
 from appcomposer.babel import gettext
 from appcomposer.composers.translate.operations import ops_highlevel, ops_language
 from appcomposer.composers.translate.operations.ops_exceptions import AppNotFoundException, InternalError, \
@@ -14,21 +13,23 @@ from appcomposer.composers.translate.operations.ops_exceptions import AppNotFoun
 from appcomposer.csrf import verify_csrf
 from appcomposer.utils import get_original_url
 from appcomposer.composers.translate import translate_blueprint
-from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException, NoValidTranslationsException
+from appcomposer.composers.translate.bundles import InvalidXMLFileException, NoValidTranslationsException
 from appcomposer.login import requires_login
 from appcomposer.application import app as flask_app
 from appcomposer.composers.translate import common
 
 
 def handle_selectlang_GET():
-    # Obtain information about the languages that we can tranlate to.
-    targetlangs_list = ops_language.obtain_languages()
-    full_groups_list = ops_language.obtain_groups()
+    # Obtain information about the languages that we can translate to.
+    languages = ops_language.obtain_languages()
+    groups = ops_language.obtain_groups()
 
     appid = common.get_required_param("appid")
 
     app, bm, owner, is_owner, proposal_num, src_groups_dict, suggested_target_langs, translated_langs, autoaccept = ops_highlevel.load_app(
-        appid, targetlangs_list)
+        appid, languages)
+
+    translation_info = ops_highlevel.obtain_translation_info(app)
 
     # We pass some parameters as JSON strings because they are generated dynamically
     # through JavaScript in the template.
@@ -38,8 +39,8 @@ def handle_selectlang_GET():
                            autoaccept=autoaccept,  # Whether the app is configured to autoaccept proposals or not.
                            suggested_target_langs=suggested_target_langs,  # Suggested (not already translated) langs
                            source_groups_json=json.dumps(src_groups_dict),  # Source groups in a JSON string
-                           full_groups_json=json.dumps(full_groups_list),  # (To find names etc)
-                           target_groups=full_groups_list,  # Target groups in a JSON string
+                           full_groups_json=json.dumps(groups),  # (To find names etc)
+                           target_groups=groups,  # Target groups in a JSON string
                            translated_langs=translated_langs,  # Already translated langs
                            is_owner=is_owner,  # Whether the loaded app has the "Owner" status
                            owner=owner,  # Reference to the Owner
@@ -141,5 +142,33 @@ def translate_selectlang():
         # The application does not seem to be valid, possibly because it resulted in an app with no bundles.
         return render_template("composers/errors.html",
                                message=ex.message)
+
+
+
+# Language information required by this View to be able to render the template:
+#
+# Languages:
+# {
+#   'all_ALL': 'DEFAULT',
+#   'de_ALL': 'German'
+# }
+#
+# Groups:
+# SORTED DICTIONARY
+# {
+#   '14-18': 'Adolescents'
+# }
+#
+#
+# Translations
+#
+# {
+#   'all_ALL': {
+#     groups: ['14-18'],
+#     owner: 'admin'
+#   }
+# }
+
+
 
 

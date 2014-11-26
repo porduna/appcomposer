@@ -5,14 +5,16 @@ from collections import defaultdict
 import json
 
 from flask import flash
+from appcomposer import db
 
 from appcomposer.appstorage.api import get_app_by_name, create_app, get_app
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import CFG_SAME_NAME_LIMIT
+from appcomposer.composers.translate.ajax import get_ownership_list
 from appcomposer.composers.translate.bundles import BundleManager
 from appcomposer.composers.translate.db_helpers import save_bundles_to_db, _db_get_lang_owner_app, \
     _db_declare_ownership, \
-    load_appdata_from_db, _db_get_proposals
+    load_appdata_from_db, _db_get_proposals, _db_get_ownerships
 from appcomposer.composers.translate.operations.ops_exceptions import AppNotFoundException, InternalError, \
     AppNotValidException
 from appcomposer.composers.translate.operations.ops_lowlevel import do_languages_initial_merge
@@ -112,6 +114,49 @@ def create_new_app(name, spec_url):
         raise AppNotValidException()
 
     return app, bm
+
+
+def obtain_translation_info(app):
+    """
+    Obtains information about the existing translations of an application.
+
+    TODO: Once the DB is fully revamped this can be optimized easily.
+
+    :param app: App object to obtain the info from.
+    :type app: App
+    :return: JSON-able dictionary containing for each language code (partial-code, that is, language+territory) the
+    list of groups for which translations exist and the owner of the translation. Example:
+        {
+            'all_ALL': {
+                groups: ['14-18'],
+                owner: {"id": <owner_id>, "login": <owner_login>, "app": <owner_app>}
+            }
+        }
+    """
+    translation_info = None
+
+    # Get all ownership appvars and build information for those.
+    spec = app.spec.url
+    ownership_info = {}  # { lang: {owner_id, owner_login, owner_app} }
+    ownership_appvars = _db_get_ownerships(spec)
+    for ownership in ownership_appvars:
+        language = ownership.value
+        owner = ownership.app.owner
+        ownership_info[language] = {"id": owner.id, "login": owner.login, "app": ownership.app.id}
+
+
+    # Get all existing language pcodes for the App.
+    existing_lang_pcodes = {bundle.lang: {} for bundle in app.bundles}
+
+    translation_info = existing_lang_pcodes
+
+    for pcode in translation_info:
+        if pcode in ownership_info:
+            translation_info[pcode]["owner"] = ownership_info[pcode]
+        groups = [bundle.target for bundle in app.bundles if bundle.lang == pcode]
+        translation_info[pcode]["groups"] = groups
+
+    return translation_info
 
 
 def load_app(appid, targetlangs_list):

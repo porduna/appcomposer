@@ -23,7 +23,7 @@ def obtain_groups():
 def obtain_languages():
     """
     Obtains the languages (without the groups) that are available for translation,
-    as an Ordered Dictionary.
+    as an Ordered Dictionary. The format is code:language_name
 
     :return:
     """
