@@ -189,7 +189,7 @@
                             <select id="targetgroup" name="targetgroup" class="my-select2">
                                 {% for group in target_groups %}
                                     <option {% if loop.index0 == 0 %}selected="selected"{% endif %}
-                                            value="{{ group[0] }}">{{ group[1] }}</option>
+                                            value="{{ group }}">{{ target_groups[group] }}</option>
                                 {% endfor %}
                             </select>
                         </div>
@@ -475,7 +475,6 @@
     //! Loads the right source groups on the source groups selection control, depending on which
     //! source language is selected.
     function loadSourceGroups() {
-
         // Retrieve the full list of groups, which links the group codes to the
         // display names.
         var fullGroups = {{ full_groups_json|safe }};
@@ -489,17 +488,17 @@
         var sourceGroups = {{ source_groups_json|safe }};
         var groupsForSelectedLang = sourceGroups[selectedOption.value];
 
+        // Trick to ensure that ALL is placed first.
+        $(srcGroup).append($("<option />", {value: "ALL", text: fullGroups["ALL"]}));
+
         $.each(groupsForSelectedLang, function (index, value) {
+            if(value == "ALL")
+                return true; // continue loop
+
             var groupCode = value;
-            var groupName = value; // We will try to change this.
 
             // Find a name for the group. If not found use the code.
-            for (var i = 0; i < fullGroups.length; i++) {
-                var code = fullGroups[0];
-                var name = fullGroups[1];
-                if (code == groupCode)
-                    groupName = name;
-            }
+            var groupName = fullGroups[groupCode] || groupCode;
 
             $(srcGroup).append($("<option />", {value: value, text: groupName}));
         });
