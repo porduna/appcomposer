@@ -1,11 +1,19 @@
 """
 Module for high-level translator operations.
 """
+from collections import defaultdict
 import json
-from appcomposer.appstorage.api import get_app_by_name, create_app
+
+from flask import flash
+
+from appcomposer.appstorage.api import get_app_by_name, create_app, get_app
+from appcomposer.babel import gettext
 from appcomposer.composers.translate import CFG_SAME_NAME_LIMIT
 from appcomposer.composers.translate.bundles import BundleManager
-from appcomposer.composers.translate.db_helpers import save_bundles_to_db, _db_get_lang_owner_app, _db_declare_ownership
+from appcomposer.composers.translate.db_helpers import save_bundles_to_db, _db_get_lang_owner_app, _db_declare_ownership, \
+    load_appdata_from_db, _db_get_proposals
+from appcomposer.composers.translate.operations.ops_exceptions import AppNotFoundException, InternalError
+from appcomposer.composers.translate.operations.ops_lowlevel import do_languages_initial_merge
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 
 
@@ -93,8 +101,90 @@ def create_new_app(name, spec_url):
             for bundle in bm.get_bundles(partialcode):
                 on_leading_bundle_updated(spec, bundle)
 
+
+    # Advanced merge. Merge owner languages into our bundles.
+    do_languages_initial_merge(app, bm)
+
     return app, bm
 
+
+def load_app(appid, targetlangs_list):
+    """
+    Loads an application from the database.
+
+    TO-DO: Remove the targetlangs_list parameter, and somehow remove all the out-of-place returns.
+    TO-DO: Fix docstring.
+
+    :param appid: App uniqueid.
+    :type appid: str
+    :return: (app, bm) Returns a tuple with the app and the BundleManager with all the data.
+    :rtype: (App, BundleManager)
+    """
+    app = get_app(appid)
+    if app is None:
+        raise AppNotFoundException()
+
+
+    # Load a BundleManager from the app data.
+
+    # Retrieve the app.data mostly from DB (new method) to stop relying on the legacy appdata.
+    # TODO: Clear this up once the port is done.
+    full_app_data = load_appdata_from_db(app)
+    bm = BundleManager.create_from_existing_app(full_app_data)
+    save_bundles_to_db(app, bm)
+
+    spec = bm.get_gadget_spec()
+
+    # Check whether an owner exists. If it doesn't, it means the original owner was deleted.
+    # In that case, we make ourselves a new owner.
+    # Locate the owner for the App's DEFAULT language.
+    ownerApp = _db_get_lang_owner_app(spec, "all_ALL")
+    # If there isn't already an owner for the default languages, we declare ourselves
+    # as the owner for this App's default language.
+    # TODO: NOTE: With the latest changes, this should never happen, because owners are declared
+    # for all existing languages by the user who creates the app. It may, however, happen in the future,
+    # when we take deletions and such into account.
+    if ownerApp is None:
+        _db_declare_ownership(app, "all_ALL")
+        ownerApp = app
+
+    translated_langs = bm.get_locales_list()
+
+    if ownerApp == app:
+        is_owner = True
+    else:
+        is_owner = False
+
+    owner = ownerApp.owner
+
+    if not is_owner and owner is None:
+        # This should NEVER happen.
+        flash(gettext("Error: Language Owner is None"), "error")
+        raise InternalError("The app has no Language Owner")
+
+
+    # Just for the count of proposals
+    proposal_num = len(_db_get_proposals(app))
+
+    # Build a dictionary. For each source lang, a list of source groups.
+    src_groups_dict = defaultdict(list)
+    for loc in translated_langs:
+        src_groups_dict[loc["pcode"]].append(loc["group"])
+
+    locales_codes = [tlang["pcode"] for tlang in translated_langs]
+
+    # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
+    # because those will be added to the targetlangs by default.
+    suggested_target_langs = [elem for elem in targetlangs_list if elem["pcode"] not in locales_codes]
+
+    # We pass the autoaccept data var so that it can be rendered.
+    # TODO: Optimize this once we have this fully covered with tests.
+    data = json.loads(app.data)
+    autoaccept = data.get("autoaccept",
+                          True)  # We autoaccept by default. Problems may arise if this value changes, because it is used in a couple of places.
+
+
+    return app, bm, owner, is_owner, proposal_num, src_groups_dict, suggested_target_langs, translated_langs, autoaccept
 
 
 

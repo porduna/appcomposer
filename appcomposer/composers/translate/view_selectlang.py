@@ -1,7 +1,6 @@
 import urllib2
 import traceback
 import xml.dom.minidom as minidom
-from collections import defaultdict
 
 import babel
 from flask import request, flash, redirect, url_for, render_template, json
@@ -9,38 +8,14 @@ from requests.exceptions import MissingSchema
 
 from appcomposer.babel import gettext
 from appcomposer.composers.translate.operations import ops_highlevel
-from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
+from appcomposer.composers.translate.operations.ops_exceptions import AppNotFoundException, InternalError
+from appcomposer.composers.translate.operations.ops_highlevel import load_app
 from appcomposer.csrf import verify_csrf
 from appcomposer.utils import get_original_url
-from appcomposer.appstorage import create_app, set_var
-from appcomposer.appstorage.api import update_app_data, get_app
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, InvalidXMLFileException, NoValidTranslationsException
-from appcomposer.composers.translate.db_helpers import _db_get_proposals, \
-    _db_get_lang_owner_app, _db_declare_ownership, _db_get_ownerships, save_bundles_to_db, load_appdata_from_db
 from appcomposer.login import requires_login
 from appcomposer.application import app as flask_app
-
-
-def do_languages_initial_merge(app, bm):
-    """
-    Carries out an initial merge. Bundles from the language-owners are merged into the
-    app.
-    @param app: Target app. App into which the bundles of each language owner are merged.
-    @param bm: Target BundleManager. Bundle manager into which the bundles of each language owner are merged.
-    @note: The App's data is updated automatically to reflect the new merge.
-    """
-
-    # Retrieve every single "owned" App for that xmlspec.
-    ownerships = _db_get_ownerships(bm.get_gadget_spec())
-
-    for ownership in ownerships:
-        language = ownership.value
-        ownerapp = ownership.app
-        bm.merge_language(language, ownerapp)
-
-    update_app_data(app, bm.to_json())
-    save_bundles_to_db(app, bm)
 
 
 @translate_blueprint.route("/selectlang", methods=["GET", "POST"])
@@ -147,102 +122,38 @@ def translate_selectlang():
 
         flask_app.logger.info("[translate]: App created for %s" % appurl)
 
-
-
-        # Advanced merge. Merge owner languages into our bundles.
-        do_languages_initial_merge(app, bm)
-
-
-        # Find out which locales does the app provide (for now).
-        translated_langs = bm.get_locales_list()
-
         # We do a redirect rather than rendering in the POST. This way we can get proper
         # URL.
         return redirect(url_for('translate.translate_selectlang', appid=app.unique_id))
 
-    # This was a GET, the app should exist already somehow, we will try to retrieve it.
-    elif request.method == "GET":
 
-        appid = request.args.get("appid")
-        if appid is None:
-            flash(gettext("appid not received"), "error")
+    # This is again GET code.
 
-            # An appid is required.
-            return redirect(url_for("user.apps.index"))
+    appid = request.args.get("appid")
+    if appid is None:
+        flash(gettext("appid not received"), "error")
 
-        app = get_app(appid)
-        if app is None:
-            return render_template("composers/errors.html",
-                                   message=gettext("Specified App doesn't exist")), 404
+        # An appid is required.
+        return redirect(url_for("user.apps.index"))
 
-        # Load a BundleManager from the app data.
+    try:
+        app, bm, owner, is_owner, proposal_num, src_groups_dict, suggested_target_langs, translated_langs, autoaccept = load_app(appid, targetlangs_list)
 
-        # Retrieve the app.data mostly from DB (new method) to stop relying on the legacy appdata.
-        # TODO: Clear this up once the port is done.
-        full_app_data = load_appdata_from_db(app)
-        bm = BundleManager.create_from_existing_app(full_app_data)
-        save_bundles_to_db(app, bm)
+    except AppNotFoundException:
 
-        spec = bm.get_gadget_spec()
-
-        # Check whether an owner exists. If it doesn't, it means the original owner was deleted.
-        # In that case, we make ourselves a new owner.
-        # Locate the owner for the App's DEFAULT language.
-        ownerApp = _db_get_lang_owner_app(spec, "all_ALL")
-        # If there isn't already an owner for the default languages, we declare ourselves
-        # as the owner for this App's default language.
-        # TODO: NOTE: With the latest changes, this should never happen, because owners are declared
-        # for all existing languages by the user who creates the app. It may, however, happen in the future,
-        # when we take deletions and such into account.
-        if ownerApp is None:
-            _db_declare_ownership(app, "all_ALL")
-            ownerApp = app
-
-        translated_langs = bm.get_locales_list()
-
-
-    # The following is again common for both GET (view) and POST (edit).
-
-    # Check ownership. Probably eventually we will remove the ownership check above.
-    ownerApp = _db_get_lang_owner_app(spec, "all_ALL")
-    if ownerApp == app:
-        is_owner = True
-    else:
-        is_owner = False
-
-    owner = ownerApp.owner
-    if not is_owner and owner is None:
-        # TODO: Improve this error handling. This should NEVER happen.
-        flash(gettext("Error: Language Owner is None"), "error")
         return render_template("composers/errors.html",
-                               message=gettext("Internal Error: Language owner is None")), 500
+                           message=gettext("Specified App doesn't exist")), 404
 
+    except InternalError, ex:
 
-    # Just for the count of proposals
-    proposal_num = len(_db_get_proposals(app))
-
-    # Build a dictionary. For each source lang, a list of source groups.
-    src_groups_dict = defaultdict(list)
-    for loc in translated_langs:
-        src_groups_dict[loc["pcode"]].append(loc["group"])
-
-    locales_codes = [tlang["pcode"] for tlang in translated_langs]
-
-    # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
-    # because those will be added to the targetlangs by default.
-    suggested_target_langs = [elem for elem in targetlangs_list if elem["pcode"] not in locales_codes]
-
-    # We pass the autoaccept data var so that it can be rendered.
-    # TODO: Optimize this once we have this fully covered with tests.
-    data = json.loads(app.data)
-    autoaccept = data.get("autoaccept",
-                          True)  # We autoaccept by default. Problems may arise if this value changes, because it is used in a couple of places.
+        return render_template("composers/errors.html",
+                               message=gettext("Internal Error") + ex.message), 500
 
     # We pass some parameters as JSON strings because they are generated dynamically
     # through JavaScript in the template.
     return render_template("composers/translate/selectlang.html",
                            app=app,  # Current app object.
-                           xmlspec=spec,  # URL to the App XML.
+                           xmlspec=app.spec.url,  # URL to the App XML.
                            autoaccept=autoaccept,  # Whether the app is configured to autoaccept proposals or not.
                            suggested_target_langs=suggested_target_langs,  # Suggested (not already translated) langs
                            source_groups_json=json.dumps(src_groups_dict),  # Source groups in a JSON string
