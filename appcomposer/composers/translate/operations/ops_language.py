@@ -28,7 +28,9 @@ def obtain_languages():
     :return:
     """
     targetlangs = obtain_targetlangs_list()
-    return {lang["pcode"]: lang["repr"] for lang in targetlangs}
+    d = {lang["pcode"]: lang["repr"] for lang in targetlangs}
+    d["all_ALL"] = "DEFAULT"
+    return d
 
 
 def obtain_targetlangs_list():

@@ -124,7 +124,7 @@ def obtain_translation_info(app):
 
     :param app: App object to obtain the info from.
     :type app: App
-    :return: JSON-able dictionary containing for each language code (partial-code, that is, language+territory) the
+    :return: JSON-able SortedDictionary containing for each language code (partial-code, that is, language+territory) the
     list of groups for which translations exist and the owner of the translation. Example:
         {
             'all_ALL': {

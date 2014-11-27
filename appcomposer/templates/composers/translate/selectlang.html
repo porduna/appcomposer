@@ -98,28 +98,31 @@
 {#                                </ui-select-choices>#}
 {#                            </ui-select>#}
 
-                            <select id="srclang" name="srclang" class="my-select2"
-                                    ng-options="lang_key as languages[lang_key] group by get_ownership_group(lang_key) for lang_key in source_langs"
+                            <select ng-model="source.lang" id="srclang" name="srclang" class="my-select2"
                                     onchange="onSrcLangChanged()">
 
                                 <optgroup id="srclang_mine" label="{{ gettext("Translations I own") }}">
-                                </optgroup>
-
-                                <optgroup id="srclang_others" label="{{ gettext("Translations others own") }}">
-                                </optgroup>
-
-                                <optgroup id="srclang_unclaimed" label="{{ gettext("Translations nobody owns yet") }}">
-
-                                    {# When displaying the languages note that we only show those with GROUP=ALL. This is because otherwise some languages
-                                 would appear more than once. Though somewhat kludgey, this approach should always work because a language must always
-                                 have a default (ALL) translation. #}
-                                    {% for loc in translated_langs if loc["group"] == "ALL" and not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}
-                                        <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
+                                    {% for lang_key, lang_data in translation_info.iteritems() if "owner" not in lang_data %}
+                                    <option value="{{ lang_key }}">{{ languages[lang_key] }}</option>
                                     {% endfor %}
                                 </optgroup>
 
-                                <option selected="selected" value="all_ALL">DEFAULT</option>
+                                <optgroup id="srclang_others" label="{{ gettext("Translations others own") }}">
+                                    {% for lang_key, lang_data in translation_info.iteritems() if "owner" in lang_data %}
+                                    <option value="{{ lang_key }}">{{ languages[lang_key] }} {{ "[%s: %s]" % (gettext("owner"), lang_data["owner"]["login"]) }}</option>
+                                    {% endfor %}
+                                </optgroup>
 
+                                {# Unclaimed translations are as of now unsupported #}
+{#                                <optgroup id="srclang_unclaimed" label="{{ gettext("Translations nobody owns yet") }}">#}
+{##}
+                                    {# When displaying the languages note that we only show those with GROUP=ALL. This is because otherwise some languages
+{#                                 would appear more than once. Though somewhat kludgey, this approach should always work because a language must always#}
+{#                                 have a default (ALL) translation. #}
+{#                                    {% for loc in translated_langs if loc["group"] == "ALL" and not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}#}
+{#                                        <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>#}
+{#                                    {% endfor %}#}
+{#                                </optgroup>#}
 
                             </select>
                         </div>
@@ -135,39 +138,25 @@
                             <label class="control-label"
                                    for="targetlang">{{ gettext("Select target language") }}</label>
 
-                            <select id="targetlang" name="targetlang" class="my-select2">
-
-                                {# TODO: Clean this up. The design probably needs some changes as well. #}
+                            <select ng-model="target.lang" id="targetlang" name="targetlang" class="my-select2">
 
                                 <optgroup id="targetlang_mine" label="{{ gettext("Translations I own") }}">
+                                    {% for lang_key, lang_data in translation_info.iteritems() if "owner" not in lang_data %}
+                                    <option value="{{ lang_key }}">{{ languages[lang_key] }}</option>
+                                    {% endfor %}
                                 </optgroup>
 
                                 <optgroup id="targetlang_others" label="{{ gettext("Translations others own") }}">
-                                </optgroup>
-
-                                {# The translations within this group will actually be rearranged
-                                     automatically into the previous two groups through AJAX #}
-                                <optgroup id="targetlang_unclaimed"
-                                          label="{{ gettext("Translations nobody owns yet") }}">
-                                    {# Add the DEFAULT first. #}
-                                    <option value="all_ALL" selected="selected">DEFAULT</option>
-
-                                    {# Now add the messages that are already translated. #}
-                                    {% for loc in translated_langs if loc["group"] == "ALL" and not (loc["lang"] == "all" and loc["country"] == "ALL") %}
-                                        <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>
+                                    {% for lang_key, lang_data in translation_info.iteritems() if "owner" in lang_data %}
+                                    <option value="{{ lang_key }}">{{ languages[lang_key] }} {{ "[%s: %s]" % (gettext("owner"), lang_data["owner"]["login"]) }}</option>
                                     {% endfor %}
                                 </optgroup>
-
 
                                 <optgroup label="No translations yet">
-
-                                    {# Now add the messages that are suggested by the system. #}
-                                    {% for lang in suggested_target_langs %}
-                                        <option value="{{ lang["pcode"] }}">{{ lang["repr"] }}</option>
+                                    {% for lang_key, lang_name in languages.iteritems() if lang_key not in translation_info %}
+                                    <option value="{{ lang_key }}">{{ lang_name }}</option>
                                     {% endfor %}
-
                                 </optgroup>
-
 
                             </select>
 
@@ -243,21 +232,6 @@
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 {% block scripts %}
 
     {{ super() }}
@@ -282,8 +256,6 @@
                 var languages = {{ languages|tojson|safe }};
                 var groups = {{ groups|tojson|safe }};
                 var translation_info = {{ translation_info|tojson|safe }};
-
-                $scope.get_ownership_group = getOwnershipGroup;
 
                 $scope.target = {
                     group: "ALL", // by default
