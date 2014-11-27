@@ -18,7 +18,7 @@ adaptor = create_adaptor('Labs adaptation',
                 description = lazy_gettext("Create adaptations of customizable gateway4labs laboratories."),
                 about_endpoint = 'gateway4labs.about')
 
-SHINDIG_SERVER = 'http://shindig.epfl.ch'
+SHINDIG_SERVER = 'http://shindig2.epfl.ch'
 def shindig_url(relative_url):
     return '%s%s' % (SHINDIG_SERVER, relative_url)
 
