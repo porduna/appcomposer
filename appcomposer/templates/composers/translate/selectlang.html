@@ -20,83 +20,78 @@
 
     {{ modal.render_input_modal_html("appname-modal", "appname-field", gettext("Change App name"), gettext("Insert the new name: "), "onAppTitleSave()") }}
 
-    <div class="translateblock" ng-app="selectLang">
+    <div class="translateblock" ng-app="selectLang" ng-controller="SelectLangCtrl">
 
 
-        <div class="row">
-            <div class="col-lg-12">
-                <div class="page-header">
+    <div class="row">
+        <div class="col-lg-12">
+            <div class="page-header">
 
-                    <div style="width: 100%;">
-                        <div style="margin-left: auto; margin-right: 2%; float:right; clear:both;">
-                            {{ gettext("Advanced mode:") }}
-                            <form>
-                                <input type="checkbox" name="advanced-mode" checked>
-                            </form>
+                <mng-advanced-mode advanced-mode="mode.advancedMode"></mng-advanced-mode>
+
+                <h1 id="apptitle">{{ gettext("Translate") }}</h1>
+
+
+                {% if app %}
+                    <h2 id="appfullname" class="dyn-changeable">{{ app.name }}</h2>
+                {% else %}
+                    <h2 id="appfullname">{{ gettext("[App name not available]") }}</h2>
+                {% endif %}
+
+                <h4 class="alert alert-info">{{ gettext("Original XML: ") }} <a href="{{ xmlspec }}">{{ xmlspec }}</a>
+                </h4>
+                {% if is_owner %}
+                    <h4 class="alert alert-success">
+                        <p>
+                            {{ gettext("You are the owner of this App's default translation.") }}
+                        </p>
+
+                        <div class="checkbox" style="padding-top:20px">
+                            <label>
+                                <!-- This control is handled through Javascript. It modifies the config through AJAX. -->
+                                <input type="checkbox" id="accept-proposals" {% if autoaccept %}checked{% endif %}>
+                                {{ gettext("Accept all translation proposals automatically") }}
+                            </label>
                         </div>
-                    </div>
+                    </h4>
+                {% else %}
+                    <h4 class="alert alert-warning">
+                        {{ gettext("This App's default translation belongs to %(name)s (%(login)s).", name=owner.name, login=owner.login) }}
+                    </h4>
+                {% endif %}
 
-                    <h1 id="apptitle">{{ gettext("Translate") }}</h1>
-
-
-                    {% if app %}
-                        <h2 id="appfullname" class="dyn-changeable">{{ app.name }}</h2>
-                    {% else %}
-                        <h2 id="appfullname">{{ gettext("[App name not available]") }}</h2>
-                    {% endif %}
-
-                    <h4 class="alert alert-info">{{ gettext("Original XML: ") }} <a href="{{ xmlspec }}">{{ xmlspec }}</a></h4>
-                    {% if is_owner %}
-                        <h4 class="alert alert-success">
-                            <p>
-                                {{ gettext("You are the owner of this App's default translation.") }}
-                            </p>
-                            <div class="checkbox" style="padding-top:20px">
-                                <label>
-                                    <!-- This control is handled through Javascript. It modifies the config through AJAX. -->
-                                    <input type="checkbox" id="accept-proposals" {% if autoaccept %}checked{% endif %}>
-                                    {{ gettext("Accept all translation proposals automatically") }}
-                                </label>
-                            </div>
-                        </h4>
-                    {% else %}
-                        <h4 class="alert alert-warning">
-                            {{ gettext("This App's default translation belongs to %(name)s (%(login)s).", name=owner.name, login=owner.login) }}
-                        </h4>
-                    {% endif %}
-
-                    <div style="float: right; clear: both">
-                        <a href="{{ url_for(".translate_proposed_list", appid=app.unique_id) }}">
-                            <button class="btn btn-warning">{{ gettext("View Proposed Translations") }}
+                <div style="float: right; clear: both">
+                    <a href="{{ url_for(".translate_proposed_list", appid=app.unique_id) }}">
+                        <button class="btn btn-warning">{{ gettext("View Proposed Translations") }}
                                 <span class="badge"
                                       style="{{ "" if proposal_num == 0 else "background-color:#EE2222" }}">{{ proposal_num }}</span>
-                            </button>
-                        </a>
-                    </div>
+                        </button>
+                    </a>
                 </div>
             </div>
         </div>
+    </div>
 
 
-        <!-- Forms
-        ================================================== -->
-        <div class="well">
+    <!-- Forms
+    ================================================== -->
+    <div class="well">
 
-            <div class="row">
-                <div class="col-lg-12">
-                    <form class="form-horizontal" id="getlangs" name="getlangs"
-                          action="{{ url_for('translate.translate_edit') }}" method="GET">
+        <div class="row">
+            <div class="col-lg-12">
+                <form class="form-horizontal" id="getlangs" name="getlangs"
+                      action="{{ url_for('translate.translate_edit') }}" method="GET">
 
-                        {# This is necessary so that the next page knows which App to load. #}
-                        <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
+                    {# This is necessary so that the next page knows which App to load. #}
+                    <input type="hidden" name="appid" value="{{ app.unique_id }}"/>
 
-                        <legend>{{ gettext("Step 3: Translate") }}</legend>
+                    <legend>{{ gettext("Step 3: Translate") }}</legend>
 
-                        <div class="col-lg-6 col-md-6">
+                    <div class="col-lg-6 col-md-6">
 
 
-                            <div class="form-group">
-                                <label class="control-label" for="srclang">{{ gettext("Select source language") }}</label>
+                        <div class="form-group">
+                            <label class="control-label" for="srclang">{{ gettext("Select source language") }}</label>
 
                             <select id="srclang" name="srclang" class="my-select2"
                                     onchange="onSrcLangChanged()">
@@ -123,14 +118,15 @@
                             </select>
                         </div>
 
-                        <button id="editSelectedSourceButton" name="editSelectedSourceButton" type="submit"
+                        <button ng-show="mode.advancedMode" id="editSelectedSourceButton" name="editSelectedSourceButton" type="submit"
                                 class="btn btn-primary" style="margin-bottom:20px">
                             {{ gettext("Edit selected <b>source</b> on its own") }}
                         </button>
 
                         <div class="form-group">
 
-                            <label class="control-label" for="targetlang">{{ gettext("Select target language") }}</label>
+                            <label class="control-label"
+                                   for="targetlang">{{ gettext("Select target language") }}</label>
 
                             <select id="targetlang" name="targetlang" class="my-select2">
 
@@ -144,7 +140,8 @@
 
                                 {# The translations within this group will actually be rearranged
                                      automatically into the previous two groups through AJAX #}
-                                <optgroup id="targetlang_unclaimed" label="{{ gettext("Translations nobody owns yet") }}">
+                                <optgroup id="targetlang_unclaimed"
+                                          label="{{ gettext("Translations nobody owns yet") }}">
                                     {# Add the DEFAULT first. #}
                                     <option value="all_ALL" selected="selected">DEFAULT</option>
 
@@ -194,14 +191,14 @@
                             </select>
                         </div>
 
-                            <div class="form-group">
-                                <div class="controls">
-                                    <span id="help-msg" class="help-block"><!--Contents to be updated dynamically through JS--></span>
+                        <div class="form-group">
+                            <div class="controls">
+                                <span id="help-msg" class="help-block"><!--Contents to be updated dynamically through JS--></span>
 
-                                    <div style="float:left">
-                                        <a class="btn btn-default" id="backtoindexbtn"
-                                           href="{{ url_for('translate.translate_index') }}">{{ gettext("« Go Back to Step 1") }}</a>
-                                    </div>
+                                <div style="float:left">
+                                    <a class="btn btn-default" id="backtoindexbtn"
+                                       href="{{ url_for('translate.translate_index') }}">{{ gettext("« Go Back to Step 1") }}</a>
+                                </div>
 
                                 <!-- The wrapping div is for the tooltips -->
                                 <div id="localisebtndiv" style="">
@@ -214,21 +211,25 @@
                                     </button>
                                 </div>
 
-                                <p id="same-lang" class="text-danger">{{ gettext("Target and source languages may not be the same") }}</p>
+                                <p id="same-lang"
+                                   class="text-danger">{{ gettext("Target and source languages may not be the same") }}</p>
 
-                                    <!--
+                                <!--
                     <a class="btn btn-success" id="sendlangsbtn" href="{{ url_for('translate.translate_edit') }}">Step 3 - Translate »</a>
                     -->
-                                </div>
                             </div>
-
-
                         </div>
-                    </form>
 
-                </div> <!-- ! col -->
-            </div> <!-- ! row -->
-        </div> <!-- ! well -->
+
+                    </div>
+                </form>
+
+            </div>
+            <!-- ! col -->
+        </div>
+        <!-- ! row -->
+    </div>
+    <!-- ! well -->
     </div>
 
 
@@ -266,10 +267,18 @@
 
     <!-- AngularJS code -->
     <script type="text/javascript">
+        (function () {
 
-        // Create a selectLang module for this app.
-        var selectLang = angular.module("selectLang", []);
+            // Create a selectLang module for this app.
+            angular
+                    .module("selectLang", ["mngCommon"])
+                    .controller("SelectLangCtrl", SelectLangCtrl);
 
+            function SelectLangCtrl($scope) {
+                $scope.mode = {}; // For the advanced-mode directive.l
+            }
+
+        })();
     </script>
 
 
@@ -281,56 +290,14 @@
     <script type="text/javascript">
 
 
-    function onAdvancedModeChanged(enabled)
-    {
-        var editSelectedSource = $("#editSelectedSourceButton");
-
-        if(enabled)
-        {
-            editSelectedSource.css("visibility", "visible");
-        }
-        else
-        {
-            editSelectedSource.css("visibility", "hidden");
-        }
-    }
-
     //! Load and initialize what we must.
     $(document).ready(function () {
         console.log("On ready");
-
-        // Create the config store
-        configstore = new Persist.Store('configstore');
-
-        // Initialize the advanced-mode switch.
-        var $advMode = $("[name='advanced-mode']");
-        $advMode.bootstrapSwitch();
-
-        configstore.get("advmode", function(ok, value) {
-            if(!ok || value == "false" || value == null)
-                value = false;
-            else
-                value = true;
-
-            onAdvancedModeChanged(value);
-            $advMode.bootstrapSwitch("state", value);
-        });
-
-        $advMode.on("switchChange.bootstrapSwitch", function(ev, state) {
-            console.log("Advanced mode enabled: " + state);
-            onAdvancedModeChanged(state);
-            configstore.set("advmode", state);
-        });
 
 
         // We need to take a different action if we want to edit the selected source language.
         // We intercept the click.
         interceptEditSelectedSourceLanguageButton();
-
-        // Initialize the mode switch.
-        modeSwitch = $("#editModeSwitch").bootstrapSwitch();
-        modeSwitch.bootstrapSwitch("setOnLabel", "Yes");
-        modeSwitch.bootstrapSwitch("setOffLabel", "No");
 
         loadSourceGroups();
 
@@ -356,7 +323,7 @@
 
         // Configure AJAX to send the CSRF header.
         $.ajaxSetup({
-           headers: {"x-csrf": "{{ csrf_token()|safe }}"}
+            headers: {"x-csrf": "{{ csrf_token()|safe }}"}
         });
 
         // Handle the accept-proposals toggle. It will enable or disable auto-accepting through AJAX.
@@ -365,7 +332,7 @@
             $.post("{{ url_for('.autoaccept', appid = app.unique_id) }}", { value: this.checked ? 1 : 0 }, function (data) {
                 console.log("Autoaccept changed");
 
-                if(data.result == "error")
+                if (data.result == "error")
                     alert("{{ gettext("Error: Could not change autoaccept state") }}");
             });
         });
@@ -416,20 +383,20 @@
         // THIS LIMITATION HAS BEEN DISABLED. IT IS NOW POSSIBLE TO EDIT A LANGUAGE USING THE SAME LANGUAGE AS A BASE.
         // The same source and target combination was chosen. User should not be allowed
         // to try to translate that, as it makes no sense.
-{#        if (getChosenSource() == getChosenTarget()) {#}
-{#            $("#same-lang").show();#}
-{#            submits.attr("disabled", "disabled");#}
-{#            submits.prop('disabled', true);#}
-{##}
-{#            $('#localisebtndiv').attr("data-content", "{{ gettext("In order to start localising the App, the chosen source language-group and target language-group combinations must be different") }}");#}
-{#        }#}
-{#        else {#}
-            $("#same-lang").hide();
-            submits.removeAttr("disabled");
-            submits.prop("disabled", false);
+        {#        if (getChosenSource() == getChosenTarget()) {#}
+        {#            $("#same-lang").show();#}
+        {#            submits.attr("disabled", "disabled");#}
+        {#            submits.prop('disabled', true);#}
+        {##}
+        {#            $('#localisebtndiv').attr("data-content", "{{ gettext("In order to start localising the App, the chosen source language-group and target language-group combinations must be different") }}");#}
+        {#        }#}
+        {#        else {#}
+        $("#same-lang").hide();
+        submits.removeAttr("disabled");
+        submits.prop("disabled", false);
 
-            $('#localisebtndiv').attr("data-content", "{{ gettext("Click this button to start localising the App. You will be shown the entries in the <b>source</b> language so that you can translate them into the <b>target</b> language.") }}");
-{#        }#}
+        $('#localisebtndiv').attr("data-content", "{{ gettext("Click this button to start localising the App. You will be shown the entries in the <b>source</b> language so that you can translate them into the <b>target</b> language.") }}");
+        {#        }#}
 
 
         // We will also update the info text here.
@@ -492,7 +459,7 @@
         $(srcGroup).append($("<option />", {value: "ALL", text: fullGroups["ALL"]}));
 
         $.each(groupsForSelectedLang, function (index, value) {
-            if(value == "ALL")
+            if (value == "ALL")
                 return true; // continue loop
 
             var groupCode = value;
@@ -584,45 +551,43 @@
     }
 
 
-
-
     // To be able to dynamically edit the app name.
 
-        // To handle the dynamic modal changers.
+    // To handle the dynamic modal changers.
 
-        var _modal = {}; // To save modal data.
+    var _modal = {}; // To save modal data.
 
-        {# This is referenced by the modal generation macro #}
-        function onAppTitleSave() {
-            var requrl = "{{ url_for("index", _external=True) }}" + "change/appname/" + _modal.appuid;
-            var newname = $("#appname-field").val();
-            $.post(requrl, {"name": newname})
-                    .done(function(result){
-                        // TODO: Handle this dynamically instead of just reloading.
-                        window.location.reload();
-                    })
-                    .fail(function(result){
-                        console.error(result);
+    {# This is referenced by the modal generation macro #}
+    function onAppTitleSave() {
+        var requrl = "{{ url_for("index", _external=True) }}" + "change/appname/" + _modal.appuid;
+        var newname = $("#appname-field").val();
+        $.post(requrl, {"name": newname})
+                .done(function (result) {
+                    // TODO: Handle this dynamically instead of just reloading.
+                    window.location.reload();
+                })
+                .fail(function (result) {
+                    console.error(result);
 
-                        // TODO: IMPROVE THIS.
-                        alert("Could not change the name. Please ensure that the new name is valid and unique.");
-                    });
-        }
+                    // TODO: IMPROVE THIS.
+                    alert("Could not change the name. Please ensure that the new name is valid and unique.");
+                });
+    }
 
-        // Initialize the dynamic app and description changers.
-        $(document).ready(function () {
+    // Initialize the dynamic app and description changers.
+    $(document).ready(function () {
 
-            {# Required for autofocus to work properly #}
-            {{ modal.input_modal_autofocus_fix() }}
+        {# Required for autofocus to work properly #}
+        {{ modal.input_modal_autofocus_fix() }}
 
-            $("#appfullname").click(function (ev){
-                var appuid = "{{ app.unique_id }}";
-                _modal.appuid = appuid;
-                $("#appname-field").val($(ev.target).text());
-                $("#appname-modal").modal({show: true});
-            });
-
+        $("#appfullname").click(function (ev) {
+            var appuid = "{{ app.unique_id }}";
+            _modal.appuid = appuid;
+            $("#appname-field").val($(ev.target).text());
+            $("#appname-modal").modal({show: true});
         });
+
+    });
 
     </script>
 

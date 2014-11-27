@@ -43,8 +43,6 @@
                 });
 
                 $advMode.on("switchChange.bootstrapSwitch", function (ev, state) {
-                    console.log("Advanced mode enabled: " + state);
-
                     scope.advancedMode = state;
                     scope.$apply(); // So that angular knows of the change.
                     configstore.set("advmode", state);
