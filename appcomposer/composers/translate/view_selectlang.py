@@ -23,11 +23,12 @@ def handle_selectlang_GET():
     # Obtain information about the languages that we can translate to.
     languages = ops_language.obtain_languages()
     groups = ops_language.obtain_groups()
+    targetlangs_list = ops_language.obtain_targetlangs_list()
 
     appid = common.get_required_param("appid")
 
     app, bm, owner, is_owner, proposal_num, src_groups_dict, suggested_target_langs, translated_langs, autoaccept = ops_highlevel.load_app(
-        appid, languages)
+        appid, targetlangs_list)
 
     translation_info = ops_highlevel.obtain_translation_info(app)
 
@@ -44,7 +45,10 @@ def handle_selectlang_GET():
                            translated_langs=translated_langs,  # Already translated langs
                            is_owner=is_owner,  # Whether the loaded app has the "Owner" status
                            owner=owner,  # Reference to the Owner
-                           proposal_num=proposal_num)  # Number of pending translation proposals
+                           proposal_num=proposal_num,
+                           languages=languages,
+                           groups=groups,
+                           translation_info=translation_info)  # Number of pending translation proposals
 
 
 def handle_selectlang_POST():

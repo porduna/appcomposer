@@ -23,8 +23,17 @@ def obtain_groups():
 def obtain_languages():
     """
     Obtains the languages (without the groups) that are available for translation,
-    as an Ordered Dictionary. The format is code:language_name
+    as a Dictionary. The format is code:language_name
 
+    :return:
+    """
+    targetlangs = obtain_targetlangs_list()
+    return {lang["pcode"]: lang["repr"] for lang in targetlangs}
+
+
+def obtain_targetlangs_list():
+    """
+    Obtains the targetlangs_list. This function SHOULD EVENTUALLY BE REMOVED.
     :return:
     """
     languages = babel.core.Locale("en", "US").languages.items()

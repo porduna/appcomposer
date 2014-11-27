@@ -73,7 +73,7 @@
 
         <div class="row">
             <div class="col-lg-12">
-                <form class="form-horizontal" id="getlangs" name="getlangs"
+                <form ng-controller="SelectLangFormCtrl" class="form-horizontal" id="getlangs" name="getlangs"
                       action="{{ url_for('translate.translate_edit') }}" method="GET">
 
                     {# This is necessary so that the next page knows which App to load. #}
@@ -86,6 +86,17 @@
 
                         <div class="form-group">
                             <label class="control-label" for="srclang">{{ gettext("Select source language") }}</label>
+
+{#                            <ui-select style="width: 400px" ng-model="source.lang" theme="select2" ng-disabled="false"#}
+{#                                       search-enabled="true">#}
+{#                                <ui-select-match placeholder="Select the source language">#}
+{#                                                </ui-select-match>#}
+{#                                <ui-select-choices repeat="lang in source_langs | filter: $select.search">#}
+{#                                    {% raw %}#}
+{#                                    {{ languages[lang] }}#}
+{#                                    {% endraw %}#}
+{#                                </ui-select-choices>#}
+{#                            </ui-select>#}
 
                             <select id="srclang" name="srclang" class="my-select2"
                                     onchange="onSrcLangChanged()">
@@ -112,7 +123,8 @@
                             </select>
                         </div>
 
-                        <button ng-show="mode.advancedMode" id="editSelectedSourceButton" name="editSelectedSourceButton" type="submit"
+                        <button ng-show="mode.advancedMode" id="editSelectedSourceButton"
+                                name="editSelectedSourceButton" type="submit"
                                 class="btn btn-primary" style="margin-bottom:20px">
                             {{ gettext("Edit selected <b>source</b> on its own") }}
                         </button>
@@ -208,9 +220,6 @@
                                 <p id="same-lang"
                                    class="text-danger">{{ gettext("Target and source languages may not be the same") }}</p>
 
-                                <!--
-                    <a class="btn btn-success" id="sendlangsbtn" href="{{ url_for('translate.translate_edit') }}">Step 3 - Translate »</a>
-                    -->
                             </div>
                         </div>
 
@@ -256,17 +265,15 @@
 
     {{ super() }}
 
-
-
-
     <!-- AngularJS code -->
     <script type="text/javascript">
         (function () {
 
             // Create a selectLang module for this app.
             angular
-                    .module("selectLang", ["mngCommon"])
+                    .module("selectLang", ["mngCommon", "ui.select"])
                     .controller("SelectLangCtrl", SelectLangCtrl)
+                    .controller("SelectLangFormCtrl", SelectLangFormCtrl)
                     .factory("autoAcceptService", autoAcceptService)
                     .directive("mngAutoAcceptSwitch", MngAutoAcceptSwitch);
 
@@ -274,9 +281,21 @@
                 $scope.mode = {}; // For the advanced-mode directive.
             }
 
+            function SelectLangFormCtrl($scope) {
+                var languages = {{ languages|tojson|safe }};
+                var groups = {{ groups|tojson|safe }};
+                var translation_info = {{ translation_info|tojson|safe }};
+
+                $scope.languages = languages;
+                $scope.languages["all_ALL"] = "DEFAULT"; // This should maybe be provided by the server.
+
+                $scope.groups = groups;
+                $scope.source_langs = Object.keys(translation_info);
+            }
+
             function autoAcceptService($q) {
                 return {
-                    setAutoaccept : function(enabled) {
+                    setAutoaccept: function (enabled) {
 
                         var deferred = $q.defer();
 
@@ -297,6 +316,7 @@
                 }
             }
 
+
             function MngAutoAcceptSwitch($parse, autoAcceptService) {
                 return {
                     restrict: "E",
@@ -305,19 +325,19 @@
                     },
                     replace: false,
                     transclude: false,
-                    template:   '<div class="checkbox" style="padding-top:20px">' +
-                                '    <label>' +
-                                '        <input type="checkbox" id="accept-proposals" ng-model="enabled">' +
-                                '        {{ gettext("Accept all translation proposals automatically") }}' +
-                                '    </label>' +
-                                '</div>',
-                    link: function(scope, element, attrs) {
+                    template: '<div class="checkbox" style="padding-top:20px">' +
+                            '    <label>' +
+                            '        <input type="checkbox" id="accept-proposals" ng-model="enabled">' +
+                            '        {{ gettext("Accept all translation proposals automatically") }}' +
+                            '    </label>' +
+                            '</div>',
+                    link: function (scope, element, attrs) {
                         scope.enabled = {{ autoaccept|tojson }};
-                        scope.$watch("enabled", function(from, to) {
-                            if(from == to)
+                        scope.$watch("enabled", function (from, to) {
+                            if (from == to)
                                 return;
                             var promise = autoAcceptService.setAutoaccept(scope.enabled);
-                            promise.then(function(value){
+                            promise.then(function (value) {
                                 scope.enabled = value;
                             });
                         });
