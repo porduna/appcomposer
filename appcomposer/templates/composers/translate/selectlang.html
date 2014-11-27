@@ -99,6 +99,7 @@
 {#                            </ui-select>#}
 
                             <select id="srclang" name="srclang" class="my-select2"
+                                    ng-options="lang_key as languages[lang_key] group by get_ownership_group(lang_key) for lang_key in source_langs"
                                     onchange="onSrcLangChanged()">
 
                                 <optgroup id="srclang_mine" label="{{ gettext("Translations I own") }}">
@@ -177,8 +178,8 @@
                     <div class="col-lg-6 col-md-6">
                         <div class="form-group">
                             <label class="control-label" for="srcgroup">{{ gettext("Select source group") }}</label>
-                            <select id="srcgroup" name="srcgroup" class="my-select2">
-                                <!-- These are dynamically filled through JavaScript -->
+                            <select ng-model="source.group" ng-options="group_key as groups[group_key] for group_key in source_groups"
+                                    id="srcgroup" name="srcgroup" class="my-select2">
                             </select>
                         </div>
 
@@ -189,11 +190,7 @@
 
                         <div class="form-group">
                             <label class="control-label" for="targetgroup">{{ gettext("Select target group") }}</label>
-                            <select id="targetgroup" name="targetgroup" class="my-select2">
-                                {% for group in target_groups %}
-                                    <option {% if loop.index0 == 0 %}selected="selected"{% endif %}
-                                            value="{{ group }}">{{ target_groups[group] }}</option>
-                                {% endfor %}
+                            <select ng-model="target.group" ng-options="key as group for (key, group) in groups" id="targetgroup" name="targetgroup" class="my-select2">
                             </select>
                         </div>
 
@@ -286,6 +283,18 @@
                 var groups = {{ groups|tojson|safe }};
                 var translation_info = {{ translation_info|tojson|safe }};
 
+                $scope.get_ownership_group = getOwnershipGroup;
+
+                $scope.target = {
+                    group: "ALL", // by default
+                    lang: "all_ALL"
+                };
+
+                $scope.source = {
+                    group: "ALL", // by default
+                    lang: "all_ALL"
+                };
+
                 $scope.languages = languages;
                 $scope.languages["all_ALL"] = "DEFAULT"; // This should maybe be provided by the server.
 
@@ -368,7 +377,7 @@
 
         loadSourceGroups();
 
-        displayOwnershipInformation();
+        // displayOwnershipInformation();
 
         // Add handlers to every Select element.
         $("select").on("change", function (event) {
@@ -376,7 +385,7 @@
         });
 
         // For initialization
-        onLanguageChange(null);
+        // onLanguageChange(null);
 
         // Initialize popovers & tooltips.
         initializeTooltips();
