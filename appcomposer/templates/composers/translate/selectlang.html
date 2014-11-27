@@ -98,8 +98,10 @@
 {#                                </ui-select-choices>#}
 {#                            </ui-select>#}
 
-                            <select ng-model="source.lang" id="srclang" name="srclang" class="my-select2"
-                                    onchange="onSrcLangChanged()">
+                            <select
+                                    ng-model="source.lang"
+                                    ng-change="source.group = 'ALL'"
+                                    id="srclang" name="srclang" class="my-select2">
 
                                 <optgroup id="srclang_mine" label="{{ gettext("Translations I own") }}">
                                     {% for lang_key, lang_data in translation_info.iteritems() if "owner" not in lang_data %}
@@ -167,7 +169,8 @@
                     <div class="col-lg-6 col-md-6">
                         <div class="form-group">
                             <label class="control-label" for="srcgroup">{{ gettext("Select source group") }}</label>
-                            <select ng-model="source.group" ng-options="group_key as groups[group_key] for group_key in source_groups"
+                            <select ng-model="source.group"
+                                    ng-options="group_key as groups[group_key] || '<undefined>' for group_key in translation_info[source.lang]['groups']"
                                     id="srcgroup" name="srcgroup" class="my-select2">
                             </select>
                         </div>
@@ -272,6 +275,8 @@
 
                 $scope.groups = groups;
                 $scope.source_langs = Object.keys(translation_info);
+                $scope.source_groups = [];
+                $scope.translation_info = translation_info;
             }
 
             function autoAcceptService($q) {
@@ -347,24 +352,10 @@
         // We intercept the click.
         interceptEditSelectedSourceLanguageButton();
 
-        loadSourceGroups();
-
-        // displayOwnershipInformation();
-
-        // Add handlers to every Select element.
-        $("select").on("change", function (event) {
-            onLanguageChange(event)
-        });
-
-        // For initialization
-        // onLanguageChange(null);
-
         // Initialize popovers & tooltips.
         initializeTooltips();
 
-        // Define the size for each of the four select-boxes there are.
-        console.log("Setting size");
-
+        // Initialize the select2 controls.
         $("select").select2();
 
         // Configure AJAX to send the CSRF header.
@@ -465,49 +456,6 @@
     function getChosenTarget() {
         var targetSource = $("#targetlang").val() + "_" + $("#targetgroup").val();
         return targetSource;
-    }
-
-
-    //! Event received then the user selects a new source language.
-    //! We will refill the source groups for that one language.
-    function onSrcLangChanged() {
-        loadSourceGroups()
-    }
-
-    //! Loads the right source groups on the source groups selection control, depending on which
-    //! source language is selected.
-    function loadSourceGroups() {
-        // Retrieve the full list of groups, which links the group codes to the
-        // display names.
-        var fullGroups = {{ full_groups_json|safe }};
-
-        var select = document.getElementById("srclang");
-        var selectedOption = select.options[select.selectedIndex];
-
-        var srcGroup = $("#srcgroup");
-        srcGroup.empty();
-
-        var sourceGroups = {{ source_groups_json|safe }};
-        var groupsForSelectedLang = sourceGroups[selectedOption.value];
-
-        // Trick to ensure that ALL is placed first.
-        $(srcGroup).append($("<option />", {value: "ALL", text: fullGroups["ALL"]}));
-
-        $.each(groupsForSelectedLang, function (index, value) {
-            if (value == "ALL")
-                return true; // continue loop
-
-            var groupCode = value;
-
-            // Find a name for the group. If not found use the code.
-            var groupName = fullGroups[groupCode] || groupCode;
-
-            $(srcGroup).append($("<option />", {value: value, text: groupName}));
-        });
-
-        // Initialize the selection.
-        var srcGroupSelect = srcGroup[0].options[0];
-        srcGroupSelect.setAttribute("selected", "selected");
     }
 
 
