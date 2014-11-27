@@ -46,13 +46,7 @@
                             {{ gettext("You are the owner of this App's default translation.") }}
                         </p>
 
-                        <div class="checkbox" style="padding-top:20px">
-                            <label>
-                                <!-- This control is handled through Javascript. It modifies the config through AJAX. -->
-                                <input type="checkbox" id="accept-proposals" {% if autoaccept %}checked{% endif %}>
-                                {{ gettext("Accept all translation proposals automatically") }}
-                            </label>
-                        </div>
+                        <mng-auto-accept-switch enabled="autoaccept.enabled"></mng-auto-accept-switch>
                     </h4>
                 {% else %}
                     <h4 class="alert alert-warning">
@@ -272,11 +266,64 @@
             // Create a selectLang module for this app.
             angular
                     .module("selectLang", ["mngCommon"])
-                    .controller("SelectLangCtrl", SelectLangCtrl);
+                    .controller("SelectLangCtrl", SelectLangCtrl)
+                    .factory("autoAcceptService", autoAcceptService)
+                    .directive("mngAutoAcceptSwitch", MngAutoAcceptSwitch);
 
             function SelectLangCtrl($scope) {
-                $scope.mode = {}; // For the advanced-mode directive.l
+                $scope.mode = {}; // For the advanced-mode directive.
             }
+
+            function autoAcceptService($q) {
+                return {
+                    setAutoaccept : function(enabled) {
+
+                        var deferred = $q.defer();
+
+                        // Send an AJAX request to change the autoaccept proposals config.
+                        $.post("{{ url_for('.autoaccept', appid = app.unique_id) }}", { value: enabled ? 1 : 0 }, function (data) {
+                            console.debug("Autoaccept changed");
+
+                            if (data.result == "error") {
+                                deferred.reject(data.result);
+                                alert("{{ gettext("Error: Could not change autoaccept state") }}");
+                            }
+
+                            deferred.resolve(enabled);
+                        });
+
+                        return deferred.promise;
+                    }
+                }
+            }
+
+            function MngAutoAcceptSwitch($parse, autoAcceptService) {
+                return {
+                    restrict: "E",
+                    scope: {
+                        enabled: "="
+                    },
+                    replace: false,
+                    transclude: false,
+                    template:   '<div class="checkbox" style="padding-top:20px">' +
+                                '    <label>' +
+                                '        <input type="checkbox" id="accept-proposals" ng-model="enabled">' +
+                                '        {{ gettext("Accept all translation proposals automatically") }}' +
+                                '    </label>' +
+                                '</div>',
+                    link: function(scope, element, attrs) {
+                        scope.enabled = {{ autoaccept|tojson }};
+                        scope.$watch("enabled", function(from, to) {
+                            if(from == to)
+                                return;
+                            var promise = autoAcceptService.setAutoaccept(scope.enabled);
+                            promise.then(function(value){
+                                scope.enabled = value;
+                            });
+                        });
+                    }
+                }
+            } //! MngAutoAcceptSwitch
 
         })();
     </script>
@@ -316,25 +363,12 @@
 
         // Define the size for each of the four select-boxes there are.
         console.log("Setting size");
-        //$("select").attr("size", 8);
-
 
         $("select").select2();
 
         // Configure AJAX to send the CSRF header.
         $.ajaxSetup({
             headers: {"x-csrf": "{{ csrf_token()|safe }}"}
-        });
-
-        // Handle the accept-proposals toggle. It will enable or disable auto-accepting through AJAX.
-        $("#accept-proposals").change(function () {
-            // Send an AJAX request to change the autoaccept proposals config.
-            $.post("{{ url_for('.autoaccept', appid = app.unique_id) }}", { value: this.checked ? 1 : 0 }, function (data) {
-                console.log("Autoaccept changed");
-
-                if (data.result == "error")
-                    alert("{{ gettext("Error: Could not change autoaccept state") }}");
-            });
         });
 
     });
