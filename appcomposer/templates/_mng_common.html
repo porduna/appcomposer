@@ -6,8 +6,14 @@
     mngCommon.directive("mngAdvancedMode", mngAdvancedMode);
     mngCommon.directive("mngChangeableAppName", mngChangeableAppName);
 
+    // TO-DO
     function mngChangeableAppName() {
-
+        return {
+            restrict: "A",
+            scope: {
+                appname: "=" // Variable to bind.
+            }
+        }
     }
 
     function mngAdvancedMode() {
