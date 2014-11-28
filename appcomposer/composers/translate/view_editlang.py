@@ -11,7 +11,8 @@ from appcomposer.appstorage.api import get_app, update_app_data, add_var
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, Bundle
-from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_declare_ownership, save_bundles_to_db, \
+from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_declare_ownership, \
+    save_bundles_to_db, \
     load_appdata_from_db
 from appcomposer.composers.translate.operations.ops_exceptions import AppNotFoundException
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
@@ -20,11 +21,126 @@ from appcomposer.login import requires_login
 from appcomposer.composers.translate import common
 
 
-
 def handle_editlang_GET():
-    pass
+    # No matter if we are handling a GET or POST, we require these parameters.
 
-def handle_editlang_POST(app, bm, targetbundle, owner_app, targetbundle_code, spec):
+    appid = common.get_required_param("appid")
+    srclang = common.get_required_param("srclang")
+    targetlang = common.get_required_param("targetlang")
+    srcgroup = common.get_required_param("srcgroup")
+    targetgroup = common.get_required_param("targetgroup")
+
+    # Retrieve the application we want to view or edit.
+    app = get_app(appid)
+    if app is None:
+        raise AppNotFoundException()
+
+    # TODO: To change
+    full_app_data = load_appdata_from_db(app)
+    bm = BundleManager.create_from_existing_app(full_app_data)
+    spec = bm.get_gadget_spec()
+
+    # Retrieve the bundles for our lang. For this, we build the code from the info we have.
+    srcbundle_code = BundleManager.partialcode_to_fullcode(srclang, srcgroup)
+    targetbundle_code = BundleManager.partialcode_to_fullcode(targetlang, targetgroup)
+
+    srcbundle = bm.get_bundle(srcbundle_code)
+
+    # Ensure the existence of the source bundle.
+    if srcbundle is None:
+        return render_template("composers/errors.html",
+                               message=gettext("The source language and group combination does not exist")), 400
+
+    targetbundle = bm.get_bundle(targetbundle_code)
+
+    # The target bundle doesn't exist yet. We need to create it ourselves.
+    if targetbundle is None:
+        splits = targetlang.split("_")
+        if len(splits) == 2:
+            lang, country = splits
+            targetbundle = Bundle(lang, country, targetgroup)
+            bm.add_bundle(targetbundle_code, targetbundle)
+
+    # Get the owner for this target language.
+    owner_app = _db_get_lang_owner_app(spec, targetlang)
+
+    # If the language has no owner, we declare ourselves as owners.
+    if owner_app is None:
+        _db_declare_ownership(app, targetlang)
+        owner_app = app
+
+    # We override the standard Ownership's system is_owner.
+    # TODO: Verify that this doesn't break anything.
+    is_owner = owner_app == app
+
+    # Get the language names
+    target_translation_name = targetbundle.get_readable_name()
+    source_translation_name = srcbundle.get_readable_name()
+
+    return render_template("composers/translate/edit.html", is_owner=is_owner, app=app, srcbundle=srcbundle,
+                           targetbundle=targetbundle, spec=spec, target_translation_name=target_translation_name,
+                           source_translation_name=source_translation_name)
+
+
+def handle_editlang_POST():
+    # No matter if we are handling a GET or POST, we require these parameters.
+
+    appid = common.get_required_param("appid")
+    srclang = common.get_required_param("srclang")
+    targetlang = common.get_required_param("targetlang")
+    srcgroup = common.get_required_param("srcgroup")
+    targetgroup = common.get_required_param("targetgroup")
+
+    # Retrieve the application we want to view or edit.
+    app = get_app(appid)
+    if app is None:
+        raise AppNotFoundException()
+
+    # TODO: To change
+    full_app_data = load_appdata_from_db(app)
+    bm = BundleManager.create_from_existing_app(full_app_data)
+    spec = bm.get_gadget_spec()
+
+    # Retrieve the bundles for our lang. For this, we build the code from the info we have.
+    srcbundle_code = BundleManager.partialcode_to_fullcode(srclang, srcgroup)
+    targetbundle_code = BundleManager.partialcode_to_fullcode(targetlang, targetgroup)
+
+    srcbundle = bm.get_bundle(srcbundle_code)
+
+    # Ensure the existence of the source bundle.
+    if srcbundle is None:
+        return render_template("composers/errors.html",
+                               message=gettext("The source language and group combination does not exist")), 400
+
+    targetbundle = bm.get_bundle(targetbundle_code)
+
+    # The target bundle doesn't exist yet. We need to create it ourselves.
+    if targetbundle is None:
+        splits = targetlang.split("_")
+        if len(splits) == 2:
+            lang, country = splits
+            targetbundle = Bundle(lang, country, targetgroup)
+            bm.add_bundle(targetbundle_code, targetbundle)
+
+    # Get the owner for this target language.
+    owner_app = _db_get_lang_owner_app(spec, targetlang)
+
+    # If the language has no owner, we declare ourselves as owners.
+    if owner_app is None:
+        _db_declare_ownership(app, targetlang)
+        owner_app = app
+
+    # We override the standard Ownership's system is_owner.
+    # TODO: Verify that this doesn't break anything.
+    is_owner = owner_app == app
+
+    # Get the language names
+    target_translation_name = targetbundle.get_readable_name()
+    source_translation_name = srcbundle.get_readable_name()
+
+    # END-OF GET-SPECIFIC PART
+
+
 
     # Protect against CSRF attacks.
     if not verify_csrf(request):
@@ -96,6 +212,9 @@ def handle_editlang_POST(app, bm, targetbundle, owner_app, targetbundle_code, sp
         print "REDIRECTION"
         return redirect(url_for("user.apps.index"))
 
+    return redirect(url_for("translate.translate_edit", appid=appid, srclang=srclang, srcgroup=srcgroup,
+                            targetlang=targetlang, targetgroup=targetgroup))
+
 
 @translate_blueprint.route("/edit", methods=["GET", "POST"])
 @requires_login
@@ -108,74 +227,15 @@ def translate_edit():
 
     try:
 
-        # No matter if we are handling a GET or POST, we require these parameters.
-
-        appid = common.get_required_param("appid")
-        srclang = common.get_required_param("srclang")
-        targetlang = common.get_required_param("targetlang")
-        srcgroup = common.get_required_param("srcgroup")
-        targetgroup = common.get_required_param("targetgroup")
-
-        # Retrieve the application we want to view or edit.
-        app = get_app(appid)
-        if app is None:
-            raise AppNotFoundException()
-
-        # TODO: To change
-        full_app_data = load_appdata_from_db(app)
-        bm = BundleManager.create_from_existing_app(full_app_data)
-        spec = bm.get_gadget_spec()
-
-        # Retrieve the bundles for our lang. For this, we build the code from the info we have.
-        srcbundle_code = BundleManager.partialcode_to_fullcode(srclang, srcgroup)
-        targetbundle_code = BundleManager.partialcode_to_fullcode(targetlang, targetgroup)
-
-        srcbundle = bm.get_bundle(srcbundle_code)
-
-        # Ensure the existence of the source bundle.
-        if srcbundle is None:
-            return render_template("composers/errors.html",
-                                   message=gettext("The source language and group combination does not exist")), 400
-
-        targetbundle = bm.get_bundle(targetbundle_code)
-
-        # The target bundle doesn't exist yet. We need to create it ourselves.
-        if targetbundle is None:
-            splits = targetlang.split("_")
-            if len(splits) == 2:
-                lang, country = splits
-                targetbundle = Bundle(lang, country, targetgroup)
-                bm.add_bundle(targetbundle_code, targetbundle)
-
-        # Get the owner for this target language.
-        owner_app = _db_get_lang_owner_app(spec, targetlang)
-
-        # If the language has no owner, we declare ourselves as owners.
-        if owner_app is None:
-            _db_declare_ownership(app, targetlang)
-            owner_app = app
-
-        # We override the standard Ownership's system is_owner.
-        # TODO: Verify that this doesn't break anything.
-        is_owner = owner_app == app
-
-        # Get the language names
-        target_translation_name = targetbundle.get_readable_name()
-        source_translation_name = srcbundle.get_readable_name()
-
-        # This is a GET request. We are essentially viewing-only.
+        # This is a GET request. We need to show the target and source bundles.
         if request.method == "GET":
-            pass
+            return handle_editlang_GET()
 
         # This is a POST request. We need to save the entries.
         else:
-            result = handle_editlang_POST(app, bm, targetbundle, owner_app, targetbundle_code, spec)
-            if result is not None:
-                return result
+            return handle_editlang_POST()
 
-        return render_template("composers/translate/edit.html", is_owner=is_owner, app=app, srcbundle=srcbundle,
-                               targetbundle=targetbundle, spec=spec, target_translation_name=target_translation_name,
-                               source_translation_name=source_translation_name)
+
 
     except exceptions.ParameterNotProvidedException, ex:
         return render_template("composers/errors.html", message=ex.message), 400

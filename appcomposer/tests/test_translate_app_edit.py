@@ -171,7 +171,19 @@ class TestTranslateAppEdit:
                     "_message_hello_world": "Hello Test World",
                     "save": ""}
         rv = self.flask_app.post(posturl, data=postdata)
-        assert rv.status_code == 200
+        assert rv.status_code == 302  # In the new version it is a redirect.
+
+        # Do a GET to the same URL so that we can verify.
+        posturl = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % self.firstApp.unique_id
+        postdata = {"appid": self.firstApp.unique_id,
+                    "srclang": "all_ALL",
+                    "targetlang": "all_ALL",
+                    "srcgroup": "ALL",
+                    "targetgroup": "ALL",
+                    "_message_blue": "Blue",
+                    "_message_hello_world": "Hello Test World",
+                    "save": ""}
+        rv = self.flask_app.get(posturl, data=postdata)
 
         data = rv.data.decode("utf8")
 
@@ -296,7 +308,7 @@ class TestTranslateAppEdit:
                     "save": "",
                     "proposeToOwner": "true"}
         rv = self.flask_app.post(posturl, data=postdata)
-        assert rv.status_code == 200
+        assert rv.status_code == 302  # Changed to redirect
         data = rv.data.decode("utf8")
 
         url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
@@ -361,7 +373,7 @@ class TestTranslateAppEdit:
                     # proposeToOwner deliberately NOT here.
                     }
         rv = self.flask_app.post(posturl, data=postdata)
-        assert rv.status_code == 200
+        assert rv.status_code == 302  # This is now a redirect.
         data = rv.data.decode("utf8")
 
         url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
@@ -422,7 +434,7 @@ class TestTranslateAppEdit:
                     "save": "",
                     "proposeToOwner": "true"}
         rv = self.flask_app.post(posturl, data=postdata)
-        assert rv.status_code == 200
+        assert rv.status_code == 302
         data = rv.data.decode("utf8")
 
         url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
