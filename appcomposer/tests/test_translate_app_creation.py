@@ -76,7 +76,6 @@ class TestTranslateAppCreation(TestCase):
         assert rv.status_code == 200  # Page found code.
         assert rv.data.count("option") > 100  # Lots of them, because of the languages list.
         assert "submit" in rv.data
-        assert "Localise" in rv.data
 
         # Check that we did indeed create the app properly.
         with self.flask_app:
