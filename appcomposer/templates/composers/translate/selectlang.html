@@ -67,7 +67,7 @@
     </div>
 
 
-    <!-- Forms
+    <!-- WELL CONTAINING THE FORM
     ================================================== -->
     <div class="well">
 
@@ -83,24 +83,11 @@
 
                     <div class="col-lg-6 col-md-6">
 
-
                         <div class="form-group">
                             <label class="control-label" for="srclang">{{ gettext("Select source language") }}</label>
 
-{#                            <ui-select style="width: 400px" ng-model="source.lang" theme="select2" ng-disabled="false"#}
-{#                                       search-enabled="true">#}
-{#                                <ui-select-match placeholder="Select the source language">#}
-{#                                                </ui-select-match>#}
-{#                                <ui-select-choices repeat="lang in source_langs | filter: $select.search">#}
-{#                                    {% raw %}#}
-{#                                    {{ languages[lang] }}#}
-{#                                    {% endraw %}#}
-{#                                </ui-select-choices>#}
-{#                            </ui-select>#}
-
                             <select
                                     ng-model="source.lang"
-                                    ng-change="source.group = 'ALL'"
                                     id="srclang" name="srclang" class="my-select2">
 
                                 <optgroup id="srclang_mine" label="{{ gettext("Translations I own") }}">
@@ -114,17 +101,6 @@
                                     <option value="{{ lang_key }}">{{ languages[lang_key] }} {{ "[%s: %s]" % (gettext("owner"), lang_data["owner"]["login"]) }}</option>
                                     {% endfor %}
                                 </optgroup>
-
-                                {# Unclaimed translations are as of now unsupported #}
-{#                                <optgroup id="srclang_unclaimed" label="{{ gettext("Translations nobody owns yet") }}">#}
-{##}
-                                    {# When displaying the languages note that we only show those with GROUP=ALL. This is because otherwise some languages
-{#                                 would appear more than once. Though somewhat kludgey, this approach should always work because a language must always#}
-{#                                 have a default (ALL) translation. #}
-{#                                    {% for loc in translated_langs if loc["group"] == "ALL" and not (loc["lang"] == 'all' and loc["country"] == 'ALL') %}#}
-{#                                        <option value="{{ loc['pcode'] }}">{{ loc['repr'] or loc['pcode'] }}</option>#}
-{#                                    {% endfor %}#}
-{#                                </optgroup>#}
 
                             </select>
                         </div>
@@ -251,12 +227,13 @@
                     .factory("autoAcceptService", autoAcceptService)
                     .directive("mngAutoAcceptSwitch", MngAutoAcceptSwitch);
 
+            // To handle the advanced-mode ctrl.
             function SelectLangCtrl($scope) {
                 $scope.mode = {}; // For the advanced-mode directive.
             }
 
+            // To handle the main select target/source form.
             function SelectLangFormCtrl($scope) {
-                var languages = {{ languages|tojson|safe }};
                 var groups = {{ groups|tojson|safe }};
                 var translation_info = {{ translation_info|tojson|safe }};
 
@@ -270,15 +247,17 @@
                     lang: "all_ALL"
                 };
 
-                $scope.languages = languages;
-                $scope.languages["all_ALL"] = "DEFAULT"; // This should maybe be provided by the server.
-
                 $scope.groups = groups;
-                $scope.source_langs = Object.keys(translation_info);
-                $scope.source_groups = [];
                 $scope.translation_info = translation_info;
+
+                // Ensure that an invalid group in source_group doesn't remain selected.
+                $scope.$watch("source.lang", function() {
+                    $scope.source.group = 'ALL';
+                    $('#srcgroup').select2('val', $scope.source.group);
+                });
             }
 
+            // Service to call auto-accept changing AJAX.
             function autoAcceptService($q) {
                 return {
                     setAutoaccept: function (enabled) {
@@ -303,7 +282,8 @@
             }
 
 
-            function MngAutoAcceptSwitch($parse, autoAcceptService) {
+            // Directive for the auto-accept interface.
+            function MngAutoAcceptSwitch(autoAcceptService) {
                 return {
                     restrict: "E",
                     scope: {
@@ -345,15 +325,9 @@
 
     //! Load and initialize what we must.
     $(document).ready(function () {
-        console.log("On ready");
-
-
         // We need to take a different action if we want to edit the selected source language.
         // We intercept the click.
         interceptEditSelectedSourceLanguageButton();
-
-        // Initialize popovers & tooltips.
-        initializeTooltips();
 
         // Initialize the select2 controls.
         $("select").select2();
@@ -362,7 +336,6 @@
         $.ajaxSetup({
             headers: {"x-csrf": "{{ csrf_token()|safe }}"}
         });
-
     });
 
 
@@ -376,47 +349,12 @@
         });
     }
 
-    //! Initializes the tooltips and popovers.
-    function initializeTooltips() {
-        $("#merge_existing").popover(
-                {
-                    placement: "top",
-                    title: "{{ gettext("Merge existing translations") }}",
-                    html: "true",
-                    content: "{{ gettext("This option will let you merge someone else's translations into this one. <br>Note, however, that you need to be careful, because after you select the app to merge with, the merge is automatic, and some translations may get overrided.") }}",
-                    trigger: "hover"
-                }
-        );
-
-        // We place it on its own div because otherwise it won't fire when disabled.
-        $("#localisebtndiv").popover(
-                {
-                    placement: "top",
-                    title: "{{ gettext("Localise") }}",
-                    html: "true",
-                    content: "", // to be set dynamically
-                    trigger: "hover"
-                }
-        );
-    }
-
 
     //! Function to be invoked when the target or source language changes.
     function onLanguageChange(event) {
 
         var submits = $("#localisebtn")
 
-        // THIS LIMITATION HAS BEEN DISABLED. IT IS NOW POSSIBLE TO EDIT A LANGUAGE USING THE SAME LANGUAGE AS A BASE.
-        // The same source and target combination was chosen. User should not be allowed
-        // to try to translate that, as it makes no sense.
-        {#        if (getChosenSource() == getChosenTarget()) {#}
-        {#            $("#same-lang").show();#}
-        {#            submits.attr("disabled", "disabled");#}
-        {#            submits.prop('disabled', true);#}
-        {##}
-        {#            $('#localisebtndiv').attr("data-content", "{{ gettext("In order to start localising the App, the chosen source language-group and target language-group combinations must be different") }}");#}
-        {#        }#}
-        {#        else {#}
         $("#same-lang").hide();
         submits.removeAttr("disabled");
         submits.prop("disabled", false);
@@ -444,93 +382,6 @@
         var translateMsg = "You want to translate the app from " + sourceLang + " (for " + sourceGroup + ") into " +
                 targetLang + " (for " + targetGroup + ").";
         $("#help-msg").html(translateMsg);
-    }
-
-    //! Gets the chosen source's code.
-    function getChosenSource() {
-        var chosenSource = $("#srclang").val() + "_" + $("#srcgroup").val();
-        return chosenSource;
-    }
-
-    //! Gets the chosen target's code.
-    function getChosenTarget() {
-        var targetSource = $("#targetlang").val() + "_" + $("#targetgroup").val();
-        return targetSource;
-    }
-
-
-    //! To display some ownership information next to the target languages.
-    //! This function will a also rearrange the language selection lists as appropriate.
-    //! As of now it is only meant to be called once.
-    function displayOwnershipInformation() {
-
-        var request_url = "{{ url_for(".get_ownership_list", xmlspec=xmlspec) }}";
-
-        // Request the information through AJAX.
-        $.getJSON(request_url, undefined, function (data, status, jqXHR) {
-
-            if (data["result"] != "success") {
-                console.error("Error while trying to retrieve ownership information. It seems to be invalid:");
-                console.error(data);
-                return;
-            }
-
-            var owners = data["owners"];
-
-            var $targetlang_mine = $("#targetlang_mine");
-            var $targetlang_others = $("#targetlang_others");
-
-            var $srclang_mine = $("#srclang_mine");
-            var $srclang_others = $("#srclang_others");
-
-            for (var owned_lang in owners) {
-                if (owners.hasOwnProperty(owned_lang)) {
-                    var owner = owners[owned_lang];
-
-                    // For the SOURCE language.
-                    var $opt = $("#srclang").find("option[value=" + owned_lang + "]");
-
-                    var owner_app = owner["owner_app"];
-                    if (owner_app == {{ app.id }}) {
-                        //$opt.append(" [you own this language]");
-
-                        // Move the element to the group of langs we own.
-                        var elem = $opt.detach();
-                        $srclang_mine.append(elem);
-
-                        console.log(elem);
-                    } else {
-                        $opt.append(" [owner: " + owner["owner_login"] + "]");
-
-                        // Move the element to the group of langs we don't own.
-                        var elem = $opt.detach();
-                        $srclang_others.append(elem);
-                    }
-
-
-                    // For the TARGET language.
-                    var $opt = $("#targetlang").find("option[value=" + owned_lang + "]");
-
-                    var owner_app = owner["owner_app"];
-                    if (owner_app == {{ app.id }}) {
-                        //$opt.append(" [you own this language]");
-
-                        // Move the element to the group of langs we own.
-                        var elem = $opt.detach();
-                        $targetlang_mine.append(elem);
-
-                    } else {
-                        $opt.append(" [owner: " + owner["owner_login"] + "]");
-
-                        // Move the element to the group of langs we don't own.
-                        var elem = $opt.detach();
-                        $targetlang_others.append(elem);
-                    }
-
-
-                }
-            }
-        });
     }
 
 
