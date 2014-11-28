@@ -105,7 +105,7 @@
                             </select>
                         </div>
 
-                        <button ng-show="mode.advancedMode" id="editSelectedSourceButton"
+                        <button ng-style="{visibility: mode.advancedMode && 'visible' || 'hidden'}" id="editSelectedSourceButton"
                                 name="editSelectedSourceButton" type="submit"
                                 class="btn btn-primary" style="margin-bottom:20px">
                             {{ gettext("Edit selected <b>source</b> on its own") }}
@@ -138,7 +138,7 @@
 
                             </select>
 
-                        </div>
+                        </div> <!-- !form-group" -->
 
                     </div>
 
@@ -146,7 +146,7 @@
                         <div class="form-group">
                             <label class="control-label" for="srcgroup">{{ gettext("Select source group") }}</label>
                             <select ng-model="source.group"
-                                    ng-options="group_key as groups[group_key] || '<undefined>' for group_key in translation_info[source.lang]['groups']"
+                                    ng-options="group_key as groups[group_key] || '<undefined>' for group_key in translation_info[source.lang]['groups'] track by group_key"
                                     id="srcgroup" name="srcgroup" class="my-select2">
                             </select>
                         </div>

@@ -25,17 +25,8 @@ def obtain_languages():
     Obtains the languages (without the groups) that are available for translation,
     as a Dictionary. The format is code:language_name
 
-    :return:
-    """
-    targetlangs = obtain_targetlangs_list()
-    d = {lang["pcode"]: lang["repr"] for lang in targetlangs}
-    d["all_ALL"] = "DEFAULT"
-    return d
+    TO-DO: This method can probably be optimized.
 
-
-def obtain_targetlangs_list():
-    """
-    Obtains the targetlangs_list. This function SHOULD EVENTUALLY BE REMOVED.
     :return:
     """
     languages = babel.core.Locale("en", "US").languages.items()
@@ -50,4 +41,6 @@ def obtain_targetlangs_list():
     targetlangs_list = [{"pcode": code, "repr": BundleManager.get_locale_english_name(
         *BundleManager.get_locale_info_from_code(code))} for code in targetlangs_codes]
 
-    return targetlangs_list
+    d = {lang["pcode"]: lang["repr"] for lang in targetlangs_list}
+    d["all_ALL"] = "DEFAULT"
+    return d

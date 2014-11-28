@@ -159,11 +159,10 @@ def obtain_translation_info(app):
     return translation_info
 
 
-def load_app(appid, targetlangs_list):
+def load_app(appid):
     """
     Loads an application from the database.
 
-    TO-DO: Remove the targetlangs_list parameter, and somehow remove all the out-of-place returns.
     TO-DO: Fix docstring.
 
     :param appid: App uniqueid.
@@ -217,24 +216,13 @@ def load_app(appid, targetlangs_list):
     # Just for the count of proposals
     proposal_num = len(_db_get_proposals(app))
 
-    # Build a dictionary. For each source lang, a list of source groups.
-    src_groups_dict = defaultdict(list)
-    for loc in translated_langs:
-        src_groups_dict[loc["pcode"]].append(loc["group"])
-
-    locales_codes = [tlang["pcode"] for tlang in translated_langs]
-
-    # Remove from the suggested targetlangs those langs which are already present on the bundle manager,
-    # because those will be added to the targetlangs by default.
-    suggested_target_langs = [elem for elem in targetlangs_list if elem["pcode"] not in locales_codes]
-
     # We pass the autoaccept data var so that it can be rendered.
     # TODO: Optimize this once we have this fully covered with tests.
     data = json.loads(app.data)
     autoaccept = data.get("autoaccept",
                           True)  # We autoaccept by default. Problems may arise if this value changes, because it is used in a couple of places.
 
-    return app, bm, owner, is_owner, proposal_num, src_groups_dict, suggested_target_langs, translated_langs, autoaccept
+    return app, bm, owner, is_owner, proposal_num, autoaccept
 
 
 

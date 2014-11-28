@@ -2,7 +2,7 @@ import urllib2
 import traceback
 import xml.dom.minidom as minidom
 
-from flask import request, redirect, url_for, render_template, json
+from flask import request, redirect, url_for, render_template
 from requests.exceptions import MissingSchema
 
 from appcomposer.composers.translate import exceptions
@@ -20,17 +20,20 @@ from appcomposer.composers.translate import common
 
 
 def handle_selectlang_GET():
-    # Obtain information about the languages that we can translate to.
-    languages = ops_language.obtain_languages()
-    groups = ops_language.obtain_groups()
-    targetlangs_list = ops_language.obtain_targetlangs_list()
 
     appid = common.get_required_param("appid")
 
-    app, bm, owner, is_owner, proposal_num, src_groups_dict, suggested_target_langs, translated_langs, autoaccept = ops_highlevel.load_app(
-        appid, targetlangs_list)
+    app, bm, owner, is_owner, proposal_num, autoaccept = ops_highlevel.load_app(appid)
 
+    # Obtain information about the languages that we can translate to.
+    # TO-DO: Those will generally be the same so we should consider some way of caching it
+    # and calling it once.
+    languages = ops_language.obtain_languages()
+    groups = ops_language.obtain_groups()
+
+    # Translation info about ownerships etc so that we can render selectlang properly.
     translation_info = ops_highlevel.obtain_translation_info(app)
+
 
     # We pass some parameters as JSON strings because they are generated dynamically
     # through JavaScript in the template.
@@ -38,11 +41,6 @@ def handle_selectlang_GET():
                            app=app,  # Current app object.
                            xmlspec=app.spec.url,  # URL to the App XML.
                            autoaccept=autoaccept,  # Whether the app is configured to autoaccept proposals or not.
-                           suggested_target_langs=suggested_target_langs,  # Suggested (not already translated) langs
-                           source_groups_json=json.dumps(src_groups_dict),  # Source groups in a JSON string
-                           full_groups_json=json.dumps(groups),  # (To find names etc)
-                           target_groups=groups,  # Target groups in a JSON string
-                           translated_langs=translated_langs,  # Already translated langs
                            is_owner=is_owner,  # Whether the loaded app has the "Owner" status
                            owner=owner,  # Reference to the Owner
                            proposal_num=proposal_num,
