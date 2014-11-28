@@ -78,7 +78,7 @@ class TestTranslateAppEdit:
     def test_edit_app_not_found(self):
         rv = self.flask_app.get("/composers/translate/edit?appid=1341234124314&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL")
         assert rv.status_code == 404
-        assert "not found" in rv.data
+        assert "Specified App" in rv.data
 
     def test_just_edit_default(self):
         url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
