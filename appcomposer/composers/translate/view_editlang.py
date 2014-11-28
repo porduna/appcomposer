@@ -93,6 +93,7 @@ def handle_editlang_POST(app, bm, targetbundle, owner_app, targetbundle_code, sp
 
     # Check whether the user wants to exit or to continue editing.
     if "save_exit" in request.values:
+        print "REDIRECTION"
         return redirect(url_for("user.apps.index"))
 
 
@@ -168,7 +169,9 @@ def translate_edit():
 
         # This is a POST request. We need to save the entries.
         else:
-            handle_editlang_POST(app, bm, targetbundle, owner_app, targetbundle_code, spec)
+            result = handle_editlang_POST(app, bm, targetbundle, owner_app, targetbundle_code, spec)
+            if result is not None:
+                return result
 
         return render_template("composers/translate/edit.html", is_owner=is_owner, app=app, srcbundle=srcbundle,
                                targetbundle=targetbundle, spec=spec, target_translation_name=target_translation_name,
