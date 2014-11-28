@@ -161,14 +161,16 @@ def obtain_translation_info(app):
 
 def load_app(appid):
     """
-    Loads an application from the database.
+    Loads an application from the database and returns the app and
+    some related information.
 
     TO-DO: Fix docstring.
 
     :param appid: App uniqueid.
     :type appid: str
-    :return: (app, bm) Returns a tuple with the app and the BundleManager with all the data.
-    :rtype: (App, BundleManager)
+    :return: (app, bm, owner, is_owner, proposal_num, autoaccept) Returns a tuple with the app and the BundleManager
+    with all the data.
+    :rtype: (App, BundleManager, User, bool, number, Bool)
     """
     app = get_app(appid)
     if app is None:
