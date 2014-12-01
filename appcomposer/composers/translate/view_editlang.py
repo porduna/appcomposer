@@ -216,7 +216,7 @@ def handle_editlang_POST(app, srclang, targetlang, srcgroup, targetgroup):
         print "REDIRECTION"
         return redirect(url_for("user.apps.index"))
 
-    return redirect(url_for("translate.translate_edit", appid=appid, srclang=srclang, srcgroup=srcgroup,
+    return redirect(url_for("translate.translate_edit", appid=app.unique_id, srclang=srclang, srcgroup=srcgroup,
                             targetlang=targetlang, targetgroup=targetgroup))
 
 
