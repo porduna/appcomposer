@@ -2,6 +2,7 @@
 
 import json
 import re
+import unittest
 import urllib
 import appcomposer
 import appcomposer.application
@@ -10,8 +11,10 @@ from appcomposer.appstorage import api
 from appcomposer.appstorage.api import get_app_by_name
 
 
-class TestTranslateAppMerge:
-    def __init__(self):
+class TestTranslateAppMerge(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestTranslateAppMerge, self).__init__(*args, **kwargs)
+
         self.flask_app = None
         self.tapp = None
         self.firstApp = None
@@ -90,7 +93,8 @@ class TestTranslateAppMerge:
                     "save": "",
                     "proposeToOwner": "true"}
         rv = self.flask_app.post(posturl, data=postdata)
-        assert rv.status_code == 200
+        self.assertEquals(302, rv.status_code)
+
         # Access the parent's selectlang to see the proposal button.
         url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
         rv = self.flask_app.get(url)
@@ -124,6 +128,7 @@ class TestTranslateAppMerge:
         # Access the merge screen itself.
         url = u"/composers/translate/proposed_list?appid=%s" % self.firstApp.unique_id
         rv = self.flask_app.get(url)
+        print "STATUS CODE IS: ", rv.status_code
         assert rv.status_code == 200
         data = rv.data.decode("utf8")
 
