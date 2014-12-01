@@ -1,22 +1,22 @@
 """
 Module for high-level translator operations.
 """
-from collections import defaultdict
 import json
 
 from flask import flash
-from appcomposer import db
 
+from appcomposer import db
 from appcomposer.appstorage.api import get_app_by_name, create_app, get_app
 from appcomposer.babel import gettext
 from appcomposer.composers.translate import CFG_SAME_NAME_LIMIT
-from appcomposer.composers.translate.ajax import get_ownership_list
+from appcomposer.composers.translate import bundles
+from appcomposer import models
 from appcomposer.composers.translate.bundles import BundleManager
 from appcomposer.composers.translate.db_helpers import save_bundles_to_db, _db_get_lang_owner_app, \
     _db_declare_ownership, \
     load_appdata_from_db, _db_get_proposals, _db_get_ownerships
 from appcomposer.composers.translate.operations.ops_exceptions import AppNotFoundException, InternalError, \
-    AppNotValidException
+    AppNotValidException, BundleNotFoundException
 from appcomposer.composers.translate.operations.ops_lowlevel import do_languages_initial_merge
 from appcomposer.composers.translate.updates_handling import on_leading_bundle_updated
 
@@ -225,6 +225,75 @@ def load_app(appid):
                           True)  # We autoaccept by default. Problems may arise if this value changes, because it is used in a couple of places.
 
     return app, bm, owner, is_owner, proposal_num, autoaccept
+
+
+def load_bundle(app, lang_code, group):
+    """
+    Loads the specified Bundle.
+
+    :param app:
+    :type app: App
+    :param lang_code:
+    :type lang_code: str
+    :param group:
+    :type group: str
+    :rtype: [bundles.Bundle]
+    :return: A models.Bundle object. If it wasn't found then a BundleNotFoundException is thrown.
+    :except BundleNotFoundException
+    """
+    if type(app) in (str, unicode):
+        app = get_app(app)
+        if app is None:
+            raise AppNotFoundException()
+
+    db_bundle = db.session.query(models.Bundle).filter_by(app=app, lang=lang_code, target=group).first()
+    if db_bundle is None:
+        raise BundleNotFoundException()
+
+    lang, country = lang_code.split("_", 1)
+    bundle = bundles.Bundle(lang, country, group)
+
+    db_messages = db.session.query(models.Message).filter_by(bundle=db_bundle).all()
+    for msg in db_messages:
+        key = msg.key
+        value = msg.value
+        bundle.add_msg(key, value)
+
+    return bundle
+
+
+def save_bundle(app, bundle):
+    """
+    Saves the specified Bundle.
+
+    :param app: Application that owns the Bundle
+    :type app: App
+    :param bundle: The Bundle object containing all translations.
+    :type bundle: bundles.Bundle
+    :return:
+    :except BundleNotFoundException
+    """
+    if type(app) in (str, unicode):
+        app = get_app(app)
+        if app is None:
+            raise AppNotFoundException()
+
+    lang_code = "%s_%s" % (bundle.lang, bundle.country)
+    db_bundle = db.session.query(models.Bundle).filter_by(app=app, lang=lang_code, target=bundle.group).first()
+    if db_bundle is None:
+        raise BundleNotFoundException()
+
+    for key, value in bundle.get_msgs().iteritems():
+        db_msgs = {m.key: m for m in db_bundle.messages}
+        if key in db_msgs:
+            db_msgs[key].value = value
+            # session.add is not required here.
+        else:
+            new_msg = models.Message(key, value)
+            db_bundle.messages.append(new_msg)
+
+    db.session.commit()
+
 
 
 

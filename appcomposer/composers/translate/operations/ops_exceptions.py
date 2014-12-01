@@ -13,6 +13,15 @@ class AppNotFoundException(Exception):
         self.message = gettext("Specified App doesn't exist")
 
 
+class BundleNotFoundException(Exception):
+    """
+    Exception to be thrown when a Bundle is needed but was not found.
+    """
+
+    def __init__(self, message=None):
+        self.message = gettext("Specified Bundle was not found")
+
+
 class InternalError(Exception):
     """
     Exception to be thrown when internal errors which shouldn't happen do happen.

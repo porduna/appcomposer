@@ -26,7 +26,12 @@ def handle_editlang_GET(app, srclang, targetlang, srcgroup, targetgroup):
     Handles the edit lang screen GET request. It displays the bundle
     editting form.
 
-    :param app: Reference to the app which contains the Bundle toe dit.
+    LOGIC:
+      - Load the full source Bundle.
+      - Load the full target Bundle.
+      - Render the Bundles.
+
+    :param app: Reference to the app which contains the Bundle to edit.
     :param srclang: Source language (ex: ca_ES)
     :param targetlang: Target language (ex: en_EN)
     :param srcgroup: Source group (ex: ALL)
@@ -82,6 +87,18 @@ def handle_editlang_GET(app, srclang, targetlang, srcgroup, targetgroup):
 
 
 def handle_editlang_POST(app, srclang, targetlang, srcgroup, targetgroup):
+    """
+    Handles the POST request on the editlang screen. The POST request
+    is a request to modify the contents of a bundle.
+
+    :param app:
+    :type app: appcomposer.models.App
+    :param srclang:
+    :param targetlang:
+    :param srcgroup:
+    :param targetgroup:
+    :return:
+    """
 
     # TODO: To change
     full_app_data = load_appdata_from_db(app)
