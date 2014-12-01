@@ -229,7 +229,8 @@ def load_app(appid):
 
 def load_bundle(app, lang_code, group):
     """
-    Loads the specified Bundle.
+    Loads the specified Bundle. If the specified Bundle is not found then an empty Bundle will be returned.
+    If the specified Bundle is not found then still a new bundle will *not* be created in the database.
 
     :param app:
     :type app: App
@@ -239,19 +240,18 @@ def load_bundle(app, lang_code, group):
     :type group: str
     :rtype: [bundles.Bundle]
     :return: A models.Bundle object. If it wasn't found then a BundleNotFoundException is thrown.
-    :except BundleNotFoundException
     """
     if type(app) in (str, unicode):
         app = get_app(app)
         if app is None:
             raise AppNotFoundException()
 
-    db_bundle = db.session.query(models.Bundle).filter_by(app=app, lang=lang_code, target=group).first()
-    if db_bundle is None:
-        raise BundleNotFoundException()
-
     lang, country = lang_code.split("_", 1)
     bundle = bundles.Bundle(lang, country, group)
+
+    db_bundle = db.session.query(models.Bundle).filter_by(app=app, lang=lang_code, target=group).first()
+    if db_bundle is None:
+        return bundle
 
     db_messages = db.session.query(models.Message).filter_by(bundle=db_bundle).all()
     for msg in db_messages:
@@ -264,7 +264,8 @@ def load_bundle(app, lang_code, group):
 
 def save_bundle(app, bundle):
     """
-    Saves the specified Bundle.
+    Saves the specified Bundle. If the specified Bundle does not exist, then a new Bundle
+    will be created and added to the database.
 
     :param app: Application that owns the Bundle
     :type app: App
@@ -281,7 +282,9 @@ def save_bundle(app, bundle):
     lang_code = "%s_%s" % (bundle.lang, bundle.country)
     db_bundle = db.session.query(models.Bundle).filter_by(app=app, lang=lang_code, target=bundle.group).first()
     if db_bundle is None:
-        raise BundleNotFoundException()
+        db_bundle = models.Bundle(lang_code, bundle.group)
+        db_bundle.app = app
+        db.session.add(db_bundle)
 
     for key, value in bundle.get_msgs().iteritems():
         db_msgs = {m.key: m for m in db_bundle.messages}

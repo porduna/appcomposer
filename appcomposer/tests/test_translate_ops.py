@@ -68,14 +68,6 @@ class TestTranslateOps(TestCase):
         self._cleanup()
         self.flask_app.__exit__(None, None, None)
 
-    @raises(BundleNotFoundException)
-    def test_translate_load_bundle_throws_if_not_found(self):
-        """
-        Ensures that if the Bundle does not exist then a BundleNotFoundException is raised.
-        :return:
-        """
-        bundle = ops_highlevel.load_bundle(self.tapp, "all_ALL", "NOT EXISTS")
-
     def test_translate_highlevel_load_bundle(self):
         """
         Ensures that if the bundle does exist it is retrieved successfully.
@@ -146,6 +138,31 @@ class TestTranslateOps(TestCase):
         bundle.add_msg("message2", "Second Message")
 
         ops_highlevel.save_bundle(self.tapp, bundle)
+
+        # Check that it was saved properly.
+        m1 = db.session.query(models.Message).filter_by(bundle=b, key="message1").first()
+        self.assertEquals("First Message", m1.value)
+        m2 = db.session.query(models.Message).filter_by(bundle=b, key="message2").first()
+        self.assertEquals("Second Message", m2.value)
+
+        msgs = db.session.query(models.Message).filter_by(bundle=b).all()
+        self.assertEquals(2, len(msgs))
+
+    def test_translate_highlevel_save_full_new_bundle_new_only(self):
+        """
+        Ensures that a Bundle is saved successfully to the DB when the messages are *not* there already,
+        and when the Bundle is not in the database either.
+        :return:
+        """
+
+        bundle = bundles.Bundle("all", "ALL", "ALL")
+        bundle.add_msg("message1", "First Message")
+        bundle.add_msg("message2", "Second Message")
+
+        ops_highlevel.save_bundle(self.tapp, bundle)
+
+        b = db.session.query(models.Bundle).filter_by(app=self.tapp, lang="all_ALL", target="ALL").first()
+        self.assertIsNotNone(b, "The bundle was created and returned")
 
         # Check that it was saved properly.
         m1 = db.session.query(models.Message).filter_by(bundle=b, key="message1").first()

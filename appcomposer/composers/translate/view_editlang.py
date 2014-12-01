@@ -2,6 +2,7 @@
 # -*- coding: utf-8 -*-
 
 import time
+from appcomposer.composers.translate.operations import ops_highlevel
 import exceptions
 
 from flask import request, render_template, flash, json, url_for, redirect
@@ -239,6 +240,9 @@ def translate_edit():
     app = get_app(appid)
     if app is None:
         raise AppNotFoundException()
+
+    src_bundle = ops_highlevel.load_bundle(app, srclang, srcgroup)
+    target_bundle = ops_highlevel.load_bundle(app, targetlang, targetgroup)
 
     try:
 
