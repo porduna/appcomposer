@@ -21,19 +21,18 @@ from appcomposer.login import requires_login
 from appcomposer.composers.translate import common
 
 
-def handle_editlang_GET():
-    # No matter if we are handling a GET or POST, we require these parameters.
+def handle_editlang_GET(app, srclang, targetlang, srcgroup, targetgroup):
+    """
+    Handles the edit lang screen GET request. It displays the bundle
+    editting form.
 
-    appid = common.get_required_param("appid")
-    srclang = common.get_required_param("srclang")
-    targetlang = common.get_required_param("targetlang")
-    srcgroup = common.get_required_param("srcgroup")
-    targetgroup = common.get_required_param("targetgroup")
-
-    # Retrieve the application we want to view or edit.
-    app = get_app(appid)
-    if app is None:
-        raise AppNotFoundException()
+    :param app: Reference to the app which contains the Bundle toe dit.
+    :param srclang: Source language (ex: ca_ES)
+    :param targetlang: Target language (ex: en_EN)
+    :param srcgroup: Source group (ex: ALL)
+    :param targetgroup: Target group (ex: ALL)
+    :return:
+    """
 
     # TODO: To change
     full_app_data = load_appdata_from_db(app)
@@ -82,19 +81,7 @@ def handle_editlang_GET():
                            source_translation_name=source_translation_name)
 
 
-def handle_editlang_POST():
-    # No matter if we are handling a GET or POST, we require these parameters.
-
-    appid = common.get_required_param("appid")
-    srclang = common.get_required_param("srclang")
-    targetlang = common.get_required_param("targetlang")
-    srcgroup = common.get_required_param("srcgroup")
-    targetgroup = common.get_required_param("targetgroup")
-
-    # Retrieve the application we want to view or edit.
-    app = get_app(appid)
-    if app is None:
-        raise AppNotFoundException()
+def handle_editlang_POST(app, srclang, targetlang, srcgroup, targetgroup):
 
     # TODO: To change
     full_app_data = load_appdata_from_db(app)
@@ -225,15 +212,26 @@ def translate_edit():
     @note: Returns error 400 if the source language or group don't exist.
     """
 
+    appid = common.get_required_param("appid")
+    srclang = common.get_required_param("srclang")
+    targetlang = common.get_required_param("targetlang")
+    srcgroup = common.get_required_param("srcgroup")
+    targetgroup = common.get_required_param("targetgroup")
+
+    # Retrieve the application we want to view or edit.
+    app = get_app(appid)
+    if app is None:
+        raise AppNotFoundException()
+
     try:
 
         # This is a GET request. We need to show the target and source bundles.
         if request.method == "GET":
-            return handle_editlang_GET()
+            return handle_editlang_GET(app, srclang, targetlang, srcgroup, targetgroup)
 
         # This is a POST request. We need to save the entries.
         else:
-            return handle_editlang_POST()
+            return handle_editlang_POST(app, srclang, targetlang, srcgroup, targetgroup)
 
 
 
