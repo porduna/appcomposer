@@ -229,22 +229,21 @@ def translate_edit():
 
     @note: Returns error 400 if the source language or group don't exist.
     """
-
-    appid = common.get_required_param("appid")
-    srclang = common.get_required_param("srclang")
-    targetlang = common.get_required_param("targetlang")
-    srcgroup = common.get_required_param("srcgroup")
-    targetgroup = common.get_required_param("targetgroup")
-
-    # Retrieve the application we want to view or edit.
-    app = get_app(appid)
-    if app is None:
-        raise AppNotFoundException()
-
-    src_bundle = ops_highlevel.load_bundle(app, srclang, srcgroup)
-    target_bundle = ops_highlevel.load_bundle(app, targetlang, targetgroup)
-
     try:
+
+        appid = common.get_required_param("appid")
+        srclang = common.get_required_param("srclang")
+        targetlang = common.get_required_param("targetlang")
+        srcgroup = common.get_required_param("srcgroup")
+        targetgroup = common.get_required_param("targetgroup")
+
+        # Retrieve the application we want to view or edit.
+        app = get_app(appid)
+        if app is None:
+            raise AppNotFoundException()
+
+        src_bundle = ops_highlevel.load_bundle(app, srclang, srcgroup)
+        target_bundle = ops_highlevel.load_bundle(app, targetlang, targetgroup)
 
         # This is a GET request. We need to show the target and source bundles.
         if request.method == "GET":
