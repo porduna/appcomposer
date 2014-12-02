@@ -102,8 +102,6 @@ class TestTranslateAppMerge(unittest.TestCase):
         data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
         assert """class="badge" style>1</span>"""
 
-
-
     def tearDown(self):
         self._cleanup()
         self.flask_app.__exit__(None, None, None)

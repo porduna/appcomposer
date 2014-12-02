@@ -22,7 +22,7 @@ from appcomposer.login import requires_login
 from appcomposer.composers.translate import common
 
 
-def handle_editlang_GET(app, srclang, targetlang, srcgroup, targetgroup):
+def handle_editlang_GET(app, src_bundle, target_bundle):
     """
     Handles the edit lang screen GET request. It displays the bundle
     editting form.
@@ -33,41 +33,15 @@ def handle_editlang_GET(app, srclang, targetlang, srcgroup, targetgroup):
       - Render the Bundles.
 
     :param app: Reference to the app which contains the Bundle to edit.
-    :param srclang: Source language (ex: ca_ES)
-    :param targetlang: Target language (ex: en_EN)
-    :param srcgroup: Source group (ex: ALL)
-    :param targetgroup: Target group (ex: ALL)
+    :param src_bundle: The source Bundle.
+    :type src_bundle: bundles.Bundle
+    :param target_bundle: The target Bundle.
+    :type target_bundle: bundles.Bundle
     :return:
     """
 
-    # TODO: To change
-    full_app_data = load_appdata_from_db(app)
-    bm = BundleManager.create_from_existing_app(full_app_data)
-    spec = bm.get_gadget_spec()
-
-    # Retrieve the bundles for our lang. For this, we build the code from the info we have.
-    srcbundle_code = BundleManager.partialcode_to_fullcode(srclang, srcgroup)
-    targetbundle_code = BundleManager.partialcode_to_fullcode(targetlang, targetgroup)
-
-    srcbundle = bm.get_bundle(srcbundle_code)
-
-    # Ensure the existence of the source bundle.
-    if srcbundle is None:
-        return render_template("composers/errors.html",
-                               message=gettext("The source language and group combination does not exist")), 400
-
-    targetbundle = bm.get_bundle(targetbundle_code)
-
-    # The target bundle doesn't exist yet. We need to create it ourselves.
-    if targetbundle is None:
-        splits = targetlang.split("_")
-        if len(splits) == 2:
-            lang, country = splits
-            targetbundle = Bundle(lang, country, targetgroup)
-            bm.add_bundle(targetbundle_code, targetbundle)
-
     # Get the owner for this target language.
-    owner_app = _db_get_lang_owner_app(spec, targetlang)
+    owner_app = _db_get_lang_owner_app(app.spec.url, "%s_%s" % (target_bundle.lang))
 
     # If the language has no owner, we declare ourselves as owners.
     if owner_app is None:
@@ -247,7 +221,7 @@ def translate_edit():
 
         # This is a GET request. We need to show the target and source bundles.
         if request.method == "GET":
-            return handle_editlang_GET(app, srclang, targetlang, srcgroup, targetgroup)
+            return handle_editlang_GET(app, src_bundle, target_bundle)
 
         # This is a POST request. We need to save the entries.
         else:
