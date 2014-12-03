@@ -127,8 +127,11 @@ COMPOSERS = [adapt_info]
 
 if ACTIVATE_TRANSLATOR:
     from .composers.translate import info as translate_info
-
     COMPOSERS.append(translate_info)
+
+    from .composers.translate2 import info as translate2_info
+    COMPOSERS.append(translate2_info)
+
 
 # So that we can have access to all the info from the Users component.
 # It is important that this is done early. Otherwise, it will be accessed by the
@@ -176,8 +179,10 @@ from .composers.dummy import dummy_blueprint
 
 if ACTIVATE_TRANSLATOR:
     from .composers.translate import translate_blueprint
-
     app.register_blueprint(translate_blueprint, url_prefix='/composers/translate')
+
+    from .composers.translate2 import translate2_blueprint
+    app.register_blueprint(translate2_blueprint, url_prefix='/composers/translate2')
 
 app.register_blueprint(adapt_blueprint, url_prefix='/composers/adapt')
 load_plugins()

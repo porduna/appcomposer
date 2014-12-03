@@ -1,0 +1,33 @@
+{% set title = "Translation tool" %}
+{% set current_link = "home" %}
+{% set current_composer = "translate" %}
+{% extends 'composers/translate/layout.html' %}
+
+{% block head_js %}
+    {{ super() }}
+
+    {# Establish the AngularJS base URL #}
+    <base href="{{ url_for("static", filename="translate2") }}/" />
+{% endblock %}
+
+{% block body_content %}
+
+<div ng-app="translateApp" ng-controller="TranslateCtrl">
+    <div ng-view>
+
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+
+    <script src="{{ url_for("static", filename="translate2/app.js") }}" type="text/javascript"></script>
+    <script src="{{ url_for("static", filename="translate2/apps/apps-ctrl.js") }}" type="text/javascript"></script>
+
+{% endblock %}
+
+
