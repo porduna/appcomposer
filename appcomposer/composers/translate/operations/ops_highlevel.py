@@ -227,7 +227,7 @@ def load_app(appid):
     return app, bm, owner, is_owner, proposal_num, autoaccept
 
 
-def load_bundle(app, lang_code, group):
+def load_bundle(app, lang_code, group, create_if_not_found=False):
     """
     Loads the specified Bundle. If the specified Bundle is not found then an empty Bundle will be returned.
     If the specified Bundle is not found then still a new bundle will *not* be created in the database.
@@ -251,7 +251,10 @@ def load_bundle(app, lang_code, group):
 
     db_bundle = db.session.query(models.Bundle).filter_by(app=app, lang=lang_code, target=group).first()
     if db_bundle is None:
-        return bundle
+        if create_if_not_found:
+            return bundle
+        else:
+            raise BundleNotFoundException()
 
     db_messages = db.session.query(models.Message).filter_by(bundle=db_bundle).all()
     for msg in db_messages:

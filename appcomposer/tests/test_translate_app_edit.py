@@ -2,6 +2,7 @@
 
 import json
 import re
+import unittest
 import urllib
 import appcomposer
 import appcomposer.application
@@ -10,8 +11,10 @@ from appcomposer.appstorage import api
 from appcomposer.appstorage.api import get_app_by_name
 
 
-class TestTranslateAppEdit:
-    def __init__(self):
+class TestTranslateAppEdit(unittest.TestCase):
+
+    def __init__(self, *args, **kwargs):
+        super(TestTranslateAppEdit, self).__init__(*args, **kwargs)
         self.flask_app = None
         self.tapp = None
         self.firstApp = None
@@ -60,11 +63,13 @@ class TestTranslateAppEdit:
 
         # Create the PARENT app
         url = "appcomposer/tests_data/relativeExample/i18n.xml"
-        rv = self.flask_app.post("/composers/translate/selectlang", data={"appname": "UTApp", "appurl": url}, follow_redirects=True)
+        rv = self.flask_app.post("/composers/translate/selectlang", data={"appname": "UTApp", "appurl": url},
+                                 follow_redirects=True)
 
         # Create the CHILDREN app
         url = "appcomposer/tests_data/relativeExample/i18n.xml"
-        rv = self.flask_app.post("/composers/translate/selectlang", data={"appname": "UTApp2", "appurl": url}, follow_redirects=True)
+        rv = self.flask_app.post("/composers/translate/selectlang", data={"appname": "UTApp2", "appurl": url},
+                                 follow_redirects=True)
 
         # We need to be in the flask client context to get app by name.
         self.flask_app.get("/")
@@ -76,12 +81,14 @@ class TestTranslateAppEdit:
         self.flask_app.__exit__(None, None, None)
 
     def test_edit_app_not_found(self):
-        rv = self.flask_app.get("/composers/translate/edit?appid=1341234124314&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL")
+        rv = self.flask_app.get(
+            "/composers/translate/edit?appid=1341234124314&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL")
         assert rv.status_code == 404
         assert "Specified App" in rv.data
 
     def test_just_edit_default(self):
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -95,7 +102,8 @@ class TestTranslateAppEdit:
 
 
     def test_simple_ownership(self):
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -108,7 +116,8 @@ class TestTranslateAppEdit:
         assert u"You are the owner" in data
 
     def test_simple_non_ownership(self):
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.secondApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -121,7 +130,8 @@ class TestTranslateAppEdit:
         assert u"You are not the owner" in data
 
     def test_publish_links(self):
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -140,7 +150,8 @@ class TestTranslateAppEdit:
         """
         Check that the translations present in the page seem to be the expected ones.
         """
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -155,7 +166,8 @@ class TestTranslateAppEdit:
         """
         Check that Save changes the content.
         """
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -198,7 +210,8 @@ class TestTranslateAppEdit:
         """
         Check that Save & Exit changes the content and redirects.
         """
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -217,7 +230,8 @@ class TestTranslateAppEdit:
         assert rv.status_code == 302
 
         # GET again to check the changes.
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -235,7 +249,8 @@ class TestTranslateAppEdit:
         Test that a translation for a language that does not have a translation yet is
         automatically created (for a user who owns the all_ALL language of the app).
         """
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=te_ST&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=te_ST&srcgroup=ALL&targetgroup=ALL" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -252,7 +267,8 @@ class TestTranslateAppEdit:
         Test that we can create a translation for a new group, from an existing translation.
         (Translate to all_ALL_TEST).
         """
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=TEST" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=TEST" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -270,10 +286,11 @@ class TestTranslateAppEdit:
         Ensure that the existence of the source group is required
         for translating anything, or otherwise a 400 error is returned.
         """
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ERR&targetgroup=TEST" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ERR&targetgroup=TEST" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
-        assert rv.status_code == 400
+        self.assertEquals(400, rv.status_code)
 
 
     def test_source_lang_must_exist(self):
@@ -281,17 +298,19 @@ class TestTranslateAppEdit:
         Ensure that the existence of the source language is required
         for translating anything, or otherwise a 400 error is returned.
         """
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ERR&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=TEST" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ERR&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=TEST" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
-        assert rv.status_code == 400
+        self.assertEquals(400, rv.status_code)
 
 
     def test_autopropose_save_works_on_child_app(self):
         """
         Check that Save changes the content on the children app.
         """
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.secondApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -311,7 +330,8 @@ class TestTranslateAppEdit:
         assert rv.status_code == 302  # Changed to redirect
         data = rv.data.decode("utf8")
 
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.secondApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -326,7 +346,8 @@ class TestTranslateAppEdit:
 
         # Ensure that the changes affect the PARENT app as well (because the
         # Accept All Translation Proposals Automatically switch should be turned on by default).
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -341,21 +362,23 @@ class TestTranslateAppEdit:
         (Which should be, by default).
         """
         # Ensure that "Accept all translation proposals automatically" is checked by default.
-        url = u"/composers/translate/selectlang?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        url = u"/composers/translate/selectlang?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
         data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
 
         # Does not seem possible to check for this anymore. Not that easily, at least.
-        #assert """id="accept-proposals" checked""" in data
+        # assert """id="accept-proposals" checked""" in data
 
     def test_save_does_not_affect_parent_when_not_proposed(self):
         """
         Check that when the child app does not propose the changes to the owner,
         these changes have no effect on it.
         """
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.secondApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -371,12 +394,13 @@ class TestTranslateAppEdit:
                     "_message_hello_world": "Hello Test World",
                     "save": "",
                     # proposeToOwner deliberately NOT here.
-                    }
+        }
         rv = self.flask_app.post(posturl, data=postdata)
         assert rv.status_code == 302  # This is now a redirect.
         data = rv.data.decode("utf8")
 
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.secondApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -391,7 +415,8 @@ class TestTranslateAppEdit:
 
         # Ensure that the changes DO NOT affect the PARENT app as well (accept-automatically
         # is switched on, but the child app DID NOT PROPOSE the changes).
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -399,7 +424,6 @@ class TestTranslateAppEdit:
 
         assert "Hello Test World" not in data
         assert "Hello World." in data
-
 
 
     def test_save_propose_without_autoaccept(self):
@@ -417,7 +441,8 @@ class TestTranslateAppEdit:
 
 
         # Edit the child app and propose changes.
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.secondApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -437,7 +462,8 @@ class TestTranslateAppEdit:
         assert rv.status_code == 302
         data = rv.data.decode("utf8")
 
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.secondApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.secondApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
@@ -451,7 +477,8 @@ class TestTranslateAppEdit:
 
 
         # Ensure that the parent now sees a proposal.
-        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (self.firstApp.unique_id)
+        url = u"/composers/translate/edit?appid=%s&srclang=all_ALL&editSelectedSourceButton=&targetlang=all_ALL&srcgroup=ALL&targetgroup=ALL" % (
+            self.firstApp.unique_id)
         print "URL: " + url
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
