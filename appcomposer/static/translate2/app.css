@@ -1,0 +1,13 @@
+
+.my-app-thumbnail-img {
+    width: 44px;
+    height: 44px;
+}
+
+.my-app-thumbnail {
+}
+
+.my-thumbnail-wrapper {
+    display: inline-block;
+    vertical-align: middle;
+}

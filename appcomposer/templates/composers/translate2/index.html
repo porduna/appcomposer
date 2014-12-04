@@ -11,6 +11,7 @@
 
 
     <link rel="stylesheet" href="{{ url_for('static', filename='angular/datatables.bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='translate2/app.css') }}">
 {% endblock %}
 
 {% block body_content %}
@@ -39,12 +40,7 @@
     <script src="{{ url_for("static", filename="translate2/app.js") }}" type="text/javascript"></script>
     <script src="{{ url_for("static", filename="translate2/translate-filter.js") }}" type="text/javascript"></script>
     <script src="{{ url_for("static", filename="translate2/apps/apps-ctrl.js") }}" type="text/javascript"></script>
-
-{#    <script src="{{ url_for("static", filename="translate2/apps/apps-list-directive.js") }}" type="text/javascript"></script>#}
-{#    <script src="{{ url_for("static", filename="translate2/apps/apps-selection-directive.js") }}" type="text/javascript"></script>#}
-{#    <script src="{{ url_for("static", filename="translate2/apps/apps-list-ctrl.js") }}" type="text/javascript"></script>#}
-{#    <script src="{{ url_for("static", filename="translate2/apps/apps-list-service.js") }}" type="text/javascript"></script>#}
-
+    <script src="{{ url_for("static", filename="translate2/apps/description-filter.js") }}" type="text/javascript"></script>
 
 
 {% endblock %}

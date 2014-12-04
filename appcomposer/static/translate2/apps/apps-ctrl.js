@@ -4,8 +4,6 @@ angular.module("translateApp")
 
         $scope.dt = {};
 
-        debugger;
-
         $scope.dt.columnDefs = [
             DTColumnDefBuilder.newColumnDef(0).notSortable(),
             DTColumnDefBuilder.newColumnDef(1).notSortable().withOption("width", "40%"),
@@ -14,6 +12,6 @@ angular.module("translateApp")
 
         $scope.dt.options = DTOptionsBuilder.newOptions()
             .withPaginationType('full_numbers')
-            .withDisplayLength(2)
+            .withDisplayLength(15)
             .withOption("autoWidth", true);
     });
