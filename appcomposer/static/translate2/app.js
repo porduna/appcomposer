@@ -2,7 +2,8 @@ angular
     .module('translateApp', [
         'ngRoute',
         'ngResource',
-        'datatables'
+        'datatables',
+        'truncate'
     ])
     .config(['$routeProvider', routeConfig])
     .controller('TranslateCtrl', function ($scope) {

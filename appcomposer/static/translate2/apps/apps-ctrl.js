@@ -5,7 +5,7 @@ angular.module("translateApp")
         $scope.dt = {};
 
         $scope.dt.columnDefs = [
-            DTColumnDefBuilder.newColumnDef(0).notSortable(),
+            DTColumnDefBuilder.newColumnDef(0).notSortable().withOption("width", "30%"),
             DTColumnDefBuilder.newColumnDef(1).notSortable().withOption("width", "40%"),
             DTColumnDefBuilder.newColumnDef(2).notSortable()
         ];
