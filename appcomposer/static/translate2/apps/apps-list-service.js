@@ -3,14 +3,14 @@ angular
     .factory("appsListService", appsListService);
 
 
-function appsListService(appsList) {
+function appsListService($http) {
     var service = {
         retrieve: retrieve
     };
     return service;
 
 
-    function retrieve($http) {
-        $http.get("")
+    function retrieve() {
+        return $http.get(APP_DYN_ROOT + "translations");
     }
 }
