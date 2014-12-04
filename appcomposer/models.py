@@ -262,3 +262,26 @@ class Message(db.Model):
         self.value = value
 
 
+class RepositoryApp(db.Model):
+    ___tablename__ = 'RepositoryApps'
+
+    id = db.Column(db.Integer, primary_key=True)
+    repository = db.Column(db.Unicode(400), nullable = False, index = True)
+    url = db.Column(db.Unicode(500), unique = True, nullable = False, index = True)
+    name = db.Column(db.Unicode(200), nullable = False, index = True)
+    adaptable = db.Column(db.Boolean, index = True)
+    translatable = db.Column(db.Boolean, index = True)
+    original_translations = db.Column(db.Unicode(500))
+    last_check = db.Column(db.DateTime, index = True)
+    last_change = db.Column(db.DateTime, index = True)
+    failing = db.Column(db.Boolean, index = True)
+    failing_since = db.Column(db.DateTime, index = True)
+    http_last_modified = db.Column(db.Unicode(64))
+    http_etag = db.Column(db.Unicode(64))
+
+    def __init__(self, name, url, repository):
+        self.name = name
+        self.url = url
+        self.repository = repository
+
+
