@@ -91,7 +91,8 @@ class DynModals(unittest.TestCase):
 
         time.sleep(0.2)
 
-        self.assertEqual("The description for the app", driver.find_element_by_id("descfield").text)
+        self.wait_until_equals("The description for the app", lambda: driver.find_element_by_id("descfield").text)
+
         driver.find_element_by_link_text("Open").click()
 
         time.sleep(0.2)
