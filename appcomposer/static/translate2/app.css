@@ -11,3 +11,8 @@
     display: inline-block;
     vertical-align: middle;
 }
+
+
+.my-row-highlight {
+    background-color: #AAAAEE !important;
+}
