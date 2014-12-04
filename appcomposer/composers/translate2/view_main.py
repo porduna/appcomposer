@@ -1,4 +1,4 @@
-from flask import render_template, jsonify
+from flask import render_template, jsonify, json, Response
 from appcomposer.composers.translate2 import translate2_blueprint
 from appcomposer.composers.translate2.translation_listing import retrieve_translations
 
@@ -17,7 +17,7 @@ def translations():
     information (such as languages it has been translated to).
 
     :return: Response containing JSON with the format:
-    {"translations": [{
+    [{
         'original_languages': ['es_ES_ALL'],
         'original_languages_simplified': ['es', 'en'],
         'translated_languages': {'es_ES_ALL': 0.8},
@@ -28,9 +28,8 @@ def translations():
         app_image: "http://www.golabz.eu/sites/default/files/images/app/app-image/statistics.png",
         app_thumb: "http://www.golabz.eu/sites/default/files/styles/overview/public/images/app/app-image/statistics.png",
         app_golabz_page: "http://www.golabz.eu/apps/action-statistics"
-    }]}
+    }]
     """
-    translations = {
-        "translations": retrieve_translations()
-    }
-    return jsonify(**translations)
+
+    data = json.dumps(retrieve_translations())
+    return Response(data, mimetype="application/json")

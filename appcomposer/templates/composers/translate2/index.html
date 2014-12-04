@@ -8,6 +8,9 @@
 
     {# Establish the AngularJS base URL #}
     <base href="{{ url_for("static", filename="translate2") }}/" />
+
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='angular/datatables.bootstrap.min.css') }}">
 {% endblock %}
 
 {% block body_content %}
@@ -29,12 +32,18 @@
     APP_DYN_ROOT = "{{ url_for(".index", _external=True) }}";
     </script>
 
+    <script src="{{ url_for("static", filename="angular/angular-datatables.min.js") }}" type="text/javascript"></script>
+    <script src="{{ url_for("static", filename="angular/jquery.dataTables.min.js") }}" type="text/javascript"></script>
+
+
     <script src="{{ url_for("static", filename="translate2/app.js") }}" type="text/javascript"></script>
     <script src="{{ url_for("static", filename="translate2/translate-filter.js") }}" type="text/javascript"></script>
     <script src="{{ url_for("static", filename="translate2/apps/apps-ctrl.js") }}" type="text/javascript"></script>
-    <script src="{{ url_for("static", filename="translate2/apps/apps-list-directive.js") }}" type="text/javascript"></script>
-    <script src="{{ url_for("static", filename="translate2/apps/apps-list-ctrl.js") }}" type="text/javascript"></script>
-    <script src="{{ url_for("static", filename="translate2/apps/apps-list-service.js") }}" type="text/javascript"></script>
+
+{#    <script src="{{ url_for("static", filename="translate2/apps/apps-list-directive.js") }}" type="text/javascript"></script>#}
+{#    <script src="{{ url_for("static", filename="translate2/apps/apps-selection-directive.js") }}" type="text/javascript"></script>#}
+{#    <script src="{{ url_for("static", filename="translate2/apps/apps-list-ctrl.js") }}" type="text/javascript"></script>#}
+{#    <script src="{{ url_for("static", filename="translate2/apps/apps-list-service.js") }}" type="text/javascript"></script>#}
 
 
 
