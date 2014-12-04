@@ -5,6 +5,15 @@ stdout.txt
 stderr.txt
 errors.log
 
+celerybeat-schedule
+ghostdriver.log
+golab_adapt_math
+golab_adapt_watertank
+seleniumscreen.png
+seleniumscreenstep.png
+
+
+
 # vim
 *.swp
 *~
