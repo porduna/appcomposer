@@ -1,23 +1,30 @@
-<div>
+<div class="row">
     <!-- <ac-apps-list></ac-apps-list> -->
     <!-- <ac-apps-selection></ac-apps-selection> -->
 
-    <table datatable="ng" class="row-border hover">
-        <thead>
-        <tr>
-            <th>Title</th>
-            <th>Description</th>
-            <th>Translations</th>
-        </tr>
-        </thead>
-        <tbody>
-        <tr ng-repeat="app in apps">
-            <td>{{ app.title }}</td>
-            <td>{{ app.description }}</td>
-            <td>{{ app.original_translations }}</td>
-        </tr>
-        </tbody>
-    </table>
+    <div class="col-xs-12">
 
+        <table datatable="ng" dt-options="dt.options" dt-column-defs="dt.columnDefs" class="row-border hover">
+            <thead>
+            <tr>
+                <th>Title</th>
+                <th>Description</th>
+                <th>Translations</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr ng-repeat="app in apps">
+                <td>{{ app.title }}</td>
+                <td>{{ app.description }}</td>
+                <td>
+                    <span class="badge" ng-repeat="lang in app.original_languages_simplified">
+                        {{ lang }}
+                    </span>
+                </td>
+            </tr>
+            </tbody>
+        </table>
+
+    </div>
 
 </div>
