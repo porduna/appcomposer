@@ -215,7 +215,7 @@ def app_xml(appid, group):
     output_xml = bm.do_render_app_xml(appid, group)
 
     contents = bm.do_render_app_xml(appid, group)
-    url = app.spec_url
+    url = app.spec.url
 
     try:
         contents = inject_absolute_urls(contents, url)

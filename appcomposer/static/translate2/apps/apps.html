@@ -14,7 +14,9 @@
             </thead>
             <tbody>
             <tr ng-repeat="app in apps">
-                <td>{{ app.title }}</td>
+                <td>
+                    {{ app.title }}
+                </td>
                 <td>{{ app.description }}</td>
                 <td>
                     <span class="badge" ng-repeat="lang in app.original_languages_simplified">
