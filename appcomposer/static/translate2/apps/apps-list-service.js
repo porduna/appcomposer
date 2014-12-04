@@ -10,7 +10,7 @@ function appsListService(appsList) {
     return service;
 
 
-    function retrieve() {
-
+    function retrieve($http) {
+        $http.get("")
     }
 }
