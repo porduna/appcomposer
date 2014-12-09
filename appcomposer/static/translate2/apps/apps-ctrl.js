@@ -65,7 +65,6 @@ function AppsCtrl($scope, $resource, DTOptionsBuilder, DTColumnDefBuilder) {
             var c = row.child("<span>SELECTED</span>");
             c.show();
         }
-
     }
 
     /**
@@ -77,7 +76,6 @@ function AppsCtrl($scope, $resource, DTOptionsBuilder, DTColumnDefBuilder) {
             return false;
 
         var result = app.title === $scope.selected.app.title;
-        console.debug(app.title + " vs " + $scope.selected.app.title + " is " + result);
         return result;
     }
 
