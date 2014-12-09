@@ -45,7 +45,6 @@ function AppsCtrl($scope, $resource, DTOptionsBuilder, DTColumnDefBuilder) {
      */
     function selectApp(app) {
         $scope.selected.app = app;
-        console.log("SELECTED");
     }
 
     /**
@@ -57,7 +56,6 @@ function AppsCtrl($scope, $resource, DTOptionsBuilder, DTColumnDefBuilder) {
             return false;
 
         var result = app.title === $scope.selected.app.title;
-        console.debug(app.title + " vs " + $scope.selected.app.title + " is " + result);
         return result;
     }
 

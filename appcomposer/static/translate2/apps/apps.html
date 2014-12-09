@@ -26,7 +26,7 @@
                             </span>
                         </div>
                     </td>
-                    <td style="text-overflow: ellipsis">{{ app.description | descriptionFilter | characters:40 }}</td>
+                    <td style="text-overflow: ellipsis">{{ app.description | plaintext | descriptionFilter | characters:60 }}</td>
                     <td>
                         <span class="badge" ng-repeat="lang in app.original_languages_simplified">
                             {{ lang }}
