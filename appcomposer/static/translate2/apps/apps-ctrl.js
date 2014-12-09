@@ -27,6 +27,17 @@ function AppsCtrl($scope, $resource, DTOptionsBuilder, DTColumnDefBuilder) {
     $scope.selectApp = selectApp;
     $scope.isSelected = isSelected;
 
+    $scope.$on('event:dataTableLoaded', dataTableLoadedHandler);
+
+
+    /**
+     * Get a reference to the jQuery DataTable.
+     * @param evt
+     * @param loadedDT
+     */
+    function dataTableLoadedHandler(evt, loadedDT) {
+        $scope.dt = loadedDT;
+    }
 
     /**
      * Converts a completion percent of a language into an appropriate
@@ -41,11 +52,20 @@ function AppsCtrl($scope, $resource, DTOptionsBuilder, DTColumnDefBuilder) {
 
     /**
      * Selects an app in the list.
-     * @param app
+     * @param index: Index of the selected app.
+     * @param app: The selected app.
      */
-    function selectApp(app) {
+    function selectApp(app, index) {
         $scope.selected.app = app;
-        console.log("SELECTED");
+        $scope.selected.index = index;
+
+        if($scope.dt != undefined) {
+            var table = $scope.dt;
+            var row = table.DataTable.row(index);
+            var c = row.child("<span>SELECTED</span>");
+            c.show();
+        }
+
     }
 
     /**
