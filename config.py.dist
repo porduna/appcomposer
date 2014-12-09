@@ -3,6 +3,9 @@
 import logging
 import os
 
+# In Windows one less '/' is needed. For instance:
+# SQLALCHEMY_DATABASE_URI = 'sqlite:////%s/database.db' % os.getcwd() (WINDOWS ONLY)
+
 SQLALCHEMY_DATABASE_URI = 'sqlite:////%s/database.db' % os.getcwd()
 USE_PYMYSQL = False
 
