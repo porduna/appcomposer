@@ -9,6 +9,10 @@
                 <td>{{ app.title }}</td>
             </tr>
             <tr>
+                <td>Author: </td>
+                <td>{{ app.author }}</td>
+            </tr>
+            <tr>
                 <td>XML URL: </td>
                 <td>{{ app.app_url }}</td>
             </tr>
@@ -19,6 +23,10 @@
             <tr ng-show="app.app_golabz_page">
                 <td>Golabz page: </td>
                 <td><a ng-href="{{ app.app_golabz_page }}">{{ app.app_golabz_page }}</a></td>
+            </tr>
+            <tr ng-show="app.description">
+                <td>Description: </td>
+                <td><span>{{ app.description|plaintext }}</span></td>
             </tr>
         </table>
     </div>
