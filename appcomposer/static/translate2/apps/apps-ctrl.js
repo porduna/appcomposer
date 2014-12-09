@@ -3,7 +3,7 @@ angular
     .controller("AppsCtrl", AppsCtrl);
 
 
-function AppsCtrl($scope, $resource, DTOptionsBuilder, DTColumnDefBuilder) {
+function AppsCtrl($scope, $resource, $compile, DTOptionsBuilder, DTColumnDefBuilder) {
     $scope.apps = $resource(APP_DYN_ROOT + "translations").query();
     $scope.dt = {};
 
@@ -56,13 +56,18 @@ function AppsCtrl($scope, $resource, DTOptionsBuilder, DTColumnDefBuilder) {
      * @param app: The selected app.
      */
     function selectApp(app, index) {
+        // Hide the previous selection.
+        if($scope.selected.index !== undefined) {
+            $scope.dt.DataTable.row($scope.selected.index).child().hide();
+        }
+
         $scope.selected.app = app;
         $scope.selected.index = index;
 
         if($scope.dt != undefined) {
             var table = $scope.dt;
             var row = table.DataTable.row(index);
-            var c = row.child("<span>SELECTED</span>");
+            var c = row.child($compile("<ac-app-details class='my-disabled-hover' app=selected.app></ac-app-details>")($scope));
             c.show();
         }
     }

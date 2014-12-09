@@ -16,3 +16,9 @@
 .my-row-highlight {
     background-color: #AAAAEE !important;
 }
+
+.my-disabled-hover * {
+    /* To somewhat disable hover effect on datatables childrens (tables for detail) */
+    /* Does not work perfectly, but for now it should do */
+    background-color: inherit !important;
+}
