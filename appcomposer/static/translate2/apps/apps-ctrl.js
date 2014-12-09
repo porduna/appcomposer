@@ -18,7 +18,7 @@ function AppsCtrl($scope, $resource, $compile, DTOptionsBuilder, DTColumnDefBuil
 
     $scope.dt.options = DTOptionsBuilder.newOptions()
         .withPaginationType('full_numbers')
-        .withDisplayLength(15)
+        .withDisplayLength(10)
         .withOption("autoWidth", true);
 
 
