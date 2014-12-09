@@ -63,6 +63,7 @@ class AppScreen(unittest.TestCase):
                 except: pass
                 time.sleep(1)
             else: self.fail("time out")
+            time.sleep(2)
             driver.find_element_by_css_selector("p.p1").click()
             driver.find_element_by_id("sendurlbtn").click()
             driver.find_element_by_link_text("Apps").click()

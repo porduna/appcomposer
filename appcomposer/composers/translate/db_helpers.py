@@ -1,7 +1,9 @@
+import json
+
 from appcomposer import db
-from appcomposer.appstorage.api import get_app_by_name, add_var
-from appcomposer.composers.translate import CFG_SAME_NAME_LIMIT
-from appcomposer.models import AppVar, App
+from appcomposer.appstorage.api import add_var
+from appcomposer.models import AppVar, App, Spec, Bundle, Message
+
 
 """
 REMARKS ABOUT APPVARS FOR THE TRANSLATOR:
@@ -15,9 +17,9 @@ ca_ES) as its value.
 def _db_get_diff_specs():
     """
     Gets a list of the different specs that are in the database.
-    @return: List of different specs. (The specs themselves, not the AppVar objects).
+    @return: List of different specs.
     """
-    spec_values = db.session.query(App.spec_url).distinct()
+    spec_values = db.session.query(Spec.url).distinct()
     specs = [val[0] for val in spec_values]
     return specs
 
@@ -28,7 +30,7 @@ def _db_get_ownerships(spec):
     @param spec: The spec whose ownerships to retrieve.
     @return: List of ownerships.
     """
-    related_apps_ids = db.session.query(App.id).filter(App.spec_url == spec).subquery()
+    related_apps_ids = db.session.query(App.id).filter(App.spec.has(Spec.url == spec)).subquery()
 
     # Among those AppVars for our Spec, we try to locate an ownership AppVar.
     owner_apps = db.session.query(AppVar).filter(AppVar.name == "ownership",
@@ -52,14 +54,17 @@ def _db_get_app_ownerships(app):
     return ownerships
 
 
-def _db_get_spec_apps(spec):
+def _db_get_spec_apps(spec_url):
     """
     Gets from the database the list of apps with the specified spec.
-    @param spec: String to the App's original XML.
+    @param spec_url: String to the App's original XML.
     @return: List of apps with the specified spec."
     """
-    apps = db.session.query(App).filter_by(spec_url=spec).all()
-    return apps
+    spec = db.session.query(Spec).filter_by(url=spec_url).first()
+    if spec is None:
+        return []
+    else:
+        return spec.apps
 
 
 def _db_get_lang_owner_app(spec, lang_code):
@@ -70,7 +75,7 @@ def _db_get_lang_owner_app(spec, lang_code):
     language without the territory is NOT enough.
     @return: The owner for the App and language. None if no owner is found.
     """
-    related_apps_ids = db.session.query(App.id).filter_by(spec_url=spec).subquery()
+    related_apps_ids = db.session.query(App.id).filter(App.spec.has(Spec.url == spec)).subquery()
 
     # TODO: Check whether we can optimize this code thanks to the spec_url update.
 
@@ -121,36 +126,88 @@ def _db_transfer_ownership(lang, from_app, target_app):
     db.session.add(ownership)
     db.session.commit()
 
-
-def _find_unique_name_for_app(base_name):
-    """
-    Generates a unique (for the current user) name for the app, using a base name.
-    Because two apps for the same user cannot have the same name, if the base_name that the user chose
-    exists already then we append (#num) to it. The number starts at 1.
-
-    @param base_name: Name to use as base. If it's not unique (for the user) then we will append the counter.
-    @return: The generated name, guaranteed to be unique for the current user, or None, if it was not possible
-    to obtain the unique name. The failure would most likely be that the limit of apps with the same name has
-    been reached. This limit is specified through the CFG_SAME_NAME_LIMIT variable.
-    """
-    if base_name is None:
-        return None
-
-    if get_app_by_name(base_name) is None:
-        return base_name
-    else:
-        app_name_counter = 1
-        while True:
-            # Just in case, enforce a limit.
-            if app_name_counter > CFG_SAME_NAME_LIMIT:
-                return None
-            composed_app_name = "%s (%d)" % (base_name, app_name_counter)
-            if get_app_by_name(composed_app_name) is not None:
-                app_name_counter += 1
-            else:
-                # Success. We found a unique name.
-                return composed_app_name
-
-
 def _db_get_proposals(app):
     return AppVar.query.filter_by(name="proposal", app=app).all()
+
+
+def save_bundles_to_db(app, bm):
+    """
+    TEMPORARY FUNCTION (should eventually be removed once port is complete)
+    Saves the translation data in the Bundle Manager to the DB.
+    :param app: The App object to save to.
+    :type app: App
+    :param bm: BundleManager whose data to use.
+    :type bm: BundleManager
+    :return:
+
+    TO-DO: Optimize this. It exists mostly because of the DB changes.
+    """
+    j = bm.to_json()
+
+    data = json.loads(j)
+    bundles = data["bundles"]
+    for bundle_code, bundle in bundles.items():
+        splits = bundle_code.split("_", 2)
+        lang, country, group = splits[0], splits[1], splits[2]
+        full_lang = "%s_%s" % (lang, country)
+
+        # Create the bundle if we need to.
+        bundleObj = db.session.query(Bundle).filter_by(app=app, lang=full_lang, target=group).first()
+        if bundleObj is None:
+            # We create a new bundle.
+            bundleObj = Bundle(full_lang, group)
+        bundleObj.app = app
+
+        db.session.add(bundleObj)
+
+        # Create each message if we need to.
+        for key, value in bundle["messages"].items():
+            messageObj = db.session.query(Message).filter_by(bundle=bundleObj, key=key).first()
+            if messageObj is None:
+                # We create a new message.
+                messageObj = Message(key, value)
+            messageObj.bundle = bundleObj
+            messageObj.value = value
+
+            db.session.add(messageObj)
+
+
+        db.session.commit()
+
+
+def load_appdata_from_db(app):
+    """
+    TEMPORARY FUNCTION (should eventually be removed once port is complete)
+    Using the DB it loads a somewhat *fake* appdata JSONable object which resembles
+    the legacy translator app data object.
+    :param app:
+    :return:
+    """
+    # First, access to the real appdata object, which is still used to store some
+    # configuration options.
+    appdata = json.loads(app.data)
+
+    # Remove the "bundles" dictionary from it because we want to retrieve it from the database.
+    if "bundles" in appdata:
+        del appdata["bundles"]
+    appdata_bundles = {}
+    appdata["bundles"] = appdata_bundles
+
+    # Load the list of bundles for the app from the DB
+    bundles = db.session.query(Bundle).filter_by(app=app).all()
+    for bundle in bundles:
+        # Add the bundle to our dictionary.
+        b = {}
+        m = {}
+        b["messages"] = m
+        b["group"] = bundle.target
+        b["lang"] = bundle.lang.split("_")[0]
+        b["country"] = bundle.lang.split("_")[1]
+        appdata_bundles["%s_%s" % (bundle.lang, bundle.target)] = b
+
+        # Load every message for the bundle.
+        messages = db.session.query(Message).filter_by(bundle=bundle).all()
+        for message in messages:
+            m[message.key] = message.value
+
+    return appdata

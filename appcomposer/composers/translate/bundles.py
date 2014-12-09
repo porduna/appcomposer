@@ -9,7 +9,7 @@ from babel import Locale, UnknownLocaleError
 from flask import url_for
 import requests
 from appcomposer.application import app as flask_app
-
+from appcomposer.composers.translate.db_helpers import load_appdata_from_db
 
 
 AUTOACCEPT_DEFAULT = True
@@ -18,6 +18,8 @@ AUTOACCEPT_DEFAULT = True
 class BundleManager(object):
     """
     To manage the set of bundles for an App, and to provide common functionality.
+
+    DEPENDENCIES: The BundleManager is mostly independent though some methods rely on the app_data JSON structure.
     """
 
     def __init__(self, original_gadget_spec=None):
@@ -81,22 +83,22 @@ class BundleManager(object):
         return bm
 
     @staticmethod
-    def create_from_existing_app(app_data):
+    def create_from_existing_app(full_app_data):
         """
         Acts as a CTOR. Creates a BundleManager for managing an App that exists already.
 
-        @param app_data: JSON string, or JSON-able dictionary containing the Translate App's data.
+        @param full_app_data: JSON string, or JSON-able dictionary containing the Translate App's data.
         @return: The new BundleManager, with the specified App's data loaded.
         """
-        if type(app_data) is str or type(app_data) is unicode:
-            app_data = json.loads(app_data)
+        if type(full_app_data) is str or type(full_app_data) is unicode:
+            full_app_data = json.loads(full_app_data)
 
-        spec_file = app_data["spec"]
+        spec_file = full_app_data["spec"]
         bm = BundleManager(spec_file)
 
-        bm.autoaccept = app_data.get("autoaccept", AUTOACCEPT_DEFAULT)
+        bm.autoaccept = full_app_data.get("autoaccept", AUTOACCEPT_DEFAULT)
 
-        bm.merge_json(app_data)
+        bm.merge_json(full_app_data)
 
         return bm
 
@@ -304,17 +306,17 @@ class BundleManager(object):
             self._bundles[name] = bundle
         return
 
-    def merge_json(self, json_data):
+    def merge_json(self, full_json_data):
         """
         Merges the specified json into the BundleManager. It will simply load from the JSON,
         replacing existing entries in bundles as needed.
-        @param json_data: JSON string to load, or JSON-able data structure.
+        @param full_json_data: JSON string to load, or JSON-able data structure.
         @return: Nothing.
         """
-        if type(json_data) == str or type(json_data) == unicode:
-            appdata = json.loads(json_data)
+        if type(full_json_data) == str or type(full_json_data) == unicode:
+            appdata = json.loads(full_json_data)
         else:
-            appdata = json_data
+            appdata = full_json_data
         bundles = appdata["bundles"]
         for name, bundledata in bundles.items():
             bundle = Bundle.from_jsonable(bundledata)
@@ -509,7 +511,8 @@ class BundleManager(object):
         @note: Any value which exists already in the calling BundleManager will be replaced
         if a value with the same name is in from_app and satisfies the merging conditions.
         """
-        from_bm = BundleManager.create_from_existing_app(from_app.data)
+        from_full_app_data = load_appdata_from_db(from_app)
+        from_bm = BundleManager.create_from_existing_app(from_full_app_data)
 
         # Find those bundles we must merge (all groups for the specified language).
         for bundle_name in from_bm._bundles.keys():
@@ -529,6 +532,8 @@ class Bundle(object):
     The default language, group and country is ANY.
     By convention, language is in lowercase while country is in uppercase.
     Group is uppercase too.
+
+    DEPENDENCIES: The Bundle class is self-sufficient and does not depend on the Apps themselves.
     """
 
     def __init__(self, lang, country, group="ALL"):

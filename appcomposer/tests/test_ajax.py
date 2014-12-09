@@ -6,7 +6,9 @@ import appcomposer.application
 
 from appcomposer.appstorage import api, add_var
 from appcomposer.appstorage.api import get_app
-from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals
+from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, \
+    _db_get_proposals
+from appcomposer.composers.translate.operations.ops_highlevel import find_unique_name_for_app
 from appcomposer.login import current_user
 
 

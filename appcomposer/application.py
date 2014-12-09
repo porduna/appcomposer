@@ -97,16 +97,18 @@ if(app.config.get("LOGFILE") is not None):
     file_handler.setFormatter(line_formatter)
     app.logger.addHandler(file_handler)
 
+logging_level = app.config.get("APPCOMP_LOGGING_LEVEL", "DEBUG")
+
 # Register the cmd handler.
 stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)
+stream_handler.setLevel(logging_level)
 stream_handler.setFormatter(line_formatter)
 app.logger.addHandler(stream_handler)
 
 
 # This seems to be required for the logging of sub-warning messages to work, though
 # it doesn't seem to be mentioned in the flask documentation.
-app.logger.setLevel(logging.DEBUG)
+app.logger.setLevel(logging_level)
 
 
 
@@ -125,8 +127,11 @@ COMPOSERS = [adapt_info]
 
 if ACTIVATE_TRANSLATOR:
     from .composers.translate import info as translate_info
-
     COMPOSERS.append(translate_info)
+
+    from .composers.translate2 import info as translate2_info
+    COMPOSERS.append(translate2_info)
+
 
 # So that we can have access to all the info from the Users component.
 # It is important that this is done early. Otherwise, it will be accessed by the
@@ -174,8 +179,10 @@ from .composers.dummy import dummy_blueprint
 
 if ACTIVATE_TRANSLATOR:
     from .composers.translate import translate_blueprint
-
     app.register_blueprint(translate_blueprint, url_prefix='/composers/translate')
+
+    from .composers.translate2 import translate2_blueprint
+    app.register_blueprint(translate2_blueprint, url_prefix='/composers/translate2')
 
 app.register_blueprint(adapt_blueprint, url_prefix='/composers/adapt')
 load_plugins()

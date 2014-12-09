@@ -1,13 +1,22 @@
+import json
+import unittest
 import appcomposer
 import appcomposer.application
 
 from appcomposer.appstorage import api, add_var
-from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, _find_unique_name_for_app, _db_get_proposals, _db_get_spec_apps, _db_transfer_ownership, _db_get_app_ownerships, _db_get_diff_specs
+from appcomposer.composers.translate.bundles import BundleManager, Bundle
+from appcomposer.composers.translate.db_helpers import _db_declare_ownership, _db_get_lang_owner_app, _db_get_ownerships, \
+    _db_get_proposals, _db_get_spec_apps, _db_transfer_ownership, _db_get_app_ownerships, _db_get_diff_specs, \
+    save_bundles_to_db, load_appdata_from_db
+from appcomposer.composers.translate.operations.ops_highlevel import find_unique_name_for_app
 from appcomposer.login import current_user
+import appcomposer.models
+from appcomposer import db
 
 
-class TestTranslateDbHelpers:
-    def __init__(self):
+class TestTranslateDbHelpers(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        super(TestTranslateDbHelpers, self).__init__(*args, **kwargs)
         self.flask_app = None
         self.tapp = None
 
@@ -139,16 +148,16 @@ class TestTranslateDbHelpers:
 
     def test_find_unique_name_for_app(self):
         # There is no conflict, so the name should be exactly the chosen one.
-        name = _find_unique_name_for_app("UTAPPDoesntExist")
+        name = find_unique_name_for_app("UTAPPDoesntExist")
         assert name == "UTAPPDoesntExist"
 
         # There is a conflict, so the name should include a number, starting at 1.
-        name = _find_unique_name_for_app("UTApp")
+        name = find_unique_name_for_app("UTApp")
         assert name == "UTApp (1)"
 
         # We create a new app so that we can force a second conflict.
         app2 = api.create_app("UTApp (1)", "translate", "http://justatest.com", "{'spec':'http://justatest.com'}")
-        name = _find_unique_name_for_app("UTApp")
+        name = find_unique_name_for_app("UTApp")
         assert name == "UTApp (2)"
 
     def test_get_proposals(self):
@@ -178,6 +187,14 @@ class TestTranslateDbHelpers:
         apps = _db_get_spec_apps("http://justatest.com")
         # Should now be 2.
         assert len(apps) == 2
+
+    def test_get_spec_apps_empty(self):
+        """
+        Calling test_get_spec_apps on a non-existing spec gets an empty list.
+        :return:
+        """
+        apps = _db_get_spec_apps("http://doesnt-exist.com")
+        assert len(apps) == 0
 
     def test_transfer_ownership(self):
         """
@@ -218,3 +235,85 @@ class TestTranslateDbHelpers:
         _db_declare_ownership(self.tapp, "test_TEST")
         ownerships = _db_get_app_ownerships(self.tapp)
         assert len(ownerships) == 1
+
+    def test_save_bundles_to_db(self):
+        """
+        Test the method to save a Bundle Manager of an App to the database, using
+        the revamped DB.
+        :return:
+        """
+
+        testBundle = Bundle("all", "ALL", "ALL")
+        testBundle._msgs["key.one"] = "One"
+        testBundle._msgs["key.two"] = "Two"
+
+        bm = BundleManager()
+        bm._bundles = {}
+        bm._bundles["all_ALL_ALL"] = testBundle
+
+        save_bundles_to_db(self.tapp, bm)
+
+        # Retrieve the bundles from the DB.
+        bundle = db.session.query(appcomposer.models.Bundle).filter_by(app=self.tapp, lang="all_ALL", target="ALL").first()
+        assert bundle is not None
+
+        self.assertIsNotNone(bundle)
+        self.assertEquals("all_ALL", bundle.lang)
+        self.assertEquals("ALL", bundle.target)
+
+        messages = db.session.query(appcomposer.models.Message).filter_by(bundle=bundle).all()
+        messages = {m.key: m.value for m in messages}
+
+        self.assertEquals(2, len(messages))
+        self.assertEquals("One", messages["key.one"])
+        self.assertEquals("Two", messages["key.two"])
+
+    def test_load_appdata_from_db(self):
+        """
+        Test the method to load the appdata as if it was the old legacy JSON object from the database.
+        :return:
+        """
+        data = {
+            "spec": "http://justatest.com",
+            "random_setting": 1,
+            "bundles": {
+                "all_ALL_ALL": {
+                    "lang": "all",
+                    "country": "ALL",
+                    "target": "ALL",
+                    "messages" : {
+                        "key.one": "One"
+                    }
+                }
+            }
+        }
+        self.tapp.data = json.dumps(data)
+        db.session.add(self.tapp)
+        db.session.commit()
+
+        appdata = load_appdata_from_db(self.tapp)
+
+        # The bundles should now be empty, because load_appdata_from_db should not rely on the data's bundles, but
+        # on the db information (and for now there is none). The settings should be respected.
+        self.assertIsNotNone(appdata)
+        self.assertIn("random_setting", appdata)
+        self.assertIn("bundles", appdata)
+        self.assertTrue(len(appdata["bundles"]) == 0)
+
+
+        # To further test info retrieval, we need to add info to the db.
+        testBundle = Bundle("all", "ALL", "ALL")
+        testBundle._msgs["key.three"] = "Three"
+        testBundle._msgs["key.four"] = "Four"
+        bm = BundleManager()
+        bm._bundles = {}
+        bm._bundles["all_ALL_ALL"] = testBundle
+        save_bundles_to_db(self.tapp, bm)
+
+
+        appdata = load_appdata_from_db(self.tapp)
+        self.assertTrue(appdata["bundles"]["all_ALL_ALL"]["messages"]["key.three"] == "Three")
+        self.assertTrue(appdata["bundles"]["all_ALL_ALL"]["messages"]["key.four"] == "Four")
+
+
+

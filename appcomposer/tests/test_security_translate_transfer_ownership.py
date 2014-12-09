@@ -1,14 +1,16 @@
 import json
+import unittest
 import urllib
 import appcomposer
 from appcomposer import db
 from appcomposer.appstorage import api
-from appcomposer.appstorage.api import get_app_by_name, get_app, update_app_data, add_var
-from appcomposer.models import AppVar
+from appcomposer.appstorage.api import get_app_by_name, get_app, update_app_data, add_var, getcreate_spec
+from appcomposer.models import AppVar, Spec
 
 
-class TestSecurityTranslateTransferOwnership:
-    def __init__(self):
+class TestSecurityTranslateTransferOwnership(unittest.TestCase):
+    def __init__(self, *args, **kwargs):
+        unittest.TestCase.__init__(self, *args, **kwargs)
         self.flask_app = None
         self.firstApp = None
         self.secondApp = None
@@ -41,6 +43,8 @@ class TestSecurityTranslateTransferOwnership:
             if app is not None:
                 api.delete_app(app)
 
+        db.session.query(Spec).filter_by(url="TESTURL").delete()
+
     def setUp(self):
         appcomposer.app.config['DEBUG'] = True
         appcomposer.app.config['TESTING'] = True
@@ -67,6 +71,8 @@ class TestSecurityTranslateTransferOwnership:
         rv = self.flask_app.post("/composers/translate/selectlang", data={"appname": "UTApp2", "appurl": url}, follow_redirects=True)
         self.secondApp = get_app_by_name("UTApp2").unique_id
 
+        self.other_spec = getcreate_spec("TESTURL")
+
     def tearDown(self):
         self._cleanup()
         self.flask_app.__exit__(None, None, None)
@@ -84,6 +90,7 @@ class TestSecurityTranslateTransferOwnership:
         rv = self.flask_app.get(url)
         assert rv.status_code == 200
         data = rv.data.decode("utf8")  # This bypasses an apparent utf8 FlaskClient bug.
+        print data
         assert "Transfer Ownership" in data
         assert "/translate/transfer_ownership" in data
 
@@ -123,11 +130,10 @@ class TestSecurityTranslateTransferOwnership:
         # Change the spec of the second app so that we can test.
         self.login("testuser2", "password")
         secondApp = get_app(self.secondApp)
-        data = json.loads(secondApp.data)
-        data["spec"] = "TESTSPEC"
-        secondApp.data = json.dumps(data)
-        update_app_data(secondApp, data)
-        secondApp.spec_url = "TESTSPEC"
+
+        # Change the spec of the second app only.
+        secondApp.spec = self.other_spec
+
         db.session.add(secondApp)
         db.session.commit()
 
