@@ -1,0 +1,53 @@
+{# THIS IS THE ONLY FILE IN THE APP FOLDER WHICH IS A JINJA2 TEMPLATE. THE OTHER FILES SHOULD BE SERVED STATICALLY. #}
+{% set title = "Translation tool" %}
+{% set current_link = "home" %}
+{% set current_composer = "translate" %}
+{% extends 'composers/translate/layout.html' %}
+
+{% block head_js %}
+    {{ super() }}
+
+    {# Establish the AngularJS base URL #}
+    <base href="{{ url_for("static", filename="translate2") }}/" />
+
+
+    <link rel="stylesheet" href="{{ url_for('static', filename='angular/datatables.bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='translate2/app.css') }}">
+{% endblock %}
+
+{% block body_content %}
+
+<div ng-app="translateApp" ng-controller="TranslateCtrl">
+    <div ng-view>
+
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+{% block scripts %}
+    {{ super() }}
+
+    <script type="text/javascript">
+    APP_DYN_ROOT = "{{ url_for(".index", _external=True) }}";
+    </script>
+
+    <script src="{{ url_for("static", filename="angular/angular-datatables.min.js") }}" type="text/javascript"></script>
+    <script src="{{ url_for("static", filename="angular/bower_components/angularjs-truncate/src/truncate.js") }}" type="text/javascript"></script>
+
+    <script src="{{ url_for("static", filename="angular/jquery.dataTables.min.js") }}" type="text/javascript"></script>
+
+
+    <script src="{{ url_for("static", filename="translate2/app.js") }}" type="text/javascript"></script>
+    <script src="{{ url_for("static", filename="translate2/translate-filter.js") }}" type="text/javascript"></script>
+    <script src="{{ url_for("static", filename="translate2/plaintext-filter.js") }}" type="text/javascript"></script>
+    <script src="{{ url_for("static", filename="translate2/apps/apps-ctrl.js") }}" type="text/javascript"></script>
+    <script src="{{ url_for("static", filename="translate2/apps/description-filter.js") }}" type="text/javascript"></script>
+    <script src="{{ url_for("static", filename="translate2/apps/dt-child-directive.js") }}" type="text/javascript"></script>
+    <script src="{{ url_for("static", filename="translate2/apps/app-details-directive.js") }}" type="text/javascript"></script>
+
+{% endblock %}
+
+
