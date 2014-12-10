@@ -18,6 +18,7 @@ module.exports = function (grunt) {
 
   // Configurable paths
   var config = {
+    flaskfile: '../../../run.py',
     tpl: '../../templates/',
     tplindex: '../../templates/appindex.html',
     dist_tplindex: '../../templates/__dist_appindex.html',
@@ -388,7 +389,7 @@ module.exports = function (grunt) {
        grunt.log.writeln('Starting Flask development server.');
        // stdio: 'inherit' let us see flask output in grunt
        var PIPE = {stdio: 'inherit'};
-       spawn('python', ['../../flaskgrunt.py'], PIPE);
+       spawn('python', ['<%= config.flaskfile %>'], PIPE);
     });
 
 
