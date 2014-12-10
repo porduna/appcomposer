@@ -19,9 +19,6 @@ module.exports = function (grunt) {
   // Configurable paths
   var config = {
     flaskfile: '../../../run.py',
-    tpl: '../../templates/',
-    tplindex: '../../templates/appindex.html',
-    dist_tplindex: '../../templates/__dist_appindex.html',
     app: 'app',
     dist: 'dist'
   };
@@ -34,7 +31,7 @@ module.exports = function (grunt) {
 
   open : {
     dev : {
-      path: 'http://127.0.0.1:5000/',
+      path: 'http://127.0.0.1:5000/'
     },
     build : {
       path : 'http://google.com/',
@@ -80,8 +77,7 @@ module.exports = function (grunt) {
           '<%= config.app %>/{,*/}*.html',
           '.tmp/styles/{,*/}*.css',
           '.tmp/scripts/{,*/}*.js',
-          '<%= config.app %>/images/{,*/}*',
-          '../../templates/*.html'
+          '<%= config.app %>/images/{,*/}*'
         ]
       }
     },
@@ -208,11 +204,13 @@ module.exports = function (grunt) {
     },
 
     // Automatically inject Bower components into the HTML file
-    // *** Adds the dependencies to both index.html (static) and appindex.html (template), just in case.
+    // Wiredep modifies the source (/app/) file itself when called.
+    // In our case, index.html is a jinja2 template, but it does not matter,
+    // as long as (presumibly) we don't place jinja2 code within the wiredep blocks.
     wiredep: {
       app: {
         ignorePath: /^\/|\.\.\//,
-        src: ['<%= config.app %>/index.html', '<%= config.tplindex %>'],
+        src: ['<%= config.app %>/index.html'],
         exclude: ['bower_components/bootstrap/dist/js/bootstrap.js']
       }
     },
@@ -340,10 +338,6 @@ module.exports = function (grunt) {
             '{,*/}*.html',
             'styles/fonts/{,*/}*.*'
           ]
-        }, {
-          nonull: true,
-          dest: '<%= config.dist %>/appindex.html',
-          src: '<%= config.tplindex %>'
         }, {
           src: 'node_modules/apache-server-configs/dist/.htaccess',
           dest: '<%= config.dist %>/.htaccess'
