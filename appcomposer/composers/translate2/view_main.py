@@ -1,9 +1,9 @@
 import os
 from flask import render_template, jsonify, json, Response, current_app, send_file, render_template_string
 from werkzeug.exceptions import NotFound
-from appcomposer import app
 from appcomposer.composers.translate2 import translate2_blueprint
 from appcomposer.composers.translate2.translation_listing import retrieve_translations
+from appcomposer.application import app as flask_app
 
 
 
@@ -37,7 +37,7 @@ def serve_ngapp(appname, path):
     """
     # We first need to know whether we are in development or in distribution mode. We will check through
     # config and environment variables.
-    dev_mode = app.config.get("NGAPPS_DEV_MODE", False) or int(os.environ.get('NGAPPS_DEV_MODE', False))
+    dev_mode = flask_app.config.get("NGAPPS_DEV_MODE", False) or int(os.environ.get('NGAPPS_DEV_MODE', False))
 
     # Calculate some base paths we will need
     root_path = os.path.join(current_app.root_path, "ngapps", appname)
@@ -47,8 +47,11 @@ def serve_ngapp(appname, path):
 
         # Recognize index.html
         if path == "index.html":
-            return render_template_string(open(first_uri).read().decode('utf-8'),
-                                          config=current_app.config)
+            # return render_template_string(open(first_uri).read().decode('utf-8'),
+            #                               config=current_app.config)
+            config = current_app.config
+            contents = open(first_uri).read().decode('utf-8')
+            return render_template_string(contents, config=config)
 
         # Check wether the first uri (file in app) exists. Otherwise we need to search
         # in .tmp
@@ -82,7 +85,7 @@ def serve_ngapp(appname, path):
 
 @translate2_blueprint.route('/', defaults={'path': 'index.html'})
 @translate2_blueprint.route('/<path:path>')
-def serve_index(path):
+def index(path):
     return serve_ngapp("translate2", path)
 
 @translate2_blueprint.route("/translations")

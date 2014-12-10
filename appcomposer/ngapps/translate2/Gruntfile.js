@@ -18,7 +18,8 @@ module.exports = function (grunt) {
 
   // Configurable paths
   var config = {
-    flaskfile: '../../../run.py',
+    flaskroot: '../../../',
+    flaskfile: 'run.py',
     app: 'app',
     dist: 'dist'
   };
@@ -31,7 +32,7 @@ module.exports = function (grunt) {
 
   open : {
     dev : {
-      path: 'http://127.0.0.1:5000/'
+      path: 'http://127.0.0.1:5000/composers/translate2'
     },
     build : {
       path : 'http://google.com/',
@@ -382,8 +383,8 @@ module.exports = function (grunt) {
        var spawn = require('child_process').spawn;
        grunt.log.writeln('Starting Flask development server.');
        // stdio: 'inherit' let us see flask output in grunt
-       var PIPE = {stdio: 'inherit'};
-       spawn('python', ['<%= config.flaskfile %>'], PIPE);
+       var OPTIONS = {stdio: 'inherit', cwd: config.flaskroot};
+       spawn('python', [config.flaskfile], OPTIONS);
     });
 
 
