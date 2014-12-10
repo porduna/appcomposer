@@ -17,7 +17,7 @@ def serve_ngapp(appname, path):
 
     *** DEVELOPMENT MODE ***
     The files to be served will be a merge from the app folder (which will be tried first) and the .tmp
-    folder.
+    folder. If it is a bower_components dependency, it will also be served.
     The index.html file is the only file to be rendered as a Jinja2 template.
 
     *** DISTRIBUTION MODE ***
@@ -43,6 +43,11 @@ def serve_ngapp(appname, path):
     root_path = os.path.join(current_app.root_path, "ngapps", appname)
 
     if dev_mode:
+
+        if path.startswith("bower_components/"):
+            uri = os.path.join(root_path, path)
+            return send_file(uri)
+
         first_uri = os.path.join(root_path, "app", path)
 
         # Recognize index.html
