@@ -3,7 +3,7 @@ angular
     .controller("AppsCtrl", AppsCtrl);
 
 
-function AppsCtrl($scope, $resource, $compile, DTOptionsBuilder, DTColumnDefBuilder) {
+function AppsCtrl($scope, $resource, $compile, $filter, DTOptionsBuilder, DTColumnDefBuilder) {
     $scope.apps = $resource(APP_DYN_ROOT + "translations").query();
     $scope.dt = {};
 
@@ -13,16 +13,28 @@ function AppsCtrl($scope, $resource, $compile, DTOptionsBuilder, DTColumnDefBuil
     $scope.dt.options = DTOptionsBuilder.newOptions()
         .withPaginationType('full_numbers')
         .withDisplayLength(10)
-        .withOption("autoWidth", true);
+        .withOption("autoWidth", true)
+        .withOption("language", {
+            "search": $filter("translate")("Search:"),
+            "processing": $filter("translate")("Processing..."),
+            "info": $filter("translate")("Showing page _PAGE_ of _PAGES_"),
+            "lengthMenu": $filter("translate")("Display _MENU_ records per page"),
+            "zeroRecords": $filter("translate")("Nothing found"),
+            "infoEmpty": $filter("translate")("No records available"),
+            "infoFiltered": $filter("translate")("(filtered from _MAX_ total records)"),
+            "paginate": {
+                first: $filter("translate")("First"),
+                previous: $filter("translate")("Previous"),
+                next: $filter("translate")("Next"),
+                last: $filter("translate")("Last")
+            }
+        });
 
     $scope.dt.columnDefs = [
         DTColumnDefBuilder.newColumnDef(0).notSortable().withOption("width", "30%"),
         DTColumnDefBuilder.newColumnDef(1).notSortable().withOption("width", "40%"),
         DTColumnDefBuilder.newColumnDef(2).notSortable()
     ];
-
-
-
 
 
     $scope.completionToColor = completionToColor;
@@ -59,13 +71,13 @@ function AppsCtrl($scope, $resource, $compile, DTOptionsBuilder, DTColumnDefBuil
      */
     function selectApp(app, index) {
         // Hide the previous selection.
-        if($scope.selected.index !== undefined) {
+        if ($scope.selected.index !== undefined) {
             $scope.dt.DataTable.row($scope.selected.index).child().hide();
         }
 
         // If we have re-selected the current selection, it is no longer
         // selected.
-        if($scope.selected.index == index) {
+        if ($scope.selected.index == index) {
             $scope.selected.index = undefined;
             $scope.selected.app = undefined;
             return;
@@ -74,7 +86,7 @@ function AppsCtrl($scope, $resource, $compile, DTOptionsBuilder, DTColumnDefBuil
         $scope.selected.app = app;
         $scope.selected.index = index;
 
-        if($scope.dt != undefined) {
+        if ($scope.dt != undefined) {
             var table = $scope.dt;
             var row = table.DataTable.row(index);
             var c = row.child($compile("<ac-app-details class='my-disabled-hover' app=selected.app></ac-app-details>")($scope));
@@ -87,7 +99,7 @@ function AppsCtrl($scope, $resource, $compile, DTOptionsBuilder, DTColumnDefBuil
      * @param app
      */
     function isSelected(app) {
-        if($scope.selected.app == undefined)
+        if ($scope.selected.app == undefined)
             return false;
 
         var result = app.title === $scope.selected.app.title;

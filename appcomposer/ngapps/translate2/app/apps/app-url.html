@@ -4,7 +4,10 @@
           action="{{ url_for('translate.translate_selectlang') }}" method="POST" novalidate>
         <div class="col-xs-12">
             <legend>Custom application URL</legend>
-            <p ac-translate-me>This will generally be required by developers only. Most users should choose an application from the Applications List above.</p>
+            <p>
+                <span class="fa fa-warning"/>
+                {{ "This will generally be required by developers only. Most users should choose an application from the Applications List above." | translate }}
+            </p>
             <br>
             <div class="form-group">
                 <label for="appurl" class="col-lg-1 control-label" ac-translate-me>URL: </label>
