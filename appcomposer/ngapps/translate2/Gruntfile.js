@@ -70,7 +70,7 @@ module.exports = function (grunt) {
                 tasks: ['wiredep']
             },
             coffee: {
-                files: ['<%= config.app %>/scripts/{,*/}*.{coffee,litcoffee,coffee.md}'],
+                files: ['<%= config.app %>/{,*/}*.{coffee,litcoffee,coffee.md}'],
                 tasks: ['coffee:dist']
             },
             coffeeTest: {
@@ -91,8 +91,8 @@ module.exports = function (grunt) {
                 },
                 files: [
                     '<%= config.app %>/{,*/}*.html',
-                    '.tmp/styles/{,*/}*.css',
-                    '.tmp/scripts/{,*/}*.js',
+                    '.tmp/{,*/}*.css',
+                    '.tmp/{,*/}*.js',
                     '<%= config.app %>/{,*/}*.js',
                     '<%= config.app %>/images/{,*/}*'
                 ]
@@ -191,9 +191,9 @@ module.exports = function (grunt) {
                 files: [
                     {
                         expand: true,
-                        cwd: '<%= config.app %>/scripts',
+                        cwd: '<%= config.app %>/',
                         src: '{,*/}*.{coffee,litcoffee,coffee.md}',
-                        dest: '.tmp/scripts',
+                        dest: '.tmp/',
                         ext: '.js'
                     }
                 ]
