@@ -17,6 +17,10 @@ function routeConfig($routeProvider) {
             templateUrl: 'apps/apps.html',
             controller: 'AppsCtrl'
         })
+        .when('/app/:appurl*', {
+            templateUrl: 'app/app.html',
+            controller: 'AppCtrl'
+        })
         .otherwise({
             redirectTo: '/apps'
         });
