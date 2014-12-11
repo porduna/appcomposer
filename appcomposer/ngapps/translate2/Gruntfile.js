@@ -81,7 +81,7 @@ module.exports = function (grunt) {
                 files: ['Gruntfile.js']
             },
             styles: {
-                files: ['<%= config.app %>/styles/{,*/}*.css'],
+                files: ['<%= config.app %>/{,*/}*.css'],
                 tasks: ['newer:copy:styles', 'autoprefixer', 'injector']
             },
             livereload: {
@@ -94,6 +94,7 @@ module.exports = function (grunt) {
                     '.tmp/{,*/}*.css',
                     '.tmp/{,*/}*.js',
                     '<%= config.app %>/{,*/}*.js',
+                    '<%= config.app %>/{,*/}*.css',
                     '<%= config.app %>/images/{,*/}*'
                 ]
             }
@@ -220,9 +221,9 @@ module.exports = function (grunt) {
                 files: [
                     {
                         expand: true,
-                        cwd: '.tmp/styles/',
+                        cwd: '.tmp/',
                         src: '{,*/}*.css',
-                        dest: '.tmp/styles/'
+                        dest: '.tmp/'
                     }
                 ]
             }
