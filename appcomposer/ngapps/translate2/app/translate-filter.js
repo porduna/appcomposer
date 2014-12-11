@@ -9,6 +9,8 @@ function translateFilter() {
     return translate;
 
     function translate(text) {
+        text = text.trim();
+        
         var ret = TRANSLATIONS[text];
         if (ret != undefined)
             return ret;
