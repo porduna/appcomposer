@@ -46,6 +46,11 @@
 
 {% block scripts %}
 
+    {# Feed the whole translations for the server-determined locale, as a global. #}
+    <script type="text/javascript">
+    TRANSLATIONS = {{ translations|tojson|safe }};
+    </script>
+
     {# We purposedly avoid to super() so that we don't load the generic dependencies but our own. #}
 
     <!-- build:js(.) scripts/vendor.js -->
@@ -94,6 +99,7 @@
     <script src="apps/dt-child-directive.js"></script>
     <script src="plaintext-filter.js"></script>
     <script src="translate-filter.js"></script>
+    <script src="translate-me-directive.js"></script>
     <!-- endinjector -->
     <!-- endbuild -->
 

@@ -84,6 +84,13 @@ module.exports = function (grunt) {
                 files: ['<%= config.app %>/{,*/}*.css'],
                 tasks: ['newer:copy:styles', 'autoprefixer', 'injector']
             },
+            newscripts: {
+                files: ['<%= config.app %>/{,*/}*.{js,coffee}'],
+                tasks: ['injector'],
+                options: {
+                    event: ['added', 'deleted']
+                }
+            },
             livereload: {
                 options: {
                     livereload: 35729

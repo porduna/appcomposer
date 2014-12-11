@@ -9,6 +9,10 @@ function translateFilter() {
     return translate;
 
     function translate(text) {
-        return text;
+        var ret = TRANSLATIONS[text];
+        if (ret != undefined)
+            return ret;
+        else
+            return text;
     }
 }

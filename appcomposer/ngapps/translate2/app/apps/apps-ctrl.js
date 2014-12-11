@@ -10,16 +10,18 @@ function AppsCtrl($scope, $resource, $compile, DTOptionsBuilder, DTColumnDefBuil
     $scope.selected = {};
     $scope.selected.app = undefined; // To store the selected app.
 
+    $scope.dt.options = DTOptionsBuilder.newOptions()
+        .withPaginationType('full_numbers')
+        .withDisplayLength(10)
+        .withOption("autoWidth", true);
+
     $scope.dt.columnDefs = [
         DTColumnDefBuilder.newColumnDef(0).notSortable().withOption("width", "30%"),
         DTColumnDefBuilder.newColumnDef(1).notSortable().withOption("width", "40%"),
         DTColumnDefBuilder.newColumnDef(2).notSortable()
     ];
 
-    $scope.dt.options = DTOptionsBuilder.newOptions()
-        .withPaginationType('full_numbers')
-        .withDisplayLength(10)
-        .withOption("autoWidth", true);
+
 
 
 

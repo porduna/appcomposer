@@ -1,6 +1,7 @@
 import os
 from flask import render_template, jsonify, json, Response, current_app, send_file, render_template_string
 from werkzeug.exceptions import NotFound
+from appcomposer.babel import gettext, get_domain
 from appcomposer.composers.translate2 import translate2_blueprint
 from appcomposer.composers.translate2.translation_listing import retrieve_translations
 from appcomposer.application import app as flask_app
@@ -54,9 +55,10 @@ def serve_ngapp(appname, path):
         if path == "index.html":
             # return render_template_string(open(first_uri).read().decode('utf-8'),
             #                               config=current_app.config)
+            translations = get_domain().get_translations()._catalog
             config = current_app.config
             contents = open(first_uri).read().decode('utf-8')
-            return render_template_string(contents, config=config)
+            return render_template_string(contents, config=config, translations=translations)
 
         # Check wether the first uri (file in app) exists. Otherwise we need to search
         # in .tmp
@@ -77,8 +79,9 @@ def serve_ngapp(appname, path):
         only_uri = os.path.join(root_path, "app", "dist")
 
         if path == "index.html":
+            translations = get_domain().get_translations()._catalog
             return render_template_string(open(only_uri).read().decode('utf-8'),
-                                          config=current_app.config)
+                                          config=current_app.config, translations=translations)
 
         if os.path.isfile(only_uri):
             return send_file(only_uri)
