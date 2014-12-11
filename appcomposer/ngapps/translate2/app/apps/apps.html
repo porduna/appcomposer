@@ -16,7 +16,7 @@
             </thead>
             <tbody>
                 <tr ng-repeat="app in apps" ng-click="selectApp(app, $index)" ng-class="{'my-row-highlight': isSelected(app)}" >
-                    <td>
+                    <td class="noselect">
                         <div class="my-thumbnail-wrapper">
                             <a href="#" class="my-app-thumbnail">
                                 <img class="my-app-thumbnail-img" ng-src="{{ app.app_thumb }}" alt="...">

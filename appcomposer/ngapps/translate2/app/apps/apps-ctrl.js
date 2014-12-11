@@ -63,6 +63,14 @@ function AppsCtrl($scope, $resource, $compile, DTOptionsBuilder, DTColumnDefBuil
             $scope.dt.DataTable.row($scope.selected.index).child().hide();
         }
 
+        // If we have re-selected the current selection, it is no longer
+        // selected.
+        if($scope.selected.index == index) {
+            $scope.selected.index = undefined;
+            $scope.selected.app = undefined;
+            return;
+        }
+
         $scope.selected.app = app;
         $scope.selected.index = index;
 
