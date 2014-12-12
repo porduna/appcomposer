@@ -9,12 +9,8 @@
                 <td>{{ app.title }}</td>
             </tr>
             <tr>
-                <td ac-translate-me>Author: </td>
-                <td>{{ app.author }}</td>
-            </tr>
-            <tr>
                 <td ac-translate-me>XML URL: </td>
-                <td>{{ app.app_url }}</td>
+                <td><a ng-href="app.app_url">{{ app.app_url }}<a/></td>
             </tr>
             <tr ng-show="app.source">
                 <td ac-translate-me>Source: </td>
