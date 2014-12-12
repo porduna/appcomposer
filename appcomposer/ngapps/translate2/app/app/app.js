@@ -3,6 +3,6 @@ angular
     .controller("AppCtrl", AppCtrl);
 
 
-function AppCtrl($scope) {
-
+function AppCtrl($scope, $routeParams, $position) {
+    $scope.params = $routeParams
 }

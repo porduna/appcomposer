@@ -3,6 +3,8 @@ angular
         'ngRoute',
         'ngResource',
         'ngSanitize',
+        'ui.bootstrap',
+        'ui.utils',
         'datatables',
         'truncate'
     ])
