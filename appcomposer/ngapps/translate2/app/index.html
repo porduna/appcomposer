@@ -5,6 +5,13 @@
 {% extends 'composers/translate/layout.html' %}
 
 
+{% if not config.NGAPPS_DEV_MODE %}
+    {% set relat_path = url_for("static", filename="") %}
+{% else %}
+    {% set relat_path = "" %}
+{% endif %}
+
+
 {% block head_js %}
     {{ super() }}
 
@@ -15,6 +22,7 @@
 
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
+    {% filter relativize_paths(relat_path) %}
     <!-- The following block will be auto-filled by wiredep and then minified by the build handler -->
     <!-- build:css(.) styles/vendor.css -->
     <!-- bower:css -->
@@ -23,12 +31,15 @@
     <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css" />
     <!-- endbower -->
     <!-- endbuild -->
+    {% endfilter %}
 
+    {% filter relativize_paths(relat_path) %}
     <!-- build:css(.tmp) styles/main.css -->
     <!-- injector:css -->
     <link rel="stylesheet" href="app.css">
     <!-- endinjector -->
     <!-- endbuild -->
+    {% endfilter %}
 
 {% endblock %}
 
@@ -54,6 +65,8 @@
 
     {# We purposedly avoid to super() so that we don't load the generic dependencies but our own. #}
 
+
+    {% filter relativize_paths(relat_path) %}
     <!-- build:js(.) scripts/vendor.js -->
     <!-- bower:js -->
     <script src="bower_components/jquery/dist/jquery.js"></script>
@@ -69,7 +82,9 @@
     <script src="bower_components/angular-animate/angular-animate.js"></script>
     <!-- endbower -->
     <!-- endbuild -->
+    {% endfilter %}
 
+    {% filter relativize_paths(relat_path) %}
     <!-- build:js(.) scripts/plugins.js -->
     <script src="bower_components/bootstrap/js/affix.js"></script>
     <script src="bower_components/bootstrap/js/alert.js"></script>
@@ -84,6 +99,7 @@
     <script src="bower_components/bootstrap/js/collapse.js"></script>
     <script src="bower_components/bootstrap/js/tab.js"></script>
     <!-- endbuild -->
+    {% endfilter %}
 
 
 

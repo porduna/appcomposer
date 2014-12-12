@@ -6,6 +6,20 @@ from flask import escape
 
 import logging
 import pprint
+from markupsafe import Markup
+
+
+def relativize_paths(value, path):
+    """
+    THIS IS A FILTER.
+    This should be moved somewhere else.
+    :return:
+    """
+
+    # TODO: 
+    st = value
+    return Markup(st)
+
 
 
 app = Flask(__name__)
@@ -17,6 +31,9 @@ app.config.from_object('config')
 
 # Add an extension to jinja2
 app.jinja_env.add_extension("jinja2.ext.i18n")
+
+# Add custom filter to jinja2
+app.jinja_env.filters['relativize_paths'] = relativize_paths
 
 # Support old deployments
 if not app.config.get('SQLALCHEMY_DATABASE_URI', False):
