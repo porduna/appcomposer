@@ -26,7 +26,7 @@
             </tr>
             <tr ng-show="app.description">
                 <td>Description: </td>
-                <td><span>{{ app.description|plaintext }}</span></td>
+                <td><span ac-safe-html="app.description"></span></td>
             </tr>
             <tr>
                 <td>

@@ -2,10 +2,11 @@ angular
     .module('translateApp', [
         'ngRoute',
         'ngResource',
+        'ngSanitize',
         'datatables',
         'truncate'
     ])
-    .config(['$routeProvider', routeConfig])
+    .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig])
     .controller('TranslateCtrl', function ($scope) {
 
     });
@@ -24,4 +25,9 @@ function routeConfig($routeProvider) {
         .otherwise({
             redirectTo: '/apps'
         });
+}
+
+
+function compileProviderConfig($compileProvider) {
+    $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto):/);
 }
