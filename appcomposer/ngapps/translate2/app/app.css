@@ -31,3 +31,22 @@
     /* Does not work perfectly, but for now it should do */
     /*background-color: inherit !important;*/
 /*}*/
+
+
+
+/*.dl-horizontal dt{*/
+    /*text-align: left;*/
+    /*margin-bottom: 1em;*/
+    /*width: auto;*/
+    /*padding-right: 1em;*/
+/*}*/
+
+/*.dl-horizontal dd{*/
+    /*margin-left: 0;*/
+    /*margin-bottom: 1em;*/
+/*}*/
+
+
+dd {
+    padding-bottom: 10px;
+}
