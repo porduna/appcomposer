@@ -121,3 +121,42 @@ def translations():
 
     data = json.dumps(retrieve_translations())
     return Response(data, mimetype="application/json")
+
+
+@translate2_blueprint.route("/apps/<appurl:path>")
+def app(appurl):
+    """
+    Retrieves information for a specific Application, identified by its App URL.
+    That information contains information such as existing translations, their
+    translators, etc.
+    :param appurl: The URL of the App
+    :return:
+    """
+
+    data = {
+        "url": "http://www.applications.com/app.xml",
+        "name": "My Application",
+        "desc": "This is only a test application which does not really exist.",
+        "modified_date": "2014-02-24",
+        "created_date": "2014-01-12",
+        "translations": {
+            "all_ALL": {
+                "ALL": {
+                    "translated": 21,
+                    "items": 31
+                },
+                "12-14": {
+                    "translated": 12,
+                    "items": 31
+                }
+            },
+            "en_ALL": {
+                "ALL": {
+                    "translated": 31,
+                    "items": 31
+                }
+            }
+        }
+    }
+
+    return jsonify(**data)
