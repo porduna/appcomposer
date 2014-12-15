@@ -27,7 +27,7 @@ def relativize_paths(value, path):
         :return: Replaced URI.
         """
         oldurl = matchobj.group(1)
-        newurl = os.path.join(path, oldurl)
+        newurl = 'src="%s"' % os.path.join(path, oldurl)
         return newurl
 
     newvalue = re.sub(expr, repl, value)
