@@ -123,7 +123,7 @@ def translations():
     return Response(data, mimetype="application/json")
 
 
-@translate2_blueprint.route("/apps/<appurl:path>")
+@translate2_blueprint.route("/translations/apps/<path:appurl>")
 def app(appurl):
     """
     Retrieves information for a specific Application, identified by its App URL.
@@ -137,23 +137,36 @@ def app(appurl):
         "url": "http://www.applications.com/app.xml",
         "name": "My Application",
         "desc": "This is only a test application which does not really exist.",
-        "modified_date": "2014-02-24",
-        "created_date": "2014-01-12",
         "translations": {
             "all_ALL": {
-                "ALL": {
-                    "translated": 21,
-                    "items": 31
-                },
-                "12-14": {
-                    "translated": 12,
-                    "items": 31
+                "name": "DEFAULT",
+                "targets": {
+                    "ALL": {
+                        "modified_date": "2014-02-24",
+                        "created_date": "2014-01-12",
+                        "name": "ALL",
+                        "translated": 21,
+                        "items": 31
+                    },
+                    "12-14": {
+                        "modified_date": "2014-02-24",
+                        "created_date": "2014-01-12",
+                        "name": "Adolescents (12-14)",
+                        "translated": 12,
+                        "items": 31
+                    }
                 }
             },
             "en_ALL": {
-                "ALL": {
-                    "translated": 31,
-                    "items": 31
+                "name": "English",
+                "targets": {
+                    "ALL": {
+                        "modified_date": "2014-02-24",
+                        "created_date": "2014-01-12",
+                        "name": "ALL",
+                        "translated": 31,
+                        "items": 31
+                    }
                 }
             }
         }
