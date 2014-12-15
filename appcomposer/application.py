@@ -16,7 +16,7 @@ def relativize_paths(value, path):
     :return:
     """
 
-    # TODO: 
+    # TODO:
     st = value
     return Markup(st)
 
