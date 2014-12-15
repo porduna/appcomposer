@@ -4,9 +4,11 @@ angular
         'ngResource',
         'ngSanitize',
         'ui.bootstrap',
+        'ui.select',
         'ui.utils',
         'datatables',
-        'truncate'
+        'truncate',
+        'selectionModel'
     ])
     .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig])
     .controller('TranslateCtrl', function ($scope) {
