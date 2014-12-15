@@ -1,0 +1,29 @@
+<div class="row" style="padding-top:20px">
+
+    <form name="appurlForm" class="form-horizontal" id="geturl" name="geturl"
+          action="{{ url_for('translate.translate_selectlang') }}" method="POST" novalidate>
+        <div class="col-xs-12">
+            <legend>Custom application URL</legend>
+            <p>
+                <span class="fa fa-warning"/>
+                {{ "This will generally be required by developers only. Most users should choose an application from the Applications List above." | translate }}
+            </p>
+            <br>
+            <div class="form-group">
+                <label for="appurl" class="col-lg-1 control-label" ac-translate-me>URL: </label>
+
+                <div class="col-lg-10">
+                    <input ng-model="url" required type="text" id="appurl" name="appurl" class="form-control"
+                           ng-attr-placeholder="{{ 'URL of the app'|translate }}">
+                    <!--<span class="help-block" ac-translate-me>The URL of the app you want to translate.</span>-->
+                    <span ng-hide="isValid()" class="text-danger">Please, provide the URL for the custom application</span>
+                </div>
+            </div>
+        </div>
+        <div class="col-xs-3 col-xs-offset-1">
+            <a ng-disabled="!isValid()" ng-href="#/app/{{ url }}" class="btn btn-success">
+                <i class="fa fa-book"></i> {{ 'Translate' | translate }}
+            </a>
+        </div>
+    </form>
+</div>

@@ -1,22 +1,23 @@
 <div class="row">
-    <!-- <ac-apps-list></ac-apps-list> -->
-    <!-- <ac-apps-selection></ac-apps-selection> -->
 
     <div class="col-xs-12 well">
 
-        <legend>Applications List</legend>
+        <legend ac-translate-me>Applications List</legend>
+        <p ac-translate-me style="padding-bottom: 15px">
+            Choose an application to translate:
+        </p>
 
         <table datatable="ng" dt-options="dt.options" dt-column-defs="dt.columnDefs" class="table-disable-hover row-border hover">
             <thead>
             <tr>
-                <th>Title</th>
-                <th>Description</th>
-                <th>Translations</th>
+                <th ac-translate-me>Title</th>
+                <th ac-translate-me>Description</th>
+                <th ac-translate-me>Translations</th>
             </tr>
             </thead>
             <tbody>
                 <tr ng-repeat="app in apps" ng-click="selectApp(app, $index)" ng-class="{'my-row-highlight': isSelected(app)}" >
-                    <td>
+                    <td class="noselect">
                         <div class="my-thumbnail-wrapper">
                             <a href="#" class="my-app-thumbnail">
                                 <img class="my-app-thumbnail-img" ng-src="{{ app.app_thumb }}" alt="...">
@@ -26,7 +27,11 @@
                             </span>
                         </div>
                     </td>
-                    <td style="text-overflow: ellipsis">{{ app.description | plaintext | descriptionFilter | characters:60 }}</td>
+                    <td style="text-overflow: ellipsis">
+                        <span tooltip-html-unsafe="{{ app.description }}">
+                            {{ app.description | plaintext | descriptionFilter | characters:60 }}
+                        </span>
+                    </td>
                     <td>
                         <span class="badge" ng-repeat="lang in app.original_languages_simplified">
                             {{ lang }}
@@ -35,6 +40,8 @@
                 </tr>
             </tbody>
         </table>
+
+        <ac-appurl appurl="appurl"></ac-appurl>
 
     </div>
 

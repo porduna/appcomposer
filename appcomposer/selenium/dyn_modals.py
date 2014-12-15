@@ -10,7 +10,6 @@ from selenium.common.exceptions import NoAlertPresentException
 import unittest, time, re
 from _utils import reset_database
 
-
 class DynModals(unittest.TestCase):
     def setUp(self):
 
@@ -29,7 +28,17 @@ class DynModals(unittest.TestCase):
         self.base_url = "http://localhost:5000/"
         self.verificationErrors = []
         self.accept_next_alert = True
-    
+
+    def wait_until_equals(self, value, func, *args, **kwargs):
+        seconds = 5
+        step = 0.05
+
+        while seconds >= 0 and value != func(*args, **kwargs):
+            time.sleep(step)
+            seconds -= step
+
+        self.assertEqual(value, func(*args, **kwargs))
+
     def test_dyn_modals(self):
         driver = self.driver
         driver.get(self.base_url + "/")
@@ -49,11 +58,11 @@ class DynModals(unittest.TestCase):
             time.sleep(1)
         else: self.fail("time out")
 
-        time.sleep(0.5)
+        time.sleep(1)
 
         driver.find_element_by_css_selector("td.sorting_1").click()
 
-        time.sleep(0.5)
+        time.sleep(1)
 
         driver.find_element_by_id("sendurlbtn").click()
         driver.find_element_by_css_selector("input.btn.btn-primary").click()
@@ -62,7 +71,7 @@ class DynModals(unittest.TestCase):
         self.assertEqual("Concept Mapper", driver.find_element_by_css_selector("h3.app-title.dyn-changeable").text)
         driver.find_element_by_css_selector("h3.app-title.dyn-changeable").click()
 
-        time.sleep(0.2)
+        time.sleep(0.5)
 
         driver.find_element_by_id("appname-field").clear()
         driver.find_element_by_id("appname-field").send_keys("The Best Concept Mapper")
@@ -74,24 +83,25 @@ class DynModals(unittest.TestCase):
         self.assertEqual("The Best Concept Mapper", driver.find_element_by_css_selector("h3.app-title.dyn-changeable").text)
         driver.find_element_by_id("desclabel").click()
 
-        time.sleep(0.2)
+        time.sleep(0.5)
 
         driver.find_element_by_id("appdesc-field").clear()
         driver.find_element_by_id("appdesc-field").send_keys("The description for the app")
         driver.find_element_by_css_selector("#appdesc-modal > div.modal-dialog > div.modal-content > form > div.modal-footer > button.btn.btn-primary").click()
 
-        time.sleep(0.2)
+        time.sleep(0.5)
 
-        self.assertEqual("The description for the app", driver.find_element_by_id("descfield").text)
+        self.wait_until_equals("The description for the app", lambda: driver.find_element_by_id("descfield").text)
+
         driver.find_element_by_link_text("Open").click()
 
-        time.sleep(0.2)
+        time.sleep(0.5)
 
         self.assertEqual("App Composer :: Edit the app content", driver.title)
         self.assertEqual("Adapt - The Best Concept Mapper", driver.find_element_by_id("apptitle").text)
         driver.find_element_by_id("apptitle").click()
 
-        time.sleep(0.2)
+        time.sleep(0.5)
 
         driver.find_element_by_id("appname-field").clear()
         driver.find_element_by_id("appname-field").send_keys("The new name for Concept Mapper")
@@ -128,22 +138,22 @@ class DynModals(unittest.TestCase):
 
         time.sleep(1)
 
-        self.assertEqual("My Concept Mapper", driver.find_element_by_id("appfullname").text)
+        self.wait_until_equals("My Concept Mapper", lambda : driver.find_element_by_id("appfullname").text)
         driver.find_element_by_link_text("Apps").click()
         self.assertEqual("My Concept Mapper", driver.find_element_by_css_selector("h3.app-title.dyn-changeable").text)
         driver.find_element_by_css_selector("h3.app-title.dyn-changeable").click()
 
-        time.sleep(0.2)
+        time.sleep(0.5)
 
         driver.find_element_by_id("appname-field").clear()
         driver.find_element_by_id("appname-field").send_keys("My Concept Mapper Name")
         driver.find_element_by_css_selector("button.btn.btn-primary").click()
 
         time.sleep(0.2)
-        self.assertEqual("My Concept Mapper Name", driver.find_element_by_css_selector("h3.app-title.dyn-changeable").text)
+        self.wait_until_equals("My Concept Mapper Name", lambda : driver.find_element_by_css_selector("h3.app-title.dyn-changeable").text)
         driver.find_element_by_id("descfield").click()
 
-        time.sleep(0.2)
+        time.sleep(0.5)
 
         driver.find_element_by_id("appdesc-field").clear()
         driver.find_element_by_id("appdesc-field").send_keys("This is quite a great Concept Mapper")
@@ -151,7 +161,7 @@ class DynModals(unittest.TestCase):
 
         time.sleep(0.2)
 
-        self.assertEqual("This is quite a great Concept Mapper", driver.find_element_by_id("descfield").text)
+        self.wait_until_equals("This is quite a great Concept Mapper", lambda : driver.find_element_by_id("descfield").text)
         driver.find_element_by_link_text("Delete").click()
         driver.find_element_by_name("delete").click()
         driver.find_element_by_link_text("Log out").click()

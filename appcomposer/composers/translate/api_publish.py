@@ -6,12 +6,11 @@ import xml.dom.minidom as minidom
 from flask import render_template, make_response, request
 
 from appcomposer.appstorage.api import get_app
-from appcomposer.utils import get_original_url
+from appcomposer.utils import get_original_url, inject_absolute_urls, get_json, inject_original_url_in_xmldoc, inject_absolute_locales_in_xmldoc
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import Bundle, BundleManager
 from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_get_ownerships, _db_get_diff_specs, \
     load_appdata_from_db
-
 
 """
  NOTE ABOUT THE REQUIREMENTS ON THE APP TO BE TRANSLATED:
@@ -215,7 +214,19 @@ def app_xml(appid, group):
     bm = BundleManager.create_from_existing_app(full_app_data)
     output_xml = bm.do_render_app_xml(appid, group)
 
-    response = make_response(output_xml)
+    contents = bm.do_render_app_xml(appid, group)
+    url = app.spec.url
+
+    try:
+        contents = inject_absolute_urls(contents, url)
+        xmldoc = minidom.parseString(contents)
+        inject_original_url_in_xmldoc(xmldoc, url)
+        inject_absolute_locales_in_xmldoc(xmldoc, url)
+        contents = xmldoc.toprettyxml()
+    except Exception as e:
+        traceback.print_exc()
+
+    response = make_response(contents)
     response.mimetype = "application/xml"
     return response
 

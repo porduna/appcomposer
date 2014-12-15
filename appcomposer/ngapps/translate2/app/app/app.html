@@ -1,0 +1,22 @@
+
+<a href="#/apps">
+    <button class="btn btn-lg btn-info"><i class="fa fa-backward"/> Back to Applications List</button>
+</a>
+
+<h1>{{ appinfo.name }}</h1>
+<p>{{ appinfo.desc }}</p>
+
+<tabset>
+
+    <tab>
+        <tab-heading>{{ 'Translations' | translate }}</tab-heading>
+        <br>
+        <ng-include src="'app/translations-tab.html'"></ng-include>
+    </tab>
+
+    <tab>
+        <tab-heading>{{ 'Preview' | translate }}</tab-heading>
+        <ng-include src="'app/preview-tab.html'"></ng-include>
+    </tab>
+
+</tabset>
