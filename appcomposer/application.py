@@ -8,17 +8,31 @@ import logging
 import pprint
 from markupsafe import Markup
 
+import re
+
 
 def relativize_paths(value, path):
     """
     THIS IS A FILTER.
-    This should be moved somewhere else.
+    It should be moved somewhere else.
+    It prepends the specified path to all src paths in the specified blocks so that the path can be relative
+    to the static directory of the App (or to an arbitrary directory).
     :return:
     """
+    expr = """src=["'](.+?)["']"""
 
-    # TODO:
-    st = value
-    return Markup(st)
+    def repl(matchobj):
+        """
+        Function to be called in every match for replacing.
+        :return: Replaced URI.
+        """
+        oldurl = matchobj.group(1)
+        newurl = os.path.join(path, oldurl)
+        return newurl
+
+    newvalue = re.sub(expr, repl, value)
+
+    return Markup(newvalue)
 
 
 
