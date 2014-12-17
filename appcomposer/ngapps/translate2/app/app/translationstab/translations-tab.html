@@ -1,0 +1,23 @@
+<div class="row" ng-controller="TranslationsTabCtrl">
+
+    <ac-lang-target appinfo="appinfo" selected="selected"></ac-lang-target>
+
+    <div class="col-md-6 col-sm-12">
+        <h3 ac-translate-me>Details:</h3>
+
+        <div class="btn btn-success">
+            <i class="fa fa-edit"></i> {{ 'Edit translation' | translate }}
+        </div>
+
+        <dl class="" style="padding-top: 1em">
+
+            <dt ac-translate-me=>URL</dt>
+            <dd>{{ appinfo["url"] }}</dd>
+
+            <dt ac-translate-me>Last modified:</dt>
+            <dd>{{ selected.target_info["modified_date"]|date }}</dd>
+
+        </dl>
+    </div>
+
+</div>
