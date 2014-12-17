@@ -9,8 +9,9 @@ function TranslationsTabCtrl($scope) {
     $scope.onTargetSelected = onTargetSelected;
 
     // Initialize the default value when it is ready.
-    $scope.$watch("appinfo.translations", function() {
-        $scope.selected.lang = "all_ALL";
+    $scope.$watch("appinfo.translations", function(newval, oldval) {
+        if(oldval != newval)
+            $scope.selected.lang = "all_ALL";
     });
 
     // Handle the selected event for the Lang field.
@@ -22,6 +23,8 @@ function TranslationsTabCtrl($scope) {
 
 
     function objectKeys(map) {
+        if(map == undefined)
+            return [];
         return Object.keys(map);
     }
 
@@ -41,14 +44,20 @@ function TranslationsTabCtrl($scope) {
         return filteredKeys;
     }
 
-    function onLangSelected() {
+    function onLangSelected(newval, oldval) {
+        if(newval == undefined)
+            return;
+
         $scope.selected.lang_info = $scope.appinfo.translations[$scope.selected.lang];
 
         $scope.selected.target = "ALL";
         $scope.onTargetSelected();
     }
 
-    function onTargetSelected() {
+    function onTargetSelected(newval, oldval) {
+        if(newval == undefined)
+            return;
+
         $scope.selected.target_info = $scope.selected.lang_info.targets[$scope.selected.target];
     }
 } //! TranslationsTabCtrl
