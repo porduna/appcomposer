@@ -1,9 +1,12 @@
 
 <a href="#/apps">
-    <button class="btn btn-lg btn-info"><i class="fa fa-backward"/> Back to Applications List</button>
+    <button class="btn btn-lg btn-info" ac-translate-me><i class="fa fa-backward"/> Back to Applications List</button>
 </a>
 
-<h1>{{ appinfo.name }}</h1>
+<h1>
+    <img class="app-title-thumb img-thumbnail" ng-src="{{ appinfo.app_thumb }}"></img>
+    <span>{{ appinfo.name }}</span>
+</h1>
 <p>{{ appinfo.desc }}</p>
 
 <tabset>

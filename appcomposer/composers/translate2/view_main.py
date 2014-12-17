@@ -135,6 +135,7 @@ def app(appurl):
 
     data = {
         "url": "http://www.applications.com/app.xml",
+        "app_thumb": "http://www.golabz.eu/sites/default/files/styles/overview/public/images/app/app-image/statistics.png",
         "name": "My Application",
         "desc": "This is only a test application which does not really exist.",
         "translations": {
