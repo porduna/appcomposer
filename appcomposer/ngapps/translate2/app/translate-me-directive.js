@@ -2,6 +2,12 @@ angular
     .module("translateApp")
     .directive("acTranslateMe", acTranslateMe);
 
+/**
+ * Attribute directive to handle translation of the text within a tag.
+ * The element to be translated can contain child items. The child items
+ * will be kept as-is, only the text nodes will be replaced. This is useful,
+ * for instance, to be able to embed icon tags.
+ */
 function acTranslateMe($filter) {
     return {
         restrict: "A",

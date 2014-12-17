@@ -10,7 +10,7 @@ function TranslationsTabCtrl($scope) {
 
     // Initialize the default value when it is ready.
     $scope.$watch("appinfo.translations", function(newval, oldval) {
-        if(oldval != newval)
+        if(newval != undefined)
             $scope.selected.lang = "all_ALL";
     });
 

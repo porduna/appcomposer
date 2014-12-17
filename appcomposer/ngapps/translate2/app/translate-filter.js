@@ -5,6 +5,13 @@ angular
     .filter("translate", translateFilter);
 
 
+/**
+ * Filter to handle translations.
+ * It will search for the trimmed string, but it will respect the trim nonetheless.
+ * That is, " ORIGINAL " will be translated by looking up "ORIGINAL" but " TRANSLATION "
+ * will be returned.
+ * @returns {translate}
+ */
 function translateFilter() {
     return translate;
 
