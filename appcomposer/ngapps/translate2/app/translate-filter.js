@@ -9,11 +9,12 @@ function translateFilter() {
     return translate;
 
     function translate(text) {
-        text = text.trim();
+        var trimmed = text.trim();
         
-        var ret = TRANSLATIONS[text];
+        var ret = TRANSLATIONS[trimmed];
         if (ret != undefined)
-            return ret;
+            // Keep the trim that we removed for the lookup.
+            return text.replace(trimmed, ret);
         else
             return text;
     }
