@@ -4,6 +4,8 @@ import os
 import sys
 
 APPCOMPOSER_DIR = os.path.dirname(__file__)
+if APPCOMPOSER_DIR == '':
+    APPCOMPOSER_DIR = os.path.abspath('.')
 
 sys.path.insert(0, APPCOMPOSER_DIR)
 os.chdir(APPCOMPOSER_DIR)

@@ -137,7 +137,7 @@ def graasp_login():
     return render_template('login/graasp.html', login_app=login_app, login_app_creation=login_app_creation)
 
 
-SHINDIG = 'https://shindig2.epfl.ch'
+SHINDIG = 'http://shindig2.epfl.ch'
 
 
 def url_shindig(url):
