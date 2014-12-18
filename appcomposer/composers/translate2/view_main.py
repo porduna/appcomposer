@@ -122,6 +122,41 @@ def translations():
     data = json.dumps(retrieve_translations())
     return Response(data, mimetype="application/json")
 
+@translate2_blueprint.route("/translations/bundle/<path:appurl>/<srclang>/<srcgroup>/<targetlang>/<targetgroup>")
+def bundle(appurl, srclang, srcgroup, targetlang, targetgroup):
+    """
+    Retrieves information about a specific translation (bundle).
+    :param appurl:
+    :param srclang:
+    :param srcgroup:
+    :param targetlang:
+    :param targetgroup:
+    :return:
+    """
+    data = {
+        "url": "http://www.applications.com/app.xml",
+        "app_thumb": "http://www.golabz.eu/sites/default/files/styles/overview/public/images/app/app-image/statistics.png",
+        "name": "My Application",
+        "translation": {
+            "ht_hello_world": {
+                "can_edit": True,
+                "source": "Hello world!",
+                "target": "Hola mundo!",
+                "suggestions": [
+                    {
+                        "target": "hola mundo",
+                        "weight": 0.9
+                    },
+                    {
+                        "target": "hola!",
+                        "weight": 0.8
+                    }
+                ]
+            }
+        }
+    }
+
+    return jsonify(**data)
 
 @translate2_blueprint.route("/translations/apps/<path:appurl>")
 def app(appurl):
