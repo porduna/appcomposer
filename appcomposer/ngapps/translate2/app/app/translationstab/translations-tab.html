@@ -5,9 +5,11 @@
     <div class="col-md-6 col-sm-12">
         <h3 ac-translate-me>Details:</h3>
 
-        <div class="btn btn-success">
-            <i class="fa fa-edit"></i> {{ 'Edit translation' | translate }}
-        </div>
+        <a ng-href="#/edit/{{ appurl }}">
+            <div class="btn btn-success">
+                <i class="fa fa-edit"></i> {{ 'Edit translation' | translate }}
+            </div>
+        </a>
 
         <dl class="" style="padding-top: 1em">
 

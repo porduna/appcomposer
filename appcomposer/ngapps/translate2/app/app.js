@@ -26,6 +26,10 @@ function routeConfig($routeProvider) {
             templateUrl: 'app/app.html',
             controller: 'AppCtrl'
         })
+        .when('/edit/:appurl*', {
+            templateUrl: 'edit/edit.html',
+            controller: 'EditCtrl'
+        })
         .otherwise({
             redirectTo: '/apps'
         });
