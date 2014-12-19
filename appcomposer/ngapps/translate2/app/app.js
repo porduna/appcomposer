@@ -11,8 +11,8 @@ angular
         'selectionModel'
     ])
     .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig])
-    .controller('TranslateCtrl', function ($scope) {
-
+    .controller('TranslateCtrl', function ($scope, $rootScope) {
+        $rootScope.objectKeys = Object.keys;
     });
 
 

@@ -158,6 +158,34 @@ def bundle(appurl, srclang, srcgroup, targetlang, targetgroup):
 
     return jsonify(**data)
 
+@translate2_blueprint.route("/info/languages")
+def info_languages():
+    """
+    Retrieves the dictionary of all available languages to translate to.
+    :return: JSON object with each language key and its name in the user's language.
+    """
+    data = {
+        "all_ALL": "ALL",
+        "en_ALL": "English",
+        "es_ALL": "Spanish"
+    }
+
+    return jsonify(**data)
+
+@translate2_blueprint.route("/info/groups")
+def info_groups():
+    """
+    Returns the dictionary of all available groups to translate to.
+    :return:
+    """
+    data = {
+        "ALL": "DEFAULT",
+        "10-12": "Preadolescents (10-12)",
+        "13-15": "Adolescents (13-15)"
+    }
+
+    return jsonify(**data)
+
 @translate2_blueprint.route("/translations/apps/<path:appurl>")
 def app(appurl):
     """
