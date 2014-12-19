@@ -17,9 +17,13 @@ function acLangTargetDirective() {
 
     function langTargetLink(scope, element, attrs) {
         scope.selected = {};
-        scope.objectKeys = objectKeys;
         scope.filteredObjectKeys = filteredObjectKeys;
         scope.onTargetSelected = onTargetSelected;
+
+        // To bypass some pseudo-bug
+        scope.objectKeys = scope.$parent.objectKeys;
+        scope.all_languages = scope.$parent.all_languages;
+        scope.all_groups = scope.$parent.all_groups;
 
         // If we don't initialize it, the ui-select does not work.
         scope.add = {};
@@ -35,13 +39,6 @@ function acLangTargetDirective() {
 
         // Handle the selected event for the Target field.
         scope.$watch("selected.target", onTargetSelected);
-
-
-        function objectKeys(map) {
-            if (map == undefined)
-                return [];
-            return Object.keys(map);
-        }
 
         function filteredObjectKeys(map, search) {
             var keys = Object.keys(map);

@@ -10,10 +10,7 @@ angular
         'truncate',
         'selectionModel'
     ])
-    .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig])
-    .controller('TranslateCtrl', function ($scope, $rootScope) {
-        $rootScope.objectKeys = Object.keys;
-    });
+    .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig]);
 
 
 function routeConfig($routeProvider) {
