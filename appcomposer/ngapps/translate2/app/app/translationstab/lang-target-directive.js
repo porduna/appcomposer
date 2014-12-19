@@ -21,6 +21,9 @@ function acLangTargetDirective() {
         scope.filteredObjectKeys = filteredObjectKeys;
         scope.onTargetSelected = onTargetSelected;
 
+        // If we don't initialize it, the ui-select does not work.
+        scope.add = {};
+
         // Initialize the default value when it is ready.
         scope.$watch("appinfo.translations", function (newval, oldval) {
             if (newval != undefined)
