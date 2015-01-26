@@ -10,10 +10,7 @@ angular
         'truncate',
         'selectionModel'
     ])
-    .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig])
-    .controller('TranslateCtrl', function ($scope) {
-
-    });
+    .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig]);
 
 
 function routeConfig($routeProvider) {
@@ -25,6 +22,10 @@ function routeConfig($routeProvider) {
         .when('/app/:appurl*', {
             templateUrl: 'app/app.html',
             controller: 'AppCtrl'
+        })
+        .when('/edit/:appurl*', {
+            templateUrl: 'edit/edit.html',
+            controller: 'EditCtrl'
         })
         .otherwise({
             redirectTo: '/apps'

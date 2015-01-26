@@ -122,6 +122,69 @@ def translations():
     data = json.dumps(retrieve_translations())
     return Response(data, mimetype="application/json")
 
+@translate2_blueprint.route("/translations/bundle/<path:appurl>/<srclang>/<srcgroup>/<targetlang>/<targetgroup>")
+def bundle(appurl, srclang, srcgroup, targetlang, targetgroup):
+    """
+    Retrieves information about a specific translation (bundle).
+    :param appurl:
+    :param srclang:
+    :param srcgroup:
+    :param targetlang:
+    :param targetgroup:
+    :return:
+    """
+    data = {
+        "url": "http://www.applications.com/app.xml",
+        "app_thumb": "http://www.golabz.eu/sites/default/files/styles/overview/public/images/app/app-image/statistics.png",
+        "name": "My Application",
+        "translation": {
+            "ht_hello_world": {
+                "can_edit": True,
+                "source": "Hello world!",
+                "target": "Hola mundo!",
+                "suggestions": [
+                    {
+                        "target": "hola mundo",
+                        "weight": 0.9
+                    },
+                    {
+                        "target": "hola!",
+                        "weight": 0.8
+                    }
+                ]
+            }
+        }
+    }
+
+    return jsonify(**data)
+
+@translate2_blueprint.route("/info/languages")
+def info_languages():
+    """
+    Retrieves the dictionary of all available languages to translate to.
+    :return: JSON object with each language key and its name in the user's language.
+    """
+    data = {
+        "all_ALL": "ALL",
+        "en_ALL": "English",
+        "es_ALL": "Spanish"
+    }
+
+    return jsonify(**data)
+
+@translate2_blueprint.route("/info/groups")
+def info_groups():
+    """
+    Returns the dictionary of all available groups to translate to.
+    :return:
+    """
+    data = {
+        "ALL": "DEFAULT",
+        "10-12": "Preadolescents (10-12)",
+        "13-15": "Adolescents (13-15)"
+    }
+
+    return jsonify(**data)
 
 @translate2_blueprint.route("/translations/apps/<path:appurl>")
 def app(appurl):
@@ -135,6 +198,7 @@ def app(appurl):
 
     data = {
         "url": "http://www.applications.com/app.xml",
+        "app_thumb": "http://www.golabz.eu/sites/default/files/styles/overview/public/images/app/app-image/statistics.png",
         "name": "My Application",
         "desc": "This is only a test application which does not really exist.",
         "translations": {

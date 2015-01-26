@@ -70,7 +70,7 @@ module.exports = function (grunt) {
                 tasks: ['wiredep']
             },
             coffee: {
-                files: ['<%= config.app %>/{,*/}*.{coffee,litcoffee,coffee.md}'],
+                files: ['<%= config.app %>/**/*.{coffee,litcoffee,coffee.md}'],
                 tasks: ['coffee:dist']
             },
             coffeeTest: {
@@ -81,11 +81,11 @@ module.exports = function (grunt) {
                 files: ['Gruntfile.js']
             },
             styles: {
-                files: ['<%= config.app %>/{,*/}*.css'],
+                files: ['<%= config.app %>/**/*.css'],
                 tasks: ['newer:copy:styles', 'autoprefixer', 'injector']
             },
             newscripts: {
-                files: ['<%= config.app %>/{,*/}*.{js,coffee}'],
+                files: ['<%= config.app %>/**/*.{js,coffee}'],
                 tasks: ['injector'],
                 options: {
                     event: ['added', 'deleted']
@@ -97,12 +97,12 @@ module.exports = function (grunt) {
                     //livereload: '<%= connect.options.livereload %>'
                 },
                 files: [
-                    '<%= config.app %>/{,*/}*.html',
-                    '.tmp/{,*/}*.css',
-                    '.tmp/{,*/}*.js',
-                    '<%= config.app %>/{,*/}*.js',
-                    '<%= config.app %>/{,*/}*.css',
-                    '<%= config.app %>/images/{,*/}*'
+                    '<%= config.app %>/**/*.html',
+                    '.tmp/**/*.css',
+                    '.tmp/**/*.js',
+                    '<%= config.app %>/**/*.js',
+                    '<%= config.app %>/**/*.css',
+                    '<%= config.app %>/images/**/*'
                 ]
             }
         },

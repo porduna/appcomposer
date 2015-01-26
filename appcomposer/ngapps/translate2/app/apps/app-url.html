@@ -3,7 +3,7 @@
     <form name="appurlForm" class="form-horizontal" id="geturl" name="geturl"
           action="{{ url_for('translate.translate_selectlang') }}" method="POST" novalidate>
         <div class="col-xs-12">
-            <legend>Custom application URL</legend>
+            <legend><i class="fa fa-cogs"></i> {{ 'Custom application URL' | translate }}</legend>
             <p>
                 <span class="fa fa-warning"/>
                 {{ "This will generally be required by developers only. Most users should choose an application from the Applications List above." | translate }}
