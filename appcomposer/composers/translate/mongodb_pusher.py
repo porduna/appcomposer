@@ -33,6 +33,7 @@ cel.conf.update(
     CELERYD_PREFETCH_MULTIPLIER="4",
     CELERYD_CONCURRENCY="8",
     CELERY_ACKS_LATE="1",
+    CELERY_IGNORE_RESULT=True,
 
     CELERYBEAT_SCHEDULE = {
         'sync-periodically': {

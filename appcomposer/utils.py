@@ -18,7 +18,7 @@ def make_url_absolute(relative_path, url):
         return relative_path
     return extract_base_url(url) + relative_path
 
-SRC_REGEXP = re.compile(r"""(\s(src|href)\s*=\s*"?'?)(?!http://|https://|#|"|"#|'|'#| )""")
+SRC_REGEXP = re.compile(r"""(<\s*(?!ng-[^<]*)[^<]*\s(src|href)\s*=\s*"?'?)(?!http://|https://|#|"|"#|'|'#| )""")
 
 def inject_absolute_urls(output_xml, url):
     base_url = extract_base_url(url)

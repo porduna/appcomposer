@@ -1,4 +1,4 @@
-SHINDIG_SERVER = 'http://shindig.epfl.ch'
+SHINDIG_SERVER = 'http://shindig2.epfl.ch'
 
 
 def shindig_url(relative_url):
