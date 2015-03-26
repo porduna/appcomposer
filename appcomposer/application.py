@@ -151,6 +151,8 @@ app.logger.setLevel(logging_level)
 
 ACTIVATE_TRANSLATOR = app.config.get('ACTIVATE_TRANSLATOR', False)
 
+ACTIVATE_TRANSLATOR2 = app.config.get('ACTIVATE_TRANSLATOR2', False)
+
 from .composers.dummy import info as dummy_info
 from .composers.adapt import info as adapt_info
 
@@ -160,6 +162,7 @@ if ACTIVATE_TRANSLATOR:
     from .composers.translate import info as translate_info
     COMPOSERS.append(translate_info)
 
+if ACTIVATE_TRANSLATOR2:
     from .composers.translate2 import info as translate2_info
     COMPOSERS.append(translate2_info)
 
@@ -212,6 +215,7 @@ if ACTIVATE_TRANSLATOR:
     from .composers.translate import translate_blueprint
     app.register_blueprint(translate_blueprint, url_prefix='/composers/translate')
 
+if ACTIVATE_TRANSLATOR2:
     from .composers.translate2 import translate2_blueprint
     app.register_blueprint(translate2_blueprint, url_prefix='/composers/translate2')
 

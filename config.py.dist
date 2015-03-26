@@ -20,6 +20,9 @@ SHOW_LOGIN_APP_CREATION = False
 # By default, the translator is not active
 ACTIVATE_TRANSLATOR = False
 
+# By default, the translator 2 (in development) is not active
+ACTIVATE_TRANSLATOR2 = False
+
 # By default, the translator's MongoDB pushes are not active
 ACTIVATE_TRANSLATOR_MONGODB_PUSHES = False
 
@@ -48,3 +51,5 @@ ADMINS = []
 LOGFILE = "logfile.log"
 
 APPCOMP_LOGGING_LEVEL = "WARNING"
+
+NGAPPS_DEV_MODE = False
