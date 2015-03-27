@@ -19,15 +19,15 @@ def relativize_paths(value, path):
     to the static directory of the App (or to an arbitrary directory).
     :return:
     """
-    expr = """src=["'](.+?)["']"""
+    expr = """(href|src)=["'](.+?)["']"""
 
     def repl(matchobj):
         """
         Function to be called in every match for replacing.
         :return: Replaced URI.
         """
-        oldurl = matchobj.group(1)
-        newurl = 'src="%s"' % os.path.join(path, oldurl)
+        oldurl = matchobj.group(2)
+        newurl = '%s="%s"' % (matchobj.group(1), os.path.join(path, oldurl))
         return newurl
 
     newvalue = re.sub(expr, repl, value)
