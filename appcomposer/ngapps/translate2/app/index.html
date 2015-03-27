@@ -22,6 +22,8 @@
 
     <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
 
+    {# This Jinja macro will replace the paths within, basically making them relative to the relat_path, which
+    in this case we have previously configured. #}
     {% filter relativize_paths(relat_path) %}
     <!-- The following block will be auto-filled by wiredep and then minified by the build handler -->
     <!-- build:css(.) styles/vendor.css -->

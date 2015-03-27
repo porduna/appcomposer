@@ -76,7 +76,7 @@ def serve_ngapp(appname, path):
     else:
         # DISTRIBUTION mode. We serve everything from the dist folder.
 
-        only_uri = os.path.join(root_path, "app", "dist")
+        only_uri = os.path.join(root_path, "dist", path)
 
         if path == "index.html":
             translations = get_domain().get_translations()._catalog
