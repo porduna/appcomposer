@@ -18,6 +18,8 @@ module.exports = function (grunt) {
 
     grunt.loadNpmTasks('grunt-injector'); // To enable the injector module.
 
+    grunt.loadNpmTasks('grunt-ng-annotate');
+
     // Configurable paths
     var config = {
         flaskroot: '../../../',
@@ -363,6 +365,23 @@ module.exports = function (grunt) {
         //   dist: {}
         // },
 
+
+
+        // ng-annotate tries to make the code safe for minification automatically
+        // by using the Angular long form for dependency injection.
+        ngAnnotate: {
+          dist: {
+            files: [{
+              expand: true,
+              cwd: '.tmp/concat/scripts',
+              src: ['*.js', '!oldieshim.js'],
+              dest: '.tmp/concat/scripts'
+            }]
+          }
+        },
+
+
+
         // Copies remaining files to places other tasks can use
         copy: {
             dist: {
@@ -478,6 +497,7 @@ module.exports = function (grunt) {
         'concurrent:dist',
         'autoprefixer',
         'concat',
+	'ngAnnotate',
         'cssmin',
         'uglify',
         'copy:dist',
