@@ -3,6 +3,7 @@ import string
 import random
 import datetime
 import urllib2
+import requests
 
 from hashlib import new as new_hash
 
@@ -136,6 +137,24 @@ def graasp_login():
 
     return render_template('login/graasp.html', login_app=login_app, login_app_creation=login_app_creation)
 
+PUBLIC_APPCOMPOSER_ID = 'WfTlrXTbu4AeGexikhau5HDXkpGE8RYh'
+
+@app.route('/graasp/oauth/')
+def graasp_oauth_login():
+    redirect_back_url = url_for('graasp_oauth_login_redirect', _external = True)
+    return redirect('http://graasp.eu/authorize?client_id=%s&redirect_uri=%s' % (PUBLIC_APPCOMPOSER_ID, requests.utils.quote(redirect_back_url, '')))
+
+@app.route('/graasp/oauth/redirect/')
+def graasp_oauth_login_redirect():
+    access_token = request.args.get('access_token')
+    refresh_token = request.args.get('refresh_token')
+    timeout = request.args.get('expires_in')
+
+    headers = {
+        'Authorization': 'Bearer {}'.format(access_token),
+    }
+
+    return requests.get('http://graasp.eu/api/users/me', headers = headers).text
 
 SHINDIG = 'http://shindig2.epfl.ch'
 
