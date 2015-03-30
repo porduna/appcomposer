@@ -263,7 +263,7 @@ class Message(db.Model):
 
 
 class RepositoryApp(db.Model):
-    ___tablename__ = 'RepositoryApps'
+    __tablename__ = 'RepositoryApps'
 
     id = db.Column(db.Integer, primary_key=True)
     repository = db.Column(db.Unicode(400), nullable = False, index = True)
@@ -284,4 +284,61 @@ class RepositoryApp(db.Model):
         self.url = url
         self.repository = repository
 
+
+class TranslationUrl(db.Model):
+    __tablename__ = 'TranslationUrls'
+
+    id = db.Column(db.Integer, primary_key = True)
+    url = db.Column(db.Unicode(500), unique = True, nullable = False, index = True)
+
+class TranslatedApp(db.Model):
+    __tablename__ = 'TranslatedApps'
+
+    id = db.Column(db.Integer, primary_key = True)
+    translation_url_id = db.Column(db.Integer, ForeignKey('TranslationUrls.id'))
+    url = db.Column(db.Unicode(500), unique = True, nullable = False, index = True)
+
+    translation_url = relation("TranslationUrl", backref="apps")
+
+class ActiveTranslation(db.Model):
+    __tablename__ = 'ActiveTranslations'
+
+    id = db.Column(db.Integer, primary_key = True)
+    translation_url_id = db.Column(db.Integer, ForeignKey('TranslationUrls.id'))
+    user_id = db.Column(db.Integer, ForeignKey('Users.id'))
+    key = db.Column(db.Unicode(500), index = True)
+    value = db.Column(db.UnicodeText)
+    datetime = db.Column(db.DateTime)
+
+    translation_url = relation("TranslationUrl", backref="active_translations")
+
+class TranslationHistory(db.Model):
+    __tablename__ = 'TranslationHistory'
+
+    id = db.Column(db.Integer, primary_key = True)
+    translation_url_id = db.Column(db.Integer, ForeignKey('TranslationUrls.id'))
+    user_id = db.Column(db.Integer, ForeignKey('Users.id'))
+    key = db.Column(db.Unicode(500), index = True)
+    value = db.Column(db.UnicodeText)
+    datetime = db.Column(db.DateTime)
+    parent_translation_id = db.Column(db.Integer, ForeignKey('ActiveTranslations.id'))
+
+    translation_url = relation("TranslationUrl", backref="all_translations")
+    parent_translation  = relation("TranslationHistory", backref="child_translation")
+
+class TranslationKeySuggestion(db.Model):
+    __tablename__ = 'TranslationKeySuggestions'
+
+    id = db.Column(db.Integer, primary_key = True)
+    key = db.Column(db.Unicode(500), index = True)
+    value = db.Column(db.UnicodeText)
+    number = db.Column(db.Integer)
+
+class TranslationValueSuggestion(db.Model):
+    __tablename__ = 'TranslationValueSuggestions'
+
+    id = db.Column(db.Integer, primary_key = True)
+    human_key = db.Column(db.Unicode(500), index = True)
+    value = db.Column(db.UnicodeText)
+    number = db.Column(db.Integer)
 
