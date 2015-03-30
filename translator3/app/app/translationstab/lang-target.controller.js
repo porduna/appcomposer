@@ -22,6 +22,7 @@ function LangTargetController($scope, $rootScope) {
     $scope.all_languages = $rootScope.all_languages;
     $scope.all_groups = $rootScope.all_groups;
 
+
     // If we don't initialize it, the ui-select does not work.
     $scope.add = {};
 
