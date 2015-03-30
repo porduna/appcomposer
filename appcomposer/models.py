@@ -321,10 +321,9 @@ class TranslationHistory(db.Model):
     key = db.Column(db.Unicode(500), index = True)
     value = db.Column(db.UnicodeText)
     datetime = db.Column(db.DateTime)
-    parent_translation_id = db.Column(db.Integer, ForeignKey('ActiveTranslations.id'))
+    parent_translation_id = db.Column(db.Integer)
 
     translation_url = relation("TranslationUrl", backref="all_translations")
-    parent_translation  = relation("TranslationHistory", backref="child_translation")
 
 class TranslationKeySuggestion(db.Model):
     __tablename__ = 'TranslationKeySuggestions'
