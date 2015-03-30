@@ -1,0 +1,13 @@
+<div class="col-lg-12 form-group">
+    <label for="field_1" class="ac-edit-message-label col-lg-5 control-label" style="text-align: left" title="{{ key }}">
+        <div style="display:inline" title="{{ key }}">
+            {{ item.source }}
+        </div>
+    </label>
+
+    <div class="ac-message col-lg-7">
+        <input ng-change="onChange()" ng-model="currentValue" ng-model-options="{ updateOn: 'change blur' }"
+               ng-keyup="onKey($event)" type="text" class="form-control"
+               placeholder="{{ item.source }}"/>
+    </div>
+</div>

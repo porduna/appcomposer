@@ -19,6 +19,7 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     $scope.appurl = $routeParams.appurl;
 
     $scope.bundle = {};
+    $scope.bundle.appurl = $scope.appurl;
     $scope.bundle.srclang = "all_ALL";
     $scope.bundle.srcgroup = "ALL";
     $scope.bundle.targetlang = "all_ALL";

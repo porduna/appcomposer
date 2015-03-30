@@ -1,5 +1,5 @@
 import json
-from flask import jsonify, Response
+from flask import jsonify, Response, request
 from flask.ext.cors import cross_origin
 from appcomposer.composers.translate2.translation_listing import retrieve_translations
 from appcomposer.composers.translate3 import translate3_blueprint
@@ -66,6 +66,21 @@ def bundle(appurl, srclang, srcgroup, targetlang, targetgroup):
                     },
                     {
                         "target": "hola!",
+                        "weight": 0.8
+                    }
+                ]
+            },
+            "ht_whatever": {
+                "can_edit": True,
+                "source": "Whatever!",
+                "target": "Cualquier cosa",
+                "suggestions": [
+                    {
+                        "target": "cualquier",
+                        "weight": 0.9
+                    },
+                    {
+                        "target": "cualquier cosa!",
                         "weight": 0.8
                     }
                 ]
@@ -156,4 +171,17 @@ def app(appurl):
         }
     }
 
+    return jsonify(**data)
+
+@translate3_blueprint.route("/api/bundle/updateMessage/<path:appurl>/<targetlang>/<targetgroup>", methods=["GET", "PUT"])
+@cross_origin()
+def bundle_update(appurl, targetlang, targetgroup):
+    key = request.values.get("key")
+    value = request.values.get("value")
+
+    if key is None or value is None:
+        data = {"result":"error"}
+        return jsonify(**data)
+
+    data = {"result": "success"}
     return jsonify(**data)
