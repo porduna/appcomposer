@@ -1,0 +1,62 @@
+
+body {
+    margin: 30px;
+}
+
+.my-app-thumbnail-img {
+    width: 35px;
+    height: 35px;
+}
+
+.my-app-thumbnail {
+}
+
+.my-thumbnail-wrapper {
+    display: inline-block;
+    vertical-align: middle;
+}
+
+.noselect {
+    -webkit-touch-callout: none;
+    -webkit-user-select: none;
+    -khtml-user-select: none;
+    -moz-user-select: none;
+    -ms-user-select: none;
+    user-select: none;
+}
+
+
+/*.my-row-highlight {*/
+    /*background-color: #AAAAEE !important;*/
+/*}*/
+
+/*.my-disabled-hover * {*/
+    /* To somewhat disable hover effect on datatables childrens (tables for detail) */
+    /* Does not work perfectly, but for now it should do */
+    /*background-color: inherit !important;*/
+/*}*/
+
+
+
+/*.dl-horizontal dt{*/
+    /*text-align: left;*/
+    /*margin-bottom: 1em;*/
+    /*width: auto;*/
+    /*padding-right: 1em;*/
+/*}*/
+
+/*.dl-horizontal dd{*/
+    /*margin-left: 0;*/
+    /*margin-bottom: 1em;*/
+/*}*/
+
+
+dd {
+    padding-bottom: 10px;
+}
+
+
+h1 img.app-title-thumb {
+    width: 50px;
+    height: 50px;
+}

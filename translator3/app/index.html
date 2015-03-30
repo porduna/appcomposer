@@ -1,0 +1,116 @@
+<!doctype html>
+<html class="no-js">
+<head>
+    <meta charset="utf-8">
+    <title></title>
+    <meta name="description" content="">
+    <meta name="viewport" content="width=device-width">
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+    <!-- build:css(.) styles/vendor.css -->
+    <!-- bower:css -->
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="bower_components/datatables/media/css/jquery.dataTables.css" />
+    <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css" />
+    <link rel="stylesheet" href="bower_components/angular-ui-select/dist/select.css" />
+    <!-- endbower -->
+    <link rel="stylesheet" href="bower_components/angular-slider/slider.css" />
+    <!-- endbuild -->
+    <!-- build:css(.tmp) styles/main.css -->
+    <!-- injector:css -->
+    <link rel="stylesheet" href="styles/app.css">
+    <!-- endinjector -->
+    <!-- endbuild -->
+</head>
+
+<script type="text/javascript">
+    APP_DYN_ROOT = "";
+
+    TRANSLATIONS = {};
+</script>
+
+<body>
+
+<div class="container-fluid">
+    <div ng-view=""></div>
+</div>
+
+<!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
+<script>
+    !function (A, n, g, u, l, a, r) {
+        A.GoogleAnalyticsObject = l, A[l] = A[l] || function () {
+            (A[l].q = A[l].q || []).push(arguments)
+        }, A[l].l = +new Date, a = n.createElement(g),
+                r = n.getElementsByTagName(g)[0], a.src = u, r.parentNode.insertBefore(a, r)
+    }(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
+
+    ga('create', 'UA-XXXXX-X');
+    ga('send', 'pageview');
+</script>
+
+<!-- build:js(.) scripts/vendor.js -->
+<!-- bower:js -->
+<script src="bower_components/jquery/dist/jquery.js"></script>
+<script src="bower_components/bootstrap/dist/js/bootstrap.js"></script>
+<script src="bower_components/angular/angular.js"></script>
+<script src="bower_components/datatables/media/js/jquery.dataTables.js"></script>
+<script src="bower_components/angular-datatables/dist/angular-datatables.js"></script>
+<script src="bower_components/angular-truncate/src/truncate.js"></script>
+<script src="bower_components/angular-route/angular-route.js"></script>
+<script src="bower_components/angular-resource/angular-resource.js"></script>
+<script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+<script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+<script src="bower_components/angular-ui-utils/ui-utils.js"></script>
+<script src="bower_components/angular-animate/angular-animate.js"></script>
+<script src="bower_components/angular-selection-model/dist/selection-model.js"></script>
+<script src="bower_components/angular-ui-select/dist/select.js"></script>
+<!-- endbower -->
+<!-- endbuild -->
+
+<!-- build:js({.tmp,app}) scripts/scripts.js -->
+<!-- injector:js -->
+<script src="app.js"></script>
+<script src="app/app-ctrl.js"></script>
+<script src="app/previewtab/preview-tab-ctrl.js"></script>
+<script src="app/translationstab/lang-target-directive.js"></script>
+<script src="app/translationstab/translations-tab-ctrl.js"></script>
+<script src="apps/app-details-directive.js"></script>
+<script src="apps/apps-ctrl.js"></script>
+<script src="apps/appurl-directive.js"></script>
+<script src="apps/description-filter.js"></script>
+<script src="apps/dt-child-directive.js"></script>
+<script src="edit/edit-ctrl.js"></script>
+<script src="main/about/about.controller.js"></script>
+<script src="main/app.js"></script>
+<script src="main/button/button.controller.js"></script>
+<script src="main/button/button.directive.js"></script>
+<script src="main/clock/clock-control.controller.js"></script>
+<script src="main/clock/clock-control.directive.js"></script>
+<script src="main/main.controller.js"></script>
+<script src="main/status/status-updater.factory.js"></script>
+<script src="main/status/status.controller.js"></script>
+<script src="main/status/status.directive.js"></script>
+<script src="main/switch/switch.controller.js"></script>
+<script src="main/switch/switch.directive.js"></script>
+<script src="main/timer/seconds-to-date.filter.js"></script>
+<script src="main/timer/timer.controller.js"></script>
+<script src="main/timer/timer.directive.js"></script>
+<script src="main/webcam/webcam.controller.js"></script>
+<script src="main/webcam/webcam.directive.js"></script>
+<script src="plaintext-filter.js"></script>
+<script src="safe-html-directive.js"></script>
+<script src="translate-app-ctrl.js"></script>
+<script src="translate-filter.js"></script>
+<script src="translate-me-directive.js"></script>
+<!-- endinjector -->
+<!-- endbuild -->
+
+
+<script type="text/javascript">
+    angular.element(document).ready(function () {
+        angular.bootstrap(document, ["translateApp"])
+    });
+</script>
+
+
+</body>
+</html>
