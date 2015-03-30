@@ -6,7 +6,7 @@ import datetime
 
 from appcomposer.login import current_user
 from appcomposer import db
-from appcomposer.models import App, AppVar
+from appcomposer.models import App, AppVar, Spec
 
 import json
 
@@ -33,6 +33,22 @@ class NonUniqueVarException(Exception):
 
     def __init__(self, message=None):
         self.message = message
+
+
+def getcreate_spec(url):
+    """
+    Creates a new spec object. If it exists already, it is simply retrieved.
+    :param url: URL to link to the Spec.
+    :return: The Spec object.
+    """
+    # Try to retrieve the right spec.
+    spec = db.session.query(Spec).filter_by(url=url).first()
+    if spec is None:
+        spec = Spec(url)
+        db.session.add(spec)
+        db.session.commit()
+
+    return spec
 
 
 def create_app(name, composer, spec_url, data, find_new_name=False, description=None):
@@ -80,10 +96,18 @@ def create_app(name, composer, spec_url, data, find_new_name=False, description=
         else:
             raise AppExistsException()
 
+
+    # Create the Spec object.
+    if spec_url is not None:
+        spec = getcreate_spec(spec_url)
+    else:
+        spec = None
+
+
     # Create it
     new_app = App(name, owner, composer, description=description)
     new_app.data = data
-    new_app.spec_url = spec_url
+    new_app.spec = spec
 
     # Insert the new app into the database
     db.session.add(new_app)
@@ -207,7 +231,14 @@ def update_app_data(composed_app, data):
     # Convert ID to App if not done already (otherwise it's NOP).
     composed_app = _get_app_obj(composed_app)
 
+    # TODO: Remove this
+    # As a preliminary step towards db migration, we remove bundles information which may be present in the data.
+    if type(data) is str or type(data) is unicode:
+        data = json.loads(data)
+
     if type(data) is not str and type(data) is not unicode:
+        if "bundles" in data:
+            del data["bundles"]
         data = json.dumps(data)
 
     if composed_app.owner != current_user():

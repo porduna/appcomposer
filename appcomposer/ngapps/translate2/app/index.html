@@ -1,0 +1,152 @@
+{# THIS IS THE ONLY FILE IN THE APP FOLDER WHICH IS A JINJA2 TEMPLATE. THE OTHER FILES SHOULD BE SERVED STATICALLY. #}
+{% set title = "Translation tool" %}
+{% set current_link = "home" %}
+{% set current_composer = "translate" %}
+{% extends 'composers/translate/layout.html' %}
+
+
+{% if not config.NGAPPS_DEV_MODE %}
+    {% set relat_path = "" %}
+{% else %}
+    {% set relat_path = "" %}
+{% endif %}
+
+
+{% block head_js %}
+    {{ super() }}
+
+    {# Establish the AngularJS base URL #}
+    {# The following is no longer needed with the new URL scheme #}
+    {# <base href="{{ url_for("static", filename="translate2") }}/" /> #}
+
+
+    <!-- Place favicon.ico and apple-touch-icon.png in the root directory -->
+
+    {# This Jinja macro will replace the paths within, basically making them relative to the relat_path, which
+    in this case we have previously configured. #}
+    {% filter relativize_paths(relat_path) %}
+    <!-- The following block will be auto-filled by wiredep and then minified by the build handler -->
+    <!-- build:css(.) styles/vendor.css -->
+    <!-- bower:css -->
+    <link rel="stylesheet" href="bower_components/bootstrap/dist/css/bootstrap.css" />
+    <link rel="stylesheet" href="bower_components/datatables/media/css/jquery.dataTables.css" />
+    <link rel="stylesheet" href="bower_components/fontawesome/css/font-awesome.css" />
+    <link rel="stylesheet" href="bower_components/angular-ui-select/dist/select.css" />
+    <!-- endbower -->
+    <!-- endbuild -->
+    {% endfilter %}
+
+    {% filter relativize_paths(relat_path) %}
+    <!-- build:css(.tmp) styles/main.css -->
+    <!-- injector:css -->
+    <link rel="stylesheet" href="app.css">
+    <!-- endinjector -->
+    <!-- endbuild -->
+    {% endfilter %}
+
+{% endblock %}
+
+
+{% block body_content %}
+
+<div ng-app="translateApp" ng-controller="TranslateAppCtrl">
+    <div ng-view>
+    </div>
+</div>
+
+
+{% endblock %}
+
+
+
+{% block scripts %}
+
+    {# Feed the whole translations for the server-determined locale, as a global. #}
+    <script type="text/javascript">
+    TRANSLATIONS = {{ translations|tojson|safe }};
+    </script>
+
+    {# We purposedly avoid to super() so that we don't load the generic dependencies but our own. #}
+
+
+    {% filter relativize_paths(relat_path) %}
+    <!-- build:js(.) scripts/vendor.js -->
+    <!-- bower:js -->
+    <script src="bower_components/jquery/dist/jquery.js"></script>
+    <script src="bower_components/angular/angular.js"></script>
+    <script src="bower_components/datatables/media/js/jquery.dataTables.js"></script>
+    <script src="bower_components/angular-datatables/dist/angular-datatables.js"></script>
+    <script src="bower_components/angular-truncate/src/truncate.js"></script>
+    <script src="bower_components/angular-route/angular-route.js"></script>
+    <script src="bower_components/angular-resource/angular-resource.js"></script>
+    <script src="bower_components/angular-sanitize/angular-sanitize.js"></script>
+    <script src="bower_components/angular-bootstrap/ui-bootstrap-tpls.js"></script>
+    <script src="bower_components/angular-ui-utils/ui-utils.js"></script>
+    <script src="bower_components/angular-animate/angular-animate.js"></script>
+    <script src="bower_components/angular-selection-model/dist/selection-model.js"></script>
+    <script src="bower_components/angular-ui-select/dist/select.js"></script>
+    <!-- endbower -->
+    <!-- endbuild -->
+    {% endfilter %}
+
+    {% filter relativize_paths(relat_path) %}
+    <!-- build:js(.) scripts/plugins.js -->
+    <script src="bower_components/bootstrap/js/affix.js"></script>
+    <script src="bower_components/bootstrap/js/alert.js"></script>
+    <script src="bower_components/bootstrap/js/dropdown.js"></script>
+    <script src="bower_components/bootstrap/js/tooltip.js"></script>
+    <script src="bower_components/bootstrap/js/modal.js"></script>
+    <script src="bower_components/bootstrap/js/transition.js"></script>
+    <script src="bower_components/bootstrap/js/button.js"></script>
+    <script src="bower_components/bootstrap/js/popover.js"></script>
+    <script src="bower_components/bootstrap/js/carousel.js"></script>
+    <script src="bower_components/bootstrap/js/scrollspy.js"></script>
+    <script src="bower_components/bootstrap/js/collapse.js"></script>
+    <script src="bower_components/bootstrap/js/tab.js"></script>
+    <!-- endbuild -->
+    {% endfilter %}
+
+
+
+
+
+    <!-- So that the angular routes work. Not sure if it is needed anymore. -->
+    <script type="text/javascript">
+    APP_DYN_ROOT = "{{ url_for(".index", _external=True) }}";
+    </script>
+
+    <!-- The injector will automagically add all JS files -->
+    <!-- build:js({app,.tmp}) scripts/main.js -->
+    <!-- injector:js -->
+    <script src="app.js"></script>
+    <script src="app/app-ctrl.js"></script>
+    <script src="app/previewtab/preview-tab-ctrl.js"></script>
+    <script src="app/translationstab/lang-target-directive.js"></script>
+    <script src="app/translationstab/translations-tab-ctrl.js"></script>
+    <script src="apps/app-details-directive.js"></script>
+    <script src="apps/apps-ctrl.js"></script>
+    <script src="apps/appurl-directive.js"></script>
+    <script src="apps/description-filter.js"></script>
+    <script src="apps/dt-child-directive.js"></script>
+    <script src="edit/edit-ctrl.js"></script>
+    <script src="plaintext-filter.js"></script>
+    <script src="safe-html-directive.js"></script>
+    <script src="translate-app-ctrl.js"></script>
+    <script src="translate-filter.js"></script>
+    <script src="translate-me-directive.js"></script>
+    <!-- endinjector -->
+    <!-- endbuild -->
+
+
+
+{% if config["DEBUG"] %}
+
+<!-- livereload script -->
+<script>document.write('<script src="http://'
+ + (location.host || 'localhost').split(':')[0]
+ + ':35729/livereload.js?snipver=1" type="text/javascript"><\/script>')
+</script>
+
+{% endif %}
+
+{% endblock %}

@@ -12,3 +12,6 @@ def translate_index():
     # directly to selectlang and should actually not be received by this
     # method.
     return render_template('composers/translate/index.html', form=form)
+
+
+

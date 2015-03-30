@@ -9,7 +9,8 @@ from appcomposer.appstorage.api import get_app
 from appcomposer.utils import get_original_url, inject_absolute_urls, get_json, inject_original_url_in_xmldoc, inject_absolute_locales_in_xmldoc
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import Bundle, BundleManager
-from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_get_ownerships, _db_get_diff_specs
+from appcomposer.composers.translate.db_helpers import _db_get_lang_owner_app, _db_get_ownerships, _db_get_diff_specs, \
+    load_appdata_from_db
 
 """
  NOTE ABOUT THE REQUIREMENTS ON THE APP TO BE TRANSLATED:
@@ -86,7 +87,8 @@ def app_translation_serve():
 
 
     # Parse the app's data.
-    bm = BundleManager.create_from_existing_app(owner_app.data)
+    full_app_data = load_appdata_from_db(owner_app)
+    bm = BundleManager.create_from_existing_app(full_app_data)
 
     # Build the name to request.
     bundle_name = "%s_%s" % (lang, target)
@@ -127,7 +129,8 @@ def app_translation_serve_list():
 
         for ownership in ownerships:
             lang = ownership.value
-            bm = BundleManager.create_from_existing_app(ownership.app.data)
+            full_app_data = load_appdata_from_db(ownership.app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
             keys = [key for key in bm._bundles.keys() if BundleManager.fullcode_to_partialcode(key) == lang]
 
             etag = str(ownership.app.modification_date)
@@ -165,9 +168,8 @@ def app_langfile(appid, langfile):
                                message="Error 500: The composer for the specified App is not a Translate composer."), 500
 
     # Parse the appdata
-    appdata = json.loads(app.data)
-
-    bundles = appdata["bundles"]
+    full_app_data = load_appdata_from_db(app)
+    bundles = full_app_data["bundles"]
     if langfile not in bundles:
         dbg_info = str(bundles.keys())
         return render_template("composers/errors.html",
@@ -208,9 +210,12 @@ def app_xml(appid, group):
         return render_template("composers/errors.html",
                                message="Error 500: The composer for the specified App is not Translate"), 500
 
-    bm = BundleManager.create_from_existing_app(app.data)
+    full_app_data = load_appdata_from_db(app)
+    bm = BundleManager.create_from_existing_app(full_app_data)
+    output_xml = bm.do_render_app_xml(appid, group)
+
     contents = bm.do_render_app_xml(appid, group)
-    url = app.spec_url
+    url = app.spec.url
 
     try:
         contents = inject_absolute_urls(contents, url)

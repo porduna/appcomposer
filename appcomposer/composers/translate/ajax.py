@@ -3,7 +3,7 @@ import requests
 from appcomposer.appstorage.api import get_app, update_app_data
 from appcomposer.composers.translate import translate_blueprint
 from appcomposer.composers.translate.bundles import BundleManager, AUTOACCEPT_DEFAULT
-from appcomposer.composers.translate.db_helpers import _db_get_ownerships
+from appcomposer.composers.translate.db_helpers import _db_get_ownerships, load_appdata_from_db
 from appcomposer.csrf import verify_ajax_csrf
 from appcomposer.models import AppVar
 from appcomposer.login import requires_login
@@ -136,7 +136,8 @@ def get_proposal():
 
     # Add the parent's application bundle to the response, so that it can be compared
     # more easily.
-    bm = BundleManager.create_from_existing_app(prop.app.data)
+    full_prop_app_data = load_appdata_from_db(prop.app)
+    bm = BundleManager.create_from_existing_app(full_prop_app_data)
     bundle = bm.get_bundle(contents["bundle_code"])
     if bundle:
         result["original"] = bundle.to_jsonable()["messages"]

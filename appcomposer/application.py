@@ -6,6 +6,34 @@ from flask import escape
 
 import logging
 import pprint
+from markupsafe import Markup
+
+import re
+
+
+def relativize_paths(value, path):
+    """
+    THIS IS A FILTER.
+    It should be moved somewhere else.
+    It prepends the specified path to all src paths in the specified blocks so that the path can be relative
+    to the static directory of the App (or to an arbitrary directory).
+    :return:
+    """
+    expr = """(href|src)=["'](.+?)["']"""
+
+    def repl(matchobj):
+        """
+        Function to be called in every match for replacing.
+        :return: Replaced URI.
+        """
+        oldurl = matchobj.group(2)
+        newurl = '%s="%s"' % (matchobj.group(1), os.path.join(path, oldurl))
+        return newurl
+
+    newvalue = re.sub(expr, repl, value)
+
+    return Markup(newvalue)
+
 
 
 app = Flask(__name__)
@@ -17,6 +45,9 @@ app.config.from_object('config')
 
 # Add an extension to jinja2
 app.jinja_env.add_extension("jinja2.ext.i18n")
+
+# Add custom filter to jinja2
+app.jinja_env.filters['relativize_paths'] = relativize_paths
 
 # Support old deployments
 if not app.config.get('SQLALCHEMY_DATABASE_URI', False):
@@ -97,16 +128,18 @@ if(app.config.get("LOGFILE") is not None):
     file_handler.setFormatter(line_formatter)
     app.logger.addHandler(file_handler)
 
+logging_level = app.config.get("APPCOMP_LOGGING_LEVEL", "DEBUG")
+
 # Register the cmd handler.
 stream_handler = logging.StreamHandler()
-stream_handler.setLevel(logging.DEBUG)
+stream_handler.setLevel(logging_level)
 stream_handler.setFormatter(line_formatter)
 app.logger.addHandler(stream_handler)
 
 
 # This seems to be required for the logging of sub-warning messages to work, though
 # it doesn't seem to be mentioned in the flask documentation.
-app.logger.setLevel(logging.DEBUG)
+app.logger.setLevel(logging_level)
 
 
 
@@ -118,6 +151,8 @@ app.logger.setLevel(logging.DEBUG)
 
 ACTIVATE_TRANSLATOR = app.config.get('ACTIVATE_TRANSLATOR', False)
 
+ACTIVATE_TRANSLATOR2 = app.config.get('ACTIVATE_TRANSLATOR2', False)
+
 from .composers.dummy import info as dummy_info
 from .composers.adapt import info as adapt_info
 from .composers.translate3 import info as translate3_info
@@ -126,11 +161,15 @@ COMPOSERS = [adapt_info]
 
 if ACTIVATE_TRANSLATOR:
     from .composers.translate import info as translate_info
-
     COMPOSERS.append(translate_info)
 
 
 COMPOSERS.append(translate3_info)
+
+if ACTIVATE_TRANSLATOR2:
+    from .composers.translate2 import info as translate2_info
+    COMPOSERS.append(translate2_info)
+
 
 
 # So that we can have access to all the info from the Users component.
@@ -180,10 +219,16 @@ from .composers.translate3 import translate3_blueprint
 
 if ACTIVATE_TRANSLATOR:
     from .composers.translate import translate_blueprint
-
     app.register_blueprint(translate_blueprint, url_prefix='/composers/translate')
 
+
 app.register_blueprint(translate3_blueprint, url_prefix='/composers/translate3')
+
+
+if ACTIVATE_TRANSLATOR2:
+    from .composers.translate2 import translate2_blueprint
+    app.register_blueprint(translate2_blueprint, url_prefix='/composers/translate2')
+
 
 app.register_blueprint(adapt_blueprint, url_prefix='/composers/adapt')
 load_plugins()

@@ -8,6 +8,8 @@ from appcomposer.appstorage.api import get_app_by_name
 from appcomposer.composers.translate.bundles import BundleManager
 
 from unittest import TestCase
+from appcomposer.composers.translate.db_helpers import load_appdata_from_db
+from appcomposer.composers.translate.operations import ops_highlevel
 
 
 class TestTranslateAppCreation(TestCase):
@@ -74,7 +76,6 @@ class TestTranslateAppCreation(TestCase):
         assert rv.status_code == 200  # Page found code.
         assert rv.data.count("option") > 100  # Lots of them, because of the languages list.
         assert "submit" in rv.data
-        assert "Localise" in rv.data
 
         # Check that we did indeed create the app properly.
         with self.flask_app:
@@ -83,16 +84,18 @@ class TestTranslateAppCreation(TestCase):
 
             assert app is not None
             appdata = app.data
-            assert len(appdata) > 1000
 
             data = json.loads(appdata)
 
             assert "spec" in data
             assert url == data["spec"]
 
-            bm = BundleManager.create_from_existing_app(appdata)
+            full_app_data = load_appdata_from_db(app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
 
             assert bm.get_gadget_spec() == url
+
+            # Check that we have more than 3 bundles
             assert len(bm._bundles) > 3
 
             defaultBundle = bm.get_bundle("all_ALL_ALL")
@@ -111,7 +114,6 @@ class TestTranslateAppCreation(TestCase):
         assert rv.status_code == 200  # Page found code.
         assert rv.data.count("option") > 100  # Lots of them, because of the languages list.
         assert "submit" in rv.data
-        assert "Localise" in rv.data
 
         # Check that we did indeed create the app properly.
         with self.flask_app:
@@ -120,14 +122,14 @@ class TestTranslateAppCreation(TestCase):
 
             assert app is not None
             appdata = app.data
-            assert len(appdata) > 1000
 
             data = json.loads(appdata)
 
             assert "spec" in data
             assert url == data["spec"]
 
-            bm = BundleManager.create_from_existing_app(appdata)
+            full_app_data = load_appdata_from_db(app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
 
             assert bm.get_gadget_spec() == url
             assert len(bm._bundles) > 3
@@ -149,7 +151,6 @@ class TestTranslateAppCreation(TestCase):
         assert rv.status_code == 200  # Page found code.
         assert rv.data.count("option") > 100  # Lots of them, because of the languages list.
         assert "submit" in rv.data
-        assert "Localise" in rv.data
 
         # Check that we did indeed create the app properly.
         with self.flask_app:
@@ -158,14 +159,14 @@ class TestTranslateAppCreation(TestCase):
 
             assert app is not None
             appdata = app.data
-            assert len(appdata) > 500
 
             data = json.loads(appdata)
 
             assert "spec" in data
             assert url == data["spec"]
 
-            bm = BundleManager.create_from_existing_app(appdata)
+            full_app_data = load_appdata_from_db(app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
 
             assert bm.get_gadget_spec() == url
             assert len(bm._bundles) == 2
@@ -190,7 +191,6 @@ class TestTranslateAppCreation(TestCase):
         assert rv.status_code == 200  # Page found code.
         assert rv.data.count("option") > 100  # Lots of them, because of the languages list.
         assert "submit" in rv.data
-        assert "Localise" in rv.data
 
         # Check that we did indeed create the app properly.
         with self.flask_app:
@@ -199,18 +199,19 @@ class TestTranslateAppCreation(TestCase):
 
             assert app is not None
             appdata = app.data
-            assert len(appdata) > 500
 
             data = json.loads(appdata)
 
             assert "spec" in data
             assert url == data["spec"]
 
-            bm = BundleManager.create_from_existing_app(appdata)
+            full_app_data = load_appdata_from_db(app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
 
             assert bm.get_gadget_spec() == url
 
             # The bundles should be 3 (DEFAULT - copied from English, English, German).
+            print "BUNDLES: %r" % bm._bundles
             assert len(bm._bundles) == 3
 
             defaultBundle = bm.get_bundle("all_ALL_ALL")
@@ -240,7 +241,6 @@ class TestTranslateAppCreation(TestCase):
         assert rv.status_code == 200  # Page found code.
         assert rv.data.count("option") > 100  # Lots of them, because of the languages list.
         assert "submit" in rv.data
-        assert "Localise" in rv.data
 
         # Check that we did indeed create the app properly.
         with self.flask_app:
@@ -249,14 +249,14 @@ class TestTranslateAppCreation(TestCase):
 
             assert app is not None
             appdata = app.data
-            assert len(appdata) > 500
 
             data = json.loads(appdata)
 
             assert "spec" in data
             assert url == data["spec"]
 
-            bm = BundleManager.create_from_existing_app(appdata)
+            full_app_data = load_appdata_from_db(app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
 
             assert bm.get_gadget_spec() == url
             assert len(bm._bundles) == 2
@@ -298,5 +298,26 @@ class TestTranslateAppCreation(TestCase):
             app = api.create_app("UTApp", "translate", "http://justatest.com", '{"spec":"http://justatest.com", "bundles":{}}')
 
             # Test that autoaccept is True (it's the default).
-            bm = BundleManager.create_from_existing_app(json.loads(app.data))
+            full_app_data = load_appdata_from_db(app)
+            bm = BundleManager.create_from_existing_app(full_app_data)
             assert bm.get_autoaccept() == True
+
+    def test_highlevel_obtain_translation_info(self):
+        """
+        Ensure that we can create an app and then load the translation info through obtain_translation_info(app).
+        """
+        url = "appcomposer/tests_data/googleExample/i18n.xml"
+        rv = self.flask_app.post("/composers/translate/selectlang", data={"appname": "UTApp", "appurl": url}, follow_redirects=True)
+
+        # Check whether it seems to be the page we expect.
+        assert rv.status_code == 200  # Page found code.
+
+        with self.flask_app:
+            self.flask_app.get("/")
+            app = api.get_app_by_name("UTApp")
+
+            # Check that we can indeed obtain the translation info.
+            translation_info = ops_highlevel.obtain_translation_info(app)
+
+            assert translation_info is not None
+            assert len(translation_info) > 3

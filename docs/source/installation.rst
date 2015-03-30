@@ -234,6 +234,90 @@ With this done, once you restart Apache you should be able to see the AppCompose
 
 
 
+Building and Configuring the Translator 2
+.........................................
+
+The Translator 2 is a new version of the Translator and is currently under development.
+
+The Translator 2 is designed as a single-page application and for client-side development it relies on the
+following technology stack:
+
+   * Node
+   * Angular
+   * NPM
+   * Bower
+   * Grunt
+
+Though it depends on Node for developing and building, the pages are still served through Flask and the
+server-side REST API is handled by the standard AppComposer Flask server as well.
+
+To build and configure it, first you need to install Node. This can be done in any way you prefer. The easiest is to
+simply
+
+.. code-block:: bash
+
+    sudo apt-get install nodejs
+
+However, for development it is recommended to install Node through NVM ``https:/github.com/creationix/nvm``:
+
+.. code-block:: bash
+
+    wget -qO- https://raw.githubusercontent.com/creationix/nvm/v0.24.0/install.sh | bash
+    nvm install stable
+    nvm use stable
+
+Once Node is ready, you will need to install Bower and Grunt globally to your Node environment.
+Bower is a tool to handle client-side dependencies. Grunt is a tool to handle various tasks such as concatenation, minification, testing, etc.
+
+We install grunt-cli instead of grunt itself because grunt-cli are actually the command line tools, which can be used
+with a number of project-specific grunt instances (which will be installed later).
+
+.. code-block:: bash
+
+    npm install -g grunt-cli bower
+
+
+Now, go to the ```appcomposer/ngapps/translate2/``` folder. This is the root folder for the Translate 2 application.
+
+From here, we will first install the NPM dependencies (such as the specific Grunt tool):
+
+.. code-block:: bash
+
+    npm install --dev
+
+Now we will install the Bower dependencies. That is, client-side dependencies such as AngularJS, jQuery, or other libraries.
+
+.. code-block:: bash
+
+    bower install --dev
+
+The environment for development should now be ready. Now our main options are the following:
+
+For Development
+,,,,,,,,,,,,,,,
+
+Ensure that NGAPPS_DEV_MODE is set to True in the ```config.py``` file, and just do:
+
+.. code-block:: bash
+
+    grunt serve
+
+This will open a browser and show the Translate 2 application using the standard AppComposer for-development Flask server.
+Changes to the client code will take effect immediately and should trigger a refresh automatically.
+
+
+For Deployment
+,,,,,,,,,,,,,,
+
+Ensure that NGAPPS_DEV_MODE is set to False or not set in the ```config.py```file, and just do:
+
+.. code-block:: bash
+
+    grunt build
+
+This will build everything into the ```dist```folder, which will be the one served by Flask whenever NGAPPS_DEV_MODE
+is not set or set to False, and which should be used in production.
+
 
 
 

@@ -27,7 +27,7 @@ def translate_delete():
         return "App not found", 404
 
     # Get our spec.
-    spec = app.spec_url
+    spec = app.spec.url
 
     # Find out which languages we own.
     ownerships = _db_get_app_ownerships(app)

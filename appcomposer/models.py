@@ -58,6 +58,7 @@ class User(db.Model, UserMixin):
     def find_by_id(cls, id):
         return cls.query.filter_by(id=id).first()
 
+
 class AppVersion(db.Model):
     __tablename__ = 'AppVersions'
 
@@ -85,17 +86,23 @@ class App(db.Model):
 
     unique_id = db.Column(db.Unicode(50), index=True, unique=True)
     name = db.Column(db.Unicode(50), index=True)
-    owner_id = db.Column(db.Integer, ForeignKey("Users.id"), nullable=False, index=True)
+
     composer = db.Column(db.Unicode(50), index=True, nullable=False, server_default=u'expert')
     data = db.Column(db.Text, nullable=False, server_default=u'{}')
     creation_date = db.Column(db.DateTime, nullable=False, index=True)
     modification_date = db.Column(db.DateTime, nullable=False, index=True)
     last_access_date = db.Column(db.DateTime, nullable=False, index=True)
     description = db.Column(db.Unicode(1000), nullable=True)
-    spec_url = db.Column(db.Unicode(600), nullable=True)  # URL of the XML spec for the App.
 
-    # TODO: Find out why this relationships seems to not work sometimes.
+    # TODO: Find out why these relationships seems to not work sometimes.
+    owner_id = db.Column(db.Integer, ForeignKey("Users.id"), nullable=False, index=True)
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
+
+    spec_id = db.Column(db.Integer, ForeignKey("Specs.id"))
+    spec = relation("Spec", backref="apps")  # declare the relation and place a backref to the apps on the Spec objects.
+
+    # An app can have many bundles (one-to-many).
+    bundles = relation("Bundle", backref="app")
 
     def __repr__(self):
         return self.to_json()
@@ -167,5 +174,114 @@ class AppVar(db.Model):
     @classmethod
     def find_by_var_id(cls, var_id):
         return cls.query.filter_by(var_id=var_id).first()
+
+
+class Spec(db.Model):
+    """
+    Represents an OpenSocial application. The most significant attribute is the Spec URL,
+    which is unique.
+    """
+
+    __tablename__ = "Specs"
+
+    id = db.Column(db.Integer, primary_key=True)
+    url = db.Column(db.Unicode(500), nullable=False, unique=True)
+    pid = db.Column(db.Unicode(100), nullable=False, unique=True)
+
+    # Translator specs can have a special base bundle which links to a special bundle
+    # with the most up-to-date default translation for an App. (By most up-to-date
+    # we actually mean, with respect to the other Bundles. Remotely the actual spec XML
+    # could still contain newer translations, if it wasn't updated in the composer).
+    #spec_id = db.Column(db.Integer, ForeignKey("Bundles.id"), nullable=True)
+    #base_bundle = relation("Bundle")
+
+    # TODO: The relationship above currently leads to a circular dependency in SQLAlchemy,
+    # that's why it is currently disabled.
+
+    def __init__(self, url):
+        self.url = url
+        self.pid = self._gen_unique_id()
+
+    def _gen_unique_id(self):
+        # Generate a not-too-long unique and permanent id.
+        uid = base64.urlsafe_b64encode(uuid.uuid4().bytes[0:15])
+        return uid
+
+    def __repr__(self):
+        return "Spec(%r, %r, %r)" % (self.id, self.url, self.pid)
+
+
+class Bundle(db.Model):
+    """
+    Represents a Bundle, which is a set of messages. Bundles are linked to a language and a target group.
+    """
+    __tablename__ = "Bundles"
+
+    id = db.Column(db.Integer, primary_key=True)
+    lang = db.Column(db.Unicode(15))
+    target = db.Column(db.Unicode(30))
+
+    # A bundle can have many messages. (one-to-many).
+    messages = relation("Message", backref="bundle")
+
+    # We have a backref to our parent App.
+    app_id = db.Column(db.Integer, ForeignKey("Apps.id"))
+
+    def __init__(self, lang, target):
+        """
+        Creates a new Bundle object.
+        :param lang: The language (which is really language_TERRITORY).
+        :type lang: str
+        :param target: The target group.
+        :type target: str
+        """
+        self.lang = lang
+        self.target = target
+
+class Message(db.Model):
+    """
+    Represents a Message, which is the translation for a specific key within a Bundle.
+    """
+    __tablename__ = "Messages"
+
+    id = db.Column(db.Integer, primary_key=True)
+    key = db.Column(db.Unicode(50))
+    value = db.Column(db.UnicodeText)  # TODO: Check whether this is the best type for value.
+
+    # Ref to the Bundle we belong to. (many-to-one).
+    bundle_id = db.Column(db.Integer, ForeignKey("Bundles.id"))
+
+    def __init__(self, key, value):
+        """
+        Creates a new message object.
+        :param key:
+        :param value:
+        :return:
+        """
+        self.key = key
+        self.value = value
+
+
+class RepositoryApp(db.Model):
+    ___tablename__ = 'RepositoryApps'
+
+    id = db.Column(db.Integer, primary_key=True)
+    repository = db.Column(db.Unicode(400), nullable = False, index = True)
+    url = db.Column(db.Unicode(500), unique = True, nullable = False, index = True)
+    name = db.Column(db.Unicode(200), nullable = False, index = True)
+    adaptable = db.Column(db.Boolean, index = True)
+    translatable = db.Column(db.Boolean, index = True)
+    original_translations = db.Column(db.Unicode(500))
+    last_check = db.Column(db.DateTime, index = True)
+    last_change = db.Column(db.DateTime, index = True)
+    failing = db.Column(db.Boolean, index = True)
+    failing_since = db.Column(db.DateTime, index = True)
+    http_last_modified = db.Column(db.Unicode(64))
+    http_etag = db.Column(db.Unicode(64))
+
+    def __init__(self, name, url, repository):
+        self.name = name
+        self.url = url
+        self.repository = repository
 
 

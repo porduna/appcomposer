@@ -35,7 +35,7 @@ def adapt_duplicate(appid):
                 form.name.errors = []
             form.name.errors.append(lazy_gettext("You already have an application with this name"))
         else:
-            new_app = create_app(form.name.data, 'adapt', app.spec_url, app.data)
+            new_app = create_app(form.name.data, 'adapt', app.spec.url, app.data)
             for appvar in app.appvars:  # Copy every appvar for the original app as well.
                 add_var(new_app, appvar.name, appvar.value)
 
