@@ -1,0 +1,21 @@
+{% extends "translator/base.html" %}
+{% block body %}
+
+<h1>Apps</h1>
+
+<ul>
+    {% if not urls %}
+        <li>No app found</li>
+    {% else %}
+        {% for url, bundles in apps.iteritems() %}
+            <li>{{ url }}</li>
+            <ul>
+                {% for bundle in bundles %}
+                <li><a href="{{ url_for('.translations_app_xml', lang=bundle['lang'], target=bundle['target'], url = url) }}">{{ bundle['lang'] }} - {{ bundle['target'] }}</a></li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+    {% endif %}
+</ul>
+
+{% endblock %}

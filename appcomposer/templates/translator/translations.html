@@ -1,0 +1,8 @@
+{% extends "translator/base.html" %}
+{% block body %}
+
+<h1>Translations</h1>
+
+Stored translations can be listed by <a href="{{ url_for('.translations_apps') }}">application URL</a> or by <a href="{{ url_for('.translations_urls') }}">translation URL</a>.
+
+{% endblock %}

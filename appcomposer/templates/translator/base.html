@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>AppComposer Translator - {{ title }}</title>
+
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="{{ url_for('static', filename='bs3/css/bootstrap.css') }}" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='bs3/css/bootstrap-theme.min.css') }}">
+    <link href="{{ url_for('static', filename='css/appcomposer.css') }}" rel="stylesheet">
+    {% block head %}
+    {% endblock %}
+</head>
+<body>
+    <div class="container">
+        {% block body %}{% endblock %}
+    </div>
+
+    <div class="container">
+        <hr>
+        <footer>
+            <p style="text-align: center; font-style: italic; font-size: 10px">
+                AppComposer, {{ gettext('the %(link)s application creator for teachers', link = '<a href="http://www.go-lab-project.eu/">Go-Lab</a>'|safe) }}.</p>
+        </footer>
+    </div>
+</body>
+</html>

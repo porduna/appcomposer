@@ -134,7 +134,6 @@ class App(db.Model):
             "creation_date": self.creation_date.__str__(),
             "modification_date": self.modification_date.__str__(),
             "last_access_date": self.last_access_date.__str__(),
-            "spec_url": self.spec_url
         }
         return d
 
@@ -261,17 +260,20 @@ class Message(db.Model):
         self.key = key
         self.value = value
 
+    def __repr__(self):
+        return "%r - %r" % (self.key, self.value)
+
 
 class RepositoryApp(db.Model):
     __tablename__ = 'RepositoryApps'
 
     id = db.Column(db.Integer, primary_key=True)
     repository = db.Column(db.Unicode(400), nullable = False, index = True)
-    url = db.Column(db.Unicode(500), unique = True, nullable = False, index = True)
+    url = db.Column(db.Unicode(255), unique = True, nullable = False, index = True)
     name = db.Column(db.Unicode(200), nullable = False, index = True)
     adaptable = db.Column(db.Boolean, index = True)
     translatable = db.Column(db.Boolean, index = True)
-    original_translations = db.Column(db.Unicode(500))
+    original_translations = db.Column(db.Unicode(255))
     last_check = db.Column(db.DateTime, index = True)
     last_change = db.Column(db.DateTime, index = True)
     failing = db.Column(db.Boolean, index = True)
@@ -289,47 +291,59 @@ class TranslationUrl(db.Model):
     __tablename__ = 'TranslationUrls'
 
     id = db.Column(db.Integer, primary_key = True)
-    url = db.Column(db.Unicode(500), unique = True, nullable = False, index = True)
+    url = db.Column(db.Unicode(255), unique = True, nullable = False, index = True)
+
 
 class TranslatedApp(db.Model):
     __tablename__ = 'TranslatedApps'
 
     id = db.Column(db.Integer, primary_key = True)
     translation_url_id = db.Column(db.Integer, ForeignKey('TranslationUrls.id'))
-    url = db.Column(db.Unicode(500), unique = True, nullable = False, index = True)
+    url = db.Column(db.Unicode(255), unique = True, nullable = False, index = True)
 
     translation_url = relation("TranslationUrl", backref="apps")
 
-class ActiveTranslation(db.Model):
-    __tablename__ = 'ActiveTranslations'
+class TranslationBundle(db.Model):
+    __tablename__ = 'TranslationBundles'
 
     id = db.Column(db.Integer, primary_key = True)
     translation_url_id = db.Column(db.Integer, ForeignKey('TranslationUrls.id'))
-    user_id = db.Column(db.Integer, ForeignKey('Users.id'))
-    key = db.Column(db.Unicode(500), index = True)
-    value = db.Column(db.UnicodeText)
-    datetime = db.Column(db.DateTime)
+    language = db.Column(db.Unicode(20), index = True)
+    target = db.Column(db.Unicode(20), index = True)
+    translation_url = relation("TranslationUrl", backref="bundles")
 
-    translation_url = relation("TranslationUrl", backref="active_translations")
-
-class TranslationHistory(db.Model):
-    __tablename__ = 'TranslationHistory'
+class ActiveTranslationMessage(db.Model):
+    __tablename__ = 'ActiveTranslationMessages'
 
     id = db.Column(db.Integer, primary_key = True)
-    translation_url_id = db.Column(db.Integer, ForeignKey('TranslationUrls.id'))
+    bundle_id = db.Column(db.Integer, ForeignKey('TranslationBundles.id'))
     user_id = db.Column(db.Integer, ForeignKey('Users.id'))
-    key = db.Column(db.Unicode(500), index = True)
+    key = db.Column(db.Unicode(255), index = True)
     value = db.Column(db.UnicodeText)
-    datetime = db.Column(db.DateTime)
+    datetime = db.Column(db.DateTime, index = True)
+
+    bundle = relation("TranslationBundle", backref="active_messages")
+
+class TranslationMessageHistory(db.Model):
+    __tablename__ = 'TranslationMessageHistory'
+
+    id = db.Column(db.Integer, primary_key = True)
+    bundle_id = db.Column(db.Integer, ForeignKey('TranslationBundles.id'))
+    user_id = db.Column(db.Integer, ForeignKey('Users.id'))
+    key = db.Column(db.Unicode(255), index = True)
+    value = db.Column(db.UnicodeText)
+    datetime = db.Column(db.DateTime, index = True)
     parent_translation_id = db.Column(db.Integer)
 
-    translation_url = relation("TranslationUrl", backref="all_translations")
+    bundle = relation("TranslationBundle", backref="all_messages")
 
 class TranslationKeySuggestion(db.Model):
     __tablename__ = 'TranslationKeySuggestions'
 
     id = db.Column(db.Integer, primary_key = True)
-    key = db.Column(db.Unicode(500), index = True)
+    key = db.Column(db.Unicode(255), index = True)
+    language = db.Column(db.Unicode(20), index = True)
+    target = db.Column(db.Unicode(20), index = True)
     value = db.Column(db.UnicodeText)
     number = db.Column(db.Integer)
 
@@ -337,7 +351,9 @@ class TranslationValueSuggestion(db.Model):
     __tablename__ = 'TranslationValueSuggestions'
 
     id = db.Column(db.Integer, primary_key = True)
-    human_key = db.Column(db.Unicode(500), index = True)
+    human_key = db.Column(db.Unicode(255), index = True)
+    language = db.Column(db.Unicode(20), index = True)
+    target = db.Column(db.Unicode(20), index = True)
     value = db.Column(db.UnicodeText)
     number = db.Column(db.Integer)
 
