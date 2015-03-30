@@ -39,6 +39,7 @@ def translations():
     return Response(data, mimetype="application/json")
 
 @translate3_blueprint.route("/api/bundle/<path:appurl>/<srclang>/<srcgroup>/<targetlang>/<targetgroup>")
+@cross_origin()
 def bundle(appurl, srclang, srcgroup, targetlang, targetgroup):
     """
     Retrieves information about a specific translation (bundle).

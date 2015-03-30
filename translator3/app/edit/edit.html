@@ -1,3 +1,4 @@
+
 <a href="#/app/{{ appurl }}">
     <button class="btn btn-lg btn-info"><i class="fa fa-backward"/>{{ ' Back to Translations'|translate }}</button>
 </a>
@@ -6,4 +7,37 @@
     <img class="app-title-thumb img-thumbnail" ng-src="{{ appinfo.app_thumb }}"></img>
     <span>{{ appinfo.name }}</span>
 </h1>
+
 <p>{{ appinfo.desc }}</p>
+
+
+<div class="well">
+
+    <div class="row">
+        <fieldset>
+            <div class="col-lg-12" style="margin-bottom: 10px">
+                <div class="col-lg-5" style="text-align: center">
+                    <h3>Default (ALL)</h3>
+                    <h4 ng-click="changeSourceLanguage()" class="ac-edit-change-source">Change source language</h4>
+                </div>
+
+                <div class="col-lg-7" style="text-align: center">
+                    <h3>Default (ALL)</h3>
+                </div>
+            </div>
+
+            <div class="col-lg-12 form-group">
+                <label for="field_1" class="ac-edit-message-label col-lg-5 control-label" style="text-align: left">
+                    <div style="display:inline" title="loadSave.save">
+                        Save
+                    </div>
+                </label>
+                <div class="ac-message col-lg-7">
+                    <input type="text" class="form-control" id="field_1" name="ac-edit-message-loadSave.save"
+                           placeholder="Save" value="Save"/>
+                </div>
+            </div>
+        </fieldset>
+    </div>
+
+</div>
