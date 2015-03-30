@@ -54,6 +54,12 @@ if not app.config.get('SQLALCHEMY_DATABASE_URI', False):
     if app.config.get('SQLALCHEMY_ENGINE_STR', False):
         app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_ENGINE_STR']
 
+
+# Support CORS
+# from flask.ext.cors import CORS
+# cors = CORS(app)
+
+
 from appcomposer.babel import Babel
 
 if Babel is None:

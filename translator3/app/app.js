@@ -21,7 +21,7 @@ function routeConfig($routeProvider) {
         })
         .when('/app/:appurl*', {
             templateUrl: 'app/app.html',
-            controller: 'AppCtrl'
+            controller: 'AppController'
         })
         .when('/edit/:appurl*', {
             templateUrl: 'edit/edit.html',
