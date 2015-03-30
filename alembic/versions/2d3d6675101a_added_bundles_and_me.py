@@ -31,20 +31,28 @@ def upgrade():
     )
     op.create_table('Messages',
                     sa.Column('id', sa.Integer(), nullable=False),
-                    sa.Column('key', sa.Unicode(length=50), nullable=True),
+                    sa.Column('key', sa.Unicode(length=250), index = True),
                     sa.Column('value', sa.Text(), nullable=True),
                     sa.Column('bundle_id', sa.Integer(), nullable=True),
                     sa.ForeignKeyConstraint(['bundle_id'], ['Bundles.id'], ),
                     sa.PrimaryKeyConstraint('id')
     )
     ### end Alembic commands ###
+    metadata = sa.MetaData()
+    messages_table = sa.Table('Messages', metadata,
+        sa.Column('key', sa.Unicode(250)),
+        sa.Column('value', sa.Text()),
+        sa.Column('bundle_id', sa.Integer()),
+    )
 
 
     # To migrate we need to extract the data from the bundles of translator apps and to
     # create the Message and Bundle objects.
     connection = op.get_bind()
     approws = connection.execute("SELECT * FROM Apps WHERE composer='translate'")
-    for approw in approws:
+    for pos, approw in enumerate(approws):
+        if pos % 10 == 0 and pos > 0:
+            print "    %s..." % pos
         try:
             data = json.loads(approw["data"])
             app_id = approw["id"]
@@ -64,9 +72,10 @@ def upgrade():
 
                 # For each message in the bundle, create a Message object and link it to the bundle we just created.
                 for key, value in messages.items():
-                    # print "Value: %r" % value
-                    result = connection.execute(text(u"INSERT INTO Messages (`key`, `value`, bundle_id) VALUES (:key, :value, :bundle_id)"),
-                                                key=key, value=value.encode("utf8"), bundle_id=bundle_id)
+                    insertion = messages_table.insert().values(key = key, value = value, bundle_id = bundle_id)
+                    op.execute(insertion)
+#                     result = connection.execute(text(u"INSERT INTO Messages (`key`, `value`, bundle_id) VALUES (:key, :value, :bundle_id)"),
+#                                                 key=key, value=value, bundle_id=bundle_id)
 
             # Delete the bundles.
             del data["bundles"]
@@ -78,8 +87,10 @@ def upgrade():
         except:
             traceback.print_exc()
             print "Exception on an app: %r" % approw["id"]
+            raise
 
             # TODO: Remove dependencies on data urls.
+    print "[done]"
 
 
 def downgrade():

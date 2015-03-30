@@ -245,7 +245,7 @@ class Message(db.Model):
     __tablename__ = "Messages"
 
     id = db.Column(db.Integer, primary_key=True)
-    key = db.Column(db.Unicode(50))
+    key = db.Column(db.Unicode(500), index = True)
     value = db.Column(db.UnicodeText)  # TODO: Check whether this is the best type for value.
 
     # Ref to the Bundle we belong to. (many-to-one).
