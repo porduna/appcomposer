@@ -128,6 +128,7 @@ function LangTargetController($scope, $rootScope, $resource) {
 
     function onAddNewLanguageSuccess() {
         $scope.$emit('language-added', {success: true});
+        $scope.addLanguageError = "";
     } // !onAddNewLanguageSuccess
 
 
@@ -160,6 +161,7 @@ function LangTargetController($scope, $rootScope, $resource) {
 
     function onAddNewGroupSuccess() {
         $scope.$emit('group-added', {success: true});
+        $scope.addGroupError = "";
     } // !onAddNewGroupSuccess
 
 
