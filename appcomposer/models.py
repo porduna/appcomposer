@@ -293,6 +293,8 @@ class TranslationUrl(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     url = db.Column(db.Unicode(255), unique = True, nullable = False, index = True)
 
+    def __init__(self, url):
+        self.url = url
 
 class TranslatedApp(db.Model):
     __tablename__ = 'TranslatedApps'
@@ -303,8 +305,16 @@ class TranslatedApp(db.Model):
 
     translation_url = relation("TranslationUrl", backref="apps")
 
+    def __init__(self, url, translation_url):
+        self.url = url
+        if isinstance(translation_url, basestring):
+            raise Exception("TranslationApp requires a TranslationUrl, not a string")
+
+        self.translations_url = translation_url
+
 class TranslationBundle(db.Model):
     __tablename__ = 'TranslationBundles'
+    __table_args__ = (UniqueConstraint('translation_url_id', 'language', 'target'), )
 
     id = db.Column(db.Integer, primary_key = True)
     translation_url_id = db.Column(db.Integer, ForeignKey('TranslationUrls.id'))
@@ -312,17 +322,12 @@ class TranslationBundle(db.Model):
     target = db.Column(db.Unicode(20), index = True)
     translation_url = relation("TranslationUrl", backref="bundles")
 
-class ActiveTranslationMessage(db.Model):
-    __tablename__ = 'ActiveTranslationMessages'
-
-    id = db.Column(db.Integer, primary_key = True)
-    bundle_id = db.Column(db.Integer, ForeignKey('TranslationBundles.id'))
-    user_id = db.Column(db.Integer, ForeignKey('Users.id'))
-    key = db.Column(db.Unicode(255), index = True)
-    value = db.Column(db.UnicodeText)
-    datetime = db.Column(db.DateTime, index = True)
-
-    bundle = relation("TranslationBundle", backref="active_messages")
+    def __init__(self, language, target, translation_url):
+        self.language = language
+        self.target = target
+        if isinstance(translation_url, basestring):
+            raise Exception("TranslationBundle requires a TranslationUrl, not a string")
+        self.translation_url = translation_url
 
 class TranslationMessageHistory(db.Model):
     __tablename__ = 'TranslationMessageHistory'
@@ -336,6 +341,35 @@ class TranslationMessageHistory(db.Model):
     parent_translation_id = db.Column(db.Integer)
 
     bundle = relation("TranslationBundle", backref="all_messages")
+    user = relation("User", backref = "translation_history")
+
+    def __init__(self, bundle, key, value, user, datetime, parent_translation_id):
+        self.bundle = bundle
+        self.key = key
+        self.value = value
+        self.user = user
+        self.datetime = datetime
+        self.parent_translation_id = parent_translation_id
+
+class ActiveTranslationMessage(db.Model):
+    __tablename__ = 'ActiveTranslationMessages'
+    __table_args__ = (UniqueConstraint('bundle_id', 'key'), )
+
+    id = db.Column(db.Integer, primary_key = True)
+    bundle_id = db.Column(db.Integer, ForeignKey('TranslationBundles.id'))
+    key = db.Column(db.Unicode(255), index = True)
+    value = db.Column(db.UnicodeText)
+    history_id = db.Column(db.Integer, ForeignKey("TranslationMessageHistory.id"))
+
+    bundle = relation("TranslationBundle", backref="active_messages")
+    history = relation("TranslationMessageHistory", backref="active")
+
+    def __init__(self, bundle, key, value, history):
+        self.bundle = bundle
+        self.key = key
+        self.value = value
+        self.history = history
+
 
 class TranslationKeySuggestion(db.Model):
     __tablename__ = 'TranslationKeySuggestions'
@@ -347,6 +381,13 @@ class TranslationKeySuggestion(db.Model):
     value = db.Column(db.UnicodeText)
     number = db.Column(db.Integer)
 
+    def __init__(self, key, language, target, value, number):
+        self.key = key
+        self.language = language
+        self.target = target
+        self.value = value
+        self.number = number
+
 class TranslationValueSuggestion(db.Model):
     __tablename__ = 'TranslationValueSuggestions'
 
@@ -356,4 +397,11 @@ class TranslationValueSuggestion(db.Model):
     target = db.Column(db.Unicode(20), index = True)
     value = db.Column(db.UnicodeText)
     number = db.Column(db.Integer)
+
+    def __init__(self, human_key, language, target, value, number):
+        self.human_key = human_key
+        self.language = language
+        self.target = target
+        self.value = value
+        self.number = number
 

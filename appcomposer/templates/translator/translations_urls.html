@@ -8,7 +8,7 @@
         <li>No app found</li>
     {% else %}
         {% for url, bundles in urls.iteritems() %}
-            <li>{{ url }}</li>
+            <li><a href="{{ url }}">{{ url }}</a></li>
             <ul>
                 {% for bundle in bundles %}
                 <li><a href="{{ url_for('.translations_url_xml', lang=bundle['lang'], target=bundle['target'], url = url) }}">{{ bundle['lang'] }} - {{ bundle['target'] }}</a></li>

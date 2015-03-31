@@ -34,6 +34,11 @@ def initialize_admin_component(app):
     admin.add_view(AdminAppsView(name=lazy_gettext('Apps'), url = 'apps-admin', endpoint = 'admin.admin-apps'))      
     admin.add_view(RedirectView('user.profile.index', name=lazy_gettext('My Profile'), url = 'profile', endpoint = 'admin.profile'))
     admin.add_view(RedirectView('index', name=lazy_gettext('Back'), url = 'back', endpoint = 'admin.back'))
+
+    category_translator = lazy_gettext("Translator")
+    admin.add_view(KeySuggestionsView(name = lazy_gettext('Suggestions by key'), category = category_translator, endpoint = 'admin.suggestions-key'))
+    admin.add_view(ValueSuggestionsView(name = lazy_gettext('Suggestions by value'), category = category_translator, endpoint = 'admin.suggestions-value'))
+    admin.add_view(ActiveTranslationMessageView(name = lazy_gettext('Active translations'), category = category_translator, endpoint = 'admin.active-translations'))
     admin.init_app(app)
 
 # Regular expression to validate the "login" field
@@ -212,3 +217,21 @@ class AdminAppsView(AdminModelView):
         app = models.App.query.filter_by(unique_id=model.unique_id).first()        
         models.AppVar.query.filter_by(app=app).delete()
     
+class KeySuggestionsView(AdminModelView):
+    column_searchable_list = ('key', 'language', 'target', 'value')
+    column_sortable_list = ('key', 'language', 'target')
+
+    def __init__(self, **kwargs):
+        super(KeySuggestionsView, self).__init__(models.TranslationKeySuggestion, db.session, **kwargs)
+
+class ValueSuggestionsView(AdminModelView):
+    column_searchable_list = ('human_key', 'language', 'target', 'value')
+    column_sortable_list = ('human_key', 'language', 'target')
+
+    def __init__(self, **kwargs):
+        super(ValueSuggestionsView, self).__init__(models.TranslationValueSuggestion, db.session, **kwargs)
+
+class ActiveTranslationMessageView(AdminModelView):
+    column_list = ('bundle.translation_url.url', 'bundle.language', 'bundle.target', 'key', 'value', 'history.datetime', 'history.user')
+    def __init__(self, **kwargs):
+        super(ActiveTranslationMessageView, self).__init__(models.ActiveTranslationMessage, db.session, **kwargs)

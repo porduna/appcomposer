@@ -15,7 +15,7 @@ from wtforms.fields.html5 import URLField
 from wtforms.validators import url, required
 
 from appcomposer import db
-from appcomposer.models import TranslatedApp, TranslationUrl
+from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle
 from appcomposer.login import requires_login, current_user
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
@@ -106,10 +106,10 @@ def translations():
 @public
 def translations_urls():
     urls = {}
-    for url in db.session.query(TranslationUrl).options(joinedload_all('bundles')):
-        urls[url] = []
-        for bundle in url.bundles:
-            urls[url].append({
+    for db_url in db.session.query(TranslationUrl).options(joinedload_all('bundles')):
+        urls[db_url.url] = []
+        for bundle in db_url.bundles:
+            urls[db_url.url].append({
                 'target' : bundle.target,
                 'lang' : bundle.language,
             })
@@ -120,12 +120,16 @@ def translations_urls():
 def translations_apps():
     apps = {}
     for app in db.session.query(TranslatedApp).options(joinedload_all('translation_url.bundles')):
-        apps[app] = []
-        for bundle in app.translation_url.bundles:
-            apps[app].append({
-                'target' : bundle.target,
-                'lang' : bundle.language,
-            })
+        apps[app.url] = []
+        if app.translation_url is not None:
+            for bundle in app.translation_url.bundles:
+                apps[app.url].append({
+                    'target' : bundle.target,
+                    'lang' : bundle.language,
+                })
+        else:
+            # TODO: invalid state
+            pass
     return render_template("translator/translations_apps.html", apps = apps)
 
 # 
@@ -134,10 +138,10 @@ def translations_apps():
 # 2. Zip file for all the translations
 # 
 
-@translator_blueprint.route('/translations/apps/<lang>/<target>/<path:url>')
+@translator_blueprint.route('/translations/apps/<lang>/<target>/<path:app_url>')
 @public
 def translations_app_xml(lang, target, app_url):
-    translation_app = db.session.query(TranslationApp).filter_by(url = url).first()
+    translation_app = db.session.query(TranslatedApp).filter_by(url = app_url).first()
     if translation_app is None:
         return "Translation App not found in the database", 404
 
@@ -160,6 +164,6 @@ def translations_url_xml(lang, target, url):
         xml_msg.attrib['name'] = message.key
         xml_msg.text = message.value
 
-    resp = make_response(ET.dump(xml_bundle))
+    resp = make_response(ET.tostring(xml_bundle, encoding = 'utf8'))
     resp.content_type = 'application/xml'
     return resp

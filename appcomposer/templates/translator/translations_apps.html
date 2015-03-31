@@ -4,14 +4,14 @@
 <h1>Apps</h1>
 
 <ul>
-    {% if not urls %}
+    {% if not apps %}
         <li>No app found</li>
     {% else %}
         {% for url, bundles in apps.iteritems() %}
-            <li>{{ url }}</li>
+            <li><a href="{{ url }}">{{ url }}</a></li>
             <ul>
                 {% for bundle in bundles %}
-                <li><a href="{{ url_for('.translations_app_xml', lang=bundle['lang'], target=bundle['target'], url = url) }}">{{ bundle['lang'] }} - {{ bundle['target'] }}</a></li>
+                <li><a href="{{ url_for('.translations_app_xml', lang=bundle['lang'], target=bundle['target'], app_url = url) }}">{{ bundle['lang'] }} - {{ bundle['target'] }}</a></li>
                 {% endfor %}
             </ul>
         {% endfor %}
