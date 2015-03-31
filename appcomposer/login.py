@@ -154,7 +154,7 @@ def graasp_oauth_login_redirect():
         'Authorization': 'Bearer {}'.format(access_token),
     }
 
-    return requests.get('http://graasp.eu/api/users/me', headers = headers).text
+    return requests.get('http://graasp.eu/users/me', headers = headers).text
 
 SHINDIG = 'http://shindig2.epfl.ch'
 
