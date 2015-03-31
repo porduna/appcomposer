@@ -14,6 +14,10 @@ function EditMessageController($scope, $log, $resource) {
     // Scope-related
     // --------------
 
+    /* SCOPE DATA */
+
+    $scope.messageActive = false;
+
     $scope.currentValue = $scope.item.target;
     $scope.savedValue = $scope.item.target; // Value saved into the server
     $scope.savingValue = $scope.item.target; // Value being saved
@@ -23,15 +27,58 @@ function EditMessageController($scope, $log, $resource) {
     $scope.status.error = false; // Error occurred when trying to save.
 
 
+    /* SCOPE METHODS */
+
     $scope.onFocus = onFocus;
     $scope.onChange = onChange;
     $scope.onKey = onKey;
     $scope.isSaved = isSaved;
+    $scope.shouldDisplayDetails = shouldDisplayDetails;
+    $scope.suggestionSelected = suggestionSelected;
 
+
+    /* SCOPE EVENTS */
+
+    // Listen for focus events from our sibling directives.
+    $scope.$on("edit-message-focused", onEditMessageFocused);
 
     // --------------
     // Implementations
     // --------------
+
+    /**
+     * A suggestion was clicked. We should apply it and unfocus the control.
+     */
+    function suggestionSelected() {
+        if($scope.selected == undefined || $scope.selected.suggestion == undefined)
+            return;
+
+        $log.debug("Selected suggestion: " + $scope.selected.suggestion.target);
+
+        $scope.currentValue = $scope.selected.suggestion.target;
+        // The above currentValue setting should suffice, but in this case we want it to take effect immediately
+        // so that the fake onChange() call can detect it.
+        $scope.setCurrentTextValue($scope.selected.suggestion.target);
+
+        $scope.focusTextInput();
+        $scope.selected.suggestion = "";
+
+        // Trigger a fake onChange event.
+        onChange();
+    } // !suggestionSelected
+
+    /**
+     * Handles an edit-message-focused event, which will often be emmited
+     * by our sibling directives. We hide our details page if one of our siblings has the focus.
+     */
+    function onEditMessageFocused(event, args) {
+        $log.debug("[onEditMessageFocused]");
+
+        var key = args.key;
+
+        if($scope.key != key)
+            $scope.messageActive = false;
+    } // !onEditMessageFocused
 
     /**
      * True if the form is currently displaying the saved version of the text.
@@ -41,12 +88,16 @@ function EditMessageController($scope, $log, $resource) {
     } // !isSaved
 
     function onFocus() {
+        $scope.messageActive = true;
+
+        // Inform whoever may be interested (probably our sibling edit-message directives) that we have been
+        // selected.
+        $scope.$parent.$parent.$broadcast("edit-message-focused", {key: $scope.key});
     } // !onFocus
 
     function onChange() {
         $log.debug("[EditMessageController/onChange]");
-
-        if (!isSaved) {
+        if (!isSaved()) {
             // We should query a server-side update.
 
             $scope.status.saving = true;
@@ -57,7 +108,7 @@ function EditMessageController($scope, $log, $resource) {
                 value: $scope.value
             };
 
-            var UpdateMessagePut = $resource(APP_DYN_ROOT + "api/bundle/updateMessage/:appurl/:targetlang/:targetgroup",
+            var UpdateMessagePut = $resource(APP_DYN_ROOT + "api/apps/:appurl/bundles/:targetlang/:targetgroup/updateMessage",
             {
                 "appurl": $scope.bundle.appurl,
                 "targetlang": $scope.bundle.targetlang,
@@ -90,6 +141,11 @@ function EditMessageController($scope, $log, $resource) {
     } // !onUpdateFailure
 
 
+    function shouldDisplayDetails(result) {
+        return $scope.messageActive;
+    } // !shouldDisplayDetails
+
+
     function onKey(event) {
         if (event.keyCode == 27) {
             $log.debug("Rolling back to " + $scope.unchangedValue);
@@ -97,6 +153,5 @@ function EditMessageController($scope, $log, $resource) {
             this.getModelController().$rollbackViewValue();
         }
     } // !onKey
-
 
 } // !EditMessageController

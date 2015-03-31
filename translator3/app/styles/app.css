@@ -112,3 +112,17 @@ label.ac-edit-message-label {
 span[name=ac-saved-icon] {
     color: gray;
 }
+
+.ac-edit-message-details {
+    border: 1px solid #AAAAAA;
+    border-radius: 3px;
+    background-color: #F0F0FF;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin: 2px 5px 5px 2px;
+}
+
+
+.ac-edit-suggestion-select>option:empty {
+    display:none;
+}

@@ -11,4 +11,20 @@
             <span ng-show="status.saving" class="fa fa-spinner fa-spin form-control-feedback ac-fa-control-feedback"></span>
         </div>
     </div>
+
+    <div ng-show="shouldDisplayDetails()" class="ac-edit-message-details">
+            <div class="form-group">
+                <div class="col-xs-6">
+                    <label class="control-label">
+                        Suggested automatic translations:
+                    </label>
+                    <select ng-change="suggestionSelected()" ng-click="" class="form-control ac-edit-suggestion-select" size="6" ng-model="selected.suggestion"
+                        ng-options="suggestion as suggestion.target for suggestion in item.suggestions | orderBy:'suggestion.weight'"
+                        class="form-control">
+                        <option value=""></option> <!-- Placing this is a MUST to avoid some weird two-clicks required bug -->
+                    </select>
+                </div>
+            </div>
+    </div>
+
 </form>

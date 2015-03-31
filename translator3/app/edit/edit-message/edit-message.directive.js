@@ -22,17 +22,28 @@ function acEditMessage() {
 
         var input = elem.find("input");
 
+        scope.setCurrentTextValue = setCurrentTextValue;
         scope.getCurrentTextValue = getCurrentTextValue;
         scope.getModelController = getModelController;
+        scope.focusTextInput = focusTextInput;
 
         function getCurrentTextValue() {
             return input.val();
         } // !getCurrentTextValue
+
+        function setCurrentTextValue(val) {
+            input.val(val);
+        } // !setCurrentTextValue
 
 
         function getModelController() {
             return input.data('$ngModelController');
         }
 
+        function focusTextInput() {
+            input.focus();
+        }
+
     } // !acEditMessageLink
+
 } // !acEditMessage
