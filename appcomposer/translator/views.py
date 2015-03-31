@@ -21,7 +21,7 @@ from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle
 from appcomposer.login import requires_login, current_user
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
-from appcomposer.translator.ops import add_full_translation_to_app 
+from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions
 from appcomposer.translator.utils import bundle_to_xml, url_to_filename
 
 translator_blueprint = Blueprint('translator', __name__)
@@ -39,7 +39,42 @@ def translator_index():
 @translator_blueprint.route('/translate')
 @requires_login
 def translate():
-    return "Now I should translate something"
+    app_url = request.args.get('app_url')
+    language = request.args.get('lang')
+    target = request.args.get('target')
+
+    errors = []
+    if not app_url:
+        errors.append("'app_url' argument missing")
+    if not language:
+        errors.append("'lang' argument missing")
+    if not target:
+        errors.append("'target' argument missing")
+    if errors:
+        return '; '.join(errors), 400
+
+    translation_url, original_messages = extract_local_translations_url(app_url)
+    response = {
+        # 'hello_key' : {
+        #    'original' : 'Hello',
+        #    'stored' : 'Hola', # or None
+        #    'suggestions': ['Hola', 'Aupa', 'Holaaa'],
+        # }
+    }
+
+    stored_translations = retrieve_stored(translation_url, language, target)
+    suggestions = retrieve_suggestions(original_messages, language, target, stored_translations)
+    for key, value in original_messages.iteritems():
+        response[key] = {
+            'original' : value,
+            'stored' : stored_translations.get(key),
+            'suggestions' : suggestions.get(key, []),
+        }
+
+    response = json.dumps(response, indent = 4)
+    if False:
+        return "<html><body>%s</body></html>" % response
+    return response
 
 TARGET_CHOICES = []
 TARGETS = obtain_groups()
