@@ -64,9 +64,29 @@ h1 img.app-title-thumb {
 
 
 
-/*******************
-For the app/edit screen.
-********************/
+/*-------------------------
+GENERAL TYPESETTING
+--------------------------*/
+
+.ac-text-danger {
+    color: #AA3333;
+}
+
+/* To contain errors. */
+.ac-error-box {
+    border: 1px solid #AA3333;
+    border-radius: 2px;
+    background-color: #F0E0E0;
+    padding-left: 3px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+
+
+/*-------------------------
+FOR THE APP / EDIT SCREEN
+---------------------------*/
 
 .fa.form-control-feedback.ac-fa-control-feedback {
     font-size: 25px;

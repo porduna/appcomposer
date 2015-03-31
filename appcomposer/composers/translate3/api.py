@@ -180,6 +180,7 @@ def create_language(appurl, targetlang):
     return jsonify(**data)
 
 @translate3_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>/<targetgroup>", methods=["POST"])
+@cross_origin()
 def create_group(appurl, targetlang, targetgroup):
     data = {"result": "ok"}
     return jsonify(**data)

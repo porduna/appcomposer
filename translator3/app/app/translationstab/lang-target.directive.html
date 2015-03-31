@@ -12,14 +12,18 @@
                 <ui-select-match placeholder="Select a new language">
                     {{ all_languages[add.lang] }}</ui-select-match>
                 <!-- we get all_languages from $parent because otherwise it doesn't seem to work -->
-                <ui-select-choices repeat="lang in objectKeys(all_languages)">
+                <ui-select-choices repeat="lang in languagesThatCanBeAdded()">
                     <div ng-bind-html="all_languages[lang] | highlight: $select.search"></div>
                 </ui-select-choices>
             </ui-select>
 
-            <button ng-disabled="!add.lang" class="btn btn-success" style="padding: 3px 9px 3px 9px"><i
+            <button ng-disabled="!add.lang" ng-click="addNewLanguage()" class="btn btn-success" style="padding: 3px 9px 3px 9px"><i
                     class="fa fa-plus" style=""></i> Add new
             </button>
+
+            <div ng-show="addLanguageError">
+                <p class="ac-text-danger ac-error-box">{{ addLanguageError }}</p>
+            </div>
 
         </div>
 
@@ -42,14 +46,18 @@
             <ui-select ng-model="add.group" theme="select2" style="min-width: 200px; padding-bottom: 5px">
                 <ui-select-match placeholder="Select a new group">
                     {{ all_groups[add.group] }}</ui-select-match>
-                <ui-select-choices repeat="group in objectKeys(all_groups)">
+                <ui-select-choices repeat="group in groupsThatCanBeAdded()">
                     <div ng-bind-html="all_groups[group] | highlight: $select.search"></div>
                 </ui-select-choices>
             </ui-select>
 
-            <button ng-disabled="!add.group" class="btn btn-success" style="padding: 3px 9px 3px 9px"><i
+            <button ng-disabled="!add.group" ng-click="addNewGroup()" class="btn btn-success" style="padding: 3px 9px 3px 9px"><i
                     class="fa fa-plus" style=""></i> Add new
             </button>
+
+            <div ng-show="addGroupError">
+                <p class="ac-text-danger ac-error-box">{{ addGroupError }}</p>
+            </div>
 
         </div>
 

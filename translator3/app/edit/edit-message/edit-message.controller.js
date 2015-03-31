@@ -95,11 +95,6 @@ function EditMessageController($scope, $log, $resource) {
             $log.debug("Rolling back to " + $scope.unchangedValue);
 
             this.getModelController().$rollbackViewValue();
-
-/*            // Rollback the change. Simply changing the currentValue in the scope is *not* enough.
-            $scope.currentValue = $scope.unchangedValue;
-            event.target.value = $scope.currentValue;
-            event.target.blur();*/
         }
     } // !onKey
 

@@ -3,7 +3,7 @@ angular
     .controller('LangTargetController', LangTargetController);
 
 
-function LangTargetController($scope, $rootScope) {
+function LangTargetController($scope, $rootScope, $resource) {
 
     //////////////////
     // Initializations
@@ -22,6 +22,9 @@ function LangTargetController($scope, $rootScope) {
     $scope.all_languages = $rootScope.all_languages;
     $scope.all_groups = $rootScope.all_groups;
 
+    $scope.addGroupError = "";
+    $scope.addLanguageError = "";
+
 
     // If we don't initialize it, the ui-select does not work.
     $scope.add = {};
@@ -30,6 +33,11 @@ function LangTargetController($scope, $rootScope) {
     /* SCOPE METHODS */
 
     $scope.filteredObjectKeys = filteredObjectKeys;
+
+    $scope.languagesThatCanBeAdded = languagesThatCanBeAdded;
+    $scope.groupsThatCanBeAdded = groupsThatCanBeAdded;
+    $scope.addNewLanguage = addNewLanguage;
+    $scope.addNewGroup = addNewGroup;
     $scope.onTargetSelected = onTargetSelected;
 
     /* SCOPE WATCHES */
@@ -72,6 +80,94 @@ function LangTargetController($scope, $rootScope) {
 
         return filteredKeys;
     }
+
+    /**
+     * Returns the list of languages that can be added. That is, the list of
+     * all languages except those that are present already.
+     */
+    function languagesThatCanBeAdded() {
+        var all = $scope.objectKeys($scope.all_languages);
+        var existing = $scope.objectKeys($scope.appinfo.translations);
+
+        return $(all).not(existing).get();
+    } // !languagesThatCanBeAdded
+
+
+    function groupsThatCanBeAdded() {
+        if($scope.selected == undefined || $scope.selected.lang_info == undefined)
+            return [];
+        var existing = $scope.objectKeys($scope.selected.lang_info.targets);
+        var all = $scope.objectKeys($scope.all_groups);
+
+        return $(all).not(existing).get();
+    } // !groupsThatCanBeAdded
+
+
+    /**
+     * Adds a new language to the current application.
+     */
+    function addNewLanguage() {
+        var data = {
+        };
+
+        var UpdateMessagePut = $resource(APP_DYN_ROOT + "api/apps/:appurl/bundles/:targetlang",
+        {
+            "appurl": $scope.appinfo.url,
+            "targetlang": $scope.selected.lang
+        }, {
+            save: {
+                method: 'POST'
+            }
+        });
+
+        var result = UpdateMessagePut.save({}, data);
+
+        result.$promise.then(onAddNewLanguageSuccess, onAddNewLanguageFailure);
+    } // !addNewLanguage
+
+
+    function onAddNewLanguageSuccess() {
+        $scope.$emit('language-added', {success: true});
+    } // !onAddNewLanguageSuccess
+
+
+    function onAddNewLanguageFailure() {
+        $scope.$emit('language-added', {success: false});
+        $scope.addLanguageError = "Could not add language";
+    } // !onAddNewLanguageFailure
+
+
+    function addNewGroup() {
+        var data = {
+        };
+
+        var UpdateMessagePut = $resource(APP_DYN_ROOT + "api/apps/:appurl/bundles/:targetlang/:targetgroup",
+        {
+            "appurl": $scope.appinfo.url,
+            "targetlang": $scope.selected.lang,
+            "targetgroup": $scope.selected.target
+        }, {
+            save: {
+                method: 'POST'
+            }
+        });
+
+        var result = UpdateMessagePut.save({}, data);
+
+        result.$promise.then(onAddNewGroupSuccess, onAddNewGroupFailure);
+    } // !addNewGroup
+
+
+    function onAddNewGroupSuccess() {
+        $scope.$emit('group-added', {success: true});
+    } // !onAddNewGroupSuccess
+
+
+    function onAddNewGroupFailure() {
+        $scope.$emit('group-added', {success: false});
+        $scope.addGroupError = "Could not add group";
+    } // !onAddNewGroupFailure
+
 
     function onLangSelected(newval, oldval) {
         if (newval == undefined)
