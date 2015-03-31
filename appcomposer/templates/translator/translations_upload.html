@@ -1,4 +1,8 @@
 {% extends "translator/base.html" %}
+{% block head %}
+<link href="{{ url_for('admin.static', filename='select2/select2.css') }}" rel="stylesheet">
+{% endblock %}
+
 {% block body %}
 
 <h1>Upload translations</h1>
@@ -8,15 +12,39 @@
 <form action="{{ url_for('.translation_upload') }}" method="post" enctype="multipart/form-data" class="form-horizontal">
     {{ form.csrf_token }}
     <div class="form-group">
-        <label for="url" class="col-sm-2 control-label">OpenSocial URL:</label>
+        {{ form.url.label(class="col-sm-2 control-label") }}
         <div class="col-sm-6">
-             <input type="text" class="form-control" id="url" placeholder="OpenSocial URL">
+            {{ form.url(class="form-control", placeholder = "OpenSocial URL") }}
+            {% for error in form.url.errors %}
+            <span class="help-inline" style="color: red">{{ error }}</span>
+            {% endfor %}
         </div>
     </div>
     <div class="form-group">
-        <label for="opensocial_xml" class="col-sm-2 control-label">Translation file:</label>
+        {{ form.language.label(class="col-sm-2 control-label") }}
         <div class="col-sm-6">
-            {{form.opensocial_xml(class="form-control")}}
+            {{ form.language(style="width: 200px") }}
+            {% for error in form.language.errors %}
+            <span class="help-inline" style="color: red">{{ error }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="form-group">
+        {{ form.target.label(class="col-sm-2 control-label") }}
+        <div class="col-sm-6">
+            {{ form.target(class="form-control") }}
+            {% for error in form.target.errors %}
+            <span class="help-inline" style="color: red">{{ error }}</span>
+            {% endfor %}
+        </div>
+    </div>
+    <div class="form-group">
+        {{ form.opensocial_xml.label(class="col-sm-2 control-label") }}
+        <div class="col-sm-6">
+            {{form.opensocial_xml(style="width: 200px")}}
+            {% for error in form.opensocial_xml.errors %}
+            <span class="help-inline" style="color: red">{{ error }}</span>
+            {% endfor %}
         </div>
     </div>
     <div class="form-group">
@@ -26,4 +54,14 @@
     </div>
 </form>
 
+
+{% endblock %}
+
+{% block tail %}
+    <script src="{{ url_for('admin.static', filename='select2/select2.min.js') }}"></script>
+    <script>
+        $(document).ready(function() { 
+            $("#language").select2();
+        });
+    </script>
 {% endblock %}

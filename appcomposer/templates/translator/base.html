@@ -12,6 +12,29 @@
 </head>
 <body>
     <div class="container">
+          {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+              {% for category, m in messages %}
+                {% if category == 'error' %}
+                <div class="alert alert-error">
+                {% elif category == 'success' %}
+                <div class="alert alert-success">
+                {% elif category == 'info' %}
+                <div class="alert alert-info">
+                {% elif category == 'warning' %}
+                <div class="alert alert-warning">
+                {% elif category == 'danger' %}
+                <div class="alert alert-danger">
+                {% else %}
+                <div class="alert alert-info">
+                {% endif %}
+                  <a href="javascript:void(0)" class="close" data-dismiss="alert">x</a>
+                  {{ m }}
+                </div>
+              {% endfor %}
+            {% endif %}
+          {% endwith %}
+
         {% block body %}{% endblock %}
     </div>
 
@@ -22,5 +45,9 @@
                 AppComposer, {{ gettext('the %(link)s application creator for teachers', link = '<a href="http://www.go-lab-project.eu/">Go-Lab</a>'|safe) }}.</p>
         </footer>
     </div>
+
+    <script src="{{ url_for('static', filename='js/jquery-1.9.1.min.js') }}" type="text/javascript"></script>
+    {% block tail %}
+    {% endblock %}
 </body>
 </html>
