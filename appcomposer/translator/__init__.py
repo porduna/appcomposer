@@ -8,10 +8,15 @@ import xml.etree.ElementTree as ET
 from sqlalchemy.orm import joinedload_all
 
 from flask import Blueprint, make_response, render_template
+from flask.ext.wtf import Form
+from flask.ext.wtf.file import FileField
+from wtforms.fields.html5 import URLField
+from wtforms.validators import url
 
 from appcomposer import db
 from appcomposer.models import TranslatedApp, TranslationUrl
 from appcomposer.login import requires_login
+from appcomposer.translator.languages import obtain_groups, obtain_languages
 
 translator_blueprint = Blueprint('translator', __name__)
 
@@ -30,10 +35,22 @@ def translator_index():
 def translate():
     return "Now I should translate something"
 
-@translator_blueprint.route('/translations/upload/')
+print obtain_groups()
+print obtain_languages()
+
+class UploadForm(Form):
+    url = URLField("App URL", validators=[url()])
+    
+    opensocial_xml = FileField('OpenSocial XML file')
+
+@translator_blueprint.route('/translations/upload/', methods = ('GET', 'POST'))
 @requires_login
 def translation_upload():
-    pass
+    form = UploadForm()
+    if form.validate_on_submit():
+        print form.opensocial_xml.data
+
+    return render_template('translator/translations_upload.html', form=form)
 
 @translator_blueprint.route('/translations/')
 @public
@@ -65,6 +82,12 @@ def translations_apps():
                 'lang' : bundle.language,
             })
     return render_template("translator/translations_apps.html", apps = apps)
+
+# 
+# TODO:
+# 1. Zip file for all the translations for a given URL
+# 2. Zip file for all the translations
+# 
 
 @translator_blueprint.route('/translations/apps/<lang>/<target>/<path:url>')
 @public

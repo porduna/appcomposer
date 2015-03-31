@@ -1,0 +1,29 @@
+{% extends "translator/base.html" %}
+{% block body %}
+
+<h1>Upload translations</h1>
+
+<p>Upload your own translation:</p>
+
+<form action="{{ url_for('.translation_upload') }}" method="post" enctype="multipart/form-data" class="form-horizontal">
+    {{ form.csrf_token }}
+    <div class="form-group">
+        <label for="url" class="col-sm-2 control-label">OpenSocial URL:</label>
+        <div class="col-sm-6">
+             <input type="text" class="form-control" id="url" placeholder="OpenSocial URL">
+        </div>
+    </div>
+    <div class="form-group">
+        <label for="opensocial_xml" class="col-sm-2 control-label">Translation file:</label>
+        <div class="col-sm-6">
+            {{form.opensocial_xml(class="form-control")}}
+        </div>
+    </div>
+    <div class="form-group">
+        <div class="col-sm-offset-2 col-sm-10">
+            <button type="submit" class="btn btn-default">Upload</button>
+        </div>
+    </div>
+</form>
+
+{% endblock %}
