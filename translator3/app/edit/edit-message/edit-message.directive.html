@@ -1,13 +1,14 @@
-<div class="col-lg-12 form-group">
-    <label for="field_1" class="ac-edit-message-label col-lg-5 control-label" style="text-align: left" title="{{ key }}">
-        <div style="display:inline" title="{{ key }}">
-            {{ item.source }}
-        </div>
-    </label>
+<form name="ac-edit-message-form" class="form-horizontal ac-edit-message-form">
+    <div class="form-group has-feedback ac-edit-message-form-group">
+        <label for="next" class="col-xs-6 control-label ac-edit-message-label" title="{{ key }}">{{ item.source }}</label>
 
-    <div class="ac-message col-lg-7">
-        <input ng-change="onChange()" ng-model="currentValue" ng-model-options="{ updateOn: 'change blur' }"
-               ng-keyup="onKey($event)" type="text" class="form-control"
-               placeholder="{{ item.source }}"/>
+        <div class="col-xs-6">
+            <input ng-focus="onFocus()" ng-change="onChange()" ng-model="currentValue" ng-model-options="{ updateOn: 'change blur' }"
+                   ng-keyup="onKey($event)" name="ac-edit-message-input" class="form-control ac-edit-message-input"
+                   type="text" placeholder="{{ item.source }}"/>
+
+            <span ng-show="!status.saving && isSaved()" title="Saved" name="ac-saved-icon" class="fa fa-save form-control-feedback ac-fa-control-feedback"></span>
+            <span ng-show="status.saving" class="fa fa-spinner fa-spin form-control-feedback ac-fa-control-feedback"></span>
+        </div>
     </div>
-</div>
+</form>

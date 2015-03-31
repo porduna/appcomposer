@@ -68,6 +68,11 @@ h1 img.app-title-thumb {
 For the app/edit screen.
 ********************/
 
+.fa.form-control-feedback.ac-fa-control-feedback {
+    font-size: 25px;
+    top: 5px;
+}
+
 .ac-edit-change-source {
     text-align: left;
 
@@ -77,5 +82,13 @@ For the app/edit screen.
 }
 
 label.ac-edit-message-label {
+    text-align: left !important;
+}
 
+.ac-edit-message-form-group {
+
+}
+
+span[name=ac-saved-icon] {
+    color: gray;
 }

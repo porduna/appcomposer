@@ -20,5 +20,19 @@ function acEditMessage() {
 
     function acEditMessageLink(scope, elem, attrs, ctrl) {
 
+        var input = elem.find("input");
+
+        scope.getCurrentTextValue = getCurrentTextValue;
+        scope.getModelController = getModelController;
+
+        function getCurrentTextValue() {
+            return input.val();
+        } // !getCurrentTextValue
+
+
+        function getModelController() {
+            return input.data('$ngModelController');
+        }
+
     } // !acEditMessageLink
 } // !acEditMessage

@@ -41,7 +41,7 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
         $log.debug("[changeSourceLanguage]");
 
         var modal = $modal.open({
-            templateUrl: 'edit/change-source.modal.html',
+            templateUrl: 'edit/change-source/change-source.modal.html',
             controller: 'ChangeSourceController',
             controllerAs: 'changeSourceController',
             backdrop: true,
