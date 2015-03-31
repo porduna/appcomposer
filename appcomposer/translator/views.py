@@ -2,8 +2,10 @@
 New translator
 """
 
+import os
 import json
-import xml.etree.ElementTree as ET
+import zipfile
+import StringIO
 
 from sqlalchemy.orm import joinedload_all
 
@@ -19,7 +21,8 @@ from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle
 from appcomposer.login import requires_login, current_user
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
-from appcomposer.translator.ops import add_full_translation_to_app
+from appcomposer.translator.ops import add_full_translation_to_app 
+from appcomposer.translator.utils import bundle_to_xml, url_to_filename
 
 translator_blueprint = Blueprint('translator', __name__)
 
@@ -132,12 +135,6 @@ def translations_apps():
             pass
     return render_template("translator/translations_apps.html", apps = apps)
 
-# 
-# TODO:
-# 1. Zip file for all the translations for a given URL
-# 2. Zip file for all the translations
-# 
-
 @translator_blueprint.route('/translations/apps/<lang>/<target>/<path:app_url>')
 @public
 def translations_app_xml(lang, target, app_url):
@@ -146,6 +143,46 @@ def translations_app_xml(lang, target, app_url):
         return "Translation App not found in the database", 404
 
     return translations_url_xml(lang, target, translation_app.translation_url.url)
+
+@translator_blueprint.route('/translations/apps/all.zip')
+@public
+def translations_app_all_zip():
+    translated_apps = db.session.query(TranslatedApp).filter_by().all()
+    sio = StringIO.StringIO()
+    zf = zipfile.ZipFile(sio, 'w')
+    for translated_app in translated_apps:
+        translated_app_filename = url_to_filename(translated_app.url)
+        if translated_app.translation_url:
+            for bundle in translated_app.translation_url.bundles:
+                xml_contents = bundle_to_xml(bundle)
+                zf.writestr('%s_%s.xml' % (os.path.join(translated_app_filename, bundle.language), bundle.target), xml_contents)
+    zf.close()
+
+    resp = make_response(sio.getvalue())
+    resp.content_type = 'application/zip'
+    return resp
+
+@translator_blueprint.route('/translations/apps/all/<path:app_url>')
+@public
+def translations_app_url_zip(app_url):
+    translated_app = db.session.query(TranslatedApp).filter_by(url = app_url).first()
+    if translated_app is None:
+        return "Translation App not found in the database", 404
+   
+    sio = StringIO.StringIO()
+    zf = zipfile.ZipFile(sio, 'w')
+    translated_app_filename = url_to_filename(translated_app.url)
+    if translated_app.translation_url:
+        for bundle in translated_app.translation_url.bundles:
+            xml_contents = bundle_to_xml(bundle)
+            zf.writestr('%s_%s.xml' % (bundle.language, bundle.target), xml_contents)
+    zf.close()
+
+    resp = make_response(sio.getvalue())
+    resp.content_type = 'application/zip'
+    resp.headers['Content-Disposition'] = 'attachment;filename=%s.zip' % translated_app_filename
+    return resp
+
 
 @translator_blueprint.route('/translations/urls/<lang>/<target>/<path:url>')
 @public
@@ -158,12 +195,8 @@ def translations_url_xml(lang, target, url):
     if bundle is None:
         return "Translation URL found, but no translation for that language or target"
 
-    xml_bundle = ET.Element("messagebundle")
-    for message in bundle.active_messages:  
-        xml_msg = ET.SubElement(xml_bundle, 'msg')
-        xml_msg.attrib['name'] = message.key
-        xml_msg.text = message.value
-
-    resp = make_response(ET.tostring(xml_bundle, encoding = 'utf8'))
+    messages_xml = bundle_to_xml(bundle)
+    resp = make_response(messages_xml)
     resp.content_type = 'application/xml'
     return resp
+

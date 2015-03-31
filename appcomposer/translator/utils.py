@@ -47,3 +47,32 @@ def extract_messages_from_translation(xml_contents):
             raise Exception("Invalid translation file: no name in msg tag")
         messages[xml_msg.attrib['name']] = xml_msg.text
     return messages
+
+
+def indent(elem, level=0):
+    i = "\n" + level*"  "
+    if len(elem):
+        if not elem.text or not elem.text.strip():
+            elem.text = i + "  "
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+        for elem in elem:
+            indent(elem, level+1)
+        if not elem.tail or not elem.tail.strip():
+            elem.tail = i
+    else:
+        if level and (not elem.tail or not elem.tail.strip()):
+            elem.tail = i
+
+def bundle_to_xml(db_bundle):
+    xml_bundle = ET.Element("messagebundle")
+    for message in db_bundle.active_messages:  
+        xml_msg = ET.SubElement(xml_bundle, 'msg')
+        xml_msg.attrib['name'] = message.key
+        xml_msg.text = message.value
+    indent(xml_bundle)
+    xml_string = ET.tostring(xml_bundle, encoding = 'utf8')
+    return xml_string
+
+def url_to_filename(url):
+    return requests.utils.quote(url, '').replace('%', '_')

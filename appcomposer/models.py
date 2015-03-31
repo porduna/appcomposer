@@ -310,7 +310,7 @@ class TranslatedApp(db.Model):
         if isinstance(translation_url, basestring):
             raise Exception("TranslationApp requires a TranslationUrl, not a string")
 
-        self.translations_url = translation_url
+        self.translation_url = translation_url
 
 class TranslationBundle(db.Model):
     __tablename__ = 'TranslationBundles'
