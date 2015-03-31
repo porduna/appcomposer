@@ -8,7 +8,7 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     // Initialization
     /////////
 
-    var TranslationInfo = $resource(APP_DYN_ROOT + "api/bundle/:appurl/:srclang/:srcgroup/:targetlang/:targetgroup");
+    var TranslationInfo = $resource(APP_DYN_ROOT + "api/apps/:appurl/bundles/:targetlang/:targetgroup/translationInfo/:srclang/:srcgroup");
     var Appinfo = $resource(APP_DYN_ROOT + "api/apps/:appurl");
 
     /////////

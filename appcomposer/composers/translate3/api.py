@@ -38,9 +38,9 @@ def translations():
     data = json.dumps(retrieve_translations())
     return Response(data, mimetype="application/json")
 
-@translate3_blueprint.route("/api/bundle/<path:appurl>/<srclang>/<srcgroup>/<targetlang>/<targetgroup>")
+@translate3_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>/<targetgroup>/translationInfo/<srclang>/<srcgroup>")
 @cross_origin()
-def bundle(appurl, srclang, srcgroup, targetlang, targetgroup):
+def bundle(appurl, targetlang, targetgroup, srclang, srcgroup):
     """
     Retrieves information about a specific translation (bundle).
     :param appurl:
@@ -52,7 +52,7 @@ def bundle(appurl, srclang, srcgroup, targetlang, targetgroup):
     """
     data = {
         "url": "http://www.applications.com/app.xml",
-        "app_thumb": "http://www.golabz.eu/sites/default/files/styles/overview/public/images/app/app-image/statistics.png",
+        "app_thumb": "http://www.golabz.eu/sites/default/files/styles/overview/public/images/app/app-image/Action%20Statistics_no_title.png",
         "name": "My Application",
         "translation": {
             "ht_hello_world": {
@@ -133,7 +133,7 @@ def app(appurl):
 
     data = {
         "url": "http://www.applications.com/app.xml",
-        "app_thumb": "http://www.golabz.eu/sites/default/files/styles/overview/public/images/app/app-image/statistics.png",
+        "app_thumb": "http://www.golabz.eu/sites/default/files/styles/overview/public/images/app/app-image/Action%20Statistics_no_title.png",
         "name": "My Application",
         "desc": "This is only a test application which does not really exist.",
         "translations": {
@@ -173,7 +173,18 @@ def app(appurl):
 
     return jsonify(**data)
 
-@translate3_blueprint.route("/api/bundle/updateMessage/<path:appurl>/<targetlang>/<targetgroup>", methods=["GET", "PUT"])
+@translate3_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>", methods=["POST"])
+@cross_origin()
+def create_language(appurl, targetlang):
+    data = {"result": "ok"}
+    return jsonify(**data)
+
+@translate3_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>/<targetgroup>", methods=["POST"])
+def create_group(appurl, targetlang, targetgroup):
+    data = {"result": "ok"}
+    return jsonify(**data)
+
+@translate3_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>/<targetgroup>/updateMessage", methods=["GET", "PUT"])
 @cross_origin()
 def bundle_update(appurl, targetlang, targetgroup):
     key = request.values.get("key")
