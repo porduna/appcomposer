@@ -268,23 +268,43 @@ class RepositoryApp(db.Model):
     __tablename__ = 'RepositoryApps'
 
     id = db.Column(db.Integer, primary_key=True)
-    repository = db.Column(db.Unicode(400), nullable = False, index = True)
-    url = db.Column(db.Unicode(255), unique = True, nullable = False, index = True)
+
     name = db.Column(db.Unicode(200), nullable = False, index = True)
+    url = db.Column(db.Unicode(255), unique = True, nullable = False, index = True)
+    app_thumb = db.Column(db.Unicode(255))
+    description = db.Column(db.UnicodeText)
+
+    repository = db.Column(db.Unicode(400), nullable = False, index = True)
+    external_id = db.Column(db.Unicode(200), index = True)
+
     adaptable = db.Column(db.Boolean, index = True)
     translatable = db.Column(db.Boolean, index = True)
+
     original_translations = db.Column(db.Unicode(255))
+
     last_check = db.Column(db.DateTime, index = True)
     last_change = db.Column(db.DateTime, index = True)
     failing = db.Column(db.Boolean, index = True)
     failing_since = db.Column(db.DateTime, index = True)
-    http_last_modified = db.Column(db.Unicode(64))
-    http_etag = db.Column(db.Unicode(64))
 
-    def __init__(self, name, url, repository):
+    def __init__(self, name, url, repository, external_id = None):
         self.name = name
         self.url = url
         self.repository = repository
+        self.external_id = unicode(external_id)
+
+        self.app_thumb = None
+        self.description = None
+
+        self.adaptable = False
+        self.translatable = False
+        self.original_translations = ""
+
+        self.last_check = None
+        self.last_change = None
+        
+        self.failing = False
+        self.failing_since = None
 
 
 class TranslationUrl(db.Model):

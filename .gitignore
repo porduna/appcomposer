@@ -1,4 +1,5 @@
 # Appcomposer
+web_cache
 config.py
 database.db
 stdout.txt
