@@ -1,5 +1,5 @@
 <div class="modal-header">
-    <h3 class="modal-title">Change source language</h3>
+    <h1 class="modal-title">Change source language</h1>
 </div>
 <div class="modal-body">
 
@@ -8,7 +8,7 @@
 
         <div class="col-xs-6">
             <form role="form">
-                <h3 ac-translate-me>Language: </h3>
+                <label ac-translate-me>Language: </label>
 
                 <select size="6" ng-model="selected.lang"
                         ng-options="lang as info['name'] for (lang, info) in appinfo.translations"
@@ -20,9 +20,10 @@
         <div class="col-xs-6">
             <form role="form">
 
-                <h3 ng-if="selected.lang"> {{ ('Target'|translate) + ' (' + appinfo.translations[selected.lang].name + ')' }} </h3>
+                <label ng-if="selected.lang"> {{ ('Target'|translate) +
+                    ' (' + appinfo.translations[selected.lang].name + ')' }} </label>
 
-                <h3 ng-if="!selected.lang"> {{ ('Target'|translate) }} </h3>
+                <label ng-if="!selected.lang"> {{ ('Target'|translate) }} </label>
 
                 <select size="6" ng-model="selected.target"
                         ng-options="group as info['name'] for (group, info) in selected.lang_info.targets"
@@ -35,6 +36,6 @@
 
     </div>
     <div class="modal-footer">
-        <button class="btn btn-primary" ng-click="ok()">OK</button>
+        <button class="btn btn-success" ng-click="ok()">OK</button>
         <button class="btn btn-warning" ng-click="cancel()">Cancel</button>
     </div>

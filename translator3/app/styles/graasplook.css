@@ -200,7 +200,29 @@ label {
 }
 
 
+/* MODALS */
 
+.modal-content {
+    border: 2px solid rgb(125, 125, 209);
+    border-radius: 0;
+    background-color: rgb(245, 245, 245);
+}
+
+/* Make a proper "title-bar-like" h1. Issues may appear if we use any other thing than h1 */
+.modal-content h1 {
+    margin-left: -15px;
+    margin-right: -15px;
+    margin-top: -15px;
+}
+
+.modal-header {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.modal-footer {
+    border: 0;
+}
 
 
 
