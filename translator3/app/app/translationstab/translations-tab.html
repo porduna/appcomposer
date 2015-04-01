@@ -1,29 +1,26 @@
 <div class="row" ng-controller="TranslationsTabCtrl">
 
-    <div class="row">
+    <ac-lang-target appinfo="appinfo" selected="selected_source" all_languages="all_languages"
+                    all_groups="all_groups"></ac-lang-target>
 
-        <ac-lang-target appinfo="appinfo" selected="selected_source" all_languages="all_languages" all_groups="all_groups"></ac-lang-target>
+    <div class="col-md-6 col-sm-12">
+        <h3 ac-translate-me>Details:</h3>
 
-        <div class="col-md-6 col-sm-12">
-            <h3 ac-translate-me>Details:</h3>
+        <a ng-href="#/edit/{{ selected_source.lang }}/{{ selected_source.target }}/{{ appurl }}/">
+            <div class="btn btn-success">
+                <i class="fa fa-edit"></i> {{ 'Edit translation' | translate }}
+            </div>
+        </a>
 
-            <a ng-href="#/edit/{{ selected_source.lang }}/{{ selected_source.target }}/{{ appurl }}/">
-                <div class="btn btn-success">
-                    <i class="fa fa-edit"></i> {{ 'Edit translation' | translate }}
-                </div>
-            </a>
+        <dl class="" style="padding-top: 1em">
 
-            <dl class="" style="padding-top: 1em">
+            <dt ac-translate-me=>URL</dt>
+            <dd>{{ appinfo["url"] }}</dd>
 
-                <dt ac-translate-me=>URL</dt>
-                <dd>{{ appinfo["url"] }}</dd>
+            <dt ac-translate-me>Last modified:</dt>
+            <dd>{{ selected.target_info["modified_date"]|date }}</dd>
 
-                <dt ac-translate-me>Last modified:</dt>
-                <dd>{{ selected.target_info["modified_date"]|date }}</dd>
-
-            </dl>
-        </div>
-
+        </dl>
     </div>
 
 </div>

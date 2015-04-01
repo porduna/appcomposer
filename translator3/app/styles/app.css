@@ -62,7 +62,13 @@ h1 img.app-title-thumb {
 }
 
 
+/*-------------------------
+GENERAL LAYOUT
+--------------------------*/
 
+.ac-header-right {
+    float: right;
+}
 
 /*-------------------------
 GENERAL TYPESETTING
@@ -126,3 +132,4 @@ span[name=ac-saved-icon] {
 .ac-edit-suggestion-select>option:empty {
     display:none;
 }
+

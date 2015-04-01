@@ -1,0 +1,155 @@
+
+
+body {
+    font-family: SuisseIntl, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+
+    color: #333;
+}
+
+.well {
+    background-color: rgb(238, 238, 238);
+    border: none;
+    border-radius: 0;
+    padding: 5px;
+    margin: 5px 0px 0px 0px;
+}
+
+/* Headers should be squared, flat and with a purple background */
+h1 {
+    background-color: rgb(80, 80, 210);
+    color: rgb(255, 255, 255);
+    border: none;
+    border-radius: 0;
+    padding: 5px;
+    font-size: 20px;
+
+    margin: -5px -5px 0px -5px;
+}
+
+.row {
+
+}
+
+/* Buttons in the header should be gray, white when active, and invisible */
+
+.header-button {
+    background: transparent;
+    border: 0px solid rgb(178, 178, 178); /* Disabled */
+    color: rgb(200, 200, 200);
+    font-size: 18px;
+    margin-top: 5px;
+    outline: 0;
+}
+
+.header-button:hover {
+    color: rgb(255, 255, 255);
+}
+
+.header-button:active {
+    border: 0px solid !important;
+}
+
+
+/* Somewhat custom. Tabs should resemble the header. Override ui tabs classes. */
+
+/* For the non-active tabs */
+.nav-tabs>li, .nav-tabs>li>a, nav>li, nav>li>a {
+    background-color: rgb(125, 125, 209); /* Custom 'disabled' header color */
+    color: rgb(255, 255, 255);
+    border: 0;
+    border-radius: 0;
+}
+
+/* For the active tab */
+.nav-tabs>li.active, .nav-tabs>li.active>a, .nav>li.active, .nav>li.active>a {
+    background-color: rgb(80, 80, 210);
+    color: rgb(255, 255, 255);
+    border: 0;
+    border-radius: 0;
+}
+/* For the tab that is active and has focus */
+.nav-tabs>li.active:focus, .nav-tabs>li.active>a:focus, .nav>li.active:focus, .nav>li.active>a:focus {
+    background-color: rgb(80, 80, 210);
+    color: rgb(255, 255, 255);
+    border: 0;
+    border-radius: 0;
+}
+/* For hovering over the active tab */
+.nav-tabs>li.active:hover, .nav-tabs>li.active>a:hover, .nav>li.active:hover, .nav>li.active>a:hover {
+    background-color: rgb(80, 80, 210);
+    color: rgb(255, 255, 255);
+    border: 0;
+    border-radius: 0;
+}
+
+/* For hovering over non-active tabs */
+.nav-tabs>li:hover, .nav-tabs>li>a:hover, .nav>li:hover, .nav>li>a:hover {
+    background-color: rgb(115, 115, 209); /* Color for inactive & hovered */
+    font-weight: bold;
+    border: 0;
+    border-radius: 0;
+}
+
+/* Custom scheme for clearer tabs */
+.tab-content {
+    border: 1px solid rgb(170, 170, 209); /* Clear non-intrusive purple for a border */
+    padding: 2px 10px 10px 10px;
+    background-color: rgb(245, 245, 245); /* Slightly clearer background. Graasp's secondary background color. */
+}
+
+
+
+
+/* BUTTONS */
+
+.btn {
+    border: 0;
+    border-radius: 0;
+}
+
+.btn-success {
+
+}
+
+.btn-primary {
+    background-color: rgb(80, 80, 210);
+}
+
+.btn-primary:hover {
+    background-color: rgb(115, 115, 209);
+}
+
+.btn-primary:active {
+    background-color: rgb(170, 170, 209);
+}
+
+
+
+/* FORMS */
+
+/* Default select options look weird */
+select {
+    padding: 5px 0 0 0 !important;
+}
+
+select option {
+    position: relative;
+    padding: 2px 2px 2px 2px;
+}
+
+.form-control {
+    border: 0;
+    border-radius: 0;
+}
+
+
+
+
+
+
+
+
+
+

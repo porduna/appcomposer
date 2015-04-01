@@ -1,13 +1,14 @@
-<a href="#/apps">
-    <button class="btn btn-lg btn-info" ac-translate-me><i class="fa fa-backward"/> Go to Applications List</button>
-</a>
-
-<div class="well" style="margin-top: 30px">
-    <div class="" style="padding-left: 30px">
+<div class="well">
 
         <h1>
             <img class="app-title-thumb img-thumbnail" ng-src="{{ appinfo.app_thumb }}"></img>
             <span>{{ appinfo.name }}</span>
+
+            <div class="ac-header-right">
+                <a href="#/apps" class="seamless-anchor">
+                    <button class="header-button"><i class="fa fa-th-list fa-2x"/></button>
+                </a>
+            </div>
         </h1>
 
         <p>{{ appinfo.desc }}</p>
@@ -26,8 +27,5 @@
             </tab>
 
         </tabset>
-
-
-    </div>
 
 </div>
