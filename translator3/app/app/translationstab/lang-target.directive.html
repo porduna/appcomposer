@@ -1,11 +1,12 @@
 <div class="col-md-3 col-sm-6">
     <form role="form">
-        <h3 ac-translate-me>Language </h3>
-
-        <select size="6" ng-model="selected.lang"
-                ng-options="lang as info['name'] for (lang, info) in appinfo.translations"
-                class="form-control">
-        </select>
+        <div class="form-group">
+            <label class="label-header" for="langSelectControl" class="control-label" ac-translate-me>Language:</label>
+            <select id="langSelectControl" size="6" ng-model="selected.lang"
+                    ng-options="lang as info['name'] for (lang, info) in appinfo.translations"
+                    class="form-control">
+            </select>
+        </div>
 
         <div style="padding-top: 20px">
             <ui-select ng-model="add.lang" theme="select2" style="min-width: 200px; padding-bottom: 5px">
@@ -17,7 +18,8 @@
                 </ui-select-choices>
             </ui-select>
 
-            <button ng-disabled="!add.lang" ng-click="addNewLanguage()" class="btn btn-success" style="padding: 3px 9px 3px 9px"><i
+            <button ng-disabled="!add.lang" ng-click="addNewLanguage()" class="btn btn-success"
+                    style="padding: 3px 9px 3px 9px"><i
                     class="fa fa-plus" style=""></i> Add new
             </button>
 
@@ -33,14 +35,15 @@
 <div class="col-md-3 col-sm-6">
     <form role="form">
 
-        <h3 ng-if="selected.lang"> {{ ('Target'|translate) + ' (' + appinfo.translations[selected.lang].name + ')' }} </h3>
+        <div class="form-group">
+            <label class="label-header" for="groupSelectControl" ng-if="selected.lang"> {{ ('Target'|translate) + ' (' + appinfo.translations[selected.lang].name + '):' }} </label>
+            <label class="label-header" for="groupSelectControl" ng-if="!selected.lang"> {{ ('Target'|translate) }}: </label>
 
-        <h3 ng-if="!selected.lang"> {{ ('Target'|translate) }} </h3>
-
-        <select size="6" ng-model="selected.target"
-                ng-options="group as info['name'] for (group, info) in selected.lang_info.targets"
-                class="form-control">
-        </select>
+            <select id="groupSelectControl" size="6" ng-model="selected.target"
+                    ng-options="group as info['name'] for (group, info) in selected.lang_info.targets"
+                    class="form-control">
+            </select>
+        </div>
 
         <div style="padding-top: 20px">
             <ui-select ng-model="add.group" theme="select2" style="min-width: 200px; padding-bottom: 5px">
@@ -51,7 +54,8 @@
                 </ui-select-choices>
             </ui-select>
 
-            <button ng-disabled="!add.group" ng-click="addNewGroup()" class="btn btn-success" style="padding: 3px 9px 3px 9px"><i
+            <button ng-disabled="!add.group" ng-click="addNewGroup()" class="btn btn-success"
+                    style="padding: 3px 9px 3px 9px"><i
                     class="fa fa-plus" style=""></i> Add new
             </button>
 

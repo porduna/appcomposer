@@ -144,9 +144,24 @@ select option {
     border-radius: 0;
 }
 
+label {
+    margin-bottom: 2px;
+}
+
+/* For important labels */
+.label-header {
+    font-size: 1.05em;
+}
 
 
 
+
+/* SELECT2 overrides */
+
+.ui-select-container>* {
+    border-radius: 0 !important;
+    border-color: rgb(115, 115, 209) !important;
+}
 
 
 
