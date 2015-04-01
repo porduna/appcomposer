@@ -137,3 +137,22 @@ span[name=ac-saved-icon] {
     display:none;
 }
 
+
+/* DATA TABLES HOVER FIX */
+
+.my-disabled-hover div div {
+    background-color: rgb(255, 255, 255);
+}
+
+.my-disabled-hover div div:hover {
+    background-color: rgb(255, 255, 255);
+}
+
+table.dataTable.hover tbody tr:hover, table.dataTable.hover tbody tr.odd:hover, table.dataTable.hover tbody tr.even:hover, table.dataTable.display tbody tr:hover, table.dataTable.display tbody tr.odd:hover, table.dataTable.display tbody tr.even:hover {
+    background-color: rgb(255, 255, 255);
+}
+
+table.dataTable tbody tr[ng-click]:hover {
+    background-color: rgb(180, 180, 209) !important;
+}
+
