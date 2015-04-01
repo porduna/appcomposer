@@ -1,34 +1,35 @@
-
-<a href="#/app/{{ appurl }}">
-    <button class="btn btn-lg btn-info"><i class="fa fa-backward"/>{{ ' Back to Translations'|translate }}</button>
-</a>
-
-<h1>
-    <img class="app-title-thumb img-thumbnail" ng-src="{{ appinfo.app_thumb }}"></img>
-    <span>{{ appinfo.name }}</span>
-</h1>
-
-<p>{{ appinfo.desc }}</p>
-
-
 <div class="well">
 
-    <div class="row">
-            <div class="col-lg-12" style="margin-bottom: 10px">
-                <div class="col-lg-5" style="text-align: center">
-                    <h3>Default (ALL)</h3>
-                    <h5 ng-click="changeSourceLanguage()" class="ac-edit-change-source">Change source language</h5>
-                </div>
+    <h1>
+        <img class="app-title-thumb img-thumbnail" ng-src="{{ appinfo.app_thumb }}"></img>
+        <span>{{ appinfo.name }}</span>
 
-                <div class="col-lg-7" style="text-align: center">
-                    <h3>Default (ALL)</h3>
-                </div>
+        <a class="ac-header-right header-button-wrapper" href="#/app/{{ appurl }}">
+            <label for="back-btn" class="header-button-label">Back</label>
+            <button id="back-btn" class="header-button"><i class="fa fa-backward fa-2x"/></button>
+        </a>
+
+    </h1>
+
+    <p>{{ appinfo.desc }}</p>
+
+
+    <div class="row">
+        <div class="col-lg-12" style="margin-bottom: 10px">
+            <div class="col-lg-5" style="text-align: center">
+                <h3>Default (ALL)</h3>
+                <button class="btn btn-subtle ac-btn-left" ng-click="changeSourceLanguage()" class="ac-edit-change-source">Change source language</button>
             </div>
+
+            <div class="col-lg-7" style="text-align: center">
+                <h3>Default (ALL)</h3>
+            </div>
+        </div>
 
     </div>
 
     <div ng-repeat="(key, translationItem) in translationInfo.translation">
-       <ac-edit-message bundle="bundle" key="key" item="translationItem"></ac-edit-message>
+        <ac-edit-message bundle="bundle" key="key" item="translationItem"></ac-edit-message>
     </div>
 
 </div>

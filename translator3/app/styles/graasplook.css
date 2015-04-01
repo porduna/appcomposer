@@ -32,11 +32,11 @@ h1 {
 
 }
 
+/* Can be used for header buttons. They should be right-aligned first. */
 /* Buttons in the header should be gray, white when active, and invisible */
-
 .header-button {
     background: transparent;
-    border: 0px solid rgb(178, 178, 178); /* Disabled */
+    border: 0px solid rgb(198, 198, 198); /* Disabled */
     color: rgb(200, 200, 200);
     font-size: 18px;
     margin-top: 5px;
@@ -48,8 +48,28 @@ h1 {
 }
 
 .header-button:active {
-    border: 0px solid !important;
+    border: 0 solid !important;
 }
+
+.header-button-wrapper {
+}
+
+.header-button-wrapper:hover {
+}
+
+
+/* For a button left of the label */
+.header-button-label {
+    position: relative;
+    bottom: 5px;
+    color: rgb(198, 198, 198);
+}
+
+.header-button-label:hover {
+    color: rgb(255, 255, 255);
+    cursor: auto;
+}
+
 
 
 /* Somewhat custom. Tabs should resemble the header. Override ui tabs classes. */
@@ -107,6 +127,7 @@ h1 {
 .btn {
     border: 0;
     border-radius: 0;
+    font-size: 16px;
 }
 
 .btn-success {
@@ -123,6 +144,21 @@ h1 {
 
 .btn-primary:active {
     background-color: rgb(170, 170, 209);
+}
+
+.btn-subtle {
+    background-color: rgb(124, 174, 207);
+    color: rgb(255, 255, 255);
+}
+
+.btn-subtle:hover {
+    background-color: rgb(93, 163, 207);
+    color: rgb(255, 255, 255);
+}
+
+.btn-subtle:active {
+    background-color: rgb(52, 147, 207);
+    color: rgb(255, 255, 255);
 }
 
 
@@ -167,4 +203,16 @@ label {
 
 
 
+
+/* OVERRIDE OF THE SPECIFIC THEME OF THE TRANSLATOR */
+
+.ac-edit-message-details {
+    border: 1px solid rgb(170, 170, 209);
+    border-radius: 0;
+    background-color: rgb(245, 245, 245);
+}
+
+.ac-edit-message-details option {
+    border-bottom: 1px solid rgb(170, 170, 209);
+}
 
