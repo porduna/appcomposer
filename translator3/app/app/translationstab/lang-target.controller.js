@@ -107,68 +107,31 @@ function LangTargetController($scope, $rootScope, $resource) {
      * Adds a new language to the current application.
      */
     function addNewLanguage() {
-        var data = {
-        };
-
-        var UpdateMessagePut = $resource(APP_DYN_ROOT + "api/apps/:appurl/bundles/:targetlang",
-        {
-            "appurl": $scope.appinfo.url,
-            "targetlang": $scope.selected.lang
-        }, {
-            save: {
-                method: 'POST'
+        $scope.appinfo.translations[$scope.add.lang] = {
+            name: $scope.all_languages[$scope.add.lang],
+            targets: {
+                "ALL" : {
+                    name: "ALL",
+                    modified_date: null,
+                    created_date: null,
+                    translated: 0,
+                    items: 0
+                }
             }
-        });
-
-        var result = UpdateMessagePut.save({}, data);
-
-        result.$promise.then(onAddNewLanguageSuccess, onAddNewLanguageFailure);
+        };
     } // !addNewLanguage
 
 
-    function onAddNewLanguageSuccess() {
-        $scope.$emit('language-added', {success: true});
-        $scope.addLanguageError = "";
-    } // !onAddNewLanguageSuccess
-
-
-    function onAddNewLanguageFailure() {
-        $scope.$emit('language-added', {success: false});
-        $scope.addLanguageError = "Could not add language";
-    } // !onAddNewLanguageFailure
-
-
     function addNewGroup() {
-        var data = {
-        };
+        $scope.appinfo.translations[$scope.selected.lang].targets[$scope.add.group] = {
+            name: $scope.all_groups[$scope.add.group],
+            modified_date: null,
+            created_date: null,
+            translated: 0,
+            items: 0
+        }
 
-        var UpdateMessagePut = $resource(APP_DYN_ROOT + "api/apps/:appurl/bundles/:targetlang/:targetgroup",
-        {
-            "appurl": $scope.appinfo.url,
-            "targetlang": $scope.selected.lang,
-            "targetgroup": $scope.selected.target
-        }, {
-            save: {
-                method: 'POST'
-            }
-        });
-
-        var result = UpdateMessagePut.save({}, data);
-
-        result.$promise.then(onAddNewGroupSuccess, onAddNewGroupFailure);
     } // !addNewGroup
-
-
-    function onAddNewGroupSuccess() {
-        $scope.$emit('group-added', {success: true});
-        $scope.addGroupError = "";
-    } // !onAddNewGroupSuccess
-
-
-    function onAddNewGroupFailure() {
-        $scope.$emit('group-added', {success: false});
-        $scope.addGroupError = "Could not add group";
-    } // !onAddNewGroupFailure
 
 
     function onLangSelected(newval, oldval) {
