@@ -23,6 +23,7 @@ from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions
 from appcomposer.translator.utils import bundle_to_xml, url_to_filename
+from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 
 translator_blueprint = Blueprint('translator', __name__)
 
@@ -234,4 +235,13 @@ def translations_url_xml(lang, target, url):
     resp = make_response(messages_xml)
     resp.content_type = 'application/xml'
     return resp
+
+@translator_blueprint.route('/translations/mongodb/')
+@public
+def translations_mongodb():
+    collections = {}
+    contents = retrieve_mongodb_contents()
+    for collection, collection_contents in contents.iteritems():
+        collections[collection] = json.dumps(collection_contents, indent = 4)
+    return render_template("translator/mongodb.html", collections = collections)
 

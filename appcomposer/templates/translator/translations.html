@@ -1,10 +1,16 @@
 {% extends "translator/base.html" %}
 {% block body %}
 
+<div class="alert alert-warning">
+    This space is intended for Go-Lab developers, but it's open since it contains strictly public information.
+</div>
+
 <h1>Translations</h1>
 
-<p>Stored translations can be listed by <a href="{{ url_for('.translations_apps') }}">application URL</a> or by <a href="{{ url_for('.translations_urls') }}">translation URL</a>.</p>
-
-<p>If you have a Graasp account, you may also upload a translation <a href="{{ url_for('.translation_upload') }}">here</a>.</p>
+<ul>
+    <li>Stored translations can be listed by <a href="{{ url_for('.translations_apps') }}">application URL</a> or by <a href="{{ url_for('.translations_urls') }}">translation URL</a>.</li>
+    <li>You may also check what's currently been used by Shindig <a href="{{ url_for('.translations_mongodb') }}">here</a>.</li>
+    <li>If you have a Graasp account, you may also upload a translation <a href="{{ url_for('.translation_upload') }}">here</a>.</li>
+</ul>
 
 {% endblock %}

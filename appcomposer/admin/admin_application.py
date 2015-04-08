@@ -233,5 +233,7 @@ class ValueSuggestionsView(AdminModelView):
 
 class ActiveTranslationMessageView(AdminModelView):
     column_list = ('bundle.translation_url.url', 'bundle.language', 'bundle.target', 'key', 'value', 'history.datetime', 'history.user')
+    column_searchable_list = ('key','value')
+
     def __init__(self, **kwargs):
         super(ActiveTranslationMessageView, self).__init__(models.ActiveTranslationMessage, db.session, **kwargs)

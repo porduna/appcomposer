@@ -1,0 +1,12 @@
+{% extends "translator/base.html" %}
+{% block head %}
+    <script src="https://google-code-prettify.googlecode.com/svn/loader/run_prettify.js"></script>
+{% endblock %}
+{% block body %}
+<h1>MongoDB contents</h1>
+{% for collection in collections %}
+    <hr>
+    <h2>Collection - {{ collection }}</h2>
+    <pre class="prettyprint">{{ collections[collection]}}</pre>
+{% endfor %}
+{% endblock %}
