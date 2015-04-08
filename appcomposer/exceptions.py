@@ -1,0 +1,2 @@
+class AppComposerError(Exception):
+    pass

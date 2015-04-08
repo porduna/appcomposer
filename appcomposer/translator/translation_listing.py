@@ -1,5 +1,6 @@
 import datetime
 import traceback
+import requests
 
 from appcomposer import db
 from appcomposer.models import RepositoryApp
@@ -13,7 +14,7 @@ def download_golab_translations():
     try:
         apps_response = cached_requests.get("http://www.golabz.eu/rest/apps/retrieve.json")
         apps = apps_response.json()
-    except:
+    except requests.RequestException:
         traceback.print_exc()
         return
 
@@ -28,15 +29,15 @@ def download_golab_translations():
     apps_by_id = {}
     for app in apps:
         apps_by_id[app['id']] = app
-    
-    # 
+
+    #
     # This requires several steps.
-    # 
+    #
     # Step 1: synchronize with the golabz repo
     ##########################################
-    # 
+    #
     # Delete deprecated apps
-    # 
+    #
     stored_apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).all()
 
     stored_ids = []
@@ -59,11 +60,11 @@ def download_golab_translations():
                 if not app_response.from_cache:
                     # TODO: check each field
                     pass
-                
 
-    # 
+
+    #
     # Add new apps
-    # 
+    #
     for app in apps:
         if app['id'] not in stored_ids:
             now = datetime.datetime.now()
@@ -72,7 +73,7 @@ def download_golab_translations():
             failing = False
             try:
                 metadata_information = extract_metadata_information(app_url, cached_requests)
-            except:
+            except Exception:
                 print
                 traceback.print_exc()
                 metadata_information = {}
@@ -83,14 +84,14 @@ def download_golab_translations():
             print app_url
             print metadata_information
 
-            repo_app = RepositoryApp(name = app['title'], url = app_url, external_id = app['id'], 
+            repo_app = RepositoryApp(name = app['title'], url = app_url, external_id = app['id'],
                             repository = GOLAB_REPO)
             repo_app.app_thumb = app['app_thumb']
             repo_app.description = app['description']
 
             repo_app.translatable = metadata_information.get('translatable', False)
             repo_app.adaptable = metadata_information.get('adaptable', False)
-            repo_app.original_translations = ','.join(metadata_information.get('original_translations', []))
+            repo_app.original_translations = ','.join(metadata_information.get('original_translations', {}).keys())
 
             repo_app.last_change = now
             repo_app.last_check = now
@@ -104,6 +105,6 @@ def download_golab_translations():
 
 
 if __name__ == '__main__':
-    from appcomposer import app
-    with app.app_context():
+    from appcomposer import app as my_app
+    with my_app.app_context():
         download_golab_translations()
