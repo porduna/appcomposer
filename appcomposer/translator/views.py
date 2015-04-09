@@ -6,6 +6,7 @@ import os
 import json
 import zipfile
 import StringIO
+import traceback
 
 from sqlalchemy.orm import joinedload_all
 
@@ -118,13 +119,17 @@ def translation_upload():
         try:
             translation_url, original_messages = extract_local_translations_url(app_url)
         except Exception as e:
+            traceback.print_exc()
             form.url.errors = [unicode(e)]
             errors = True
 
         xml_contents = form.opensocial_xml.data.read()
+        if isinstance(xml_contents, str):
+            xml_contents = unicode(xml_contents, 'utf8')
         try:
             translated_messages = extract_messages_from_translation(xml_contents)
         except Exception as e:
+            traceback.print_exc()
             form.opensocial_xml.errors = [unicode(e)]
             errors = True
         

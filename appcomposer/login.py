@@ -234,7 +234,7 @@ def current_golab_user():
     if not session.get('golab_logged_in', False):
         return None
 
-    return GoLabOAuthUser.query.filter_by(email = session['golab_email'])
+    return db.session.query(GoLabOAuthUser).filter_by(email = session['golab_email']).first()
 
 def requires_golab_login(f):
     """
