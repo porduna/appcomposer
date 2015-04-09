@@ -18,7 +18,7 @@ from wtforms.validators import url, required
 
 from appcomposer import db
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle
-from appcomposer.login import requires_login, current_user
+from appcomposer.login import requires_golab_login, current_golab_user
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions
@@ -33,12 +33,12 @@ translator_blueprint = Blueprint('translator', __name__)
 def public(func): return func
 
 @translator_blueprint.route('/')
-@requires_login
+@requires_golab_login
 def translator_index():
     return "Hi there, this is the new translator"
 
 @translator_blueprint.route('/translate')
-@requires_login
+@requires_golab_login
 def translate():
     app_url = request.args.get('app_url')
     language = request.args.get('lang')
@@ -94,7 +94,7 @@ class UploadForm(Form):
     opensocial_xml = FileField(u'OpenSocial XML file', validators = [required()])
 
 @translator_blueprint.route('/translations/upload/', methods = ('GET', 'POST'))
-@requires_login
+@requires_golab_login
 def translation_upload():
     best_match = request.accept_languages.best_match([ lang_code.split('_')[0] for lang_code in LANGUAGES ])
     default_language = None
@@ -131,7 +131,7 @@ def translation_upload():
         if not errors:
             language = form.language.data
             target = form.target.data
-            add_full_translation_to_app(current_user(), app_url, translation_url, language, target, translated_messages, original_messages)
+            add_full_translation_to_app(current_golab_user(), app_url, translation_url, language, target, translated_messages, original_messages, from_developer = False)
             flash("Contents successfully added")
 
     return render_template('translator/translations_upload.html', form=form)

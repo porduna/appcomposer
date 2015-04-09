@@ -13,7 +13,7 @@ from flask import session, render_template, flash, request, redirect, url_for
 from flask.ext.wtf import TextField, Form, PasswordField, validators
 
 from appcomposer import db
-from .models import User
+from .models import User, GoLabOAuthUser
 
 from .application import app
 from .babel import gettext, lazy_gettext
@@ -24,7 +24,6 @@ def current_user():
         return None
 
     return User.query.filter_by(login=session['login']).first()
-
 
 def requires_login(f):
     """
@@ -137,25 +136,6 @@ def graasp_login():
 
     return render_template('login/graasp.html', login_app=login_app, login_app_creation=login_app_creation)
 
-PUBLIC_APPCOMPOSER_ID = 'WfTlrXTbu4AeGexikhau5HDXkpGE8RYh'
-
-@app.route('/graasp/oauth/')
-def graasp_oauth_login():
-    redirect_back_url = url_for('graasp_oauth_login_redirect', _external = True)
-    return redirect('http://graasp.eu/authorize?client_id=%s&redirect_uri=%s' % (PUBLIC_APPCOMPOSER_ID, requests.utils.quote(redirect_back_url, '')))
-
-@app.route('/graasp/oauth/redirect/')
-def graasp_oauth_login_redirect():
-    access_token = request.args.get('access_token')
-    refresh_token = request.args.get('refresh_token')
-    timeout = request.args.get('expires_in')
-
-    headers = {
-        'Authorization': 'Bearer {}'.format(access_token),
-    }
-
-    return requests.get('http://graasp.eu/users/me', headers = headers).text
-
 SHINDIG = 'http://shindig2.epfl.ch'
 
 
@@ -209,4 +189,64 @@ def graasp_authn():
 @app.route('/login-widget.xml')
 def graasp_widget():
     return render_template('login/widget.xml')
+
+############################################################
+# 
+# 
+#           Go-Lab OAuth system
+# 
+# 
+
+PUBLIC_APPCOMPOSER_ID = 'WfTlrXTbu4AeGexikhau5HDXkpGE8RYh'
+
+@app.route('/graasp/oauth/')
+def graasp_oauth_login():
+    next_url = request.args.get('next')
+    if next_url is None:
+        return "No next= provided"
+    redirect_back_url = url_for('graasp_oauth_login_redirect', _external = True, next_url = requests.utils.quote(next_url, ''))
+    return redirect('http://graasp.eu/authorize?client_id=%s&redirect_uri=%s' % (PUBLIC_APPCOMPOSER_ID, requests.utils.quote(redirect_back_url, '')))
+
+@app.route('/graasp/oauth/redirect/<next_url>/')
+def graasp_oauth_login_redirect(next_url):
+    access_token = request.args.get('access_token')
+    refresh_token = request.args.get('refresh_token')
+    timeout = request.args.get('expires_in')
+
+    headers = {
+        'Authorization': 'Bearer {}'.format(access_token),
+    }
+
+    user_data = requests.get('http://graasp.eu/users/me', headers = headers).json()
+    user = db.session.query(GoLabOAuthUser).filter_by(email = user_data['email']).first()
+    if user is None:
+        user = GoLabOAuthUser(email = user_data['email'], display_name = user_data['username'])
+        db.session.add(user)
+        db.session.commit()
+
+    session['golab_logged_in'] = True
+    session['golab_email'] = user_data['email']
+
+    return redirect(requests.utils.unquote(next_url))
+
+
+def current_golab_user():
+    if not session.get('golab_logged_in', False):
+        return None
+
+    return GoLabOAuthUser.query.filter_by(email = session['golab_email'])
+
+def requires_golab_login(f):
+    """
+    Require that a particular flask URL requires login. It will require the user to be logged,
+    and if he's not logged he will be redirected there afterwards.
+    """
+
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if current_golab_user() is None:
+            return redirect(url_for('graasp_oauth_login', next=request.url))
+        return f(*args, **kwargs)
+
+    return wrapper
 

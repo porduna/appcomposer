@@ -147,6 +147,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
 
     locales, body = _extract_locales(app_url, cached_requests)
     original_translations = {}
+    default_translations = {}
     if len(locales) == 0:
         translatable = False
     else:
@@ -158,8 +159,12 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
                 if len(lang) == 2:
                     lang = u'%s_ALL' % lang
                 only_if_new = not force_reload
-                url, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = only_if_new)
+                _, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = only_if_new)
                 original_translations[lang] = messages
+            elif messages_url:
+                only_if_new = not force_reload
+                _, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = only_if_new)
+                default_translations = messages
 
     adaptable = ' data-configuration ' in body and ' data-configuration-definition ' in body
 
@@ -167,6 +172,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
         'translatable' : translatable,
         'adaptable' : adaptable,
         'original_translations' : original_translations,
+        'default_translations' : default_translations,
     }
 
 def extract_messages_from_translation(xml_contents):

@@ -306,6 +306,23 @@ class RepositoryApp(db.Model):
         self.failing = False
         self.failing_since = None
 
+class GoLabOAuthUser(db.Model):
+    __tablename__ = 'GoLabOAuthUsers'
+
+    id = db.Column(db.Integer, primary_key = True)
+    display_name = db.Column(db.Unicode(255), index = True, nullable = False)
+    email = db.Column(db.Unicode(255), index = True, nullable = False, unique = True)
+
+    def __init__(self, email, display_name):
+        self.email = email
+        self.display_name = display_name
+
+    def __repr__(self):
+        return "GoLabOAuthUsers(%r, %r)" % (self.email, self.display_name)
+
+    def __unicode__(self):
+        return u"%s <%s>" % (self.display_name, self.email)
+
 
 class TranslationUrl(db.Model):
     __tablename__ = 'TranslationUrls'
@@ -341,27 +358,29 @@ class TranslationBundle(db.Model):
     language = db.Column(db.Unicode(20), index = True)
     target = db.Column(db.Unicode(20), index = True)
     translation_url = relation("TranslationUrl", backref="bundles")
+    from_developer = db.Column(db.Boolean, index = True)
 
-    def __init__(self, language, target, translation_url):
+    def __init__(self, language, target, translation_url, from_developer = False):
         self.language = language
         self.target = target
         if isinstance(translation_url, basestring):
             raise Exception("TranslationBundle requires a TranslationUrl, not a string")
         self.translation_url = translation_url
+        self.from_developer = from_developer
 
 class TranslationMessageHistory(db.Model):
     __tablename__ = 'TranslationMessageHistory'
 
     id = db.Column(db.Integer, primary_key = True)
     bundle_id = db.Column(db.Integer, ForeignKey('TranslationBundles.id'))
-    user_id = db.Column(db.Integer, ForeignKey('Users.id'))
+    user_id = db.Column(db.Integer, ForeignKey('GoLabOAuthUsers.id'))
     key = db.Column(db.Unicode(255), index = True)
     value = db.Column(db.UnicodeText)
     datetime = db.Column(db.DateTime, index = True)
     parent_translation_id = db.Column(db.Integer)
 
     bundle = relation("TranslationBundle", backref="all_messages")
-    user = relation("User", backref = "translation_history")
+    user = relation("GoLabOAuthUser", backref = "translation_history")
 
     def __init__(self, bundle, key, value, user, datetime, parent_translation_id):
         self.bundle = bundle
