@@ -154,6 +154,7 @@ def translations_urls():
         urls[db_url.url] = []
         for bundle in db_url.bundles:
             urls[db_url.url].append({
+                'from_developer' : bundle.from_developer,
                 'target' : bundle.target,
                 'lang' : bundle.language,
             })

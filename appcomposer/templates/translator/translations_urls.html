@@ -3,19 +3,30 @@
 
 <h1>URLs</h1>
 
-<ul>
-    {% if not urls %}
-        <li>No app found</li>
-    {% else %}
-        {% for url, bundles in urls.iteritems() %}
-            <li><a href="{{ url }}">{{ url }}</a></li>
-            <ul>
-                {% for bundle in bundles %}
-                <li><a href="{{ url_for('.translations_url_xml', lang=bundle['lang'], target=bundle['target'], url = url) }}">{{ bundle['lang'] }} - {{ bundle['target'] }}</a></li>
-                {% endfor %}
-            </ul>
-        {% endfor %}
-    {% endif %}
-</ul>
+{% if not urls %}
+    <div class="alert alert-warning">No app found</div>
+{% else %}
+    <div class="text-center col-sm-12">
+        <h1>App translations</h1>
+        <div class="row">
+        <div class="alert alert-info col-sm-6 col-sm-offset-3">This is an automatic listing of all the translation URLs stored in the App Composer Translator database. To see the applications, go <a href="{{ url_for('.translations_apps') }}">here</a>.</div>
+        </div>
+    </div>
+
+    <h2>Translation URLs</h2>
+    {% for url, bundles in urls.iteritems() %}
+        <h4><a target="_blank" href="{{ url }}">{{ url }}</a></h4>
+
+        <div>
+            {% for bundle in bundles %}
+            <a class="btn {% if bundle['from_developer'] %}btn-default{% else %}btn-info{% endif %}" href="{{ url_for('.translations_url_xml', lang=bundle['lang'], target=bundle['target'], url = url) }}">{{ bundle['lang'] }} - {{ bundle['target'] }}</a>
+            {% endfor %}
+        </div>
+
+        {% if not loop.last %}
+            <hr>
+        {% endif %}
+    {% endfor %}
+{% endif %}
 
 {% endblock %}

@@ -82,12 +82,26 @@ def get_cached_session():
 def fromstring(xml_contents):
     return ET.fromstring(xml_contents.encode('utf8'))
 
+def get_text_from_response(response):
+    """requests Response's text property automatically uses the default encoding to convert it to unicode
+    However, sometimes it falls back to ISO-8859-1, which is not appropriate. This method checks whether it
+    could be interpreted as UTF-8. If it is, it uses it. Otherwise, it uses whatever was defined. 
+    """
+    if response.encoding is None:
+        response.encoding = 'utf8'
+    elif response.encoding == 'ISO-8859-1':
+        try:
+            response.content.decode('utf8')
+        except UnicodeDecodeError:
+            pass
+        else:
+            response.encoding = 'utf8'
+    return response.text
+
 def _extract_locales(app_url, cached_requests):
     try:
         response = cached_requests.get(app_url)
-        if response.encoding is None:
-            response.encoding = 'utf8'
-        xml_contents = response.text
+        xml_contents = get_text_from_response(response)
     except requests.RequestException as e:
         logging.warning(u"Could not load this app URL: %s" % e, exc_info = True)
         raise TranslatorError(u"Could not load this app URL")
@@ -116,10 +130,9 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
         translation_messages_response = cached_requests.get(absolute_translation_url)
         if only_if_new and translation_messages_response.from_cache:
             return absolute_translation_url, None
-        if translation_messages_response.encoding is None:
-            translation_messages_response.encoding = 'utf8'
-        translation_messages_xml = translation_messages_response.text
-    except Exception:
+        translation_messages_xml = get_text_from_response(translation_messages_response)
+    except Exception as e:
+        logging.warning("Could not reach default locale URL: %s" % e, exc_info = True)
         raise TranslatorError("Could not reach default locale URL")
 
     messages = extract_messages_from_translation(translation_messages_xml)
