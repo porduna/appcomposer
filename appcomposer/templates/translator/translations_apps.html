@@ -21,7 +21,7 @@
         <div>
         <a class="btn btn-primary" href="{{ url_for('.translations_app_url_zip', app_url = url) }}">All languages</a>
         {% for bundle in bundles %}
-            <a class="btn btn-info" href="{{ url_for('.translations_app_xml', lang=bundle['lang'], target=bundle['target'], app_url = url) }}">{{ bundle['lang'] }} - {{ bundle['target'] }}</a>
+            <a class="btn {% if bundle['from_developer'] %}btn-default{% else %}btn-info{% endif %}" href="{{ url_for('.translations_app_xml', lang=bundle['lang'], target=bundle['target'], app_url = url) }}">{{ bundle['lang'] }} - {{ bundle['target'] }}</a>
         {% endfor %}
         </div>
 

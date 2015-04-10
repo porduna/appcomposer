@@ -168,6 +168,7 @@ def translations_apps():
         if app.translation_url is not None:
             for bundle in app.translation_url.bundles:
                 apps[app.url].append({
+                    'from_developer' : bundle.from_developer,
                     'target' : bundle.target,
                     'lang' : bundle.language,
                 })
