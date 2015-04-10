@@ -65,11 +65,11 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
             if key not in unchanged:
                 # Create a new history message
                 parent_translation_id = parent_translation_ids.get(key, None)
-                db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, parent_translation_id)
+                db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, parent_translation_id, False)
                 db.session.add(db_history)
 
                 # Establish that thew new active message points to this history message
-                db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history)
+                db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, False)
                 db.session.add(db_active_translation_message)
                 
                 if original_messages[key] == value:

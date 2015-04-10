@@ -377,18 +377,20 @@ class TranslationMessageHistory(db.Model):
     key = db.Column(db.Unicode(255), index = True)
     value = db.Column(db.UnicodeText)
     datetime = db.Column(db.DateTime, index = True)
-    parent_translation_id = db.Column(db.Integer)
+    parent_translation_id = db.Column(db.Integer, index = True)
+    taken_from_default = db.Column(db.Boolean, index = True)
 
     bundle = relation("TranslationBundle", backref="all_messages")
     user = relation("GoLabOAuthUser", backref = "translation_history")
 
-    def __init__(self, bundle, key, value, user, datetime, parent_translation_id):
+    def __init__(self, bundle, key, value, user, datetime, parent_translation_id, taken_from_default):
         self.bundle = bundle
         self.key = key
         self.value = value
         self.user = user
         self.datetime = datetime
         self.parent_translation_id = parent_translation_id
+        self.taken_from_default = taken_from_default
 
 class ActiveTranslationMessage(db.Model):
     __tablename__ = 'ActiveTranslationMessages'
@@ -399,15 +401,17 @@ class ActiveTranslationMessage(db.Model):
     key = db.Column(db.Unicode(255), index = True)
     value = db.Column(db.UnicodeText)
     history_id = db.Column(db.Integer, ForeignKey("TranslationMessageHistory.id"))
+    taken_from_default = db.Column(db.Boolean, index = True)
 
     bundle = relation("TranslationBundle", backref="active_messages")
     history = relation("TranslationMessageHistory", backref="active")
 
-    def __init__(self, bundle, key, value, history):
+    def __init__(self, bundle, key, value, history, taken_from_default):
         self.bundle = bundle
         self.key = key
         self.value = value
         self.history = history
+        self.taken_from_default = taken_from_default
 
 
 class TranslationKeySuggestion(db.Model):
