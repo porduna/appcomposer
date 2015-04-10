@@ -64,13 +64,16 @@ def translate():
         # }
     }
 
-    stored_translations = retrieve_stored(translation_url, language, target)
+    stored_translations, from_developer = retrieve_stored(translation_url, language, target)
     suggestions = retrieve_suggestions(original_messages, language, target, stored_translations)
     for key, value in original_messages.iteritems():
+        stored = stored_translations.get(key)
         response[key] = {
-            'original' : value,
-            'stored' : stored_translations.get(key),
+            'source' : value,
+            'target' : stored.get('value'),
+            'from_default' : stored.get('from_default', False),
             'suggestions' : suggestions.get(key, []),
+            'can_edit' : not from_developer
         }
 
     response = json.dumps(response, indent = 4)

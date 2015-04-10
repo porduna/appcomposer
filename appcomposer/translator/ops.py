@@ -110,17 +110,20 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
 def retrieve_stored(translation_url, language, target):
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
     if db_translation_url is None:
-        return {}
+        return {}, False
 
     bundle = db.session.query(TranslationBundle).filter_by(translation_url = db_translation_url, language = language, target = target).first()
 
     if bundle is None:
-        return {}
+        return {}, False
 
     response = {}
     for message in bundle.active_messages:
-        response[message.key] = message.value
-    return response
+        response[message.key] = {
+            'value' : message.value,
+            'from_default' : message.taken_from_default,
+        }
+    return response, bundle.from_developer
 
 SKIP_SUGGESTIONS_IF_STORED = False
 
