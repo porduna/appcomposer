@@ -7,18 +7,6 @@ from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle,
 DEBUG = False
 
 def add_full_translation_to_app(user, app_url, translation_url, language, target, translated_messages, original_messages, from_developer):
-    if DEBUG:
-        print "Task:"
-        print "App url:", app_url
-        print "Translation URL:", translation_url
-        print "Language:", language
-        print "Target:", target
-        print "From developer:", from_developer
-        print "Translated messages"
-        pprint.pprint(translated_messages)
-        print "Original messages"
-        pprint.pprint(original_messages)
-    
     # Create the translation url if not present
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
     if not db_translation_url:
@@ -50,6 +38,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
         # what existing translations don't need to be replaced
         unchanged = []
         parent_translation_ids = {}
+
         for existing_active_translation in db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle).all():
             key = existing_active_translation.key
             if key in translated_messages:
@@ -102,6 +91,18 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                     else:
                         db_human_key_suggestion = TranslationValueSuggestion(human_key = human_key, language = language, target = target, value = value, number = 1)
                         db.session.add(db_human_key_suggestion)
+        db.session.commit()
+
+    existing_keys = [ key for key, in db.session.query(ActiveTranslationMessage.key).filter_by(bundle = db_translation_bundle).all() ]
+    for key, value in original_messages.iteritems():
+        if key not in existing_keys:
+            # Create a new translation establishing that it was generated with the default value (and therefore it should be changed)
+            db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, None, True)
+            db.session.add(db_history)
+
+            # Establish that thew new active message points to this history message
+            db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, True)
+            db.session.add(db_active_translation_message)
 
     # Commit!
     db.session.commit()
