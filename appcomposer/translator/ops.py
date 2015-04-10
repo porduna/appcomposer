@@ -71,6 +71,16 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                 # Establish that thew new active message points to this history message
                 db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history)
                 db.session.add(db_active_translation_message)
+                
+                if original_messages[key] == value:
+                    # If the message in the original language is the same as in the target language, then
+                    # it can be two things: 
+                    # 
+                    #   1) that it has been filled with the original language. In this case it should not be later displayed as a suggestion
+                    #   2) that the message is the same in the original language and in the target language
+                    # 
+                    # Given that the original language will be a suggestion anyway, it's better to avoid storing this message as suggestion
+                    continue
 
                 # Create a suggestion based on the key
                 db_existing_key_suggestion = db.session.query(TranslationKeySuggestion).filter_by(key = key, value = value, language = language, target = target).first()

@@ -1,5 +1,5 @@
 import codecs
-import traceback
+import logging
 import requests
 import xml.etree.ElementTree as ET
 import requests.packages.urllib3 as urllib3
@@ -88,14 +88,14 @@ def _extract_locales(app_url, cached_requests):
         if response.encoding is None:
             response.encoding = 'utf8'
         xml_contents = response.text
-    except Exception:
-        traceback.print_exc()
-        raise TranslatorError("Could not load this app URL")
+    except requests.RequestException as e:
+        logging.warning(u"Could not load this app URL: %s" % e, exc_info = True)
+        raise TranslatorError(u"Could not load this app URL")
 
     try:
         root = fromstring(xml_contents)
-    except Exception:
-        traceback.print_exc()
+    except Exception as e:
+        logging.warning(u"Invalid XML document: %s" % e, exc_info = True)
         raise TranslatorError("Invalid XML document")
 
     module_prefs = root.findall("ModulePrefs")
