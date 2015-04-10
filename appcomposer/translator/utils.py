@@ -235,5 +235,16 @@ def bundle_to_xml(db_bundle):
     xml_string = ET.tostring(xml_bundle, encoding = 'utf8')
     return xml_string
 
+def messages_to_xml(messages):
+    xml_bundle = ET.Element("messagebundle")
+    for key, value in messages.iteritems():
+        xml_msg = ET.SubElement(xml_bundle, 'msg')
+        xml_msg.attrib['name'] = key
+        xml_msg.text = value
+    indent(xml_bundle)
+    xml_string = ET.tostring(xml_bundle, encoding = 'utf8')
+    return xml_string
+
+
 def url_to_filename(url):
     return requests.utils.quote(url, '').replace('%', '_')

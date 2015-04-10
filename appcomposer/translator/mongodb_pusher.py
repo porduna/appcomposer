@@ -48,13 +48,18 @@ cel.conf.update(
 mongo_client = MongoClient(flask_app.config["MONGODB_PUSHES_URI"])
 mongo_db = mongo_client.appcomposerdb
 mongo_bundles = mongo_db.bundles
+mongo_translation_urls = mongo_db.translation_urls
 
 logger = get_task_logger(__name__)
 
 def retrieve_mongodb_contents():
-    results = [ result for result in mongo_bundles.find() ]
-    serialized = json.dumps(results, default=json_util.default)
-    return { 'bundles' : json.loads(serialized) }
+    bundles_results = [ result for result in mongo_bundles.find() ]
+    bundles_serialized = json.dumps(bundles_results, default=json_util.default)
+
+    translations_url_results = [ result for result in mongo_translation_urls.find() ]
+    translations_url_serialized = json.dumps(translations_url_results, default=json_util.default)
+
+    return { 'bundles' : json.loads(bundles_serialized), 'translation_urls' : json.loads(translations_url_serialized) }
 
 @cel.task(name="push", bind=True)
 def push(self, spec, lang, data, time):
