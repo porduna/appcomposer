@@ -147,11 +147,14 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
 
     locales, body = _extract_locales(app_url, cached_requests)
     original_translations = {}
+    original_translation_urls = {}
     default_translations = {}
+    default_translation_url = None
     if len(locales) == 0:
         translatable = False
     else:
         translatable = True
+        default_locale = None
         for locale in locales:
             lang = locale.attrib.get('lang')
             messages_url = locale.attrib.get('messages')
@@ -159,12 +162,19 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
                 if len(lang) == 2:
                     lang = u'%s_ALL' % lang
                 only_if_new = not force_reload
-                _, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = only_if_new)
+                absolute_url, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = only_if_new)
                 original_translations[lang] = messages
-            elif messages_url:
-                only_if_new = not force_reload
-                _, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = only_if_new)
-                default_translations = messages
+                original_translation_urls[lang] = absolute_url
+
+            if lang is None and messages_url:
+                # Process this later. This way we can force we get the results for the default translation
+                default_locale = locale
+
+        if default_locale is not None:
+            messages_url = default_locale.attrib.get('messages')
+            absolute_url, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = False)
+            default_translations = messages
+            default_translation_url = absolute_url
 
     adaptable = ' data-configuration ' in body and ' data-configuration-definition ' in body
 
@@ -172,7 +182,9 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
         'translatable' : translatable,
         'adaptable' : adaptable,
         'original_translations' : original_translations,
+        'original_translation_urls' : original_translation_urls,
         'default_translations' : default_translations,
+        'default_translation_url' : default_translation_url,
     }
 
 def extract_messages_from_translation(xml_contents):

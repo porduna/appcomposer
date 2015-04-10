@@ -32,7 +32,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
             db_app_url.translation_url = db_translation_url
         elif db_app_url.translation_url != db_translation_url:
             # If present with a different translation url, copy the old one if possible
-            _deep_copy_translations(db_app_url.translation_url, db_translation_url, dont_commit = True)
+            _deep_copy_translations(db_app_url.translation_url, db_translation_url)
             db_app_url.translation_url = db_translation_url
     else:
         db_app_url = TranslatedApp(url = app_url, translation_url = db_translation_url)

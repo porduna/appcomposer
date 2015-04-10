@@ -53,3 +53,6 @@ LOGFILE = "logfile.log"
 APPCOMP_LOGGING_LEVEL = "WARNING"
 
 NGAPPS_DEV_MODE = False
+
+TRANSLATOR_DEFAULT_EMAIL = 'weblab+appcomposer@deusto.es'
+

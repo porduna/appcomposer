@@ -30,12 +30,16 @@ def initialize_admin_component(app):
     # Endpoint enables us to do url_for('userp') to yield the URL
     url = '/admin'
     admin = Admin(index_view = AdminView(url = url, endpoint = 'admin'), name=lazy_gettext('Admin Profile'), endpoint = "home-admin")
-    admin.add_view(UsersView(name=lazy_gettext('Users'), url = 'users', endpoint = 'admin.users'))
+    category_users = lazy_gettext("Users")
+
+    admin.add_view(UsersView(name=lazy_gettext('Regular Users'), category = category_users, url = 'users', endpoint = 'admin.users'))
+    admin.add_view(GoLabOAuthUserView(name=lazy_gettext('Go-Lab Users'), category = category_users, url = 'golab_users', endpoint = 'admin.golab-users'))
     admin.add_view(AdminAppsView(name=lazy_gettext('Apps'), url = 'apps-admin', endpoint = 'admin.admin-apps'))      
     admin.add_view(RedirectView('user.profile.index', name=lazy_gettext('My Profile'), url = 'profile', endpoint = 'admin.profile'))
     admin.add_view(RedirectView('index', name=lazy_gettext('Back'), url = 'back', endpoint = 'admin.back'))
 
     category_translator = lazy_gettext("Translator")
+    admin.add_view(TranslationMessageHistoryView(name = lazy_gettext('Translation history'), category = category_translator, endpoint = 'admin.translation-history'))
     admin.add_view(KeySuggestionsView(name = lazy_gettext('Suggestions by key'), category = category_translator, endpoint = 'admin.suggestions-key'))
     admin.add_view(ValueSuggestionsView(name = lazy_gettext('Suggestions by value'), category = category_translator, endpoint = 'admin.suggestions-value'))
     admin.add_view(ActiveTranslationMessageView(name = lazy_gettext('Active translations'), category = category_translator, endpoint = 'admin.active-translations'))
@@ -216,7 +220,21 @@ class AdminAppsView(AdminModelView):
         #print "App Id: " + model.unique_id
         app = models.App.query.filter_by(unique_id=model.unique_id).first()        
         models.AppVar.query.filter_by(app=app).delete()
-    
+
+class GoLabOAuthUserView(AdminModelView):
+    column_searchable_list = ('email', 'display_name')
+    column_sortable_list = ('email', 'display_name')
+
+    def __init__(self, **kwargs):
+        super(GoLabOAuthUserView, self).__init__(models.GoLabOAuthUser, db.session, **kwargs)
+
+class TranslationMessageHistoryView(AdminModelView):
+    column_searchable_list = ('key', 'value')
+    column_sortable_list = ('key', 'value')
+
+    def __init__(self, **kwargs):
+        super(TranslationMessageHistoryView, self).__init__(models.TranslationMessageHistory, db.session, **kwargs)
+
 class KeySuggestionsView(AdminModelView):
     column_searchable_list = ('key', 'language', 'target', 'value')
     column_sortable_list = ('key', 'language', 'target')

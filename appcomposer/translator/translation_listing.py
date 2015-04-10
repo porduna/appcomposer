@@ -2,14 +2,24 @@ import datetime
 import traceback
 import requests
 
-from appcomposer import db
-from appcomposer.models import RepositoryApp
+from appcomposer import app, db
+from appcomposer.models import RepositoryApp, GoLabOAuthUser
 from appcomposer.translator.utils import get_cached_session, extract_metadata_information
+from appcomposer.translator.ops import add_full_translation_to_app
 
 GOLAB_REPO = u'golabz'
 EXTERNAL_REPO = u'external'
 
 DEBUG = True
+
+def get_golab_default_user():
+    default_email = app.config.get('TRANSLATOR_DEFAULT_EMAIL', 'weblab+appcomposer@deusto.es')
+    default_user = db.session.query(GoLabOAuthUser).filter_by(email = default_email).first()
+    if default_user is None:
+        default_user = GoLabOAuthUser(email = default_email, display_name = "AppComposer")
+        db.session.add(default_user)
+        db.session.commit()
+    return default_user
 
 def download_golab_translations():
     cached_requests = get_cached_session()
@@ -93,7 +103,7 @@ def _add_new_app(cached_requests, repository, app_url, title, external_id, app_t
         print
         print "New app", title
         print app_url
-        print metadata_information
+        # print metadata_information
 
     repo_app = RepositoryApp(name = title, url = app_url, external_id = external_id, repository = repository)
     repo_app.app_thumb = app_thumb
@@ -111,8 +121,16 @@ def _add_new_app(cached_requests, repository, app_url, title, external_id, app_t
         repo_app.failing_since = now
 
     db.session.add(repo_app)
+    default_user = get_golab_default_user()
 
-    # TODO: call ops
+    if metadata_information.get('translatable'):
+        translation_url = metadata_information.get('default_translation_url')
+        original_messages = metadata_information['default_translations']
+        for language, translated_messages in metadata_information['original_translations'].iteritems():
+            print language, translated_messages
+            add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url, 
+                                language = language, target = 'ALL', translated_messages = translated_messages, 
+                                original_messages = original_messages, from_developer = True)
 
 if __name__ == '__main__':
     from appcomposer import app as my_app
