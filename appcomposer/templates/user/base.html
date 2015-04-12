@@ -37,10 +37,6 @@
                     <ul class="nav navbar-nav">
                         {{ layout.menu() }}
 
-                        {% if config["ACTIVATE_TRANSLATOR"] %}
-                            <li><a href="{{ url_for('translate.translate_index') }}">{{ gettext('Translate') }}</a></li>
-                        {% endif %}
-
                         <li><a href="{{ url_for('adapt.adapt_appsearch') }}">{{ gettext('Adapt') }}</a></li>
 
                     </ul>
