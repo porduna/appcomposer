@@ -13,7 +13,7 @@
         <div class="form-group">
             <label for="lang">Language</label>
             <select class="form-control" name="lang">
-                {% for lang_code, lang_name in languages.iteritems() %}
+                {% for lang_code, lang_name in languages %}
                     <option value={{ lang_code }}>{{ lang_name}}</option>
                 {% endfor %}
             </select>

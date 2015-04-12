@@ -49,7 +49,8 @@ def select_translations():
         return redirect(url_for('.translate', app_url = app_url, lang = language, target = target))
 
     targets = obtain_groups()
-    languages = obtain_languages()
+    languages = list(obtain_languages().iteritems())
+    languages.sort(lambda x1, x2 : cmp(x1[1], x2[1]))
     return render_template("translator/select_translations.html", targets = targets, languages = languages)
 
 @translator_blueprint.route('/translate')
@@ -101,11 +102,12 @@ def translate():
         'translation' : translation,
     }
 
-
     response = json.dumps(response, indent = 4)
     if False:
         return "<html><body>%s</body></html>" % response
-    return response
+    resp = make_response(response)
+    resp.content_type = 'application/json'
+    return resp
 
 TARGET_CHOICES = []
 TARGETS = obtain_groups()

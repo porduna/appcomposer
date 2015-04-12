@@ -143,7 +143,7 @@ def extract_local_translations_url(app_url):
 
     locales, _ = _extract_locales(app_url, cached_requests)
 
-    locales_without_lang = [ locale for locale in locales if 'lang' not in locale.attrib ]
+    locales_without_lang = [ locale for locale in locales if 'lang' not in locale.attrib or locale.attrib['lang'].lower() == 'all' ]
     if not locales_without_lang:
         raise TranslatorError("No default Locale found")
 
@@ -171,7 +171,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
         for locale in locales:
             lang = locale.attrib.get('lang')
             messages_url = locale.attrib.get('messages')
-            if lang and messages_url:
+            if lang and messages_url and lang.lower() != 'all':
                 if len(lang) == 2:
                     lang = u'%s_ALL' % lang
                 only_if_new = not force_reload
@@ -179,7 +179,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
                 original_translations[lang] = messages
                 original_translation_urls[lang] = absolute_url
 
-            if lang is None and messages_url:
+            if (lang is None or lang.lower() == 'all') and messages_url:
                 # Process this later. This way we can force we get the results for the default translation
                 default_locale = locale
 
