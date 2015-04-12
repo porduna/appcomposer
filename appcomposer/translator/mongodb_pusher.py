@@ -23,7 +23,6 @@ sys.path.insert(0, cwd)
 from appcomposer.application import app as flask_app
 
 # Fix the path so it can be run more easily, etc.
-from appcomposer.composers.translate.bundles import BundleManager
 from appcomposer.composers.translate.db_helpers import _db_get_diff_specs, _db_get_ownerships, load_appdata_from_db
 
 
@@ -99,63 +98,63 @@ def sync(self):
     """
     logger.info("[SYNC]: Starting Sync task")
 
-    # Apparently the context is required to access the local DB
-    # cleanly through Flask-SQLAlchemy. Maybe eventually this task
-    # should use SQLAlchemy on its own.
-    with flask_app.app_context():
-
-        # Remember the time in which we start this process. This is so that
-        # later we can avoid deleting bundles that were created in this time
-        # but which were not present on the _db_get_diff_specs() call yet.
-        # (That is, to avoid a concurrency issue that could occur when creating
-        # new translations).
-        start_time = datetime.utcnow()
-
-        # Retrieve a list of specs that are currently hosted in the local DB.
-        specs = _db_get_diff_specs()
-
-        # Store a list of bundleids
-        bundleids = []
-
-        for spec in specs:
-            # For each spec we get the ownerships.
-            ownerships = _db_get_ownerships(spec)
-
-            for ownership in ownerships:
-                lang = ownership.value
-                full_app_data = load_appdata_from_db(ownership.app)
-                bm = BundleManager.create_from_existing_app(full_app_data)
-
-                # Get a list of fullcodes (including the group).
-                keys = [key for key in bm._bundles.keys() if BundleManager.fullcode_to_partialcode(key) == lang]
-
-                # TODO: The graining of the modification date will actually lead
-                # to unneeded updates.
-                update_date = ownership.app.modification_date
-
-                for full_lang in keys:
-
-                    # Create the MongoDB id.
-                    bundleid = full_lang + "::" + spec
-                    bundleids.append(bundleid)
-
-                    logger.info("[SYNC]: Considering synchronization of: %s" % bundleid)
-
-                    # Launch a task to carry out the synchronization if needed.
-                    # The current method will waste some bandwidth but require
-                    # a single query per bundle.
-                    data = json.dumps(bm.get_bundle(full_lang).get_msgs())
-                    push.delay(spec, full_lang, data, update_date)
-
-
-        # Now that the bundles that are actually in the local DB have been
-        # supposedly synchronized, it's time to delete the ones that no longer exist.
-        # We avoid deleting those which were created while we executed this synchronization
-        # method, because a new app could have been created in the meantime and could be deleted
-        # if we did.
-        mongo_bundles.remove({"_id": {"$nin": bundleids}, "time": {"$lt": start_time}})
-
-        logger.info("[SYNC]: Sync finished.")
+#     # Apparently the context is required to access the local DB
+#     # cleanly through Flask-SQLAlchemy. Maybe eventually this task
+#     # should use SQLAlchemy on its own.
+#     with flask_app.app_context():
+# 
+#         # Remember the time in which we start this process. This is so that
+#         # later we can avoid deleting bundles that were created in this time
+#         # but which were not present on the _db_get_diff_specs() call yet.
+#         # (That is, to avoid a concurrency issue that could occur when creating
+#         # new translations).
+#         start_time = datetime.utcnow()
+# 
+#         # Retrieve a list of specs that are currently hosted in the local DB.
+#         specs = _db_get_diff_specs()
+# 
+#         # Store a list of bundleids
+#         bundleids = []
+# 
+#         for spec in specs:
+#             # For each spec we get the ownerships.
+#             ownerships = _db_get_ownerships(spec)
+# 
+#             for ownership in ownerships:
+#                 lang = ownership.value
+#                 full_app_data = load_appdata_from_db(ownership.app)
+#                 bm = BundleManager.create_from_existing_app(full_app_data)
+# 
+#                 # Get a list of fullcodes (including the group).
+#                 keys = [key for key in bm._bundles.keys() if BundleManager.fullcode_to_partialcode(key) == lang]
+# 
+#                 # TODO: The graining of the modification date will actually lead
+#                 # to unneeded updates.
+#                 update_date = ownership.app.modification_date
+# 
+#                 for full_lang in keys:
+# 
+#                     # Create the MongoDB id.
+#                     bundleid = full_lang + "::" + spec
+#                     bundleids.append(bundleid)
+# 
+#                     logger.info("[SYNC]: Considering synchronization of: %s" % bundleid)
+# 
+#                     # Launch a task to carry out the synchronization if needed.
+#                     # The current method will waste some bandwidth but require
+#                     # a single query per bundle.
+#                     data = json.dumps(bm.get_bundle(full_lang).get_msgs())
+#                     push.delay(spec, full_lang, data, update_date)
+# 
+# 
+#         # Now that the bundles that are actually in the local DB have been
+#         # supposedly synchronized, it's time to delete the ones that no longer exist.
+#         # We avoid deleting those which were created while we executed this synchronization
+#         # method, because a new app could have been created in the meantime and could be deleted
+#         # if we did.
+#         mongo_bundles.remove({"_id": {"$nin": bundleids}, "time": {"$lt": start_time}})
+# 
+#         logger.info("[SYNC]: Sync finished.")
 
 if __name__ == '__main__':
     cel.worker_main(sys.argv)

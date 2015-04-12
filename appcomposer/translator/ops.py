@@ -61,7 +61,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                 db.session.add(db_history)
 
                 # Establish that thew new active message points to this history message
-                db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, False)
+                db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False)
                 db.session.add(db_active_translation_message)
                 
                 if original_messages[key] == value:
@@ -104,7 +104,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
             db.session.add(db_history)
 
             # Establish that thew new active message points to this history message
-            db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, True)
+            db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, True)
             db.session.add(db_active_translation_message)
 
     # Commit!

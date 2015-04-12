@@ -403,17 +403,19 @@ class ActiveTranslationMessage(db.Model):
     bundle_id = db.Column(db.Integer, ForeignKey('TranslationBundles.id'))
     key = db.Column(db.Unicode(255), index = True)
     value = db.Column(db.UnicodeText)
+    datetime = db.Column(db.DateTime, index = True)
     history_id = db.Column(db.Integer, ForeignKey("TranslationMessageHistory.id"))
     taken_from_default = db.Column(db.Boolean, index = True)
 
     bundle = relation("TranslationBundle", backref="active_messages")
     history = relation("TranslationMessageHistory", backref="active")
 
-    def __init__(self, bundle, key, value, history, taken_from_default):
+    def __init__(self, bundle, key, value, history, datetime, taken_from_default):
         self.bundle = bundle
         self.key = key
         self.value = value
         self.history = history
+        self.datetime = datetime
         self.taken_from_default = taken_from_default
 
 
