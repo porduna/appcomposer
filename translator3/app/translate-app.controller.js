@@ -2,15 +2,28 @@
 
 angular
     .module("translateApp")
-    .controller("TranslateAppCtrl", TranslateAppCtrl);
+    .controller("TranslateAppController", TranslateAppController);
 
-function TranslateAppCtrl($scope, $rootScope, $resource) {
+function TranslateAppController($scope, $rootScope, $resource) {
+
+    ///////
+    // Scope-related
+    ///////
+
+
+    ///////
+    //  Root scope related
+    ///////
+    $rootScope.all_languages = $resource(APP_DYN_ROOT + "api/info/languages").get();
+    $rootScope.all_groups = $resource(APP_DYN_ROOT + "api/info/groups").get();
+
     $rootScope.objectKeys = objectKeys;
     $rootScope.dbg = function() { debugger; };
 
-    $scope.all_languages = $resource(APP_DYN_ROOT + "info/languages").get();
-    $scope.all_groups = $resource(APP_DYN_ROOT + "info/groups").get();
 
+    ///////
+    // Implementations
+    ///////
 
     function objectKeys(obj) {
         if(obj == undefined)
@@ -28,5 +41,7 @@ function TranslateAppCtrl($scope, $rootScope, $resource) {
 
         return ret;
     }
-}
+
+
+} // !TranslateAppController
 

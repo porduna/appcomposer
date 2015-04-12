@@ -4,7 +4,7 @@ angular
 
 
 function AppsCtrl($scope, $resource, $compile, $filter, DTOptionsBuilder, DTColumnDefBuilder) {
-    $scope.apps = $resource(APP_DYN_ROOT + "translations").query();
+    $scope.apps = $resource(APP_DYN_ROOT + "api/translations").query();
     $scope.dt = {};
 
     $scope.selected = {};
@@ -106,4 +106,4 @@ function AppsCtrl($scope, $resource, $compile, $filter, DTOptionsBuilder, DTColu
         return result;
     }
 
-}
+} // !AppsCtrl

@@ -8,7 +8,8 @@ angular
         'ui.utils',
         'datatables',
         'truncate',
-        'selectionModel'
+        'selectionModel',
+        'ui.bootstrap.modal'
     ])
     .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig]);
 
@@ -21,11 +22,11 @@ function routeConfig($routeProvider) {
         })
         .when('/app/:appurl*', {
             templateUrl: 'app/app.html',
-            controller: 'AppCtrl'
+            controller: 'AppController'
         })
-        .when('/edit/:appurl*', {
+        .when('/edit/:srclang/:srcgroup/:appurl*', {
             templateUrl: 'edit/edit.html',
-            controller: 'EditCtrl'
+            controller: 'EditController'
         })
         .otherwise({
             redirectTo: '/apps'

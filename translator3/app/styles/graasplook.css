@@ -1,0 +1,248 @@
+
+
+body {
+    font-family: SuisseIntl, Helvetica, Arial, sans-serif;
+    font-size: 14px;
+    line-height: 1.5;
+
+    color: #333;
+}
+
+.well {
+    background-color: rgb(238, 238, 238);
+    border: none;
+    border-radius: 0;
+    padding: 5px;
+    margin: 5px 0px 0px 0px;
+}
+
+/* Headers should be squared, flat and with a purple background */
+h1 {
+    background-color: rgb(80, 80, 210);
+    color: rgb(255, 255, 255);
+    border: none;
+    border-radius: 0;
+    padding: 5px;
+    font-size: 20px;
+
+    margin: -5px -5px 0px -5px;
+}
+
+.row {
+
+}
+
+/* Can be used for header buttons. They should be right-aligned first. */
+/* Buttons in the header should be gray, white when active, and invisible */
+.header-button {
+    background: transparent;
+    border: 0px solid rgb(198, 198, 198); /* Disabled */
+    color: rgb(200, 200, 200);
+    font-size: 18px;
+    margin-top: 5px;
+    outline: 0;
+}
+
+.header-button:hover {
+    color: rgb(255, 255, 255);
+}
+
+.header-button:active {
+    border: 0 solid !important;
+}
+
+.header-button-wrapper {
+}
+
+.header-button-wrapper:hover {
+}
+
+
+/* For a button left of the label */
+.header-button-label {
+    position: relative;
+    bottom: 5px;
+    color: rgb(198, 198, 198);
+}
+
+.header-button-label:hover {
+    color: rgb(255, 255, 255);
+    cursor: auto;
+}
+
+
+
+/* Somewhat custom. Tabs should resemble the header. Override ui tabs classes. */
+
+/* For the non-active tabs */
+.nav-tabs>li, .nav-tabs>li>a, nav>li, nav>li>a {
+    background-color: rgb(125, 125, 209); /* Custom 'disabled' header color */
+    color: rgb(255, 255, 255);
+    border: 0;
+    border-radius: 0;
+}
+
+/* For the active tab */
+.nav-tabs>li.active, .nav-tabs>li.active>a, .nav>li.active, .nav>li.active>a {
+    background-color: rgb(80, 80, 210);
+    color: rgb(255, 255, 255);
+    border: 0;
+    border-radius: 0;
+}
+/* For the tab that is active and has focus */
+.nav-tabs>li.active:focus, .nav-tabs>li.active>a:focus, .nav>li.active:focus, .nav>li.active>a:focus {
+    background-color: rgb(80, 80, 210);
+    color: rgb(255, 255, 255);
+    border: 0;
+    border-radius: 0;
+}
+/* For hovering over the active tab */
+.nav-tabs>li.active:hover, .nav-tabs>li.active>a:hover, .nav>li.active:hover, .nav>li.active>a:hover {
+    background-color: rgb(80, 80, 210);
+    color: rgb(255, 255, 255);
+    border: 0;
+    border-radius: 0;
+}
+
+/* For hovering over non-active tabs */
+.nav-tabs>li:hover, .nav-tabs>li>a:hover, .nav>li:hover, .nav>li>a:hover {
+    background-color: rgb(115, 115, 209); /* Color for inactive & hovered */
+    font-weight: bold;
+    border: 0;
+    border-radius: 0;
+}
+
+/* Custom scheme for clearer tabs */
+.tab-content {
+    border: 1px solid rgb(170, 170, 209); /* Clear non-intrusive purple for a border */
+    padding: 2px 10px 10px 10px;
+    background-color: rgb(245, 245, 245); /* Slightly clearer background. Graasp's secondary background color. */
+}
+
+
+
+
+/* BUTTONS */
+
+.btn {
+    border: 0;
+    border-radius: 0;
+    font-size: 16px;
+}
+
+.btn-success {
+
+}
+
+.btn-primary {
+    background-color: rgb(80, 80, 210);
+}
+
+.btn-primary:hover {
+    background-color: rgb(115, 115, 209);
+}
+
+.btn-primary:active {
+    background-color: rgb(170, 170, 209);
+}
+
+.btn-subtle {
+    background-color: rgb(124, 174, 207);
+    color: rgb(255, 255, 255);
+}
+
+.btn-subtle:hover {
+    background-color: rgb(93, 163, 207);
+    color: rgb(255, 255, 255);
+}
+
+.btn-subtle:active {
+    background-color: rgb(52, 147, 207);
+    color: rgb(255, 255, 255);
+}
+
+
+
+/* FORMS */
+
+/* Default select options look weird */
+select {
+    padding: 5px 0 0 0 !important;
+}
+
+select option {
+    position: relative;
+    padding: 2px 2px 2px 2px;
+}
+
+.form-control {
+    border: 0;
+    border-radius: 0;
+}
+
+label {
+    margin-bottom: 2px;
+}
+
+/* For important labels */
+.label-header {
+    font-size: 1.05em;
+}
+
+
+
+
+/* SELECT2 overrides */
+
+.ui-select-container>* {
+    border-radius: 0 !important;
+    border-color: rgb(115, 115, 209) !important;
+}
+
+
+/* MODALS */
+
+.modal-content {
+    border: 2px solid rgb(125, 125, 209);
+    border-radius: 0;
+    background-color: rgb(245, 245, 245);
+}
+
+/* Make a proper "title-bar-like" h1. Issues may appear if we use any other thing than h1 */
+.modal-content h1 {
+    margin-left: -15px;
+    margin-right: -15px;
+    margin-top: -15px;
+}
+
+.modal-header {
+    margin-bottom: 0;
+    padding-bottom: 0;
+}
+
+.modal-footer {
+    border: 0;
+}
+
+
+
+/* OVERRIDE OF THE SPECIFIC THEME OF THE TRANSLATOR */
+
+.ac-edit-message-details {
+    border: 1px solid rgb(170, 170, 209);
+    border-radius: 0;
+    background-color: rgb(245, 245, 245);
+}
+
+.ac-edit-message-details option {
+    border-bottom: 1px solid rgb(170, 170, 209);
+}
+
+
+
+/* DATA TABLES OVERRIDE */
+
+.paginate-button {
+
+}
+

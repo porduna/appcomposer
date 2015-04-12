@@ -60,3 +60,99 @@ h1 img.app-title-thumb {
     width: 50px;
     height: 50px;
 }
+
+
+/*-------------------------
+GENERAL LAYOUT
+--------------------------*/
+
+.ac-header-right {
+    float: right;
+}
+
+.ac-btn-left {
+    float: left;
+}
+
+/*-------------------------
+GENERAL TYPESETTING
+--------------------------*/
+
+.ac-text-danger {
+    color: #AA3333;
+}
+
+/* To contain errors. */
+.ac-error-box {
+    border: 1px solid #AA3333;
+    border-radius: 2px;
+    background-color: #F0E0E0;
+    padding-left: 3px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+}
+
+
+
+/*-------------------------
+FOR THE APP / EDIT SCREEN
+---------------------------*/
+
+.fa.form-control-feedback.ac-fa-control-feedback {
+    font-size: 25px;
+    top: 5px;
+}
+
+.ac-edit-change-source {
+    text-align: left;
+
+    color: #0000FF;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+label.ac-edit-message-label {
+    text-align: left !important;
+}
+
+.ac-edit-message-form-group {
+
+}
+
+span[name=ac-saved-icon] {
+    color: gray;
+}
+
+.ac-edit-message-details {
+    border: 1px solid #AAAAAA;
+    border-radius: 3px;
+    background-color: #F0F0FF;
+    padding-left: 15px;
+    padding-right: 15px;
+    margin: 2px 5px 5px 2px;
+}
+
+
+.ac-edit-suggestion-select>option:empty {
+    display:none;
+}
+
+
+/* DATA TABLES HOVER FIX */
+
+.my-disabled-hover div div {
+    background-color: rgb(255, 255, 255);
+}
+
+.my-disabled-hover div div:hover {
+    background-color: rgb(255, 255, 255);
+}
+
+table.dataTable.hover tbody tr:hover, table.dataTable.hover tbody tr.odd:hover, table.dataTable.hover tbody tr.even:hover, table.dataTable.display tbody tr:hover, table.dataTable.display tbody tr.odd:hover, table.dataTable.display tbody tr.even:hover {
+    background-color: rgb(255, 255, 255);
+}
+
+table.dataTable tbody tr[ng-click]:hover {
+    background-color: rgb(180, 180, 209) !important;
+}
+
