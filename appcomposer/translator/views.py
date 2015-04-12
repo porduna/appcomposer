@@ -16,6 +16,7 @@ from flask import Blueprint, make_response, render_template, request, flash, red
 from flask.ext.wtf import Form
 from flask.ext.wtf.file import FileField
 from flask.ext.admin.form import Select2Field
+from flask.ext.cors import cross_origin
 from wtforms.fields.html5 import URLField
 from wtforms.validators import url, required
 
@@ -27,6 +28,9 @@ from appcomposer.translator.utils import extract_local_translations_url, extract
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions
 from appcomposer.translator.utils import bundle_to_xml, url_to_filename, messages_to_xml
 from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
+
+import flask.ext.cors.core as cors_core
+cors_core.debugLog = lambda *args, **kwargs : None
 
 translator_blueprint = Blueprint('translator', __name__)
 
@@ -42,12 +46,14 @@ def translator_index():
 
 @translator_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>", methods=["POST"])
 @requires_golab_login
+@cross_origin()
 def create_language(appurl, targetlang):
     # TODO: this method is not needed
     return jsonify(**{"result": "ok"})
 
 @translator_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>/<targetgroup>", methods=["POST"])
 @requires_golab_login
+@cross_origin()
 def create_group(appurl, targetlang, targetgroup):
     # TODO: this method is not needed
     return jsonify(**{"result": "ok"})
@@ -70,6 +76,7 @@ def select_translations():
 
 @translator_blueprint.route('/api/translations')
 @public
+@cross_origin()
 def api_translations():
     # XXX: Removed: author (not the original one), app_type (always OpenSocial). 
     # XXX: original_languages does not have target (nobody has it)
@@ -104,6 +111,7 @@ def api_translations():
 
 @translator_blueprint.route('/api/info/languages')
 @public
+@cross_origin()
 def api_languages():
     ordered_dict = OrderedDict()
     languages = list(obtain_languages().iteritems())
@@ -114,11 +122,13 @@ def api_languages():
 
 @translator_blueprint.route('/api/info/groups')
 @public
+@cross_origin()
 def api_groups():
     return jsonify(**obtain_groups())
 
 @translator_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>/<targetgroup>/updateMessage", methods=["GET", "PUT"])
 @requires_golab_login
+@cross_origin()
 def bundle_update(appurl, targetlang, targetgroup):
     # TODO: implement this code
     key = request.values.get("key")
@@ -132,6 +142,7 @@ def bundle_update(appurl, targetlang, targetgroup):
 @translator_blueprint.route('/translate')
 @translator_blueprint.route('/api/apps/')
 @requires_golab_login
+@cross_origin()
 def api_translate():
     app_url = request.args.get('app_url')
     language = request.args.get('lang')
