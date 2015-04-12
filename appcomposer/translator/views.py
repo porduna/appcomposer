@@ -18,7 +18,7 @@ from wtforms.fields.html5 import URLField
 from wtforms.validators import url, required
 
 from appcomposer import db
-from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle
+from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp
 from appcomposer.login import requires_golab_login, current_golab_user
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
@@ -56,25 +56,37 @@ def translate():
         return '; '.join(errors), 400
 
     translation_url, original_messages = extract_local_translations_url(app_url)
-    response = {
-        # 'hello_key' : {
-        #    'original' : 'Hello',
-        #    'stored' : 'Hola', # or None
-        #    'suggestions': ['Hola', 'Aupa', 'Holaaa'],
-        # }
-    }
+    translation = {}
 
     stored_translations, from_developer = retrieve_stored(translation_url, language, target)
     suggestions = retrieve_suggestions(original_messages, language, target, stored_translations)
     for key, value in original_messages.iteritems():
-        stored = stored_translations.get(key)
-        response[key] = {
+        stored = stored_translations.get(key, {})
+        translation[key] = {
             'source' : value,
             'target' : stored.get('value'),
             'from_default' : stored.get('from_default', False),
             'suggestions' : suggestions.get(key, []),
             'can_edit' : not from_developer
         }
+
+    app_thumb = None
+    name = None
+    for repo_app in db.session.query(RepositoryApp).filter_by(url = app_url).all():
+        if repo_app.name is not None:
+            name = repo_app.name
+        if repo_app.app_thumb is not None:
+            app_thumb = repo_app.app_thumb
+        if name and app_thumb:
+            break
+
+    response = {
+        'url' : app_url,
+        'app_thumb' : app_thumb,
+        'name' : name,
+        'translation' : translation,
+    }
+
 
     response = json.dumps(response, indent = 4)
     if False:

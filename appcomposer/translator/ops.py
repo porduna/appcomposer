@@ -1,5 +1,6 @@
 import pprint
 import datetime
+from collections import defaultdict
 
 from appcomposer import db
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion
@@ -128,34 +129,53 @@ def retrieve_stored(translation_url, language, target):
 SKIP_SUGGESTIONS_IF_STORED = False
 
 def retrieve_suggestions(original_messages, language, target, stored_translations):
+    original_keys = [ key for key in original_messages ]
+    if SKIP_SUGGESTIONS_IF_STORED:
+        original_keys = [ key for key in original_keys if key not in stored_translations ]
+    original_values = [ original_messages[key] for key in original_keys ]
+
     all_suggestions = {}
+    current_suggestions = []
 
-    # TODO: move these to two single queries, calculating the order manually
-    # and adding the values of the potential values
+    # First, key suggestions
+    key_suggestions_by_key = defaultdict(list)
+    for key_suggestion in db.session.query(TranslationKeySuggestion).filter_by(language = language, target = target).filter(TranslationKeySuggestion.key.in_(original_keys)).all():
+        key_suggestions_by_key[key_suggestion.key].append({
+            'target' : key_suggestion.value,
+            'number' : key_suggestion.number,
+        })
+    current_suggestions.append(key_suggestions_by_key)
 
-    # First, based on key:
-    for key in original_messages:
-        if SKIP_SUGGESTIONS_IF_STORED and key in stored_translations:
-            continue
-
-        all_suggestions[key] = []
-
-        for key_suggestion in db.session.query(TranslationKeySuggestion).filter_by(key = key, language = language, target = target).order_by(TranslationKeySuggestion.number.desc()).all():
-            value = key_suggestion.value
-            if value not in all_suggestions[key]:
-                all_suggestions[key].append(value)
-
-    # Then, based on the value:
-    for key, original_value in original_messages.iteritems():
-        if SKIP_SUGGESTIONS_IF_STORED and key in stored_translations:
-            continue
-        
-        for value_suggestion in db.session.query(TranslationValueSuggestion).filter_by(human_key = original_value, language = language, target = target).order_by(TranslationValueSuggestion.number.desc()).all():
-            value = value_suggestion.value
-            if value not in all_suggestions[key]:
-                all_suggestions[key].append(value)
+    # Second, value suggestions
+    value_suggestions_by_key = defaultdict(list)
+    for value_suggestion in db.session.query(TranslationValueSuggestion).filter_by(language = language, target = target).filter(TranslationValueSuggestion.human_key.in_(original_values)).all():
+        value_suggestions_by_key[value_suggestion.human_key].append({
+            'target' : value_suggestion.value,
+            'number' : value_suggestion.number,
+        })
+    current_suggestions.append(value_suggestions_by_key)
 
     # TODO: here is where we could put the Bing / whatever values if there is nothing already
+
+    for key in original_keys:
+        current_key_suggestions = defaultdict(int)
+        # { 'target' : number }
+
+        for suggestions in current_suggestions:
+            for suggestion in suggestions.get(key, []):
+                current_key_suggestions[suggestion['target']] += suggestion['number']
+
+        all_suggestions[key] = []
+        if current_key_suggestions:
+            # Normalize the maximum value
+            total_value = max(current_key_suggestions.values())
+            for target, number in current_key_suggestions.iteritems():
+                normalized_value = 1.0 * number / total_value
+                all_suggestions[key].append({
+                    'target' : target,
+                    'weight' : normalized_value,
+                })
+            all_suggestions[key].sort(lambda x1, x2: cmp(x1['weight'], x2['weight']), reverse = True)
 
     return all_suggestions
 
