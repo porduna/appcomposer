@@ -10,7 +10,7 @@ import traceback
 
 from sqlalchemy.orm import joinedload_all
 
-from flask import Blueprint, make_response, render_template, request, flash
+from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for
 from flask.ext.wtf import Form
 from flask.ext.wtf.file import FileField
 from flask.ext.admin.form import Select2Field
@@ -37,6 +37,20 @@ def public(func): return func
 @requires_golab_login
 def translator_index():
     return "Hi there, this is the new translator"
+
+@translator_blueprint.route('/select')
+@public
+def select_translations():
+    app_url = request.args.get('app_url')
+    language = request.args.get('lang')
+    target = request.args.get('target')
+
+    if app_url and language and target:
+        return redirect(url_for('.translate', app_url = app_url, lang = language, target = target))
+
+    targets = obtain_groups()
+    languages = obtain_languages()
+    return render_template("translator/select_translations.html", targets = targets, languages = languages)
 
 @translator_blueprint.route('/translate')
 @requires_golab_login

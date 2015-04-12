@@ -1,0 +1,35 @@
+{% extends "translator/base.html" %}
+{% block body %}
+<div class="row">
+    
+    <h1>Select translation</h1>
+
+    <form method="get">
+        <div class="form-group">
+            <label for="app_url">Application URL</label>
+            <input name="app_url" type="text" class="form-control" id="app_url" placeholder="Application URL">
+        </div>
+
+        <div class="form-group">
+            <label for="lang">Language</label>
+            <select class="form-control" name="lang">
+                {% for lang_code, lang_name in languages.iteritems() %}
+                    <option value={{ lang_code }}>{{ lang_name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="form-group">
+            <label for="target">Target</label>
+            <select class="form-control" name="target">
+                {% for target_code, target_name in targets.iteritems() %}
+                    <option value={{ target_code }}>{{ target_name}}</option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <button type="submit" class="btn btn-default">Submit</button>
+    </form>
+
+</div>
+{% endblock %}
