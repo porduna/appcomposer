@@ -273,6 +273,8 @@ class RepositoryApp(db.Model):
     url = db.Column(db.Unicode(255), unique = True, nullable = False, index = True)
     app_thumb = db.Column(db.Unicode(255))
     description = db.Column(db.UnicodeText)
+    app_link = db.Column(db.Unicode(255))
+    app_image = db.Column(db.Unicode(255))
 
     repository = db.Column(db.Unicode(400), nullable = False, index = True)
     external_id = db.Column(db.Unicode(200), index = True)
@@ -281,6 +283,7 @@ class RepositoryApp(db.Model):
     translatable = db.Column(db.Boolean, index = True)
 
     original_translations = db.Column(db.Unicode(255))
+    translation_percent = db.Column(db.UnicodeText) # JSON document containing which bundles have been translated how much
 
     last_check = db.Column(db.DateTime, index = True)
     last_change = db.Column(db.DateTime, index = True)

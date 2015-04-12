@@ -1,4 +1,5 @@
 import sys
+import json
 import datetime
 
 import requests
@@ -7,7 +8,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from appcomposer import app, db
 from appcomposer.models import RepositoryApp, GoLabOAuthUser, TranslatedApp
 from appcomposer.translator.utils import get_cached_session, extract_metadata_information
-from appcomposer.translator.ops import add_full_translation_to_app
+from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent
 
 GOLAB_REPO = u'golabz'
 EXTERNAL_REPO = u'external'
@@ -66,7 +67,7 @@ def _sync_golab_translations(cached_requests, force_reload):
             else:
                 stored_ids.append(external_id)
                 app = apps_by_id[external_id]
-                _update_existing_app(cached_requests, repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app['app_thumb'], description = app['description'], force_reload = force_reload)
+                _update_existing_app(cached_requests, repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app['app_thumb'], description = app['description'], app_image = app['app_image'], app_link = app['app_golabz_page'], force_reload = force_reload)
         except SQLAlchemyError:
             # One error in one application shouldn't stop the process
             logger.warning("Error updating or deleting app %s" % app['app_url'], exc_info = True)
@@ -81,6 +82,7 @@ def _sync_golab_translations(cached_requests, force_reload):
                 _add_new_app(cached_requests, repository = GOLAB_REPO, 
                             app_url = app['app_url'], title = app['title'], external_id = app['id'],
                             app_thumb = app['app_thumb'], description = app['description'],
+                            app_image = app['app_image'], app_link = app['app_golabz_page'],
                             force_reload = force_reload)
             except SQLAlchemyError:
                 logger.warning("Error adding app %s" % app['app_url'], exc_info = True)
@@ -88,20 +90,26 @@ def _sync_golab_translations(cached_requests, force_reload):
 
     return list(apps_by_url)
 
-def _update_existing_app(cached_requests, repo_app, app_url, title, app_thumb, description, force_reload):
+def _update_existing_app(cached_requests, repo_app, app_url, title, app_thumb, description, app_image, app_link, force_reload):
     if repo_app.name != title:
         repo_app.name = title
     if repo_app.app_thumb != app_thumb:
         repo_app.app_thumb = app_thumb
     if repo_app.description != description:
         repo_app.description = description
+    if repo_app.app_link != app_link:
+        repo_app.app_link = app_link
+    if repo_app.app_image != app_image:
+        repo_app.app_image = app_image
 
     _add_or_update_app(cached_requests, app_url, force_reload, repo_app)
 
-def _add_new_app(cached_requests, repository, app_url, title, external_id, app_thumb, description, force_reload):
+def _add_new_app(cached_requests, repository, app_url, title, external_id, app_thumb, description, app_image, app_link, force_reload):
     repo_app = RepositoryApp(name = title, url = app_url, external_id = external_id, repository = repository)
     repo_app.app_thumb = app_thumb
     repo_app.description = description
+    repo_app.app_link = app_link
+    repo_app.app_image = app_image
     db.session.add(repo_app)
 
     _add_or_update_app(cached_requests, app_url, force_reload, repo_app)
@@ -147,6 +155,9 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None):
             add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url, 
                                 language = language, target = u'ALL', translated_messages = translated_messages, 
                                 original_messages = original_messages, from_developer = True)
+
+        translation_percent = retrieve_translations_percent(translation_url, original_messages)
+        repo_app.translation_percent = json.dumps(translation_percent)
     
     db.session.commit()
 

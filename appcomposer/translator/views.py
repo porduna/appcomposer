@@ -8,9 +8,11 @@ import zipfile
 import StringIO
 import traceback
 
+from collections import OrderedDict
+
 from sqlalchemy.orm import joinedload_all
 
-from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for
+from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify
 from flask.ext.wtf import Form
 from flask.ext.wtf.file import FileField
 from flask.ext.admin.form import Select2Field
@@ -36,7 +38,20 @@ def public(func): return func
 @translator_blueprint.route('/')
 @requires_golab_login
 def translator_index():
-    return "Hi there, this is the new translator"
+    return render_template("translator/index.html")
+
+@translator_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>", methods=["POST"])
+@requires_golab_login
+def create_language(appurl, targetlang):
+    # TODO: this method is not needed
+    return jsonify(**{"result": "ok"})
+
+@translator_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>/<targetgroup>", methods=["POST"])
+@requires_golab_login
+def create_group(appurl, targetlang, targetgroup):
+    # TODO: this method is not needed
+    return jsonify(**{"result": "ok"})
+
 
 @translator_blueprint.route('/select')
 @public
@@ -46,16 +61,78 @@ def select_translations():
     target = request.args.get('target')
 
     if app_url and language and target:
-        return redirect(url_for('.translate', app_url = app_url, lang = language, target = target))
+        return redirect(url_for('.api_translate', app_url = app_url, lang = language, target = target))
 
     targets = obtain_groups()
     languages = list(obtain_languages().iteritems())
     languages.sort(lambda x1, x2 : cmp(x1[1], x2[1]))
     return render_template("translator/select_translations.html", targets = targets, languages = languages)
 
-@translator_blueprint.route('/translate')
+@translator_blueprint.route('/api/translations')
+@public
+def api_translations():
+    # XXX: Removed: author (not the original one), app_type (always OpenSocial). 
+    # XXX: original_languages does not have target (nobody has it)
+    # XXX: app_golabz_page renamed as app_link
+    # XXX: response is { 'applications' : [] } (and not [] directly )
+
+    applications = []
+    for repo_app in db.session.query(RepositoryApp).filter_by(translatable = True).all():
+        original_languages = repo_app.original_translations.split(',')
+        if original_languages == "":
+            original_languages = []
+        original_languages_simplified = [ lang.split('_')[0] for lang in original_languages ]
+        try:
+            translated_languages = json.loads(repo_app.translation_percent) or {}
+        except ValueError:
+            translated_languages = {}
+
+        applications.append({
+            'original_languages' : original_languages,
+            'original_languages_simplified' : original_languages_simplified,
+            'translated_languages' : translated_languages,
+            'source' : repo_app.repository,
+            'id' : repo_app.external_id,
+            'description': repo_app.description,
+            'app_url' : repo_app.url,
+            'app_thumb' : repo_app.app_thumb,
+            'app_link' : repo_app.app_link,
+            'app_image' : repo_app.app_image,
+        })
+    
+    return jsonify(applications = applications) 
+
+@translator_blueprint.route('/api/info/languages')
+@public
+def api_languages():
+    ordered_dict = OrderedDict()
+    languages = list(obtain_languages().iteritems())
+    languages.sort(lambda x1, x2 : cmp(x1[1], x2[1]))
+    for lang_code, lang_name in languages:
+        ordered_dict[lang_code] = lang_name
+    return jsonify(**ordered_dict)
+
+@translator_blueprint.route('/api/info/groups')
+@public
+def api_groups():
+    return jsonify(**obtain_groups())
+
+@translator_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>/<targetgroup>/updateMessage", methods=["GET", "PUT"])
 @requires_golab_login
-def translate():
+def bundle_update(appurl, targetlang, targetgroup):
+    # TODO: implement this code
+    key = request.values.get("key")
+    value = request.values.get("value")
+
+    if key is None or value is None:
+        return jsonify(**{"result":"error"})
+
+    return jsonify(**{"result": "success"})
+
+@translator_blueprint.route('/translate')
+@translator_blueprint.route('/api/apps/')
+@requires_golab_login
+def api_translate():
     app_url = request.args.get('app_url')
     language = request.args.get('lang')
     target = request.args.get('target')
@@ -102,12 +179,11 @@ def translate():
         'translation' : translation,
     }
 
-    response = json.dumps(response, indent = 4)
+
     if False:
+        response = json.dumps(response, indent = 4)
         return "<html><body>%s</body></html>" % response
-    resp = make_response(response)
-    resp.content_type = 'application/json'
-    return resp
+    return jsonify(**response)
 
 TARGET_CHOICES = []
 TARGETS = obtain_groups()

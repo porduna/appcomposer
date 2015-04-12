@@ -2,6 +2,8 @@ import pprint
 import datetime
 from collections import defaultdict
 
+from sqlalchemy import func
+
 from appcomposer import db
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion
 
@@ -178,6 +180,28 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
             all_suggestions[key].sort(lambda x1, x2: cmp(x1['weight'], x2['weight']), reverse = True)
 
     return all_suggestions
+
+def retrieve_translations_percent(translation_url, original_messages):
+    if len(original_messages) == 0:
+        return {}
+
+    results = db.session.query(func.count(ActiveTranslationMessage.key), TranslationBundle.language, TranslationBundle.target).filter(
+                ActiveTranslationMessage.key.in_(list(original_messages)),
+                ActiveTranslationMessage.taken_from_default == False,
+                ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
+                TranslationBundle.translation_url_id == TranslationUrl.id, 
+                TranslationUrl.url == translation_url,
+            ).group_by(TranslationBundle.language, TranslationBundle.target).all()
+
+    translations = {
+        # es_ES_ALL : 0.8
+    }
+
+    for count, lang, target in results:
+        bundle = u'%s_%s' % (lang, target)
+        translations[bundle] = 1.0 * count / len(original_messages)
+
+    return translations
 
 def _deep_copy_bundle(src_bundle, dst_bundle):
     """Copy all the messages. Safely assume that there is no translation in the destination, so
