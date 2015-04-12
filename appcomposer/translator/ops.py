@@ -5,6 +5,7 @@ from collections import defaultdict
 from sqlalchemy import func
 
 from appcomposer import db
+from appcomposer.translator.mongodb_pusher import push
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion
 
 DEBUG = False
@@ -109,6 +110,9 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
 
     # Commit!
     db.session.commit()
+    
+    push.delay(translation_url, language, target)
+    
 
 def retrieve_stored(translation_url, language, target):
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()

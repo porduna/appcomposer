@@ -336,6 +336,9 @@ class TranslationUrl(db.Model):
     def __init__(self, url):
         self.url = url
 
+    def __unicode__(self):
+        return self.url
+
 class TranslatedApp(db.Model):
     __tablename__ = 'TranslatedApps'
 
@@ -351,6 +354,9 @@ class TranslatedApp(db.Model):
             raise Exception("TranslationApp requires a TranslationUrl, not a string")
 
         self.translation_url = translation_url
+
+    def __unicode__(self):
+        return self.url
 
 class TranslationBundle(db.Model):
     __tablename__ = 'TranslationBundles'

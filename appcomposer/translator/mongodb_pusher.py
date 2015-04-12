@@ -6,6 +6,7 @@ from celery import Celery
 from celery.utils.log import get_task_logger
 from bson import json_util
 from pymongo import MongoClient
+from sqlalchemy.orm import joinedload
 
 # Fix the working directory when running from the script's own folder.
 from pymongo.errors import DuplicateKeyError
@@ -19,14 +20,15 @@ if cwd.endswith(path):
 
 sys.path.insert(0, cwd)
 
-
+from appcomposer import db
 from appcomposer.application import app as flask_app
+from appcomposer.models import TranslationUrl, TranslationBundle
 
 # Fix the path so it can be run more easily, etc.
 from appcomposer.composers.translate.db_helpers import _db_get_diff_specs, _db_get_ownerships, load_appdata_from_db
 
 
-MONGODB_SYNC_PERIOD = flask_app.config.get("MONGODB_SYNC_PERIOD", 60*15)  # Every 15 min by default.
+MONGODB_SYNC_PERIOD = flask_app.config.get("MONGODB_SYNC_PERIOD", 60*10)  # Every 10 min by default.
 
 cel = Celery('pusher_tasks', backend='amqp', broker='amqp://')
 cel.conf.update(
@@ -61,34 +63,45 @@ def retrieve_mongodb_contents():
     return { 'bundles' : json.loads(bundles_serialized), 'translation_urls' : json.loads(translations_url_serialized) }
 
 @cel.task(name="push", bind=True)
-def push(self, spec, lang, data, time):
-    """
-    Pushes a Bundle into the MongoDB.
-    @param spec: Spec to which the Bundle belongs.
-    @param lang: Full bundle identifier, in the ca_ES_ALL format.
-    @param data: Contents of the Bundle.
-    @param time: Time the Bundle was last modified. If the proposed change to push
-    is actually older from the one in the dabatase, nothing will be updated.
-    """
+def push(self, translation_url, lang, target):
     try:
-        logger.info("[PUSH] Pushing to %s@%s on %s" % (lang, spec, time))
+        logger.info("[PUSH] Pushing to %s@%s" % (lang, translation_url))
 
-        bundle_id = lang + "::" + spec
-        bundle = {"_id": bundle_id, "spec": spec, "bundle": lang, "data": data, "time": time}
+        with flask_app.app_context():
+            translation_bundle = db.session.query(TranslationBundle).filter(TranslationBundle.translation_url_id == TranslationUrl.id, TranslationUrl.url == translation_url, TranslationBundle.language == lang, TranslationBundle.target == target).options(joinedload("translation_url")).first()
+            payload = {}
+            max_date = datetime(1970, 1, 1)
+            for message in translation_bundle.active_messages:
+                payload[message.key] = message.value
+                if message.datetime > max_date:
+                    max_date = message.datetime
+            data = json.dumps(payload)
 
-        try:
-            mongo_bundles.update({"_id": bundle_id, "time": {"$lt": time}},
-                           bundle,
-                           upsert=True)
-            logger.info("[PUSH]: Updated bundle %s" % bundle_id)
-        except DuplicateKeyError:
-            logger.info("[PUSH]: Ignoring push for %s (newer date exists already)" % bundle_id)
+            lang_pack = lang + '_' + target
 
+            bundle_id = lang_pack + '::' + translation_url
+            bundle = { '_id' : bundle_id, 'url' : translation_url,  'bundle' : lang_pack, 'data' : data, 'time' : max_date }
+            try:
+                mongo_translation_urls.update({'_id' : bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
+                logger.info("[PUSH]: Updated translation URL bundle %s" % bundle_id)
+            except DuplicateKeyError:
+                logger.info("[PUSH]: Ignoring push for translation URL bundle %s (newer date exists already)" % bundle_id)
+            
+            app_bundle_ids = []
+            for application in translation_bundle.translation_url.apps:
+                bundle_id = lang_pack + '::' + application.url
+                app_bundle_ids.append(bundle_id)
+                bundle = { '_id' : bundle_id, 'spec' : application.url,  'bundle' : lang_pack, 'data' : data, 'time' : max_date }
+                try:
+                    mongo_bundles.update({'_id' : bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
+                    logger.info("[PUSH]: Updated application bundle %s" % bundle_id)
+                except DuplicateKeyError:
+                    logger.info("[PUSH]: Ignoring push for application bundle %s (newer date exists already)" % bundle_id)
+
+            return bundle_id, app_bundle_ids
     except Exception as exc:
-
         logger.warn("[PUSH]: Exception occurred. Retrying soon.")
         raise self.retry(exc=exc, default_retry_delay=60, max_retries=None)
-
 
 @cel.task(name="sync", bind=True)
 def sync(self):
@@ -98,63 +111,27 @@ def sync(self):
     """
     logger.info("[SYNC]: Starting Sync task")
 
-#     # Apparently the context is required to access the local DB
-#     # cleanly through Flask-SQLAlchemy. Maybe eventually this task
-#     # should use SQLAlchemy on its own.
-#     with flask_app.app_context():
-# 
-#         # Remember the time in which we start this process. This is so that
-#         # later we can avoid deleting bundles that were created in this time
-#         # but which were not present on the _db_get_diff_specs() call yet.
-#         # (That is, to avoid a concurrency issue that could occur when creating
-#         # new translations).
-#         start_time = datetime.utcnow()
-# 
-#         # Retrieve a list of specs that are currently hosted in the local DB.
-#         specs = _db_get_diff_specs()
-# 
-#         # Store a list of bundleids
-#         bundleids = []
-# 
-#         for spec in specs:
-#             # For each spec we get the ownerships.
-#             ownerships = _db_get_ownerships(spec)
-# 
-#             for ownership in ownerships:
-#                 lang = ownership.value
-#                 full_app_data = load_appdata_from_db(ownership.app)
-#                 bm = BundleManager.create_from_existing_app(full_app_data)
-# 
-#                 # Get a list of fullcodes (including the group).
-#                 keys = [key for key in bm._bundles.keys() if BundleManager.fullcode_to_partialcode(key) == lang]
-# 
-#                 # TODO: The graining of the modification date will actually lead
-#                 # to unneeded updates.
-#                 update_date = ownership.app.modification_date
-# 
-#                 for full_lang in keys:
-# 
-#                     # Create the MongoDB id.
-#                     bundleid = full_lang + "::" + spec
-#                     bundleids.append(bundleid)
-# 
-#                     logger.info("[SYNC]: Considering synchronization of: %s" % bundleid)
-# 
-#                     # Launch a task to carry out the synchronization if needed.
-#                     # The current method will waste some bandwidth but require
-#                     # a single query per bundle.
-#                     data = json.dumps(bm.get_bundle(full_lang).get_msgs())
-#                     push.delay(spec, full_lang, data, update_date)
-# 
-# 
-#         # Now that the bundles that are actually in the local DB have been
-#         # supposedly synchronized, it's time to delete the ones that no longer exist.
-#         # We avoid deleting those which were created while we executed this synchronization
-#         # method, because a new app could have been created in the meantime and could be deleted
-#         # if we did.
-#         mongo_bundles.remove({"_id": {"$nin": bundleids}, "time": {"$lt": start_time}})
-# 
-#         logger.info("[SYNC]: Sync finished.")
+    start_time = datetime.utcnow()
+
+    with flask_app.app_context():
+        translation_bundles = [ {
+                'translation_url' : bundle.translation_url.url,
+                'language' : bundle.language,
+                'target' : bundle.target
+            } for bundle in db.session.query(TranslationBundle).options(joinedload("translation_url")).all() ]
+    
+    all_translation_url_ids = []
+    all_app_ids = []
+
+    for translation_bundle in translation_bundles:
+        translation_url_id, app_ids = push(translation_url = translation_bundle['translation_url'], lang = translation_bundle['language'], target = translation_bundle['target'])
+        all_translation_url_ids.append(translation_url_id)
+        all_app_ids.extend(app_ids)
+    
+    mongo_bundles.remove({"_id": {"$nin": all_app_ids}, "time": {"$lt": start_time}})
+    mongo_translation_urls.remove({"_id": {"$nin": all_translation_url_ids}, "time": {"$lt": start_time}})
+
+    logger.info("[SYNC]: Sync finished.")
 
 if __name__ == '__main__':
     cel.worker_main(sys.argv)
