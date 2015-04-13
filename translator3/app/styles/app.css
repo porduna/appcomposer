@@ -132,12 +132,18 @@ span[name=ac-shield-icon] {
 }
 
 .ac-edit-message-details {
+    display: block;
+    position: relative;
     border: 1px solid #AAAAAA;
     border-radius: 3px;
     background-color: #F0F0FF;
     padding-left: 15px;
     padding-right: 15px;
     margin: 2px 5px 5px 2px;
+}
+
+.ac-edit-message-details-close-btn {
+    margin-bottom: 15px;
 }
 
 

@@ -1,3 +1,6 @@
+#!/usr/bin/python
+# -*- coding: utf8 -*-
+
 import json
 from flask import jsonify, Response, request
 from flask.ext.cors import cross_origin
@@ -70,17 +73,32 @@ def bundle(appurl, targetlang, targetgroup, srclang, srcgroup):
                     }
                 ]
             },
-            "ht_whatever": {
-                "can_edit": False,
-                "source": "Whatever!",
-                "target": "Cualquier cosa",
+            "ht_continue": {
+                "can_edit": True,
+                "source": "Continue",
+                "target": "Continuar",
                 "suggestions": [
                     {
-                        "target": "cualquier",
+                        "target": "Seguir",
+                        "weight": 0.8
+                    },
+                    {
+                        "target": "Continuar",
+                        "weight": 0.7
+                    }
+                ]
+            },
+            "ht_app": {
+                "can_edit": False,
+                "source": "This is an app",
+                "target": "Esto es una aplicacion",
+                "suggestions": [
+                    {
+                        "target": "Una aplicación",
                         "weight": 0.9
                     },
                     {
-                        "target": "cualquier cosa!",
+                        "target": "Es una aplicación!",
                         "weight": 0.8
                     }
                 ]

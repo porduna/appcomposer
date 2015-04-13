@@ -35,6 +35,7 @@ function EditMessageController($scope, $log, $resource) {
     $scope.isSaved = isSaved;
     $scope.shouldDisplayDetails = shouldDisplayDetails;
     $scope.suggestionSelected = suggestionSelected;
+    $scope.onDetailsClose = onDetailsClose;
 
 
     /* SCOPE EVENTS */
@@ -153,5 +154,9 @@ function EditMessageController($scope, $log, $resource) {
             this.getModelController().$rollbackViewValue();
         }
     } // !onKey
+
+    function onDetailsClose() {
+        $scope.messageActive = false;
+    } // !onDetailsClose
 
 } // !EditMessageController
