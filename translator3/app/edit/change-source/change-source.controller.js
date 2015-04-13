@@ -12,6 +12,7 @@ function ChangeSourceController($scope, $modalInstance) {
     /* SCOPE ATTRIBUTES */
 
     $scope.selected = {};
+    $scope.selected.lang = $scope.bundle.srclang;
 
 
     /* SCOPE METHODS */
@@ -24,7 +25,7 @@ function ChangeSourceController($scope, $modalInstance) {
     // Initialize the default value when it is ready.
     $scope.$watch("appinfo.translations", function (newval, oldval) {
         if (newval != undefined)
-            $scope.selected.lang = "all_ALL";
+            $scope.selected.lang = $scope.bundle.srclang;
     });
 
     // Handle the selected event for the Lang field.
