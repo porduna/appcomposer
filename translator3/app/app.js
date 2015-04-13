@@ -24,7 +24,7 @@ function routeConfig($routeProvider) {
             templateUrl: 'app/app.html',
             controller: 'AppController'
         })
-        .when('/edit/:srclang/:srcgroup/:appurl*', {
+        .when('/edit/:targetlang/:targetgroup/:appurl*', {
             templateUrl: 'edit/edit.html',
             controller: 'EditController'
         })

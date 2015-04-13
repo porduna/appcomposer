@@ -98,7 +98,7 @@ def info_languages():
     :return: JSON object with each language key and its name in the user's language.
     """
     data = {
-        "all_ALL": "ALL",
+        "all_ALL": "Original (default)",
         "en_ALL": "English",
         "es_ALL": "Spanish"
     }

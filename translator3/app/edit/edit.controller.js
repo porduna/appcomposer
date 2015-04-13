@@ -22,8 +22,8 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     $scope.bundle.appurl = $scope.appurl;
     $scope.bundle.srclang = "all_ALL";
     $scope.bundle.srcgroup = "ALL";
-    $scope.bundle.targetlang = "all_ALL";
-    $scope.bundle.targetgroup = "ALL";
+    $scope.bundle.targetlang = $routeParams.targetlang;
+    $scope.bundle.targetgroup = $routeParams.targetgroup;
 
     $scope.appinfo = Appinfo.get({appurl: $scope.appurl});
     $scope.translationInfo = TranslationInfo.get({appurl: $scope.appurl, srclang: $scope.bundle.srclang,
@@ -56,8 +56,8 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     function onSourceLanguageChanged(selected) {
         $log.debug("[onSourceLanguageChanged]");
 
-        $scope.srclang = selected.lang;
-        $scope.srcgroup = selected.target;
+        $scope.bundle.srclang = selected.lang;
+        $scope.bundle.srcgroup = selected.target;
 
         // TODO: Refresh only if we did not select the same source language.
         $scope.translationInfo = TranslationInfo.get({appurl: $scope.appurl, srclang: $scope.bundle.srclang,
