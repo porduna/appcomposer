@@ -71,7 +71,7 @@ def bundle(appurl, targetlang, targetgroup, srclang, srcgroup):
                 ]
             },
             "ht_whatever": {
-                "can_edit": True,
+                "can_edit": False,
                 "source": "Whatever!",
                 "target": "Cualquier cosa",
                 "suggestions": [

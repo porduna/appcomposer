@@ -119,7 +119,15 @@ label.ac-edit-message-label {
 
 }
 
+.ac-edit-message-input-disabled {
+    background-color: rgb(230, 230, 230) !important;
+}
+
 span[name=ac-saved-icon] {
+    color: gray;
+}
+
+span[name=ac-shield-icon] {
     color: gray;
 }
 
