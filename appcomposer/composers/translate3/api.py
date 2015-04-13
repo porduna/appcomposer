@@ -100,7 +100,8 @@ def info_languages():
     data = {
         "all_ALL": "Original (default)",
         "en_ALL": "English",
-        "es_ALL": "Spanish"
+        "es_ALL": "Spanish",
+        "fr_ALL": "French"
     }
 
     return jsonify(**data)
@@ -158,6 +159,18 @@ def app(appurl):
             },
             "en_ALL": {
                 "name": "English",
+                "targets": {
+                    "ALL": {
+                        "modified_date": "2014-02-24",
+                        "created_date": "2014-01-12",
+                        "name": "ALL",
+                        "translated": 31,
+                        "items": 31
+                    }
+                }
+            },
+            "fr_ALL": {
+                "name": "French",
                 "targets": {
                     "ALL": {
                         "modified_date": "2014-02-24",
