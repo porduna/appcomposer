@@ -115,7 +115,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
 
     # Commit!
     db.session.commit()
-    
+
     push.delay(translation_url, language, target)
     
 

@@ -46,10 +46,12 @@ cel.conf.update(
     }
 )
 
-mongo_client = MongoClient(flask_app.config["MONGODB_PUSHES_URI"])
-mongo_db = mongo_client.appcomposerdb
-mongo_bundles = mongo_db.bundles
-mongo_translation_urls = mongo_db.translation_urls
+if flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
+
+    mongo_client = MongoClient(flask_app.config["MONGODB_PUSHES_URI"])
+    mongo_db = mongo_client.appcomposerdb
+    mongo_bundles = mongo_db.bundles
+    mongo_translation_urls = mongo_db.translation_urls
 
 logger = get_task_logger(__name__)
 
@@ -64,6 +66,9 @@ def retrieve_mongodb_contents():
 
 @cel.task(name="push", bind=True)
 def push(self, translation_url, lang, target):
+    if not flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
+        return
+
     try:
         logger.info("[PUSH] Pushing to %s@%s" % (lang, translation_url))
 
@@ -109,6 +114,9 @@ def sync(self):
     Fully synchronizes the local database leading translations with
     the MongoDB.
     """
+    if not flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
+        return
+
     logger.info("[SYNC]: Starting Sync task")
 
     start_time = datetime.utcnow()
