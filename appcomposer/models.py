@@ -459,3 +459,19 @@ class TranslationValueSuggestion(db.Model):
         self.value = value
         self.number = number
 
+class TranslationFastCache(db.Model):
+    """ This cache is used in methods where a quick update is desired (such as each time a user translates a word) """
+    __tablename__ = 'TranslationFastCaches'
+
+    id = db.Column(db.Integer, primary_key = True)
+    app_url = db.Column(db.Unicode(255), unique = True, index = True)
+    translation_url = db.Column(db.Unicode(255))
+    original_messages = db.Column(db.UnicodeText)
+    datetime = db.Column(db.DateTime, index = True)
+    
+    def __init__(self, app_url = app_url, translation_url = translation_url, original_messages = original_messages, datetime = datetime):
+        self.app_url = app_url
+        self.translation_url = translation_url
+        self.original_messages = original_messages
+        self.datetime = datetime
+

@@ -126,16 +126,22 @@ def api_languages():
 def api_groups():
     return jsonify(**obtain_groups())
 
-@translator_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>/<targetgroup>/updateMessage", methods=["GET", "PUT"])
+@translator_blueprint.route("/api/apps/<path:app_url>/bundles/<language>/<target>/updateMessage", methods=["GET", "PUT"])
 @requires_golab_login
 @cross_origin()
-def bundle_update(appurl, targetlang, targetgroup):
+def bundle_update(app_url, language, target):
     # TODO: implement this code
     key = request.values.get("key")
     value = request.values.get("value")
 
     if key is None or value is None:
         return jsonify(**{"result":"error"})
+
+    user = current_golab_user()
+    translation_url, original_messages = extract_local_translations_url(app_url, force_local_cache = True)
+    translated_messages = { key : value }
+
+    add_full_translation_to_app(user, app_url, translation_url, language, target, translated_messages, original_messages, from_developer = False)
 
     return jsonify(**{"result": "success"})
 

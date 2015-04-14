@@ -10,7 +10,7 @@ from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle,
 
 DEBUG = False
 
-def add_full_translation_to_app(user, app_url, translation_url, language, target, translated_messages, original_messages, from_developer):
+def _get_or_create_bundle(app_url, translation_url, language, target, from_developer):
     # Create the translation url if not present
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
     if not db_translation_url:
@@ -35,7 +35,11 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
     if not db_translation_bundle:
         db_translation_bundle = TranslationBundle(language, target, db_translation_url, from_developer)
         db.session.add(db_translation_bundle)
-   
+    return db_translation_bundle
+
+def add_full_translation_to_app(user, app_url, translation_url, language, target, translated_messages, original_messages, from_developer):
+    db_translation_bundle = _get_or_create_bundle(app_url, translation_url, language, target, from_developer)
+    
     if translated_messages is not None:
         # Delete active translations that are going to be replaced
         # Store which were the parents of those translations and
@@ -65,7 +69,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                 db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False)
                 db.session.add(db_active_translation_message)
                 
-                if original_messages[key] == value:
+                if original_messages.get(key, object()) == value:
                     # If the message in the original language is the same as in the target language, then
                     # it can be two things: 
                     # 
@@ -97,6 +101,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                         db.session.add(db_human_key_suggestion)
         db.session.commit()
 
+    now = datetime.datetime.now()
     existing_keys = [ key for key, in db.session.query(ActiveTranslationMessage.key).filter_by(bundle = db_translation_bundle).all() ]
     for key, value in original_messages.iteritems():
         if key not in existing_keys:
