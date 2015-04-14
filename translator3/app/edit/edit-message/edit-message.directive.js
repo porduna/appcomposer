@@ -20,7 +20,7 @@ function acEditMessage() {
 
     function acEditMessageLink(scope, elem, attrs, ctrl) {
 
-        var input = elem.find("input");
+        var input = elem.find("input.ac-edit-message-input");
 
         scope.setCurrentTextValue = setCurrentTextValue;
         scope.getCurrentTextValue = getCurrentTextValue;
