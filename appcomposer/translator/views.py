@@ -59,6 +59,15 @@ def create_group(appurl, targetlang, targetgroup):
     return jsonify(**{"result": "ok"})
 
 
+@translator_blueprint.route("/api/authn/<path:cur_url>")
+@cross_origin()
+def check_authn(cur_url):
+    golab_user = current_golab_user()
+    if golab_user:
+        return jsonify(**{ "result" : "ok" })
+    else:
+        return jsonify(**{ "result" : "fail", "redirect" : url_for('graasp_oauth_login', next = cur_url, _external = True) })
+
 @translator_blueprint.route('/select')
 @public
 def select_translations():
@@ -81,7 +90,6 @@ def api_translations():
     # XXX: Removed: author (not the original one), app_type (always OpenSocial). 
     # XXX: original_languages does not have target (nobody has it)
     # XXX: app_golabz_page renamed as app_link
-    # XXX: response is { 'applications' : [] } (and not [] directly )
 
     applications = []
     for repo_app in db.session.query(RepositoryApp).filter_by(translatable = True).all():
@@ -107,7 +115,9 @@ def api_translations():
             'app_image' : repo_app.app_image,
         })
     
-    return jsonify(applications = applications) 
+    resp = make_response(json.dumps(applications))
+    resp.content_type = 'application/json'
+    return resp
 
 @translator_blueprint.route('/api/info/languages')
 @public
