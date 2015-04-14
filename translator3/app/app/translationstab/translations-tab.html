@@ -1,16 +1,19 @@
 <div class="row" ng-controller="TranslationsTabCtrl">
 
-    <ac-lang-target appinfo="appinfo" selected="selected_source" all_languages="all_languages"
+    <ac-lang-target appinfo="appinfo" selected="selected_target" all_languages="all_languages"
                     all_groups="all_groups"></ac-lang-target>
 
     <div class="col-md-6 col-sm-12">
         <h3 ac-translate-me>Details:</h3>
 
-        <a ng-href="#/edit/{{ selected_source.lang }}/{{ selected_source.target }}/{{ appurl }}/">
-            <div class="btn btn-success">
+        <a ng-href="#/edit/{{ selected_target.lang }}/{{ selected_target.target }}/{{ appurl }}/">
+            <div ng-disabled="selected_target.lang == undefined" class="btn btn-success">
                 <i class="fa fa-edit"></i> {{ 'Edit translation' | translate }}
             </div>
         </a>
+        <div ng-show="selected_target.lang == undefined">
+                <p class="ac-text-danger">Please, choose a language.</p>
+        </div>
 
         <dl class="" style="padding-top: 1em">
 

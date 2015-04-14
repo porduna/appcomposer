@@ -125,7 +125,10 @@ def upgrade():
     op.create_index(u'ix_Apps_name', 'Apps', ['name'], unique=False)
     op.create_index(u'ix_Apps_owner_id', 'Apps', ['owner_id'], unique=False)
     op.create_index(u'ix_Apps_unique_id', 'Apps', ['unique_id'], unique=True)
-    op.create_foreign_key(None, 'Apps', 'Specs', ['spec_id'], ['id'])
+    try:
+        op.create_foreign_key(None, 'Apps', 'Specs', ['spec_id'], ['id'])
+    except:
+        print "create_foreign_key not supported in sqlite"
     op.create_index(u'ix_Users_creation_date', 'Users', ['creation_date'], unique=False)
     op.create_index(u'ix_Users_last_access_date', 'Users', ['last_access_date'], unique=False)
     ### end Alembic commands ###

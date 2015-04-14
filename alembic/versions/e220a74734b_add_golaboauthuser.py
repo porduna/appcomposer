@@ -26,8 +26,11 @@ def upgrade():
     op.create_index(u'ix_GoLabOAuthUsers_email', 'GoLabOAuthUsers', ['email'], unique=True)
     op.add_column(u'TranslationBundles', sa.Column('from_developer', sa.Boolean(), nullable=True))
     op.create_index(u'ix_TranslationBundles_from_developer', 'TranslationBundles', ['from_developer'], unique=False)
-    op.drop_constraint(u'TranslationMessageHistory_ibfk_2', 'TranslationMessageHistory', type_='foreignkey')
-    op.create_foreign_key(None, 'TranslationMessageHistory', 'GoLabOAuthUsers', ['user_id'], ['id'])
+    try:
+        op.drop_constraint(u'TranslationMessageHistory_ibfk_2', 'TranslationMessageHistory', type_='foreignkey')
+        op.create_foreign_key(None, 'TranslationMessageHistory', 'GoLabOAuthUsers', ['user_id'], ['id'])
+    except:
+        print "drop_constraint and create_foreign_key not supported in SQLite"
     ### end Alembic commands ###
 
 
