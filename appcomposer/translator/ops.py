@@ -6,9 +6,13 @@ from sqlalchemy import func
 
 from appcomposer import db
 from appcomposer.translator.mongodb_pusher import push
+from appcomposer.translator.languages import obtain_languages, obtain_groups
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion
 
 DEBUG = False
+
+LANGUAGES = obtain_languages()
+GROUPS = obtain_groups()
 
 def _get_or_create_bundle(app_url, translation_url, language, target, from_developer):
     # Create the translation url if not present
@@ -189,6 +193,54 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
             all_suggestions[key].sort(lambda x1, x2: cmp(x1['weight'], x2['weight']), reverse = True)
 
     return all_suggestions
+
+def retrieve_translations_stats(translation_url, original_messages):
+    if len(original_messages) == 0:
+        return {}
+    
+    results = db.session.query(func.count(TranslationMessageHistory.key), func.max(TranslationMessageHistory.datetime), func.min(TranslationMessageHistory.datetime), TranslationBundle.language, TranslationBundle.target).filter(
+                TranslationMessageHistory.key.in_(list(original_messages)),
+                TranslationMessageHistory.taken_from_default == False,
+                TranslationMessageHistory.bundle_id == TranslationBundle.id, 
+                TranslationBundle.translation_url_id == TranslationUrl.id, 
+                TranslationUrl.url == translation_url,
+            ).group_by(TranslationBundle.language, TranslationBundle.target).all()
+
+    translations = {
+        # es_ES : {
+        #      "name" : foo,
+        #      "targets" : {
+        #           "ALL" : {
+        #                "modified_date" : "2014-02-14",
+        #                "creation_date" : "2014-02-14",
+        #                "name" : "Adolescens...,
+        #                "translated" : 21,
+        #                "items" : 31,
+        #           }
+        #      }
+        # }
+    }
+
+    for count, modification_date, creation_date, lang, target in results:
+        if lang not in translations:
+            translations[lang] = {
+                'name' : LANGUAGES.get(lang),
+                'targets' : {}
+            }
+
+        mdate = modification_date.strftime("%Y-%m-%d") if modification_date is not None else None
+        cdate = creation_date.strftime("%Y-%m-%d") if creation_date is not None else None
+
+        translations[lang]['targets'][target] = {
+            'modification_date' : mdate,
+            'creation_date' : cdate,
+            'name' : GROUPS.get(target),
+            'translated' : count,
+            'items' : len(original_messages)
+        }
+    
+    return translations
+
 
 def retrieve_translations_percent(translation_url, original_messages):
     if len(original_messages) == 0:

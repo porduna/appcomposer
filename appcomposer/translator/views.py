@@ -25,7 +25,7 @@ from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle,
 from appcomposer.login import requires_golab_login, current_golab_user
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
-from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions
+from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats
 from appcomposer.translator.utils import bundle_to_xml, url_to_filename, messages_to_xml
 from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 
@@ -60,6 +60,7 @@ def create_group(appurl, targetlang, targetgroup):
 
 
 @translator_blueprint.route("/api/authn/<path:cur_url>")
+@public
 @cross_origin()
 def check_authn(cur_url):
     golab_user = current_golab_user()
@@ -67,6 +68,12 @@ def check_authn(cur_url):
         return jsonify(**{ "result" : "ok" })
     else:
         return jsonify(**{ "result" : "fail", "redirect" : url_for('graasp_oauth_login', next = cur_url, _external = True) })
+
+@translator_blueprint.route("/api/default-language/")
+@public
+@cross_origin()
+def guess_default_language():
+    return jsonify(language = _guess_default_language())
 
 @translator_blueprint.route('/select')
 @public
@@ -119,6 +126,8 @@ def api_translations():
     resp.content_type = 'application/json'
     return resp
 
+
+
 @translator_blueprint.route('/api/info/languages')
 @public
 @cross_origin()
@@ -128,7 +137,9 @@ def api_languages():
     languages.sort(lambda x1, x2 : cmp(x1[1], x2[1]))
     for lang_code, lang_name in languages:
         ordered_dict[lang_code] = lang_name
-    return jsonify(**ordered_dict)
+    resp = make_response(json.dumps(ordered_dict, indent = 4))
+    resp.content_type = 'application/json'
+    return resp
 
 @translator_blueprint.route('/api/info/groups')
 @public
@@ -154,6 +165,35 @@ def bundle_update(app_url, language, target):
     add_full_translation_to_app(user, app_url, translation_url, language, target, translated_messages, original_messages, from_developer = False)
 
     return jsonify(**{"result": "success"})
+
+@translator_blueprint.route('/api/apps/<path:app_url>')
+@public
+@cross_origin()
+def api_app(app_url):
+
+    app_thumb = None
+    name = None
+    desc = None
+
+    for repo_app in db.session.query(RepositoryApp).filter_by(url = app_url).all():
+        if repo_app.name is not None:
+            name = repo_app.name
+        if repo_app.app_thumb is not None:
+            app_thumb = repo_app.app_thumb
+        if repo_app.description is not None:
+            desc = repo_app.description
+
+    translation_url, original_messages = extract_local_translations_url(app_url, force_local_cache = True)
+    translations = retrieve_translations_stats(translation_url, original_messages)
+
+    app_data = {
+        'url' : app_url,
+        'app_thumb' : app_thumb,
+        'name' : name,
+        'desc' : desc,
+        'translations' : translations,
+    }
+    return jsonify(**app_data)
 
 @translator_blueprint.route('/translate')
 @translator_blueprint.route('/api/apps/')
@@ -228,9 +268,7 @@ class UploadForm(Form):
     target = Select2Field(u"Target age", choices = TARGET_CHOICES, validators = [ required() ], default = "ALL")
     opensocial_xml = FileField(u'OpenSocial XML file', validators = [required()])
 
-@translator_blueprint.route('/translations/upload/', methods = ('GET', 'POST'))
-@requires_golab_login
-def translation_upload():
+def _guess_default_language():
     best_match = request.accept_languages.best_match([ lang_code.split('_')[0] for lang_code in LANGUAGES ])
     default_language = None
     if best_match is not None:
@@ -240,7 +278,12 @@ def translation_upload():
             lang_codes = [ lang_code for lang_code in LANGUAGES if lang_code.startswith('%s_' % best_match) ]
             if lang_codes:
                 default_language = lang_codes[0]
+    return default_language
 
+@translator_blueprint.route('/translations/upload/', methods = ('GET', 'POST'))
+@requires_golab_login
+def translation_upload():
+    default_language = _guess_default_language()
     if default_language:
         form = UploadForm(language = default_language)
     else:
