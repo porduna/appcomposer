@@ -120,6 +120,7 @@ def api_translations():
             'app_thumb' : repo_app.app_thumb,
             'app_link' : repo_app.app_link,
             'app_image' : repo_app.app_image,
+            'title' : repo_app.name,
         })
     
     resp = make_response(json.dumps(applications))
