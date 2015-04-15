@@ -74,12 +74,13 @@ function LangTargetController($scope, $rootScope, $resource) {
     /**
      * Returns the list of languages to show.
      */
-    function languages() {
+    function languages(filter) {
         var all = $scope.objectKeys($scope.all_languages);
         var toremove = ["all_ALL"];
+        var list = $(all).not(toremove).get();
 
-        return $(all).not(toremove).get();
-    } // !languagesThatCanBeAdded
+        return list;
+    } // !languages
 
 
     /**

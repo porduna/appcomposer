@@ -9,7 +9,7 @@
                 <ui-select-match placeholder="Select a language">
                     {{ all_languages[selected.lang] }}</ui-select-match>
                 <!-- we get all_languages from $parent because otherwise it doesn't seem to work -->
-                <ui-select-choices repeat="lang in languages()">
+                <ui-select-choices repeat="lang in languages() | langTargetSearchFilter: $select.search : all_languages">
                     <div ng-bind-html="all_languages[lang] | highlight: $select.search"></div>
                 </ui-select-choices>
             </ui-select>
