@@ -11,7 +11,9 @@
             </div>
         </h1>
 
-        <p>{{ appinfo.desc }}</p>
+        <p class="ac-app-description">
+            <span ng-bind-html="appinfo.desc"></span>
+        </p>
 
         <tabset>
 

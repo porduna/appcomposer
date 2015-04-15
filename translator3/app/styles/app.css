@@ -98,6 +98,11 @@ GENERAL TYPESETTING
 FOR THE APP / EDIT SCREEN
 ---------------------------*/
 
+.ac-app-description {
+    padding-top: 10px;
+    padding-bottom: 10px;
+}
+
 .fa.form-control-feedback.ac-fa-control-feedback {
     font-size: 25px;
     top: 5px;

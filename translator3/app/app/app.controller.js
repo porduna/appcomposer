@@ -3,7 +3,7 @@ angular
     .controller("AppController", AppController);
 
 
-function AppController($scope, $routeParams, $resource, $log) {
+function AppController($scope, $routeParams, $resource, $log, $sce) {
 
     // ---------------------------
     // Initialization
