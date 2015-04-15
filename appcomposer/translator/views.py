@@ -69,7 +69,7 @@ def check_authn(cur_url):
     else:
         return jsonify(**{ "result" : "fail", "redirect" : url_for('graasp_oauth_login', next = cur_url, _external = True) })
 
-@translator_blueprint.route("/api/default-language/")
+@translator_blueprint.route("/api/default-language")
 @public
 @cross_origin()
 def guess_default_language():

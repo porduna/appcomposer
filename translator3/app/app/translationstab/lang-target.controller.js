@@ -21,6 +21,7 @@ function LangTargetController($scope, $rootScope, $resource) {
     $scope.objectKeys = $rootScope.objectKeys;
     $scope.all_languages = $rootScope.all_languages;
     $scope.all_groups = $rootScope.all_groups;
+    $scope.default_language = $rootScope.default_language;
 
     $scope.chooseLanguageError = "";
 
@@ -37,8 +38,15 @@ function LangTargetController($scope, $rootScope, $resource) {
 
     // Initialize the default value when it is ready.
     $scope.$watch("appinfo.translations", function (newval, oldval) {
-        if (newval != undefined)
-            $scope.selected.lang = undefined;
+        if (newval != undefined) {
+
+            // The default selected lang
+            if($scope.default_language && $scope.default_language.language) {
+                $scope.selected.lang = $scope.default_language.language;
+            }
+            else
+                $scope.selected.lang = undefined;
+        }
     });
 
     // Handle the selected event for the Lang field.
