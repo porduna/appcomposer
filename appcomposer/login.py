@@ -232,6 +232,10 @@ def graasp_oauth_login_redirect(next_url):
 
 def current_golab_user():
     if not session.get('golab_logged_in', False):
+        if app.config.get('DEBUG'):
+            if request.referrer and request.referrer.startswith('http://localhost:9000/'):
+                return db.session.query(GoLabOAuthUser).first()
+
         return None
 
     return db.session.query(GoLabOAuthUser).filter_by(email = session['golab_email']).first()

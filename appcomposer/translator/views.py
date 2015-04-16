@@ -58,7 +58,7 @@ def api(func):
 @translator_blueprint.route('/')
 @requires_golab_login
 def translator_index():
-    return render_template("translator/index.html")
+    return redirect(url_for('.static', filename='index.html'))
 
 @translator_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>", methods=["POST"])
 @requires_golab_login
@@ -84,7 +84,7 @@ def create_group(appurl, targetlang, targetgroup):
 def check_authn(cur_url):
     golab_user = current_golab_user()
     if golab_user:
-        return jsonify(**{ "result" : "ok" })
+        return jsonify(**{ "result" : "ok", "display_name" : golab_user.display_name })
     else:
         return jsonify(**{ "result" : "fail", "redirect" : url_for('graasp_oauth_login', next = cur_url, _external = True) })
 
