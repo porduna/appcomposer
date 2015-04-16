@@ -18,7 +18,13 @@ with app.app_context():
         translation = loads(open(f).read())
         app_url = translation['spec']
         language, target = translation['bundle'].rsplit('_', 1)
-        translated_messages = json.loads(json.loads(translation['data']))
+        if language == 'all_ALL':
+            print "Skipping all_ALL"
+            continue
+        try:
+            translated_messages = json.loads(json.loads(translation['data']))
+        except (ValueError, TypeError):
+            translated_messages = json.loads(translation['data'])
         from_developer = False
 
         translation_url, original_messages = extract_local_translations_url(app_url, force_local_cache = True)
