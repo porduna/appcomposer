@@ -6,7 +6,7 @@
             <input ng-focus="onFocus()" ng-change="onChange()" ng-model="currentValue" ng-model-options="{ updateOn: 'change blur' }"
                    ng-keyup="onKey($event)" name="ac-edit-message-input"
                    ng-class="{'ac-edit-message-from-default': item.from_default}" class="form-control ac-edit-message-input"
-                   type="text" placeholder="{{ item.source }}"/>
+                   type="text"/>
 
             <span ng-show="!status.saving && isSaved()" title="Saved" name="ac-saved-icon"
                   class="fa fa-save form-control-feedback ac-fa-control-feedback"></span>
