@@ -34,8 +34,7 @@ from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 import flask.ext.cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
 
-translator_blueprint = Blueprint('translator', __name__)
-translator_angularjs_blueprint = Blueprint('translator_angularjs', __name__, static_folder = '../../translator3/dist/', static_url_path = '/web')
+translator_blueprint = Blueprint('translator', __name__, static_folder = '../../translator3/dist/', static_url_path = '/web')
 
 #
 # Use @public to mark that a method is intentionally public
@@ -318,7 +317,7 @@ def widget_js():
             else:
                 human_translations.append(lang_code)
 
-        html_url = url_for('translator_angularjs.static', filename="index.html", _external = True)
+        html_url = url_for('.static', filename="index.html", _external = True)
         link = '%s#/app/%s' % (html_url, repo_app.url)
         str_translations = u', '.join(human_translations)
 
