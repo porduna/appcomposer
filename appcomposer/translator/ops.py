@@ -54,7 +54,16 @@ def _get_or_create_bundle(app_url, translation_url, language, target, from_devel
 
 def add_full_translation_to_app(user, app_url, translation_url, language, target, translated_messages, original_messages, from_developer):
     db_translation_bundle = _get_or_create_bundle(app_url, translation_url, language, target, from_developer)
-    
+    if from_developer and not db_translation_bundle.from_developer:
+        # If this is an existing translation and it comes from a developer, establish that it is from developer
+        db_translation_bundle.from_developer = from_developer
+
+    if not from_developer and db_translation_bundle.from_developer:
+        # If this is an existing translation from a developer and it comes from a user (and not a developer)
+        # then it should not be accepted.
+        return
+        
+   
     if translated_messages is not None:
         # Delete active translations that are going to be replaced
         # Store which were the parents of those translations and

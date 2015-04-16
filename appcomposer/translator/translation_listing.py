@@ -158,7 +158,8 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None):
                                 original_messages = original_messages, from_developer = True)
 
         translation_percent = retrieve_translations_percent(translation_url, original_messages)
-        repo_app.translation_percent = json.dumps(translation_percent)
+        if repo_app is not None:
+            repo_app.translation_percent = json.dumps(translation_percent)
     
     db.session.commit()
 
