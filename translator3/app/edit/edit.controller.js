@@ -8,8 +8,8 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     // Initialization
     /////////
 
-    var TranslationInfo = $resource(APP_DYN_ROOT + "api/apps/:appurl/bundles/:targetlang/:targetgroup/translationInfo/:srclang/:srcgroup");
-    var Appinfo = $resource(APP_DYN_ROOT + "api/apps/:appurl");
+    var TranslationInfo = $resource(APP_DYN_ROOT + "translate"); // Query parameters are needed
+    var Appinfo = $resource(APP_DYN_ROOT + "api/apps");
 
     /////////
     // Scope related
@@ -25,9 +25,9 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     $scope.bundle.targetlang = $routeParams.targetlang;
     $scope.bundle.targetgroup = $routeParams.targetgroup;
 
-    $scope.appinfo = Appinfo.get({appurl: $scope.appurl});
-    $scope.translationInfo = TranslationInfo.get({appurl: $scope.appurl, srclang: $scope.bundle.srclang,
-        srcgroup: $scope.bundle.srcgroup, targetlang: $scope.bundle.targetlang, targetgroup: $scope.bundle.targetgroup});
+    $scope.appinfo = Appinfo.get({app_url: $scope.appurl});
+    $scope.translationInfo = TranslationInfo.get({app_url: $scope.appurl, srclang: $scope.bundle.srclang,
+        srcgroup: $scope.bundle.srcgroup, lang: $scope.bundle.targetlang, target: $scope.bundle.targetgroup});
 
     /* METHODS */
 

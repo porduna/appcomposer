@@ -6,7 +6,6 @@ function acSafeHtml($sanitize, $filter) {
     return {
         restrict: "A",
         link: function(scope, element, attr) {
-            debugger;
             // No actual binding.
             var orig = scope.$eval(attr.acSafeHtml);
             var safe = $sanitize(orig);

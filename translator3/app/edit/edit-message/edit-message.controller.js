@@ -109,11 +109,11 @@ function EditMessageController($scope, $log, $resource) {
                 value: $scope.value
             };
 
-            var UpdateMessagePut = $resource(APP_DYN_ROOT + "api/apps/:appurl/bundles/:targetlang/:targetgroup/updateMessage",
+            var UpdateMessagePut = $resource(APP_DYN_ROOT + "api/apps/bundles/:language/:target/updateMessage",
             {
-                "appurl": $scope.bundle.appurl,
-                "targetlang": $scope.bundle.targetlang,
-                "targetgroup": $scope.bundle.targetgroup
+                "app_url": $scope.bundle.appurl,
+                "language": $scope.bundle.targetlang,
+                "target": $scope.bundle.targetgroup
             }, {
                 update: {
                     method: 'PUT'

@@ -191,7 +191,7 @@ def bundle_update(language, target):
 
     return jsonify(**{"result": "success"})
 
-@translator_blueprint.route('/api/apps/')
+@translator_blueprint.route('/api/apps')
 @public
 @cross_origin()
 @api
@@ -223,7 +223,7 @@ def api_app():
 
 @translator_blueprint.route('/translate')
 @translator_blueprint.route('/api/apps/')
-@requires_golab_login
+@public
 @cross_origin()
 @api
 def api_translate():
