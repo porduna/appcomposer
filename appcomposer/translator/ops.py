@@ -5,14 +5,25 @@ from collections import defaultdict
 from sqlalchemy import func
 
 from appcomposer import db
+from appcomposer.application import app
 from appcomposer.translator.mongodb_pusher import push
 from appcomposer.translator.languages import obtain_languages, obtain_groups
-from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion
+from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser
 
 DEBUG = False
 
 LANGUAGES = obtain_languages()
 GROUPS = obtain_groups()
+
+def get_golab_default_user():
+    default_email = app.config.get('TRANSLATOR_DEFAULT_EMAIL', 'weblab+appcomposer@deusto.es')
+    default_user = db.session.query(GoLabOAuthUser).filter_by(email = default_email).first()
+    if default_user is None:
+        default_user = GoLabOAuthUser(email = default_email, display_name = "AppComposer")
+        db.session.add(default_user)
+        db.session.commit()
+    return default_user
+
 
 def _get_or_create_bundle(app_url, translation_url, language, target, from_developer):
     # Create the translation url if not present
