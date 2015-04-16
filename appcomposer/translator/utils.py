@@ -140,8 +140,8 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
             return absolute_translation_url, None
         translation_messages_xml = get_text_from_response(translation_messages_response)
     except Exception as e:
-        logging.warning("Could not reach default locale URL: %s" % e, exc_info = True)
-        raise TranslatorError("Could not reach default locale URL")
+        logging.warning("Could not reach locale URL: %s" % e, exc_info = True)
+        raise TranslatorError("Could not reach locale URL")
 
     messages = extract_messages_from_translation(translation_messages_xml)
     return absolute_translation_url, messages
@@ -201,9 +201,14 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
                 if len(lang) == 2:
                     lang = u'%s_ALL' % lang
                 only_if_new = not force_reload
-                absolute_url, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = only_if_new)
-                original_translations[lang] = messages
-                original_translation_urls[lang] = absolute_url
+                try:
+                    absolute_url, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = only_if_new)
+                except TranslatorError as e:
+                    logging.warning(u"Could not load %s translation for app URL: %s" % (lang, e), exc_info = True)
+                    continue
+                else:
+                    original_translations[lang] = messages
+                    original_translation_urls[lang] = absolute_url
 
             if (lang is None or lang.lower() == 'all') and messages_url:
                 # Process this later. This way we can force we get the results for the default translation

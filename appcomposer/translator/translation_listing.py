@@ -125,6 +125,9 @@ def _sync_regular_apps(cached_requests, already_synchronized_app_urls, force_rel
 def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None):
     now = datetime.datetime.now()
 
+    if DEBUG:
+        logger.debug("Starting %s" % app_url)
+
     failing = False
     try:
         metadata_information = extract_metadata_information(app_url, cached_requests, force_reload)
@@ -132,9 +135,6 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None):
         logger.warning("Error extracting information from %s" % app_url, exc_info = True)
         metadata_information = {}
         failing = True
-
-    if DEBUG:
-        logger.debug("App %s" % app_url)
 
     if repo_app is not None:
         repo_app.translatable = metadata_information.get('translatable', False)
@@ -147,7 +147,7 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None):
             repo_app.failing = True
             repo_app.failing_since = now
 
-    default_user = _get_golab_default_user()
+    default_user = get_golab_default_user()
 
     if metadata_information.get('translatable'):
         translation_url = metadata_information.get('default_translation_url')
