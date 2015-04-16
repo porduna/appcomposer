@@ -171,12 +171,12 @@ def api_languages():
 def api_groups():
     return jsonify(**obtain_groups())
 
-@translator_blueprint.route("/api/apps/<path:app_url>/bundles/<language>/<target>/updateMessage", methods=["GET", "PUT"])
+@translator_blueprint.route("/api/apps/bundles/<language>/<target>/updateMessage", methods=["GET", "PUT"])
 @requires_golab_login
 @cross_origin()
 @api
-def bundle_update(app_url, language, target):
-    # TODO: implement this code
+def bundle_update(language, target):
+    app_url = request.args.get('app_url')
     key = request.values.get("key")
     value = request.values.get("value")
 
@@ -191,12 +191,12 @@ def bundle_update(app_url, language, target):
 
     return jsonify(**{"result": "success"})
 
-@translator_blueprint.route('/api/apps/<path:app_url>')
+@translator_blueprint.route('/api/apps/')
 @public
 @cross_origin()
 @api
-def api_app(app_url):
-
+def api_app():
+    app_url = request.args.get('app_url')
     app_thumb = None
     name = None
     desc = None
