@@ -38,6 +38,7 @@ def synchronize_apps_no_cache():
 def _sync_golab_translations(cached_requests, force_reload):
     try:
         apps_response = cached_requests.get("http://www.golabz.eu/rest/apps/retrieve.json")
+        apps_response.raise_for_status()
         apps = apps_response.json()
     except requests.RequestException:
         logger.warning("Error retrieving applications from golabz", exc_info = True)

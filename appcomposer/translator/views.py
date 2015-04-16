@@ -7,6 +7,7 @@ import json
 import zipfile
 import StringIO
 import traceback
+from functools import wraps
 
 from collections import OrderedDict
 
@@ -23,6 +24,7 @@ from wtforms.validators import url, required
 from appcomposer import db
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp
 from appcomposer.login import requires_golab_login, current_golab_user
+from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats
@@ -39,6 +41,20 @@ translator_blueprint = Blueprint('translator', __name__)
 # 
 def public(func): return func
 
+def api(func):
+    """If a method is annotated with api, we will check regular errors and wrap them to a JSON document"""
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        try:
+            return func(*args, **kwargs)
+        except TranslatorError as e:
+            traceback.print_exc()
+            return make_response(json.dumps({ 'result' : 'error', 'message' : e.args[0] }), e.code)
+        except Exception as e:
+            traceback.print_exc()
+            return make_response(json.dumps({ 'result' : 'error', 'message' : e.args[0] }), 500)
+    return wrapper
+
 @translator_blueprint.route('/')
 @requires_golab_login
 def translator_index():
@@ -47,6 +63,7 @@ def translator_index():
 @translator_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>", methods=["POST"])
 @requires_golab_login
 @cross_origin()
+@api
 def create_language(appurl, targetlang):
     # TODO: this method is not needed
     return jsonify(**{"result": "ok"})
@@ -54,6 +71,7 @@ def create_language(appurl, targetlang):
 @translator_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>/<targetgroup>", methods=["POST"])
 @requires_golab_login
 @cross_origin()
+@api
 def create_group(appurl, targetlang, targetgroup):
     # TODO: this method is not needed
     return jsonify(**{"result": "ok"})
@@ -62,6 +80,7 @@ def create_group(appurl, targetlang, targetgroup):
 @translator_blueprint.route("/api/authn/<path:cur_url>")
 @public
 @cross_origin()
+@api
 def check_authn(cur_url):
     golab_user = current_golab_user()
     if golab_user:
@@ -72,6 +91,7 @@ def check_authn(cur_url):
 @translator_blueprint.route("/api/default-language")
 @public
 @cross_origin()
+@api
 def guess_default_language():
     return jsonify(language = _guess_default_language())
 
@@ -93,6 +113,7 @@ def select_translations():
 @translator_blueprint.route('/api/translations')
 @public
 @cross_origin()
+@api
 def api_translations():
     # XXX: Removed: author (not the original one), app_type (always OpenSocial). 
     # XXX: original_languages does not have target (nobody has it)
@@ -132,6 +153,7 @@ def api_translations():
 @translator_blueprint.route('/api/info/languages')
 @public
 @cross_origin()
+@api
 def api_languages():
     ordered_dict = OrderedDict()
     languages = list(obtain_languages().iteritems())
@@ -145,12 +167,14 @@ def api_languages():
 @translator_blueprint.route('/api/info/groups')
 @public
 @cross_origin()
+@api
 def api_groups():
     return jsonify(**obtain_groups())
 
 @translator_blueprint.route("/api/apps/<path:app_url>/bundles/<language>/<target>/updateMessage", methods=["GET", "PUT"])
 @requires_golab_login
 @cross_origin()
+@api
 def bundle_update(app_url, language, target):
     # TODO: implement this code
     key = request.values.get("key")
@@ -170,6 +194,7 @@ def bundle_update(app_url, language, target):
 @translator_blueprint.route('/api/apps/<path:app_url>')
 @public
 @cross_origin()
+@api
 def api_app(app_url):
 
     app_thumb = None
@@ -200,6 +225,7 @@ def api_app(app_url):
 @translator_blueprint.route('/api/apps/')
 @requires_golab_login
 @cross_origin()
+@api
 def api_translate():
     app_url = request.args.get('app_url')
     language = request.args.get('lang')
