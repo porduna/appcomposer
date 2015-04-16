@@ -279,6 +279,32 @@ def api_translate():
         return "<html><body>%s</body></html>" % response
     return jsonify(**response)
 
+@translator_blueprint.route('/lib.js')
+@public
+@cross_origin()
+def widget_js():
+    try:
+        repo_app = db.session.query(RepositoryApp).filter_by(app_link = request.referrer).first()
+        if repo_app is None:
+            resp = make_response("// Repository application not found")
+            resp.content_type = 'application/javascript'
+            return resp
+        if not repo_app.translatable:
+            resp = make_response("// Repository application found; not translatable")
+            resp.content_type = 'application/javascript'
+            return resp
+
+        # TODO: do something here
+        resp = make_response(render_template("translator/lib.js"))
+        resp.content_type = 'application/javascript'
+        return resp
+    except Exception as e:
+        resp = make_response("""// Error: %s """ % repr(e))
+        resp.content_type = 'application/javascript'
+        return resp
+
+        
+
 TARGET_CHOICES = []
 TARGETS = obtain_groups()
 for target_code in sorted(TARGETS):
