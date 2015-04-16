@@ -283,6 +283,8 @@ def api_translate():
 @public
 @cross_origin()
 def widget_js():
+    # You can play with this app by running $("body").append("<script src='http://localhost:5000/translator/lib.js'></script>");
+    # In the console of the golabz app
     try:
         repo_app = db.session.query(RepositoryApp).filter_by(app_link = request.referrer).first()
         if repo_app is None:
@@ -294,11 +296,39 @@ def widget_js():
             resp.content_type = 'application/javascript'
             return resp
 
-        # TODO: do something here
-        resp = make_response(render_template("translator/lib.js"))
+        translations = (repo_app.original_translations or '').split(',')
+        translations = [ t.split('_')[0] for t in translations ]
+        try:
+            translation_percent = json.loads(repo_app.translation_percent or '{}')
+        except ValueError:
+            translation_percent = {}
+        for language, percent in translation_percent.iteritems():
+            if percent >= 0.5:
+                lang_code = language.split("_")[0]
+                if lang_code not in translations:
+                    translations.append(lang_code)
+        
+        human_translations = []
+        for lang_code in translations:
+            if lang_code in LANGUAGES:
+                human_translations.append(LANGUAGES[lang_code])
+            elif u'%s_ALL' % lang_code in LANGUAGES:
+                human_translations.append(LANGUAGES[u'%s_ALL' % lang_code])
+            else:
+                human_translations.append(lang_code)
+        
+        # TODO: Link hardcoded!
+        link = 'http://localhost:9000/#/app/%s' % repo_app.url
+        str_translations = u', '.join(human_translations)
+
+        if str_translations and link:
+            resp = make_response(render_template("translator/lib.js", translations = str_translations, link = link))
+        else:
+            resp = make_response("// App found and transtable, but no translation found")
         resp.content_type = 'application/javascript'
         return resp
     except Exception as e:
+        traceback.print_exc()
         resp = make_response("""// Error: %s """ % repr(e))
         resp.content_type = 'application/javascript'
         return resp
