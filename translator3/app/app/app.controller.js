@@ -9,7 +9,7 @@ function AppController($scope, $routeParams, $resource, $log, $sce) {
     // Initialization
     // ---------------------------
     var controller = this;
-    var Appinfo = $resource(APP_DYN_ROOT + "api/apps/:appurl");
+    var Appinfo = $resource(APP_DYN_ROOT + "api/apps");
 
     // ---------------------------
     // Scope-related
@@ -43,17 +43,17 @@ function AppController($scope, $routeParams, $resource, $log, $sce) {
      * Asynchronously retrieves the app info through the API.
      */
     function getAppInfo() {
-        return Appinfo.get({appurl: $scope.appurl});
+        return Appinfo.get({app_url: $scope.appurl});
     }
 
     function onGroupAdded(event, args) {
         if(args.success)
-            $scope.appinfo.$get({appurl: $scope.appurl});
+            $scope.appinfo.$get({app_url: $scope.appurl});
     } // !onGroupAdded
 
     function onLanguageAdded(event, args) {
         if(args.success)
-            $scope.appinfo.$get({appurl: $scope.appurl});
+            $scope.appinfo.$get({app_url: $scope.appurl});
     } // !onLanguageAdded
 
     function test() {
