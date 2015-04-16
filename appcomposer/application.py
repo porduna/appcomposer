@@ -215,8 +215,9 @@ for adaptor_blueprint in adaptors_blueprints:
 app.register_blueprint(expert_blueprint, url_prefix='/composers/expert')
 app.register_blueprint(dummy_blueprint, url_prefix=dummy_info["url"])
 
-from .translator import translator_blueprint
+from .translator import translator_blueprint, translator_angularjs_blueprint
 app.register_blueprint(translator_blueprint, url_prefix='/translator')
+app.register_blueprint(translator_angularjs_blueprint, url_prefix='/translate')
 
 # Mostly for debugging purposes, this snippet will print the site-map so that we can check
 # which methods we are routing.

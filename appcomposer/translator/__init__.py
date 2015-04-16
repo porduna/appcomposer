@@ -1,1 +1,1 @@
-from .views import translator_blueprint
+from .views import translator_blueprint, translator_angularjs_blueprint

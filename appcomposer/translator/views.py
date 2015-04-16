@@ -35,6 +35,7 @@ import flask.ext.cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
 
 translator_blueprint = Blueprint('translator', __name__)
+translator_angularjs_blueprint = Blueprint('translator_angularjs', __name__, static_folder = '../../translator3/dist/', static_url_path = '/web')
 
 #
 # Use @public to mark that a method is intentionally public
@@ -316,9 +317,9 @@ def widget_js():
                 human_translations.append(LANGUAGES[u'%s_ALL' % lang_code])
             else:
                 human_translations.append(lang_code)
-        
-        # TODO: Link hardcoded!
-        link = 'http://localhost:9000/#/app/%s' % repo_app.url
+
+        html_url = url_for('translator_angularjs.static', filename="index.html", _external = True)
+        link = '%s#/app/%s' % (html_url, repo_app.url)
         str_translations = u', '.join(human_translations)
 
         if str_translations and link:
