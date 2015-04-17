@@ -105,9 +105,11 @@ function EditMessageController($scope, $log, $resource) {
             $scope.savingValue = $scope.currentValue;
 
             var data = {
-                key: $scope.key,
-                value: $scope.value
+                "key": $scope.key,
+                "value": $scope.savingValue
             };
+
+            debugger;
 
             var UpdateMessagePut = $resource(APP_DYN_ROOT + "api/apps/bundles/:language/:target/updateMessage",
             {
@@ -116,11 +118,14 @@ function EditMessageController($scope, $log, $resource) {
                 "target": $scope.bundle.targetgroup
             }, {
                 update: {
-                    method: 'PUT'
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+                    }
                 }
             });
 
-            var result = UpdateMessagePut.update({}, data);
+            var result = UpdateMessagePut.update(data, {});
 
             result.$promise.then(onUpdateSuccess, onUpdateFailure);
         }
