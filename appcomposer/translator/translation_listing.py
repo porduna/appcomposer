@@ -1,6 +1,7 @@
 import sys
 import json
 import datetime
+from celery.schedules import crontab
 
 import requests
 from sqlalchemy.exc import SQLAlchemyError
@@ -10,14 +11,42 @@ from appcomposer.models import RepositoryApp, TranslatedApp
 from appcomposer.translator.utils import get_cached_session, extract_metadata_information
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user
 
+from celery import Celery
+from celery.utils.log import get_task_logger
+
 GOLAB_REPO = u'golabz'
 EXTERNAL_REPO = u'external'
 
 DEBUG = True
 
 # TODO: use a celery logger
-logger = app.logger 
+logger = app.logger
 
+
+cel = Celery('pusher_tasks', backend='amqp', broker='amqp://')
+
+
+cel.conf.update(
+    CELERYD_PREFETCH_MULTIPLIER="4",
+    CELERYD_CONCURRENCY="8",
+    CELERY_ACKS_LATE="1",
+    CELERY_IGNORE_RESULT=True,
+
+    CELERYBEAT_SCHEDULE = {
+        'synchronize_apps_cache': {
+            'task': 'synchronize_apps_cache',
+            'schedule': datetime.timedelta(seconds=10),
+            'args': ()
+        },
+        'synchronize_apps_no_cache': {
+            'task': 'synchronize_apps',
+            'schedule': crontab(hour=3, minute=0),
+            'args': ()
+        }
+    }
+)
+
+@cel.task(name='synchronize_apps_cache')
 def synchronize_apps_cache():
     """Force obtaining the results and checking everything again to avoid inconsistences. 
     This can safely be run every few minutes, since most applications will be in the cache."""
@@ -27,7 +56,7 @@ def synchronize_apps_cache():
     _sync_regular_apps(cached_requests, synced_apps, force_reload = False)
     # TODO: mongo push if needed
     
-
+@cel.task(name='synchronize_apps_no_cache')
 def synchronize_apps_no_cache():
     """Force obtaining the results and checking everything again to avoid inconsistences. This should be run once a day."""
     cached_requests = get_cached_session()

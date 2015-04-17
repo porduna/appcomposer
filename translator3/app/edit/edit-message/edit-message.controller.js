@@ -109,8 +109,6 @@ function EditMessageController($scope, $log, $resource) {
                 "value": $scope.savingValue
             };
 
-            debugger;
-
             var UpdateMessagePut = $resource(APP_DYN_ROOT + "api/apps/bundles/:language/:target/updateMessage",
             {
                 "app_url": $scope.bundle.appurl,

@@ -7,7 +7,7 @@ a celery beat. (For scheduling purposes). This is essentially
 so that there is no need to run a separate celery beat.
 """
 
-from appcomposer.composers.translate.mongodb_pusher import cel
+from appcomposer.translator.translation_listing import cel
 import sys
 
 cel.worker_main(sys.argv + ["-B"])
