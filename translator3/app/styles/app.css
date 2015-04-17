@@ -124,12 +124,21 @@ label.ac-edit-message-label {
 
 }
 
+
 .ac-edit-message-input-disabled {
     background-color: rgb(230, 230, 230) !important;
 }
 
 .ac-edit-message-input-from-default {
     background-color: rgb(240, 230, 230) !important;
+}
+
+.ac-icon-error {
+    color: rgb(180, 20, 20) !important;
+}
+
+.ac-edit-message-error {
+    color: rgb(180, 20, 20);
 }
 
 span[name=ac-saved-icon] {

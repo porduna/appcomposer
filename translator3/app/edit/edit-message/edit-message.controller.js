@@ -135,6 +135,7 @@ function EditMessageController($scope, $log, $resource) {
     function onUpdateSuccess(result) {
         $scope.status.error = false;
         $scope.status.saving = false;
+        $scope.item.from_default = false; // Will no longer be from_default. We guess.
         $scope.savedValue = $scope.savingValue;
     } // !onUpdateSuccess
 
