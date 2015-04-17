@@ -35,7 +35,7 @@ cel.conf.update(
     CELERYBEAT_SCHEDULE = {
         'synchronize_apps_cache': {
             'task': 'synchronize_apps_cache',
-            'schedule': datetime.timedelta(seconds=10),
+            'schedule': datetime.timedelta(minutes=5),
             'args': ()
         },
         'synchronize_apps_no_cache': {
@@ -47,6 +47,19 @@ cel.conf.update(
 )
 
 @cel.task(name='synchronize_apps_cache')
+def synchronize_apps_cache_wrapper():
+    from appcomposer import app as my_app
+    with my_app.app_context():
+        synchronize_apps_cache()
+
+
+@cel.task(name='synchronize_apps_no_cache')
+def synchronize_apps_cache_wrapper():
+    from appcomposer import app as my_app
+    with my_app.app_context():
+        synchronize_apps_no_cache()
+
+
 def synchronize_apps_cache():
     """Force obtaining the results and checking everything again to avoid inconsistences. 
     This can safely be run every few minutes, since most applications will be in the cache."""
