@@ -24,12 +24,12 @@ from wtforms.validators import url, required
 from appcomposer import db
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp
 from appcomposer.login import requires_golab_login, current_golab_user
+from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats
 from appcomposer.translator.utils import bundle_to_xml, url_to_filename, messages_to_xml
-from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 
 import flask.ext.cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None

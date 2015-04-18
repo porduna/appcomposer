@@ -6,7 +6,6 @@ from sqlalchemy import func
 
 from appcomposer import db
 from appcomposer.application import app
-from appcomposer.translator.mongodb_pusher import push
 from appcomposer.translator.languages import obtain_languages, obtain_groups
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser
 
@@ -140,6 +139,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
     # Commit!
     db.session.commit()
 
+    from appcomposer.translator.tasks import push
     push.delay(translation_url, language, target)
     
 

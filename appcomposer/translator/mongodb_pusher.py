@@ -10,20 +10,12 @@ from sqlalchemy.orm import joinedload
 
 # Fix the working directory when running from the script's own folder.
 from pymongo.errors import DuplicateKeyError
-import sys
 
-cwd = os.getcwd()
-path = os.path.join("appcomposer", "translator")
-if cwd.endswith(path):
-    cwd = cwd[0:len(cwd) - len(path)]
-    os.chdir(cwd)
-
-sys.path.insert(0, cwd)
-
-from appcomposer import db
+from appcomposer.db import db
 from appcomposer.application import app as flask_app
 from appcomposer.models import TranslationUrl, TranslationBundle
-from appcomposer.translator.transaltion_listing import cel, logger
+
+logger = get_task_logger(__name__)
 
 MONGODB_SYNC_PERIOD = flask_app.config.get("MONGODB_SYNC_PERIOD", 60*10)  # Every 10 min by default.
 
@@ -44,7 +36,7 @@ def retrieve_mongodb_contents():
 
     return { 'bundles' : json.loads(bundles_serialized), 'translation_urls' : json.loads(translations_url_serialized) }
 
-@cel.task(name="push", bind=True)
+
 def push(self, translation_url, lang, target):
     if not flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
         return
@@ -88,7 +80,6 @@ def push(self, translation_url, lang, target):
         logger.warn("[PUSH]: Exception occurred. Retrying soon.")
         raise self.retry(exc=exc, default_retry_delay=60, max_retries=None)
 
-@cel.task(name="sync", bind=True)
 def sync(self):
     """
     Fully synchronizes the local database leading translations with
