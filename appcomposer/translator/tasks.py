@@ -67,7 +67,7 @@ def synchronize_apps_no_cache_wrapper():
         synchronize_apps_no_cache()
 
 @cel.task(name="push", bind=True)
-def push_wrapper(self, translation_url, lang, target):
+def push_task(self, translation_url, lang, target):
     push(self, translation_url, lang, target)
 
 

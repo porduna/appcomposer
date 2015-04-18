@@ -139,8 +139,8 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
     # Commit!
     db.session.commit()
 
-    from appcomposer.translator.tasks import push
-    push.delay(translation_url, language, target)
+    from appcomposer.translator.tasks import push_task
+    push_task.delay(translation_url, language, target)
     
 
 def retrieve_stored(translation_url, language, target):
