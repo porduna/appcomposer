@@ -13,7 +13,7 @@ from pymongo.errors import DuplicateKeyError
 import sys
 
 cwd = os.getcwd()
-path = os.path.join("appcomposer", "composers", "translate")
+path = os.path.join("appcomposer", "translator")
 if cwd.endswith(path):
     cwd = cwd[0:len(cwd) - len(path)]
     os.chdir(cwd)
@@ -23,37 +23,17 @@ sys.path.insert(0, cwd)
 from appcomposer import db
 from appcomposer.application import app as flask_app
 from appcomposer.models import TranslationUrl, TranslationBundle
-
-# Fix the path so it can be run more easily, etc.
-from appcomposer.composers.translate.db_helpers import _db_get_diff_specs, _db_get_ownerships, load_appdata_from_db
-
+from appcomposer.translator.transaltion_listing import cel, logger
 
 MONGODB_SYNC_PERIOD = flask_app.config.get("MONGODB_SYNC_PERIOD", 60*10)  # Every 10 min by default.
 
-cel = Celery('pusher_tasks', backend='amqp', broker='amqp://')
-cel.conf.update(
-    CELERYD_PREFETCH_MULTIPLIER="4",
-    CELERYD_CONCURRENCY="8",
-    CELERY_ACKS_LATE="1",
-    CELERY_IGNORE_RESULT=True,
-
-    CELERYBEAT_SCHEDULE = {
-        'sync-periodically': {
-            'task': 'sync',
-            'schedule': timedelta(seconds=MONGODB_SYNC_PERIOD),
-            'args': ()
-        }
-    }
-)
-
 if flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
-
     mongo_client = MongoClient(flask_app.config["MONGODB_PUSHES_URI"])
     mongo_db = mongo_client.appcomposerdb
     mongo_bundles = mongo_db.bundles
     mongo_translation_urls = mongo_db.translation_urls
-
-logger = get_task_logger(__name__)
+else:
+    print "Warning: MONGODB is not activated. Use ACTIVATE_TRANSLATOR_MONGODB_PUSHES"
 
 def retrieve_mongodb_contents():
     bundles_results = [ result for result in mongo_bundles.find() ]
@@ -141,5 +121,3 @@ def sync(self):
 
     logger.info("[SYNC]: Sync finished.")
 
-if __name__ == '__main__':
-    cel.worker_main(sys.argv)

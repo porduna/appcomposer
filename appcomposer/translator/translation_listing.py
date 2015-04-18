@@ -2,6 +2,7 @@ import sys
 import json
 import datetime
 from celery.schedules import crontab
+from celery.utils.log import get_task_logger
 
 import requests
 from sqlalchemy.exc import SQLAlchemyError
@@ -19,12 +20,9 @@ EXTERNAL_REPO = u'external'
 
 DEBUG = True
 
-# TODO: use a celery logger
-logger = app.logger
-
+logger = get_task_logger(__name__)
 
 cel = Celery('pusher_tasks', backend='amqp', broker='amqp://')
-
 
 cel.conf.update(
     CELERYD_PREFETCH_MULTIPLIER="4",
@@ -42,7 +40,12 @@ cel.conf.update(
             'task': 'synchronize_apps',
             'schedule': crontab(hour=3, minute=0),
             'args': ()
-        }
+        },
+        'sync': {
+            'task': 'sync',
+            'schedule': datetime.timedelta(minutes=5),
+            'args': ()
+        },
     }
 )
 
@@ -204,7 +207,9 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None):
             repo_app.translation_percent = json.dumps(translation_percent)
     
     db.session.commit()
-
+    
+from appcomposer.translator.mongodb_pusher import sync
+assert sync is not None # Avoid pyflakes
 
 if __name__ == '__main__':
     from appcomposer import app as my_app
