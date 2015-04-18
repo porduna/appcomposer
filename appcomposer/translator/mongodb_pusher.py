@@ -102,8 +102,10 @@ def sync(self):
     all_translation_url_ids = []
     all_app_ids = []
 
+    from appcomposer.translator.tasks import push_task
+
     for translation_bundle in translation_bundles:
-        translation_url_id, app_ids = push(translation_url = translation_bundle['translation_url'], lang = translation_bundle['language'], target = translation_bundle['target'])
+        translation_url_id, app_ids = push_task(translation_url = translation_bundle['translation_url'], lang = translation_bundle['language'], target = translation_bundle['target'])
         all_translation_url_ids.append(translation_url_id)
         all_app_ids.extend(app_ids)
     
