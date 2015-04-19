@@ -406,6 +406,13 @@ def translation_upload():
 def translations():
     return render_template("translator/translations.html")
 
+@translator_blueprint.route('/dev/sync/')
+@requires_golab_login
+def sync_translations():
+    from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper
+    synchronize_apps_no_cache_wrapper.delay()
+    return render_template("translator/sync.html")
+
 @translator_blueprint.route('/dev/urls/')
 @public
 def translations_urls():

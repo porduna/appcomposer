@@ -12,13 +12,13 @@
 
 <h2>Introduction</h2>
 
-<p>The App Composer Translator stores in a local database all the translations and suggestions. This includes translations of applications, suggestions from other translations or from cloud services, historic of who wrote what, etc. However, so as to avoid Shindig contacting the App Composer (located in other university) for each translation of each application, we also have a MongoDB database outside the App Composer institution. The App Composer is responsible of pushing the translations to this MongoDB database. Ideally, the MongoDB would be located in the same institution as Shindig (so as to avoid calls to a Cloud service only for the translation), but it was decided by this institution that this would not be necessary.</p>
+<p>The App Composer Translator stores in a local database all the translations and suggestions. This includes translations of applications, suggestions from other translations or from cloud services, historic of who wrote what, etc. However, so as to avoid Shindig contacting the App Composer (located in other university) for each translation of each application, we also have a MongoDB database outside the App Composer institution. The App Composer is responsible of pushing the translations to this MongoDB database. Ideally, the MongoDB would be located in the same institution as Shindig (so as to avoid calls to a Cloud service only for the translation), but at this moment it's located in an cloud basis at mongolabs.com.</p>
 
 <p>Therefore, in this page you will find both what is stored in the App Comoposer database and also what is stored in the MongoDB database.</p>
 <ul>
     <li>If you're missing a translation and it is not listed in the App Composer database and it should, contact the App Composer developers.</li>
-    <li>If you're missing a translation, it is listed in the App Composer database but not in the MongoDB database, it may happen that it has not been synchronized yet. If the problem persists after few minutes, contact the App Composer developers.</li>
-    <li>If you're missing a translation, it is lited in the MongoDB database, contact the Graasp developers</li>
+    <li>If you're missing a translation, it is listed in the App Composer database but not in the MongoDB database, it may happen that it has not been synchronized yet. You can force a synchronization using a link you may find below. If the problem persists after few minutes, contact the App Composer developers.</li>
+    <li>If you're missing a translation, and it is listed in the MongoDB database, contact the Graasp developers</li>
 </ul>
 
 <h2>App Composer database</h2>
@@ -26,7 +26,12 @@
 <ul>
     <li>Find translations by <a href="{{ url_for('.translations_apps') }}">application URL</a>.</li>
     <li>Find translations by <a href="{{ url_for('.translations_urls') }}">translation URL</a>.</li>
-    <li>If you have a Graasp account, you may also upload a translation <a href="{{ url_for('.translation_upload') }}">here</a>.</li>
+    <li>If you have a Graasp account, you may also:
+    <ul>
+        <li><a href="{{ url_for('.translation_upload') }}">upload a translation</a>.</li>
+        <li><a href="{{ url_for('.sync_translations') }}">request a synchronization</a>.</li>
+    </ul>
+    </li>
 </ul>
 
 <h2>MongoDB database</h2>

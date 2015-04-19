@@ -78,7 +78,8 @@ def push(self, translation_url, lang, target):
             return bundle_id, app_bundle_ids
     except Exception as exc:
         logger.warn("[PUSH]: Exception occurred. Retrying soon.")
-        raise self.retry(exc=exc, default_retry_delay=60, max_retries=None)
+        if self is not None:
+            raise self.retry(exc=exc, default_retry_delay=60, max_retries=None)
 
 def sync(self):
     """
@@ -102,10 +103,11 @@ def sync(self):
     all_translation_url_ids = []
     all_app_ids = []
 
-    from appcomposer.translator.tasks import push_task
-
     for translation_bundle in translation_bundles:
-        translation_url_id, app_ids = push_task(translation_url = translation_bundle['translation_url'], lang = translation_bundle['language'], target = translation_bundle['target'])
+        response = push(self = None, translation_url = translation_bundle['translation_url'], lang = translation_bundle['language'], target = translation_bundle['target'])
+        if response is None:
+            continue
+        translation_url_id, app_ids = response
         all_translation_url_ids.append(translation_url_id)
         all_app_ids.extend(app_ids)
     
