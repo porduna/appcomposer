@@ -363,7 +363,7 @@ def _guess_default_language():
                 default_language = lang_codes[0]
     return default_language
 
-@translator_blueprint.route('/translations/upload/', methods = ('GET', 'POST'))
+@translator_blueprint.route('/dev/upload/', methods = ('GET', 'POST'))
 @requires_golab_login
 def translation_upload():
     default_language = _guess_default_language()
@@ -401,12 +401,12 @@ def translation_upload():
 
     return render_template('translator/translations_upload.html', form=form)
 
-@translator_blueprint.route('/translations/')
+@translator_blueprint.route('/dev/')
 @public
 def translations():
     return render_template("translator/translations.html")
 
-@translator_blueprint.route('/translations/urls/')
+@translator_blueprint.route('/dev/urls/')
 @public
 def translations_urls():
     urls = {}
@@ -420,7 +420,7 @@ def translations_urls():
             })
     return render_template("translator/translations_urls.html", urls = urls)
 
-@translator_blueprint.route('/translations/apps/')
+@translator_blueprint.route('/dev/apps/')
 @public
 def translations_apps():
     apps = {}
@@ -438,7 +438,7 @@ def translations_apps():
             pass
     return render_template("translator/translations_apps.html", apps = apps)
 
-@translator_blueprint.route('/translations/apps/<lang>/<target>/<path:app_url>')
+@translator_blueprint.route('/dev/apps/<lang>/<target>/<path:app_url>')
 @public
 def translations_app_xml(lang, target, app_url):
     translation_app = db.session.query(TranslatedApp).filter_by(url = app_url).first()
@@ -447,7 +447,7 @@ def translations_app_xml(lang, target, app_url):
 
     return translations_url_xml(lang, target, translation_app.translation_url.url)
 
-@translator_blueprint.route('/translations/apps/all.zip')
+@translator_blueprint.route('/dev/apps/all.zip')
 @public
 def translations_app_all_zip():
     translated_apps = db.session.query(TranslatedApp).filter_by().all()
@@ -465,7 +465,7 @@ def translations_app_all_zip():
     resp.content_type = 'application/zip'
     return resp
 
-@translator_blueprint.route('/translations/apps/all/<path:app_url>')
+@translator_blueprint.route('/dev/apps/all/<path:app_url>')
 @public
 def translations_app_url_zip(app_url):
     translated_app = db.session.query(TranslatedApp).filter_by(url = app_url).first()
@@ -487,7 +487,7 @@ def translations_app_url_zip(app_url):
     return resp
 
 
-@translator_blueprint.route('/translations/urls/<lang>/<target>/<path:url>')
+@translator_blueprint.route('/dev/urls/<lang>/<target>/<path:url>')
 @public
 def translations_url_xml(lang, target, url):
     translation_url = db.session.query(TranslationUrl).filter_by(url = url).first()
@@ -503,7 +503,7 @@ def translations_url_xml(lang, target, url):
     resp.content_type = 'application/xml'
     return resp
 
-@translator_blueprint.route('/translations/mongodb/')
+@translator_blueprint.route('/dev/mongodb/')
 @public
 def translations_mongodb():
     collections = {}
@@ -512,7 +512,7 @@ def translations_mongodb():
         collections[collection] = json.dumps(collection_contents, indent = 4)
     return render_template("translator/mongodb.html", collections = collections)
 
-@translator_blueprint.route('/translations/mongodb/apps/')
+@translator_blueprint.route('/dev/mongodb/apps/')
 @public
 def translations_mongodb_apps():
     apps = {}
@@ -531,7 +531,7 @@ def translations_mongodb_apps():
 
     return render_template("translator/mongodb_listing.html", apps = apps, title = "Apps", xml_method = '.translations_mongodb_apps_xml')
 
-@translator_blueprint.route('/translations/mongodb/urls/')
+@translator_blueprint.route('/dev/mongodb/urls/')
 @public
 def translations_mongodb_urls():
     apps = {}
@@ -548,9 +548,9 @@ def translations_mongodb_urls():
             'lang' : lang
         })
 
-    return render_template("translator/mongodb_listing.html", apps = apps, title = "URLs", xml_method = '.translations_mongodb_apps_xml')
+    return render_template("translator/mongodb_listing.html", apps = apps, title = "URLs", xml_method = '.translations_mongodb_urls_xml')
 
-@translator_blueprint.route('/translations/mongodb/apps/<lang>/<target>/<path:url>')
+@translator_blueprint.route('/dev/mongodb/apps/<lang>/<target>/<path:url>')
 @public
 def translations_mongodb_apps_xml(lang, target, url):
     apps = {}
@@ -566,7 +566,7 @@ def translations_mongodb_apps_xml(lang, target, url):
 
     return "Not found", 404
 
-@translator_blueprint.route('/translations/mongodb/urls/<lang>/<target>/<path:url>')
+@translator_blueprint.route('/dev/mongodb/urls/<lang>/<target>/<path:url>')
 @public
 def translations_mongodb_urls_xml(lang, target, url):
     apps = {}
