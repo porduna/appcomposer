@@ -1,4 +1,4 @@
-from microsofttranslator import Translator as MSTranslator, TranslatorApiException as MSTranslatorApiException
+from microsofttranslator import Translator as MSTranslator, TranslateApiException as MSTranslatorApiException
 
 from appcomposer.application import app
 from appcomposer.db import db
@@ -7,12 +7,12 @@ from appcomposer.models import TranslationExternalSuggestion
 class AbstractTranslator(object):
 
     def __init__(self):
-        if self.name not in self.config.get('EXTERNAL_TRANSLATORS'):
+        if self.name not in app.config.get('EXTERNAL_TRANSLATORS'):
             self.enabled = False
         else:
             self.enabled = True
 
-        self.options = self.config.get('EXTERNAL_TRANSLATORS', {}).get(self.name)
+        self.options = app.config.get('EXTERNAL_TRANSLATORS', {}).get(self.name)
 
     def translate_texts(self, texts, language, origin_language = 'en'):
         if not self.enabled:
@@ -26,7 +26,7 @@ class AbstractTranslator(object):
             for human_key, value in new_suggestions.iteritems():
                 new_suggestion = TranslationExternalSuggestion(engine = self.name, human_key = human_key, language = language, origin_language = origin_language, value = value)
                 db.session.add(new_suggestion)
-                existing_suggestions[human_key] = value
+                existing_suggestions[human_key] = { value : 1 }
             db.session.commit()
         return existing_suggestions
 
@@ -35,27 +35,26 @@ class AbstractTranslator(object):
         
         existing_suggestions, remaining_texts
 
-        The first is a dictionary which maps the texts to the existing suggestions.
-        The second is a dictionary which provides which texts have not been provided.
+        The first is a dictionary which maps the texts to the existing suggestions. E.g. ( { 'Hello' : { 'Hi' : 1} } ).
+        The second is a dictionary which provides which texts have not been provided. E.g. ( ['Hello'] )
         """
         if not self.enabled:
             return {}, texts[:]
 
         language = language.split('_')[0]
 
-        suggestions = db.session.query(TranslationExternalSuggestion).filter(TranslationExternalSuggestion.engine == self.name, TranslationExternalSuggestion.human_key.in_(texts), TranslationExternalSuggestion.language == language, TranslationExternalSuggestion.origin_language = origin_language).all()
+        suggestions = db.session.query(TranslationExternalSuggestion).filter(TranslationExternalSuggestion.engine == self.name, TranslationExternalSuggestion.human_key.in_(texts), TranslationExternalSuggestion.language == language, TranslationExternalSuggestion.origin_language == origin_language).all()
 
         remaining_texts = texts[:]
         existing_suggestions = {}
         for suggestion in suggestions:
-            existing_suggestions[suggestion.human_key] = suggestion.value
+            existing_suggestions[suggestion.human_key] = { suggestion.value : 1 }
             remaining_texts.remove(suggestion.human_key)
 
         return existing_suggestions, remaining_texts
 
-
 class MicrosoftTranslator(AbstractTranslator):
-    name = 'bing'
+    name = 'microsoft'
 
     def __init__(self):
         super(MicrosoftTranslator, self).__init__()
@@ -68,29 +67,83 @@ class MicrosoftTranslator(AbstractTranslator):
         else:
             self.client = None
 
-        self.languages = None
+        self._languages = None
 
     @property
     def languages(self):
-        if self.languages is not None:
-            return self.languages
+        if self._languages is not None:
+            return self._languages
         if self.client is None:
-            self.languages = []
-        self.languages = self.client.get_languages()
-        return self.languages
+            self._languages = []
+        self._languages = self.client.get_languages()
+        return self._languages
 
     def _translate(self, texts, language, origin_language = 'en'):
+        """ [ 'Hello' ], 'es' => { 'Hello' : 'Hola' } """
         if self.client is None:
             return {}
 
         if language not in self.languages:
             return {}
-        
 
-        translations = self.translate_array(texts = texts, to_lang = language, from_lang = origin_language)
-        print translations
-        # TODO: what is this format?
-        # TODO: what happens if the text does not exist?
+        ms_translations = self.client.translate_array(texts = texts, to_lang = language, from_lang = origin_language)
+        
+        translations = {}
+        for text, translation in zip(texts, ms_translations):
+            translated_text = translation['TranslatedText']
+            translations[text] = translated_text
+        
         return translations
 
+TRANSLATORS = [ MicrosoftTranslator() ]
+
+def translate_texts(texts, language, origin_language = 'en'):
+    """ translate_texts(['Hello', 'Bye'], 'es') -> { 'Hello' : {'Hola' : 1}, 'Bye' : { 'Adios' : 1}} """
+    translations = {}
+    for key in texts:
+        translations[key] = {}
+
+    for translator in TRANSLATORS:
+        current_translations = translator.translate_texts(texts, language, origin_language)
+        for key, values in current_translations.iteritems():
+            for value, weight in values.iteritems():
+                if value not in translations[key]:
+                    translations[key][value] = 0
+                translations[key][value] += weight
+
+    return translations
+
+def existing_translations(texts, language, origin_language = 'en'):
+    translations = {
+    #    'Hello' : {
+    #        'Hola' : 30,
+    #        'Buenas' : 1,
+    #    }
+    }
+    remaining_texts = []
+
+    for translator in TRANSLATORS:
+        current_translations, current_remaining_texts = translator.existing_translations(texts, language, origin_language)
+        for remaining_text in current_remaining_texts:
+            if remaining_text not in translations:
+                remaining_texts.append(remaining_text)
+        for translation_key, translation_values in current_translations.iteritems():
+            if translation_key in remaining_texts:
+                remaining_texts.remove(translation_key)
+
+            if translation_key not in translations:
+                translations[translation_key] = {}
+
+            for value, weight in translation_values.iteritems():
+                if value not in translations[translation_key]:
+                    translations[translation_key] = { value : 0 }
+                translations[translation_key][value] += weight
+
+    return translations, remaining_texts
+
+if __name__ == '__main__':
+    from appcomposer import app
+    with app.app_context():
+        print existing_translations(["Hello", "Bye", "Good morning", "This was never stored"], 'es')
+        print translate_texts(["Hello", "Bye", "Good morning"], 'es')
 
