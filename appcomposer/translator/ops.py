@@ -308,25 +308,59 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
     """Copy all the messages. Safely assume that there is no translation in the destination, so
     we can copy all the history, active, etc.
     """
-    pass # TODO
+    src_message_ids = {
+        # old_id : new_id
+    }
+    historic = {
+        # old_id : new historic instance
+    }
+    for msg in src_bundle.all_messages:
+        t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.user, msg.datetime, src_message_ids.get(msg.parent_translation_id), msg.taken_from_default)
+        db.session.add(t_history)
+        db.session.commit()
+        db.session.refresh(t_history)
+        src_message_ids[msg.id] = t_history.id
+        historic[msg.id] = t_history
+
+    for msg in src_bundle.active_messages:
+        history = historic.get(msg.history_id)
+        active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, history, msg.datetime, msg.taken_from_default)
+        db.session.add(active_t)
+
+    db.session.commit()
 
 def _merge_bundle(src_bundle, dst_bundle):
     """Copy all the messages. The destination bundle already existed, so we can only copy those
     messages not present."""
-    pass # TODO
+    for msg in src_bundle.active_messages:
+        existing_translation = db.session.query(ActiveTranslationMessage).filter_by(bundle = dst_bundle, key = msg.key).first()
+        if existing_translation is None:
+            t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, msg.datetime, None, msg.taken_from_default)
+            db.session.add(t_history)
+            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, msg.datetime, msg.taken_from_default)
+            db.session.add(active_t)
+            db.session.commit()
+        elif existing_translation.taken_from_default and not msg.taken_from_default:
+            # Merge it
+            t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, msg.datetime, existing_translation.history.id, msg.taken_from_default)
+            db.session.add(t_history)
+            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, msg.datetime, msg.taken_from_default)
+            db.session.add(active_t)
+            db.session.delete(existing_translation)
+            db.session.commit()
 
 def _deep_copy_translations(old_translation_url, new_translation_url):
     """Given an old translation of a URL, take the old bundles and copy them to the new one."""
     new_bundles = {}
     for new_bundle in new_translation_url.bundles:
-        new_bundle[new_bundle.language, new_bundle.target] = new_bundle
+        new_bundles[new_bundle.language, new_bundle.target] = new_bundle
 
     for old_bundle in old_translation_url.bundles:
         new_bundle = new_bundles.get((old_bundle.language, old_bundle.target))
         if new_bundle:
             _merge_bundle(old_bundle, new_bundle)
         else:
-            new_bundle = TranslationBundle(old_bundle.language, old_bundle.target, new_translation_url)
+            new_bundle = TranslationBundle(old_bundle.language, old_bundle.target, new_translation_url, old_bundle.from_developer)
             db.session.add(new_bundle)
             _deep_copy_bundle(old_bundle, new_bundle)
 
