@@ -3,10 +3,12 @@ import datetime
 from collections import defaultdict
 
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 
 from appcomposer import db
 from appcomposer.application import app
 from appcomposer.translator.languages import obtain_languages, obtain_groups
+from appcomposer.translator.suggestions import translate_texts
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser
 
 DEBUG = False
@@ -20,7 +22,10 @@ def get_golab_default_user():
     if default_user is None:
         default_user = GoLabOAuthUser(email = default_email, display_name = "AppComposer")
         db.session.add(default_user)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            default_user = db.session.query(GoLabOAuthUser).filter_by(email = default_email).first()
     return default_user
 
 
@@ -168,6 +173,13 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
     if SKIP_SUGGESTIONS_IF_STORED:
         original_keys = [ key for key in original_keys if key not in stored_translations ]
     original_values = [ original_messages[key] for key in original_keys ]
+    original_keys_by_value = { 
+        # value : [key1, key2]
+    }
+    for key, value in original_messages.iteritems():
+        if value not in original_keys_by_value:
+            original_keys_by_value[value] = []
+        original_keys_by_value[value].append(key)
 
     all_suggestions = {}
     current_suggestions = []
@@ -184,13 +196,21 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
     # Second, value suggestions
     value_suggestions_by_key = defaultdict(list)
     for value_suggestion in db.session.query(TranslationValueSuggestion).filter_by(language = language, target = target).filter(TranslationValueSuggestion.human_key.in_(original_values)).all():
-        value_suggestions_by_key[value_suggestion.human_key].append({
-            'target' : value_suggestion.value,
-            'number' : value_suggestion.number,
-        })
-    current_suggestions.append(value_suggestions_by_key)
+        for key in original_keys_by_value[value_suggestion.human_key]:
+            value_suggestions_by_key[key].append({
+                'target' : value_suggestion.value,
+                'number' : value_suggestion.number,
+            })
 
-    # TODO: here is where we could put the Bing / whatever values if there is nothing already
+    for human_key, suggested_values in translate_texts(original_values, language, origin_language = 'en').iteritems():
+        for key in original_keys_by_value[human_key]:
+            for suggested_value, weight in suggested_values.iteritems():
+                value_suggestions_by_key[key].append({
+                    'target' : suggested_value,
+                    'number' : weight,
+                })
+
+    current_suggestions.append(value_suggestions_by_key)
 
     for key in original_keys:
         current_key_suggestions = defaultdict(int)

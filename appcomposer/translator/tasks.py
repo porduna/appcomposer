@@ -59,19 +59,19 @@ from appcomposer.translator.mongodb_pusher import push, sync
 @cel.task(name='synchronize_apps_cache')
 def synchronize_apps_cache_wrapper():
     with my_app.app_context():
-        synchronize_apps_cache()
+        return synchronize_apps_cache()
 
 @cel.task(name='synchronize_apps_no_cache')
 def synchronize_apps_no_cache_wrapper():
     with my_app.app_context():
-        synchronize_apps_no_cache()
+        return synchronize_apps_no_cache()
 
 @cel.task(name="push", bind=True)
 def push_task(self, translation_url, lang, target):
-    push(self, translation_url, lang, target)
+    return push(self, translation_url, lang, target)
 
 
 @cel.task(name="sync", bind=True)
 def sync_wrapper(self):
-    sync(self)
+    return sync(self)
 

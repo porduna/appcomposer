@@ -1,3 +1,4 @@
+import traceback
 from microsofttranslator import Translator as MSTranslator, TranslateApiException as MSTranslatorApiException
 
 from appcomposer.application import app
@@ -75,7 +76,10 @@ class MicrosoftTranslator(AbstractTranslator):
             return self._languages
         if self.client is None:
             self._languages = []
-        self._languages = self.client.get_languages()
+        try:
+            self._languages = self.client.get_languages()
+        except MSTranslatorApiException:
+            return []
         return self._languages
 
     def _translate(self, texts, language, origin_language = 'en'):
@@ -85,13 +89,22 @@ class MicrosoftTranslator(AbstractTranslator):
 
         if language not in self.languages:
             return {}
-
-        ms_translations = self.client.translate_array(texts = texts, to_lang = language, from_lang = origin_language)
+        
+        app.logger.debug("Translating %r to %r using Microsoft Translator API" % (texts, language))
+        try:
+            ms_translations = self.client.translate_array(texts = texts, to_lang = language, from_lang = origin_language)
+        except MSTranslatorApiException as e:
+            traceback.print_exc()
+            app.logger.warn("Error translating using Microsoft Translator API: %s" % e, exc_info = True)
+            return {}
+            
+        app.logger.debug("Translated %s sentences using Microsoft Translator API" % len(ms_translations))
         
         translations = {}
         for text, translation in zip(texts, ms_translations):
-            translated_text = translation['TranslatedText']
-            translations[text] = translated_text
+            translated_text = translation.get('TranslatedText')
+            if translated_text:
+                translations[text] = translated_text
         
         return translations
 
