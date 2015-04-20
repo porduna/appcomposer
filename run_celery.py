@@ -10,4 +10,4 @@ so that there is no need to run a separate celery beat.
 from appcomposer.translator.tasks import cel
 import sys
 
-cel.worker_main(sys.argv + ["-B"])
+cel.worker_main(sys.argv + ["-B", '--concurrency=1'])
