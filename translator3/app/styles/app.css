@@ -160,6 +160,11 @@ span[name=ac-shield-icon] {
     margin: 2px 5px 5px 2px;
 }
 
+.ac-edit-message-details input {
+    display: inline-block;
+    float: right;
+}
+
 .ac-edit-message-details-close-btn {
     margin-bottom: 15px;
 }

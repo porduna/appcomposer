@@ -56,7 +56,7 @@ function TranslateAppController($scope, $rootScope, $resource, $location) {
      * or if we carry a noauth flag.
      */
     function onAuthResultAvailable(data) {
-        if(data.result == "fail" && $location.host() != "localhost" && $location.search().noauth == undefined) {
+        if(data.result == "fail" && /*$location.host() != "localhost" &&*/ $location.search().noauth == undefined) {
             window.location = data.redirect;
         }
     } // !onAuthResultAvailable
