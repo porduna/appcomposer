@@ -14,7 +14,7 @@ function PreviewTabController($scope, $log, $sce) {
 
     // As of now, lang to preview is not selectable.
 
-    
+
     function onSetPreviewUrl(ev, url) {
         $log.debug("On setPreviewUrl: " + url);
         $scope.preview.url = $sce.trustAsResourceUrl(SHINDIG_SERVER + RELATIVE_URL + encodeURIComponent(url));

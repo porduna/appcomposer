@@ -19,7 +19,7 @@ function routeConfig($routeProvider) {
     $routeProvider
         .when('/apps', {
             templateUrl: 'apps/apps.html',
-            controller: 'AppsCtrl'
+            controller: 'AppsController'
         })
         .when('/app/:appurl*', {
             templateUrl: 'app/app.html',

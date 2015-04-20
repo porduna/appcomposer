@@ -5,7 +5,7 @@ angular
 function acAppurl($location, $log) {
     return {
         restrict: "E",
-        templateUrl: "apps/app-url.html",
+        templateUrl: "apps/appurl.directive.html",
         scope: {
             appurl: "="
         },
@@ -14,7 +14,6 @@ function acAppurl($location, $log) {
             scope.isValid = isValid;
             scope.calculateUrl = calculateUrl;
             scope.onEnter = onEnter;
-            scope.onKey = onKey;
 
             function calculateUrl(url) {
                 return "#/app/" + encodeURIComponent(url);
@@ -24,7 +23,16 @@ function acAppurl($location, $log) {
              * OnEnter redirect.
              */
             function onEnter() {
-                $location.path(calculateUrl(scope.url))
+                // TODO: Check whether the URL is valid.
+
+                if(scope.url != undefined && scope.url != "") {
+                    var url = calculateUrl(scope.url);
+
+                    // Remove the starting dash.
+                    url = url.replace(/^#+|#+$/gm, '');
+
+                    $location.path(url);
+                }
             } // !onEnter
 
             function isValid() {
