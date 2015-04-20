@@ -56,3 +56,6 @@ NGAPPS_DEV_MODE = False
 
 TRANSLATOR_DEFAULT_EMAIL = 'weblab+appcomposer@deusto.es'
 
+EXTERNAL_TRANSLATORS = {
+    # 'microsoft' : { 'client_id' : '...' , 'client_secret' : '...' }
+}

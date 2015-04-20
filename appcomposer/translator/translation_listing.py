@@ -1,64 +1,23 @@
 import sys
 import json
 import datetime
-from celery.schedules import crontab
 
 import requests
 from sqlalchemy.exc import SQLAlchemyError
+from celery.utils.log import get_task_logger
 
-from appcomposer import app, db
+from appcomposer.application import app
+from appcomposer.db import db
 from appcomposer.models import RepositoryApp, TranslatedApp
 from appcomposer.translator.utils import get_cached_session, extract_metadata_information
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user
-
-from celery import Celery
-from celery.utils.log import get_task_logger
 
 GOLAB_REPO = u'golabz'
 EXTERNAL_REPO = u'external'
 
 DEBUG = True
 
-# TODO: use a celery logger
-logger = app.logger
-
-
-cel = Celery('pusher_tasks', backend='amqp', broker='amqp://')
-
-
-cel.conf.update(
-    CELERYD_PREFETCH_MULTIPLIER="4",
-    CELERYD_CONCURRENCY="8",
-    CELERY_ACKS_LATE="1",
-    CELERY_IGNORE_RESULT=True,
-
-    CELERYBEAT_SCHEDULE = {
-        'synchronize_apps_cache': {
-            'task': 'synchronize_apps_cache',
-            'schedule': datetime.timedelta(minutes=5),
-            'args': ()
-        },
-        'synchronize_apps_no_cache': {
-            'task': 'synchronize_apps',
-            'schedule': crontab(hour=3, minute=0),
-            'args': ()
-        }
-    }
-)
-
-@cel.task(name='synchronize_apps_cache')
-def synchronize_apps_cache_wrapper():
-    from appcomposer import app as my_app
-    with my_app.app_context():
-        synchronize_apps_cache()
-
-
-@cel.task(name='synchronize_apps_no_cache')
-def synchronize_apps_cache_wrapper():
-    from appcomposer import app as my_app
-    with my_app.app_context():
-        synchronize_apps_no_cache()
-
+logger = get_task_logger(__name__)
 
 def synchronize_apps_cache():
     """Force obtaining the results and checking everything again to avoid inconsistences. 
@@ -69,7 +28,6 @@ def synchronize_apps_cache():
     _sync_regular_apps(cached_requests, synced_apps, force_reload = False)
     # TODO: mongo push if needed
     
-@cel.task(name='synchronize_apps_no_cache')
 def synchronize_apps_no_cache():
     """Force obtaining the results and checking everything again to avoid inconsistences. This should be run once a day."""
     cached_requests = get_cached_session()
@@ -204,8 +162,7 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None):
             repo_app.translation_percent = json.dumps(translation_percent)
     
     db.session.commit()
-
-
+    
 if __name__ == '__main__':
     from appcomposer import app as my_app
     with my_app.app_context():

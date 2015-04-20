@@ -10,50 +10,22 @@ from sqlalchemy.orm import joinedload
 
 # Fix the working directory when running from the script's own folder.
 from pymongo.errors import DuplicateKeyError
-import sys
 
-cwd = os.getcwd()
-path = os.path.join("appcomposer", "composers", "translate")
-if cwd.endswith(path):
-    cwd = cwd[0:len(cwd) - len(path)]
-    os.chdir(cwd)
-
-sys.path.insert(0, cwd)
-
-from appcomposer import db
+from appcomposer.db import db
 from appcomposer.application import app as flask_app
 from appcomposer.models import TranslationUrl, TranslationBundle
 
-# Fix the path so it can be run more easily, etc.
-from appcomposer.composers.translate.db_helpers import _db_get_diff_specs, _db_get_ownerships, load_appdata_from_db
-
+logger = get_task_logger(__name__)
 
 MONGODB_SYNC_PERIOD = flask_app.config.get("MONGODB_SYNC_PERIOD", 60*10)  # Every 10 min by default.
 
-cel = Celery('pusher_tasks', backend='amqp', broker='amqp://')
-cel.conf.update(
-    CELERYD_PREFETCH_MULTIPLIER="4",
-    CELERYD_CONCURRENCY="8",
-    CELERY_ACKS_LATE="1",
-    CELERY_IGNORE_RESULT=True,
-
-    CELERYBEAT_SCHEDULE = {
-        'sync-periodically': {
-            'task': 'sync',
-            'schedule': timedelta(seconds=MONGODB_SYNC_PERIOD),
-            'args': ()
-        }
-    }
-)
-
 if flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
-
     mongo_client = MongoClient(flask_app.config["MONGODB_PUSHES_URI"])
     mongo_db = mongo_client.appcomposerdb
     mongo_bundles = mongo_db.bundles
     mongo_translation_urls = mongo_db.translation_urls
-
-logger = get_task_logger(__name__)
+else:
+    print "Warning: MONGODB is not activated. Use ACTIVATE_TRANSLATOR_MONGODB_PUSHES"
 
 def retrieve_mongodb_contents():
     bundles_results = [ result for result in mongo_bundles.find() ]
@@ -64,7 +36,7 @@ def retrieve_mongodb_contents():
 
     return { 'bundles' : json.loads(bundles_serialized), 'translation_urls' : json.loads(translations_url_serialized) }
 
-@cel.task(name="push", bind=True)
+
 def push(self, translation_url, lang, target):
     if not flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
         return
@@ -105,10 +77,10 @@ def push(self, translation_url, lang, target):
 
             return bundle_id, app_bundle_ids
     except Exception as exc:
-        logger.warn("[PUSH]: Exception occurred. Retrying soon.")
-        raise self.retry(exc=exc, default_retry_delay=60, max_retries=None)
+        logger.warn("[PUSH]: Exception occurred. Retrying soon.", exc_info = True)
+        if self is not None:
+            raise self.retry(exc=exc, default_retry_delay=60, max_retries=None)
 
-@cel.task(name="sync", bind=True)
 def sync(self):
     """
     Fully synchronizes the local database leading translations with
@@ -132,7 +104,11 @@ def sync(self):
     all_app_ids = []
 
     for translation_bundle in translation_bundles:
-        translation_url_id, app_ids = push(translation_url = translation_bundle['translation_url'], lang = translation_bundle['language'], target = translation_bundle['target'])
+        response = push(self = None, translation_url = translation_bundle['translation_url'], lang = translation_bundle['language'], target = translation_bundle['target'])
+        if response is None:
+            logger.warn("Pushing translation for %s of %s returned None" % (translation_bundle['translation_url'], translation_bundle['language']))
+            continue
+        translation_url_id, app_ids = response
         all_translation_url_ids.append(translation_url_id)
         all_app_ids.extend(app_ids)
     
@@ -141,5 +117,3 @@ def sync(self):
 
     logger.info("[SYNC]: Sync finished.")
 
-if __name__ == '__main__':
-    cel.worker_main(sys.argv)

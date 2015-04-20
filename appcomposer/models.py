@@ -459,6 +459,25 @@ class TranslationValueSuggestion(db.Model):
         self.value = value
         self.number = number
 
+class TranslationExternalSuggestion(db.Model):
+    __tablename__ = 'TranslationExternalSuggestions'
+    __table_args__ = (UniqueConstraint('engine', 'human_key', 'language'), )
+
+    id = db.Column(db.Integer, primary_key = True)
+    engine = db.Column(db.Unicode(20), index = True)
+    human_key = db.Column(db.Unicode(255), index = True)
+    language = db.Column(db.Unicode(255), index = True)
+    origin_language = db.Column(db.Unicode(20), index = True)
+    value = db.Column(db.UnicodeText)
+
+    def __init__(self, engine, human_key, language, origin_language, value):
+        self.engine = engine
+        self.human_key = human_key
+        self.language = language
+        self.origin_language = origin_language
+        self.value = value
+
+
 class TranslationFastCache(db.Model):
     """ This cache is used in methods where a quick update is desired (such as each time a user translates a word) """
     __tablename__ = 'TranslationFastCaches'

@@ -3,11 +3,12 @@ import datetime
 from collections import defaultdict
 
 from sqlalchemy import func
+from sqlalchemy.exc import IntegrityError
 
 from appcomposer import db
 from appcomposer.application import app
-from appcomposer.translator.mongodb_pusher import push
 from appcomposer.translator.languages import obtain_languages, obtain_groups
+from appcomposer.translator.suggestions import translate_texts
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser
 
 DEBUG = False
@@ -21,7 +22,10 @@ def get_golab_default_user():
     if default_user is None:
         default_user = GoLabOAuthUser(email = default_email, display_name = "AppComposer")
         db.session.add(default_user)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            default_user = db.session.query(GoLabOAuthUser).filter_by(email = default_email).first()
     return default_user
 
 
@@ -140,7 +144,8 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
     # Commit!
     db.session.commit()
 
-    push.delay(translation_url, language, target)
+    from appcomposer.translator.tasks import push_task
+    push_task.delay(translation_url, language, target)
     
 
 def retrieve_stored(translation_url, language, target):
@@ -168,6 +173,13 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
     if SKIP_SUGGESTIONS_IF_STORED:
         original_keys = [ key for key in original_keys if key not in stored_translations ]
     original_values = [ original_messages[key] for key in original_keys ]
+    original_keys_by_value = { 
+        # value : [key1, key2]
+    }
+    for key, value in original_messages.iteritems():
+        if value not in original_keys_by_value:
+            original_keys_by_value[value] = []
+        original_keys_by_value[value].append(key)
 
     all_suggestions = {}
     current_suggestions = []
@@ -184,13 +196,21 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
     # Second, value suggestions
     value_suggestions_by_key = defaultdict(list)
     for value_suggestion in db.session.query(TranslationValueSuggestion).filter_by(language = language, target = target).filter(TranslationValueSuggestion.human_key.in_(original_values)).all():
-        value_suggestions_by_key[value_suggestion.human_key].append({
-            'target' : value_suggestion.value,
-            'number' : value_suggestion.number,
-        })
-    current_suggestions.append(value_suggestions_by_key)
+        for key in original_keys_by_value[value_suggestion.human_key]:
+            value_suggestions_by_key[key].append({
+                'target' : value_suggestion.value,
+                'number' : value_suggestion.number,
+            })
 
-    # TODO: here is where we could put the Bing / whatever values if there is nothing already
+    for human_key, suggested_values in translate_texts(original_values, language, origin_language = 'en').iteritems():
+        for key in original_keys_by_value[human_key]:
+            for suggested_value, weight in suggested_values.iteritems():
+                value_suggestions_by_key[key].append({
+                    'target' : suggested_value,
+                    'number' : weight,
+                })
+
+    current_suggestions.append(value_suggestions_by_key)
 
     for key in original_keys:
         current_key_suggestions = defaultdict(int)
@@ -288,25 +308,61 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
     """Copy all the messages. Safely assume that there is no translation in the destination, so
     we can copy all the history, active, etc.
     """
-    pass # TODO
+    src_message_ids = {
+        # old_id : new_id
+    }
+    historic = {
+        # old_id : new historic instance
+    }
+    for msg in src_bundle.all_messages:
+        t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.user, msg.datetime, src_message_ids.get(msg.parent_translation_id), msg.taken_from_default)
+        db.session.add(t_history)
+        db.session.commit()
+        db.session.refresh(t_history)
+        src_message_ids[msg.id] = t_history.id
+        historic[msg.id] = t_history
+
+    now = datetime.datetime.now()
+    for msg in src_bundle.active_messages:
+        history = historic.get(msg.history_id)
+        active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, history, now, msg.taken_from_default)
+        db.session.add(active_t)
+
+    db.session.commit()
 
 def _merge_bundle(src_bundle, dst_bundle):
     """Copy all the messages. The destination bundle already existed, so we can only copy those
     messages not present."""
-    pass # TODO
+    now = datetime.datetime.now()
+    for msg in src_bundle.active_messages:
+        existing_translation = db.session.query(ActiveTranslationMessage).filter_by(bundle = dst_bundle, key = msg.key).first()
+        if existing_translation is None:
+            t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, None, msg.taken_from_default)
+            db.session.add(t_history)
+            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default)
+            db.session.add(active_t)
+            db.session.commit()
+        elif existing_translation.taken_from_default and not msg.taken_from_default:
+            # Merge it
+            t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, existing_translation.history.id, msg.taken_from_default)
+            db.session.add(t_history)
+            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default)
+            db.session.add(active_t)
+            db.session.delete(existing_translation)
+            db.session.commit()
 
 def _deep_copy_translations(old_translation_url, new_translation_url):
     """Given an old translation of a URL, take the old bundles and copy them to the new one."""
     new_bundles = {}
     for new_bundle in new_translation_url.bundles:
-        new_bundle[new_bundle.language, new_bundle.target] = new_bundle
+        new_bundles[new_bundle.language, new_bundle.target] = new_bundle
 
     for old_bundle in old_translation_url.bundles:
         new_bundle = new_bundles.get((old_bundle.language, old_bundle.target))
         if new_bundle:
             _merge_bundle(old_bundle, new_bundle)
         else:
-            new_bundle = TranslationBundle(old_bundle.language, old_bundle.target, new_translation_url)
+            new_bundle = TranslationBundle(old_bundle.language, old_bundle.target, new_translation_url, old_bundle.from_developer)
             db.session.add(new_bundle)
             _deep_copy_bundle(old_bundle, new_bundle)
 
