@@ -1,29 +1,63 @@
 <div class="row" ng-controller="TranslationsTabCtrl">
 
-    <ac-lang-target appinfo="appinfo" selected="selected_target" all_languages="all_languages"
-                    all_groups="all_groups"></ac-lang-target>
+    <div ng-if="status.error" class="ac-translations-tab-error">
+        <div class="alert alert-danger">
+            <h3>Unfortunately, it was not possible to load the specified application.</h3>
 
-    <div class="col-md-6 col-sm-12">
-        <h3 ac-translate-me>Details:</h3>
+            <p>
+                The application might be invalid or not exist, or there could be a server or network error. You
+                may try again later, or translate a different application.
+                <a class="btn btn-primary" href="#/apps">Go back to the Applications List</a>
+            </p>
+            <br>
 
-        <a ng-href="#/edit/{{ selected_target.lang }}/{{ selected_target.target }}/{{ appurl }}">
-            <div ng-disabled="selected_target.lang == undefined" class="btn btn-success">
-                <i class="fa fa-edit"></i> {{ 'Edit translation' | translate }}
+            <div class="ac-error-description">
+                <p>
+                    <strong>The error is:</strong>
+                </p>
+
+                <table style="padding-top: 20px">
+                    <tr>
+                        <td><strong>HTTP code:</strong></td>
+                        <td>{{ status.error.code }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Message:<strong></td>
+                        <td>{{ status.error.message }}</td>
+                    </tr>
+                </table>
             </div>
-        </a>
-        <div ng-show="selected_target.lang == undefined">
-                <p class="ac-text-danger">Please, choose a language.</p>
+
         </div>
+    </div>
 
-        <dl class="" style="padding-top: 1em">
+    <div ng-if="status.error == undefined" class="ac-translations-tab-standard">
+        <ac-lang-target appinfo="appinfo" selected="selected_target" all_languages="all_languages"
+                        all_groups="all_groups"></ac-lang-target>
 
-            <dt ac-translate-me=>URL</dt>
-            <dd>{{ appinfo["url"] }}</dd>
+        <div class="col-md-6 col-sm-12">
+            <h3 ac-translate-me>Details:</h3>
 
-            <dt ac-translate-me>Last modified:</dt>
-            <dd>{{ selected.target_info["modified_date"]|date }}</dd>
+            <a ng-href="#/edit/{{ selected_target.lang }}/{{ selected_target.target }}/{{ appurl }}">
+                <div ng-disabled="selected_target.lang == undefined" class="btn btn-success">
+                    <i class="fa fa-edit"></i> {{ 'Edit translation' | translate }}
+                </div>
+            </a>
 
-        </dl>
+            <div ng-show="selected_target.lang == undefined">
+                <p class="ac-text-danger">Please, choose a language.</p>
+            </div>
+
+            <dl class="" style="padding-top: 1em">
+
+                <dt ac-translate-me=>URL</dt>
+                <dd>{{ appinfo["url"] }}</dd>
+
+                <dt ac-translate-me>Last modified:</dt>
+                <dd>{{ selected.target_info["modified_date"]|date }}</dd>
+
+            </dl>
+        </div>
     </div>
 
 </div>

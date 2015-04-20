@@ -191,6 +191,26 @@ label {
 
 
 
+/* ERROR MESSAGES */
+
+.alert.alert-danger {
+    border: none;
+    border-radius: 0;
+    margin-left: 5px;
+    margin-right: 5px;
+
+    color: rgb(90, 20, 20);
+}
+
+.ac-error-description {
+    font-family: "Courier New", courier, monospace;
+    background-color: rgb(240, 200, 200);
+    border: 0px solid black;
+    padding: 5px;
+}
+
+
+
 
 /* SELECT2 overrides */
 

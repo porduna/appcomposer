@@ -1,9 +1,9 @@
 angular
     .module("translateApp")
-    .controller("AppsCtrl", AppsCtrl);
+    .controller("AppsController", AppsController);
 
 
-function AppsCtrl($scope, $resource, $compile, $filter, DTOptionsBuilder, DTColumnDefBuilder) {
+function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, DTColumnDefBuilder) {
     $scope.apps = $resource(APP_DYN_ROOT + "api/translations").query();
     $scope.dt = {};
 
@@ -106,4 +106,4 @@ function AppsCtrl($scope, $resource, $compile, $filter, DTOptionsBuilder, DTColu
         return result;
     }
 
-} // !AppsCtrl
+} // !AppsController

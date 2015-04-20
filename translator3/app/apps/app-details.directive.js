@@ -6,7 +6,7 @@ angular
 function acAppDetails() {
     return {
         restrict: "E",
-        templateUrl: "apps/app-details.html",
+        templateUrl: "apps/app-details.directive.html",
         scope: {
             app: "=app"
         },

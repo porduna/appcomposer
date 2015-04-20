@@ -6,7 +6,7 @@ angular
 function acLangTargetDirective() {
     return {
         restrict: "E",
-        templateUrl: "app/translationstab/lang-target.directive.html",
+        templateUrl: "app/translationstab/lang-target/lang-target.directive.html",
         link: langTargetLink,
         controller: 'LangTargetController',
         controllerAs: 'langTargetController',
