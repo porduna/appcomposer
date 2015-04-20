@@ -9,7 +9,8 @@ angular
         'datatables',
         'truncate',
         'selectionModel',
-        'ui.bootstrap.modal'
+        'ui.bootstrap.modal',
+        'ui.gravatar'
     ])
     .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig]);
 
