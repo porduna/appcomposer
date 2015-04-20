@@ -9,7 +9,7 @@ from appcomposer import db
 from appcomposer.application import app
 from appcomposer.translator.languages import obtain_languages, obtain_groups
 from appcomposer.translator.suggestions import translate_texts
-from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser
+from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser, TranslationSyncLog
 
 DEBUG = False
 
@@ -402,3 +402,27 @@ def _deep_copy_translations(old_translation_url, new_translation_url):
             db.session.add(new_bundle)
             _deep_copy_bundle(old_bundle, new_bundle)
 
+def start_synchronization():
+    now = datetime.datetime.now()
+    sync_log = TranslationSyncLog(now, None)
+    db.session.add(sync_log)
+    db.session.commit()
+    db.session.refresh(sync_log)
+    return sync_log.id
+
+def end_synchronization(sync_id):
+    now = datetime.datetime.now()
+    sync_log = db.session.query(TranslationSyncLog).filter_by(id = sync_id).first()
+    if sync_log is not None:
+        sync_log.end_datetime = now
+        db.session.commit()
+
+def get_latest_synchronizations():
+    latest_syncs = db.session.query(TranslationSyncLog)[-10:]
+    return [
+        {
+            'id' : sync.id,
+            'start' : sync.start_datetime,
+            'end' : sync.end_datetime
+        } for sync in latest_syncs
+    ]

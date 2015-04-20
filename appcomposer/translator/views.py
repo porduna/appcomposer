@@ -6,6 +6,7 @@ import os
 import json
 import zipfile
 import StringIO
+import datetime
 import traceback
 from functools import wraps
 
@@ -28,7 +29,7 @@ from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
-from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url
+from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, get_latest_synchronizations
 from appcomposer.translator.utils import bundle_to_xml, url_to_filename, messages_to_xml
 
 import flask.ext.cors.core as cors_core
@@ -410,12 +411,36 @@ def translation_upload():
 def translations():
     return render_template("translator/translations.html")
 
-@translator_blueprint.route('/dev/sync/')
+@translator_blueprint.route('/dev/sync/', methods = ['GET', 'POST'])
 @requires_golab_login
 def sync_translations():
-    from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper
-    synchronize_apps_no_cache_wrapper.delay()
-    return render_template("translator/sync.html")
+    since_id = request.args.get('since')
+    if since_id:
+        try:
+            since_id = int(since_id)
+        except ValueError:
+            since_id = None
+    
+    latest_synchronizations = get_latest_synchronizations()
+    finished = False
+    for latest_synchronization in latest_synchronizations:
+        if latest_synchronization['id'] > since_id and latest_synchronization['end'] is not None:
+            finished = True
+            break
+
+    if latest_synchronizations:
+        latest_id = latest_synchronizations[-1]['id']
+    else:
+        latest_id = 0
+
+    if request.method == 'POST':
+        from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper
+        synchronize_apps_no_cache_wrapper.delay()
+        submitted = True
+        return redirect(url_for('.sync_translations', since = latest_id))
+    else:
+        submitted = False
+    return render_template("translator/sync.html", latest_synchronizations = latest_synchronizations, since_id = since_id, submitted = submitted, current_datetime = datetime.datetime.now(), finished = finished)
 
 @translator_blueprint.route('/dev/urls/')
 @public

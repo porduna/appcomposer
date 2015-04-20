@@ -10,7 +10,7 @@ from appcomposer.application import app
 from appcomposer.db import db
 from appcomposer.models import RepositoryApp, TranslatedApp
 from appcomposer.translator.utils import get_cached_session, extract_metadata_information
-from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user
+from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user, start_synchronization, end_synchronization
 
 GOLAB_REPO = u'golabz'
 EXTERNAL_REPO = u'external'
@@ -22,16 +22,23 @@ logger = get_task_logger(__name__)
 def synchronize_apps_cache():
     """Force obtaining the results and checking everything again to avoid inconsistences. 
     This can safely be run every few minutes, since most applications will be in the cache."""
-    
-    cached_requests = get_cached_session()
-    synced_apps = _sync_golab_translations(cached_requests, force_reload = False)
-    _sync_regular_apps(cached_requests, synced_apps, force_reload = False)
+    sync_id = start_synchronization()
+    try:
+        cached_requests = get_cached_session()
+        synced_apps = _sync_golab_translations(cached_requests, force_reload = False)
+        _sync_regular_apps(cached_requests, synced_apps, force_reload = False)
+    finally:
+        end_synchronization(sync_id)
     
 def synchronize_apps_no_cache():
     """Force obtaining the results and checking everything again to avoid inconsistences. This should be run once a day."""
-    cached_requests = get_cached_session()
-    synced_apps = _sync_golab_translations(cached_requests, force_reload = True)
-    _sync_regular_apps(cached_requests, synced_apps, force_reload = True)
+    sync_id = start_synchronization()
+    try:
+        cached_requests = get_cached_session()
+        synced_apps = _sync_golab_translations(cached_requests, force_reload = True)
+        _sync_regular_apps(cached_requests, synced_apps, force_reload = True)
+    finally:
+        end_synchronization(sync_id)
 
 def _sync_golab_translations(cached_requests, force_reload):
     try:
