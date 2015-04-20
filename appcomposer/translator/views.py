@@ -28,7 +28,7 @@ from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
-from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats
+from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url
 from appcomposer.translator.utils import bundle_to_xml, url_to_filename, messages_to_xml
 
 import flask.ext.cors.core as cors_core
@@ -211,6 +211,7 @@ def api_app():
 
     translation_url, original_messages = extract_local_translations_url(app_url, force_local_cache = True)
     translations = retrieve_translations_stats(translation_url, original_messages)
+    register_app_url(app_url, translation_url)
 
     app_data = {
         'url' : app_url,
@@ -298,6 +299,9 @@ def widget_js():
 
         translations = (repo_app.original_translations or '').split(',')
         translations = [ t.split('_')[0] for t in translations ]
+        # By default, translatable apps are in English
+        if 'en' not in translations:
+            translations.insert(0, 'en')
         try:
             translation_percent = json.loads(repo_app.translation_percent or '{}')
         except ValueError:

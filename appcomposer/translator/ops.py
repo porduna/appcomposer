@@ -28,8 +28,7 @@ def get_golab_default_user():
             default_user = db.session.query(GoLabOAuthUser).filter_by(email = default_email).first()
     return default_user
 
-
-def _get_or_create_bundle(app_url, translation_url, language, target, from_developer):
+def _get_or_create_app(app_url, translation_url):
     # Create the translation url if not present
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
     if not db_translation_url:
@@ -48,6 +47,10 @@ def _get_or_create_bundle(app_url, translation_url, language, target, from_devel
     else:
         db_app_url = TranslatedApp(url = app_url, translation_url = db_translation_url)
     db.session.add(db_app_url)
+    return db_translation_url
+
+def _get_or_create_bundle(app_url, translation_url, language, target, from_developer):
+    db_translation_url = _get_or_create_app(app_url, translation_url)
 
     # Create the bundle if not present
     db_translation_bundle = db.session.query(TranslationBundle).filter_by(translation_url = db_translation_url, language = language, target = target).first()
@@ -127,7 +130,11 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                     else:
                         db_human_key_suggestion = TranslationValueSuggestion(human_key = human_key, language = language, target = target, value = value, number = 1)
                         db.session.add(db_human_key_suggestion)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            # Somebody else concurrently run this
+            db.session.rollback() 
 
     now = datetime.datetime.now()
     existing_keys = [ key for key, in db.session.query(ActiveTranslationMessage.key).filter_by(bundle = db_translation_bundle).all() ]
@@ -142,11 +149,26 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
             db.session.add(db_active_translation_message)
 
     # Commit!
-    db.session.commit()
-
-    from appcomposer.translator.tasks import push_task
-    push_task.delay(translation_url, language, target)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        # Somebody else did this
+        db.session.rollback()
+    else:
+        from appcomposer.translator.tasks import push_task
+        push_task.delay(translation_url, language, target)
     
+def register_app_url(app_url, translation_url):
+    _get_or_create_app(app_url, translation_url)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        # Somebody else did this process
+        db.session.rollback()
+    else:
+        # Delay the synchronization process
+        from appcomposer.translator.tasks import synchronize_apps_cache_wrapper
+        synchronize_apps_cache_wrapper.delay()
 
 def retrieve_stored(translation_url, language, target):
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
@@ -238,13 +260,25 @@ def retrieve_translations_stats(translation_url, original_messages):
     if len(original_messages) == 0:
         return {}
     
-    results = db.session.query(func.count(TranslationMessageHistory.key), func.max(TranslationMessageHistory.datetime), func.min(TranslationMessageHistory.datetime), TranslationBundle.language, TranslationBundle.target).filter(
-                TranslationMessageHistory.key.in_(list(original_messages)),
-                TranslationMessageHistory.taken_from_default == False,
-                TranslationMessageHistory.bundle_id == TranslationBundle.id, 
+    results_from_users = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
+                ActiveTranslationMessage.key.in_(list(original_messages)),
+                ActiveTranslationMessage.taken_from_default == False,
+                ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
                 TranslationBundle.translation_url_id == TranslationUrl.id, 
+                TranslationBundle.from_developer == False, 
                 TranslationUrl.url == translation_url,
             ).group_by(TranslationBundle.language, TranslationBundle.target).all()
+
+    results_from_developers = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
+                ActiveTranslationMessage.key.in_(list(original_messages)),
+                ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
+                TranslationBundle.translation_url_id == TranslationUrl.id, 
+                TranslationBundle.from_developer == True, 
+                TranslationUrl.url == translation_url,
+            ).group_by(TranslationBundle.language, TranslationBundle.target).all()
+
+    results = results_from_users
+    results.extend(results_from_developers)
 
     translations = {
         # es_ES : {
