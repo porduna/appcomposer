@@ -167,8 +167,8 @@ def register_app_url(app_url, translation_url):
         db.session.rollback()
     else:
         # Delay the synchronization process
-        from appcomposer.translator.tasks import synchronize_apps_cache_wrapper
-        synchronize_apps_cache_wrapper.delay()
+        from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper
+        synchronize_apps_no_cache_wrapper.delay()
 
 def retrieve_stored(translation_url, language, target):
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
@@ -218,19 +218,21 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
     # Second, value suggestions
     value_suggestions_by_key = defaultdict(list)
     for value_suggestion in db.session.query(TranslationValueSuggestion).filter_by(language = language, target = target).filter(TranslationValueSuggestion.human_key.in_(original_values)).all():
-        for key in original_keys_by_value[value_suggestion.human_key]:
+        for key in original_keys_by_value.get(value_suggestion.human_key, []):
             value_suggestions_by_key[key].append({
                 'target' : value_suggestion.value,
                 'number' : value_suggestion.number,
             })
 
-    for human_key, suggested_values in translate_texts(original_values, language, origin_language = 'en').iteritems():
-        for key in original_keys_by_value[human_key]:
-            for suggested_value, weight in suggested_values.iteritems():
-                value_suggestions_by_key[key].append({
-                    'target' : suggested_value,
-                    'number' : weight,
-                })
+    original_remaining_values = [ original_messages[key] for key in original_keys if len(value_suggestions_by_key.get(key, [])) == 0 and len(key_suggestions_by_key.get(key, [])) == 0 ]
+    if original_remaining_values:
+        for human_key, suggested_values in translate_texts(original_remaining_values, language, origin_language = 'en').iteritems():
+            for key in original_keys_by_value.get(human_key, []):
+                for suggested_value, weight in suggested_values.iteritems():
+                    value_suggestions_by_key[key].append({
+                        'target' : suggested_value,
+                        'number' : weight,
+                    })
 
     current_suggestions.append(value_suggestions_by_key)
 

@@ -26,14 +26,12 @@ def synchronize_apps_cache():
     cached_requests = get_cached_session()
     synced_apps = _sync_golab_translations(cached_requests, force_reload = False)
     _sync_regular_apps(cached_requests, synced_apps, force_reload = False)
-    # TODO: mongo push if needed
     
 def synchronize_apps_no_cache():
     """Force obtaining the results and checking everything again to avoid inconsistences. This should be run once a day."""
     cached_requests = get_cached_session()
     synced_apps = _sync_golab_translations(cached_requests, force_reload = True)
-    _sync_regular_apps(cached_requests, synced_apps, force_reload = False)
-    # TODO: mongo push if needed
+    _sync_regular_apps(cached_requests, synced_apps, force_reload = True)
 
 def _sync_golab_translations(cached_requests, force_reload):
     try:
@@ -131,6 +129,8 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None):
     failing = False
     try:
         metadata_information = extract_metadata_information(app_url, cached_requests, force_reload)
+        if app_url == 'http://www.weblab.deusto.es/pub/i18n_tests/i18n.xml':
+            logger.error(metadata_information)
     except Exception:
         logger.warning("Error extracting information from %s" % app_url, exc_info = True)
         metadata_information = {}
