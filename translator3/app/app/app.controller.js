@@ -22,6 +22,7 @@ function AppController($scope, $routeParams, $resource, $log, $sce) {
     $scope.appinfo = getAppInfo();
 
     $scope.test = test;
+    $scope.onPreviewSelected = onPreviewSelected;
 
 
     /* EVENT HANDLERS */
@@ -55,6 +56,14 @@ function AppController($scope, $routeParams, $resource, $log, $sce) {
         if(args.success)
             $scope.appinfo.$get({app_url: $scope.appurl});
     } // !onLanguageAdded
+
+    /**
+     * When the preview tab is selected we notify the preview directive so that it refreshes.
+     * @param event
+     */
+    function onPreviewSelected(event) {
+        $scope.$broadcast('setPreviewUrl', $scope.appurl);
+    } // !onPreviewClicked
 
     function test() {
         debugger;
