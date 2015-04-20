@@ -43,11 +43,6 @@ cel.conf.update(
             'schedule': crontab(hour=3, minute=0),
             'args': ()
         },
-        'sync': {
-            'task': 'sync',
-            'schedule': datetime.timedelta(minutes=5),
-            'args': ()
-        },
     }
 )
 
@@ -56,20 +51,23 @@ from appcomposer import app as my_app
 from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache
 from appcomposer.translator.mongodb_pusher import push, sync
 
-@cel.task(name='synchronize_apps_cache')
-def synchronize_apps_cache_wrapper():
+@cel.task(name='synchronize_apps_cache', bind=True)
+def synchronize_apps_cache_wrapper(self):
     with my_app.app_context():
-        return synchronize_apps_cache()
+        result = synchronize_apps_cache()
+    sync(self)
+    return result
 
-@cel.task(name='synchronize_apps_no_cache')
-def synchronize_apps_no_cache_wrapper():
+@cel.task(name='synchronize_apps_no_cache', bind=True)
+def synchronize_apps_no_cache_wrapper(self):
     with my_app.app_context():
-        return synchronize_apps_no_cache()
+        result = synchronize_apps_no_cache()
+    sync(self)
+    return result
 
 @cel.task(name="push", bind=True)
 def push_task(self, translation_url, lang, target):
     return push(self, translation_url, lang, target)
-
 
 @cel.task(name="sync", bind=True)
 def sync_wrapper(self):

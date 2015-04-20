@@ -77,7 +77,7 @@ def push(self, translation_url, lang, target):
 
             return bundle_id, app_bundle_ids
     except Exception as exc:
-        logger.warn("[PUSH]: Exception occurred. Retrying soon.")
+        logger.warn("[PUSH]: Exception occurred. Retrying soon.", exc_info = True)
         if self is not None:
             raise self.retry(exc=exc, default_retry_delay=60, max_retries=None)
 
@@ -106,6 +106,7 @@ def sync(self):
     for translation_bundle in translation_bundles:
         response = push(self = None, translation_url = translation_bundle['translation_url'], lang = translation_bundle['language'], target = translation_bundle['target'])
         if response is None:
+            logger.warn("Pushing translation for %s of %s returned None" % (translation_bundle['translation_url'], translation_bundle['language']))
             continue
         translation_url_id, app_ids = response
         all_translation_url_ids.append(translation_url_id)

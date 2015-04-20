@@ -322,9 +322,10 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
         src_message_ids[msg.id] = t_history.id
         historic[msg.id] = t_history
 
+    now = datetime.datetime.now()
     for msg in src_bundle.active_messages:
         history = historic.get(msg.history_id)
-        active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, history, msg.datetime, msg.taken_from_default)
+        active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, history, now, msg.taken_from_default)
         db.session.add(active_t)
 
     db.session.commit()
@@ -332,19 +333,20 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
 def _merge_bundle(src_bundle, dst_bundle):
     """Copy all the messages. The destination bundle already existed, so we can only copy those
     messages not present."""
+    now = datetime.datetime.now()
     for msg in src_bundle.active_messages:
         existing_translation = db.session.query(ActiveTranslationMessage).filter_by(bundle = dst_bundle, key = msg.key).first()
         if existing_translation is None:
-            t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, msg.datetime, None, msg.taken_from_default)
+            t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, None, msg.taken_from_default)
             db.session.add(t_history)
-            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, msg.datetime, msg.taken_from_default)
+            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default)
             db.session.add(active_t)
             db.session.commit()
         elif existing_translation.taken_from_default and not msg.taken_from_default:
             # Merge it
-            t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, msg.datetime, existing_translation.history.id, msg.taken_from_default)
+            t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, existing_translation.history.id, msg.taken_from_default)
             db.session.add(t_history)
-            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, msg.datetime, msg.taken_from_default)
+            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default)
             db.session.add(active_t)
             db.session.delete(existing_translation)
             db.session.commit()
