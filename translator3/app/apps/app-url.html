@@ -1,7 +1,7 @@
 <div class="row" style="padding-top:20px">
 
     <form name="appurlForm" class="form-horizontal" id="geturl" name="geturl"
-          action="{{ url_for('translate.translate_selectlang') }}" method="POST" novalidate>
+          novalidate>
         <div class="col-xs-12">
             <h1><i class="fa fa-cogs"></i> {{ 'Custom application URL' | translate }}</h1>
             <p>
@@ -14,14 +14,15 @@
 
                 <div class="col-lg-10">
                     <input ng-model="url" required type="text" id="appurl" name="appurl" class="form-control"
-                           ng-attr-placeholder="{{ 'URL of the app'|translate }}">
+                           ng-attr-placeholder="{{ 'URL of the app'|translate }}"
+                           ac-enter="onEnter()">
                     <!--<span class="help-block" ac-translate-me>The URL of the app you want to translate.</span>-->
                     <span ng-hide="isValid()" class="text-danger">Please, provide the URL for the custom application</span>
                 </div>
             </div>
         </div>
         <div class="col-xs-3 col-xs-offset-1">
-            <a ng-disabled="!isValid()" ng-href="#/app/{{ url }}" class="btn btn-success">
+            <a ng-disabled="!isValid()" ng-href="{{ calculateUrl(url) }}" class="btn btn-success">
                 <i class="fa fa-book"></i> {{ 'Translate' | translate }}
             </a>
         </div>
