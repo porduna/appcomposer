@@ -140,7 +140,7 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
             return absolute_translation_url, None
         translation_messages_xml = get_text_from_response(translation_messages_response)
     except Exception as e:
-        logging.warning("Could not reach locale URL: %s" % e, exc_info = True)
+        logging.warning("Could not reach locale URL: %s  Reason: %s" % (absolute_translation_url, e), exc_info = True)
         raise TranslatorError("Could not reach locale URL")
 
     messages = extract_messages_from_translation(translation_messages_xml)

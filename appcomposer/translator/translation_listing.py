@@ -57,11 +57,10 @@ class MetadataTask(threading.Thread):
         try:
             self.metadata_information = extract_metadata_information(self.app_url, self.cached_requests, self.force_reload)
         except Exception:
-            logger.warning("Error extracting information from %s" % app_url, exc_info = True)
+            logger.warning("Error extracting information from %s" % self.app_url, exc_info = True)
             self.metadata_information = {}
             self.failing = True
-        finally:
-            self.finished = True
+        self.finished = True
 
 class RunInParallel(object):
     def __init__(self, tasks, thread_number = 15):
@@ -221,7 +220,7 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
             metadata_information = {}
             failing = True
     else:
-        metadata_information = task.metadata_information
+        metadata_information = task.metadata_information or {}
         failing = task.failing
 
     if repo_app is not None:
@@ -234,6 +233,8 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
         if failing:
             repo_app.failing = True
             repo_app.failing_since = now
+        else:
+            repo_app.failing = False
 
     default_user = get_golab_default_user()
 
