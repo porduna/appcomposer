@@ -10,7 +10,7 @@ function PreviewTabController($scope, $log, $sce) {
     // -----------------------
 
     SHINDIG_SERVER = 'http://shindig2.epfl.ch';
-    RELATIVE_URL = '/gadgets/ifr?nocache=0&url=';
+    RELATIVE_URL = '/gadgets/ifr?nocache=1&url=';
 
 
     // -----------------------
