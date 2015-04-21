@@ -459,12 +459,19 @@ def translations_urls():
 @translator_blueprint.route('/dev/apps/')
 @public
 def translations_apps():
-    apps = {}
+    golab_apps = {}
+    other_apps = {}
+    golab_app_urls = [ url for url, in db.session.query(RepositoryApp.url).all() ]
+
     for app in db.session.query(TranslatedApp).options(joinedload_all('translation_url.bundles')):
-        apps[app.url] = []
+        if app.url in golab_app_urls:
+            current_apps = golab_apps
+        else:
+            current_apps = other_apps
+        current_apps[app.url] = []
         if app.translation_url is not None:
             for bundle in app.translation_url.bundles:
-                apps[app.url].append({
+                current_apps[app.url].append({
                     'from_developer' : bundle.from_developer,
                     'target' : bundle.target,
                     'lang' : bundle.language,
@@ -472,7 +479,7 @@ def translations_apps():
         else:
             # TODO: invalid state
             pass
-    return render_template("translator/translations_apps.html", apps = apps)
+    return render_template("translator/translations_apps.html", golab_apps = golab_apps, other_apps = other_apps)
 
 @translator_blueprint.route('/dev/apps/<lang>/<target>/<path:app_url>')
 @public
