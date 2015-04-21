@@ -1,4 +1,10 @@
 <div class="row" ng-controller="PreviewTabController">
+
+    <div style="padding-bottom: 20px"></div>
+
+    <ac-lang-target appinfo="appinfo" selected="selected_target" all_languages="all_languages"
+                all_groups="all_groups"></ac-lang-target>
+
     <div class="col-xs-12" style="padding-top: 20px">
         <iframe ng-if="true" id="preview-frame" ng-src="{{ preview.url }}" width="750" height="590" frameborder="1px solid gray"
                 scrolling="no">
