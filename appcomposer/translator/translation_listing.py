@@ -43,10 +43,10 @@ def synchronize_apps_no_cache():
         end_synchronization(sync_id)
 
 class MetadataTask(threading.Thread):
-    def __init__(self, app_url, cached_requests, force_reload):
+    def __init__(self, app_url, force_reload):
         threading.Thread.__init__(self)
+        self.cached_requests = get_cached_session()
         self.app_url = app_url
-        self.cached_requests = cached_requests
         self.force_reload = force_reload
         self.finished = False
         self.failing = False
@@ -98,6 +98,9 @@ class RunInParallel(object):
             if len(running_tasks) > 0:
                 time.sleep(0.1)
 
+        for task in self.tasks:
+            task.join()
+
 def _sync_golab_translations(cached_requests, force_reload):
     try:
         apps_response = cached_requests.get("http://www.golabz.eu/rest/apps/retrieve.json")
@@ -105,7 +108,7 @@ def _sync_golab_translations(cached_requests, force_reload):
         apps = apps_response.json()
     except requests.RequestException:
         logger.warning("Error retrieving applications from golabz", exc_info = True)
-        return
+        return []
 
     apps_by_url = {}
     for app in apps:
@@ -120,7 +123,7 @@ def _sync_golab_translations(cached_requests, force_reload):
     tasks_list = []
     tasks_by_app_url = {}
     for app_url in apps_by_url:
-        task = MetadataTask(app_url, cached_requests, force_reload)
+        task = MetadataTask(app_url, force_reload)
         tasks_list.append(task)
         tasks_by_app_url[app_url] = task
         
@@ -195,7 +198,7 @@ def _sync_regular_apps(cached_requests, already_synchronized_app_urls, force_rel
     tasks_by_app_url = {}
     for app_url, in app_urls:
         if app_url not in already_synchronized_app_urls:
-            task = MetadataTask(app_url, cached_requests, force_reload)
+            task = MetadataTask(app_url, force_reload)
             tasks_list.append(task)
             tasks_by_app_url[app_url] = task
 
