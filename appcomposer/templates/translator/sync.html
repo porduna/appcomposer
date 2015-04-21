@@ -1,5 +1,56 @@
 {% extends "translator/base.html" %}
+{% block head %}
+    {% if since_id is not none and not finished %}
+        <meta http-equiv="refresh" content="2">
+    {% endif %}
+{% endblock %}
 {% block body %}
+    <h1>Latest synchronizations</h1>
     <br>
-    <p>Your request has been started. Wait some seconds and <a href="{{ url_for('.translations') }}">verify the results</a>.</p>
+    <p>Current local date: {{ current_datetime.ctime() }}</p>
+    <br>
+    <p>Each synchronization downloads all the applications of the Go-Lab repository and registered applications in the App Composer, so as to verify what are the current messages, whether an application can be translatable or not.</p>
+    <table class="table">
+        <thead>
+            <tr>
+                <th>Sync id</th>
+                <th>Start date</th>
+                <th>End date</th>
+                <th>Duration (seconds)</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for latest_sync in latest_synchronizations %}
+                <tr>
+                    <td>{{ latest_sync['id'] }}</td>
+                    <td>{{ latest_sync['start'].ctime() }}</td>
+                    {% if latest_sync['end'] is none %}
+                    <td>Not finished</td>
+                    <td></td>
+                    {% else %}
+                    <td>{{ latest_sync['end'].ctime() }}</td>
+                    <td>{{ '%i' % (latest_sync['end'] - latest_sync['start']).total_seconds()}}</td>
+                    {% endif %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% if since_id is not none %}
+        {% if finished %}
+            <p>Synchronization finished! Click <a href="{{ url_for('.translations') }}">here verify the results</a>.</p>
+            <form action="{{ url_for('.sync_translations') }}" method="POST">
+                <button type="submit" class="btn btn-primary">Synchronize again</button> 
+            </form>
+        {% else %}
+            <p><a href="{{ url_for('.sync_translations', since = since_id) }}" class="btn btn-default">Refresh</a></p>
+        {% endif %}
+    {% else %}
+        {% if submitted %}
+            <p>Your request has been submitted.</p>
+        {% else %}
+            <form action="{{ url_for('.sync_translations') }}" method="POST">
+                <button type="submit" class="btn btn-primary">Synchronize now</button> 
+            </form>
+        {% endif %}
+    {% endif %}
 {% endblock %}

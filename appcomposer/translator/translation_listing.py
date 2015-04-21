@@ -1,6 +1,8 @@
 import sys
+import time
 import json
 import datetime
+import threading
 
 import requests
 from sqlalchemy.exc import SQLAlchemyError
@@ -10,7 +12,7 @@ from appcomposer.application import app
 from appcomposer.db import db
 from appcomposer.models import RepositoryApp, TranslatedApp
 from appcomposer.translator.utils import get_cached_session, extract_metadata_information
-from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user
+from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user, start_synchronization, end_synchronization
 
 GOLAB_REPO = u'golabz'
 EXTERNAL_REPO = u'external'
@@ -22,18 +24,79 @@ logger = get_task_logger(__name__)
 def synchronize_apps_cache():
     """Force obtaining the results and checking everything again to avoid inconsistences. 
     This can safely be run every few minutes, since most applications will be in the cache."""
-    
-    cached_requests = get_cached_session()
-    synced_apps = _sync_golab_translations(cached_requests, force_reload = False)
-    _sync_regular_apps(cached_requests, synced_apps, force_reload = False)
-    # TODO: mongo push if needed
+    sync_id = start_synchronization()
+    try:
+        cached_requests = get_cached_session()
+        synced_apps = _sync_golab_translations(cached_requests, force_reload = False)
+        _sync_regular_apps(cached_requests, synced_apps, force_reload = False)
+    finally:
+        end_synchronization(sync_id)
     
 def synchronize_apps_no_cache():
     """Force obtaining the results and checking everything again to avoid inconsistences. This should be run once a day."""
-    cached_requests = get_cached_session()
-    synced_apps = _sync_golab_translations(cached_requests, force_reload = True)
-    _sync_regular_apps(cached_requests, synced_apps, force_reload = False)
-    # TODO: mongo push if needed
+    sync_id = start_synchronization()
+    try:
+        cached_requests = get_cached_session()
+        synced_apps = _sync_golab_translations(cached_requests, force_reload = True)
+        _sync_regular_apps(cached_requests, synced_apps, force_reload = True)
+    finally:
+        end_synchronization(sync_id)
+
+class MetadataTask(threading.Thread):
+    def __init__(self, app_url, cached_requests, force_reload):
+        threading.Thread.__init__(self)
+        self.app_url = app_url
+        self.cached_requests = cached_requests
+        self.force_reload = force_reload
+        self.finished = False
+        self.failing = False
+        self.metadata_information = None
+
+    def run(self):
+        self.failing = False
+        try:
+            self.metadata_information = extract_metadata_information(self.app_url, self.cached_requests, self.force_reload)
+        except Exception:
+            logger.warning("Error extracting information from %s" % self.app_url, exc_info = True)
+            self.metadata_information = {}
+            self.failing = True
+        self.finished = True
+
+class RunInParallel(object):
+    def __init__(self, tasks, thread_number = 15):
+        self.tasks = tasks
+        self.thread_number = thread_number
+
+    def all_finished(self):
+        for task in self.tasks:
+            if not task.finished:
+                return False
+        return True
+
+    def run(self):
+        counter = 0
+        waiting_tasks = self.tasks[:]
+        running_tasks = []
+        while not self.all_finished():
+            has_changed = True
+            while has_changed:
+                has_changed = False
+                cur_pos = -1
+                for pos, task in enumerate(running_tasks):
+                    if task.finished:
+                        cur_pos = pos
+                        has_changed = True
+                        break
+                if has_changed:
+                    running_tasks.pop(cur_pos)
+
+            while len(running_tasks) < self.thread_number and len(waiting_tasks) > 0:
+                new_task = waiting_tasks.pop(0)
+                new_task.start()
+                running_tasks.append(new_task)
+
+            if len(running_tasks) > 0:
+                time.sleep(0.1)
 
 def _sync_golab_translations(cached_requests, force_reload):
     try:
@@ -54,6 +117,17 @@ def _sync_golab_translations(cached_requests, force_reload):
 
     stored_apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).all()
 
+    tasks_list = []
+    tasks_by_app_url = {}
+    for app_url in apps_by_url:
+        task = MetadataTask(app_url, cached_requests, force_reload)
+        tasks_list.append(task)
+        tasks_by_app_url[app_url] = task
+        
+
+    run_in_parallel = RunInParallel(tasks_list)
+    run_in_parallel.run()
+
     # 
     # Update or delete existing apps
     # 
@@ -68,7 +142,7 @@ def _sync_golab_translations(cached_requests, force_reload):
             else:
                 stored_ids.append(external_id)
                 app = apps_by_id[external_id]
-                _update_existing_app(cached_requests, repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app['app_thumb'], description = app['description'], app_image = app['app_image'], app_link = app['app_golabz_page'], force_reload = force_reload)
+                _update_existing_app(cached_requests, repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app['app_thumb'], description = app['description'], app_image = app['app_image'], app_link = app['app_golabz_page'], force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']))
         except SQLAlchemyError:
             # One error in one application shouldn't stop the process
             logger.warning("Error updating or deleting app %s" % app['app_url'], exc_info = True)
@@ -84,14 +158,14 @@ def _sync_golab_translations(cached_requests, force_reload):
                             app_url = app['app_url'], title = app['title'], external_id = app['id'],
                             app_thumb = app['app_thumb'], description = app['description'],
                             app_image = app['app_image'], app_link = app['app_golabz_page'],
-                            force_reload = force_reload)
+                            force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']))
             except SQLAlchemyError:
                 logger.warning("Error adding app %s" % app['app_url'], exc_info = True)
                 continue
 
     return list(apps_by_url)
 
-def _update_existing_app(cached_requests, repo_app, app_url, title, app_thumb, description, app_image, app_link, force_reload):
+def _update_existing_app(cached_requests, repo_app, app_url, title, app_thumb, description, app_image, app_link, force_reload, task):
     if repo_app.name != title:
         repo_app.name = title
     if repo_app.app_thumb != app_thumb:
@@ -103,9 +177,9 @@ def _update_existing_app(cached_requests, repo_app, app_url, title, app_thumb, d
     if repo_app.app_image != app_image:
         repo_app.app_image = app_image
 
-    _add_or_update_app(cached_requests, app_url, force_reload, repo_app)
+    _add_or_update_app(cached_requests, app_url, force_reload, repo_app, task)
 
-def _add_new_app(cached_requests, repository, app_url, title, external_id, app_thumb, description, app_image, app_link, force_reload):
+def _add_new_app(cached_requests, repository, app_url, title, external_id, app_thumb, description, app_image, app_link, force_reload, task):
     repo_app = RepositoryApp(name = title, url = app_url, external_id = external_id, repository = repository)
     repo_app.app_thumb = app_thumb
     repo_app.description = description
@@ -113,28 +187,41 @@ def _add_new_app(cached_requests, repository, app_url, title, external_id, app_t
     repo_app.app_image = app_image
     db.session.add(repo_app)
 
-    _add_or_update_app(cached_requests, app_url, force_reload, repo_app)
+    _add_or_update_app(cached_requests, app_url, force_reload, repo_app, task)
 
 def _sync_regular_apps(cached_requests, already_synchronized_app_urls, force_reload):
     app_urls = db.session.query(TranslatedApp.url).all()
+    tasks_list = []
+    tasks_by_app_url = {}
     for app_url, in app_urls:
         if app_url not in already_synchronized_app_urls:
-            _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None)
+            task = MetadataTask(app_url, cached_requests, force_reload)
+            tasks_list.append(task)
+            tasks_by_app_url[app_url] = task
 
+    RunInParallel(tasks_list).run()
 
-def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None):
+    for app_url, in app_urls:
+        if app_url not in already_synchronized_app_urls:
+            _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, task = tasks_by_app_url[app_url])
+
+def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, task = None):
     now = datetime.datetime.now()
 
     if DEBUG:
         logger.debug("Starting %s" % app_url)
 
     failing = False
-    try:
-        metadata_information = extract_metadata_information(app_url, cached_requests, force_reload)
-    except Exception:
-        logger.warning("Error extracting information from %s" % app_url, exc_info = True)
-        metadata_information = {}
-        failing = True
+    if task is None:
+        try:
+            metadata_information = extract_metadata_information(app_url, cached_requests, force_reload)
+        except Exception:
+            logger.warning("Error extracting information from %s" % app_url, exc_info = True)
+            metadata_information = {}
+            failing = True
+    else:
+        metadata_information = task.metadata_information or {}
+        failing = task.failing
 
     if repo_app is not None:
         repo_app.translatable = metadata_information.get('translatable', False)
@@ -146,6 +233,8 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None):
         if failing:
             repo_app.failing = True
             repo_app.failing_since = now
+        else:
+            repo_app.failing = False
 
     default_user = get_golab_default_user()
 

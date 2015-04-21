@@ -494,3 +494,14 @@ class TranslationFastCache(db.Model):
         self.original_messages = original_messages
         self.datetime = datetime
 
+class TranslationSyncLog(db.Model):
+    __tablename__ = 'TranslationSyncLogs'
+
+    id = db.Column(db.Integer, primary_key = True)
+    start_datetime = db.Column(db.DateTime, index = True)
+    end_datetime = db.Column(db.DateTime, index = True)
+
+    def __init__(self, start_datetime, end_datetime):
+        self.start_datetime = start_datetime
+        self.end_datetime = end_datetime
+

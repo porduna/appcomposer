@@ -1,6 +1,8 @@
 import traceback
 from microsofttranslator import Translator as MSTranslator, TranslateApiException as MSTranslatorApiException
 
+from sqlalchemy.exc import IntegrityError
+
 from appcomposer.application import app
 from appcomposer.db import db
 from appcomposer.models import TranslationExternalSuggestion
@@ -28,7 +30,10 @@ class AbstractTranslator(object):
                 new_suggestion = TranslationExternalSuggestion(engine = self.name, human_key = human_key, language = language, origin_language = origin_language, value = value)
                 db.session.add(new_suggestion)
                 existing_suggestions[human_key] = { value : 1 }
-            db.session.commit()
+            try:
+                db.session.commit()
+            except IntegrityError:
+                db.session.rollback()
         return existing_suggestions
 
     def existing_translations(self, texts, language, origin_language = 'en'):

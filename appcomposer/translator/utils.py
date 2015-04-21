@@ -140,7 +140,7 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
             return absolute_translation_url, None
         translation_messages_xml = get_text_from_response(translation_messages_response)
     except Exception as e:
-        logging.warning("Could not reach locale URL: %s" % e, exc_info = True)
+        logging.warning("Could not reach locale URL: %s  Reason: %s" % (absolute_translation_url, e), exc_info = True)
         raise TranslatorError("Could not reach locale URL")
 
     messages = extract_messages_from_translation(translation_messages_xml)
@@ -204,7 +204,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
                 try:
                     absolute_url, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = only_if_new)
                 except TranslatorError as e:
-                    logging.warning(u"Could not load %s translation for app URL: %s" % (lang, e), exc_info = True)
+                    logging.warning(u"Could not load %s translation for app URL: %s Reason: %s" % (lang, app_url, e), exc_info = True)
                     continue
                 else:
                     original_translations[lang] = messages

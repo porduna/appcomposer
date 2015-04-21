@@ -9,7 +9,7 @@ from appcomposer import db
 from appcomposer.application import app
 from appcomposer.translator.languages import obtain_languages, obtain_groups
 from appcomposer.translator.suggestions import translate_texts
-from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser
+from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser, TranslationSyncLog
 
 DEBUG = False
 
@@ -28,8 +28,7 @@ def get_golab_default_user():
             default_user = db.session.query(GoLabOAuthUser).filter_by(email = default_email).first()
     return default_user
 
-
-def _get_or_create_bundle(app_url, translation_url, language, target, from_developer):
+def _get_or_create_app(app_url, translation_url):
     # Create the translation url if not present
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
     if not db_translation_url:
@@ -48,6 +47,10 @@ def _get_or_create_bundle(app_url, translation_url, language, target, from_devel
     else:
         db_app_url = TranslatedApp(url = app_url, translation_url = db_translation_url)
     db.session.add(db_app_url)
+    return db_translation_url
+
+def _get_or_create_bundle(app_url, translation_url, language, target, from_developer):
+    db_translation_url = _get_or_create_app(app_url, translation_url)
 
     # Create the bundle if not present
     db_translation_bundle = db.session.query(TranslationBundle).filter_by(translation_url = db_translation_url, language = language, target = target).first()
@@ -127,7 +130,11 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                     else:
                         db_human_key_suggestion = TranslationValueSuggestion(human_key = human_key, language = language, target = target, value = value, number = 1)
                         db.session.add(db_human_key_suggestion)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except IntegrityError:
+            # Somebody else concurrently run this
+            db.session.rollback() 
 
     now = datetime.datetime.now()
     existing_keys = [ key for key, in db.session.query(ActiveTranslationMessage.key).filter_by(bundle = db_translation_bundle).all() ]
@@ -142,11 +149,26 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
             db.session.add(db_active_translation_message)
 
     # Commit!
-    db.session.commit()
-
-    from appcomposer.translator.tasks import push_task
-    push_task.delay(translation_url, language, target)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        # Somebody else did this
+        db.session.rollback()
+    else:
+        from appcomposer.translator.tasks import push_task
+        push_task.delay(translation_url, language, target)
     
+def register_app_url(app_url, translation_url):
+    _get_or_create_app(app_url, translation_url)
+    try:
+        db.session.commit()
+    except IntegrityError:
+        # Somebody else did this process
+        db.session.rollback()
+    else:
+        # Delay the synchronization process
+        from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper
+        synchronize_apps_no_cache_wrapper.delay()
 
 def retrieve_stored(translation_url, language, target):
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
@@ -196,19 +218,21 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
     # Second, value suggestions
     value_suggestions_by_key = defaultdict(list)
     for value_suggestion in db.session.query(TranslationValueSuggestion).filter_by(language = language, target = target).filter(TranslationValueSuggestion.human_key.in_(original_values)).all():
-        for key in original_keys_by_value[value_suggestion.human_key]:
+        for key in original_keys_by_value.get(value_suggestion.human_key, []):
             value_suggestions_by_key[key].append({
                 'target' : value_suggestion.value,
                 'number' : value_suggestion.number,
             })
 
-    for human_key, suggested_values in translate_texts(original_values, language, origin_language = 'en').iteritems():
-        for key in original_keys_by_value[human_key]:
-            for suggested_value, weight in suggested_values.iteritems():
-                value_suggestions_by_key[key].append({
-                    'target' : suggested_value,
-                    'number' : weight,
-                })
+    original_remaining_values = [ original_messages[key] for key in original_keys if len(value_suggestions_by_key.get(key, [])) == 0 and len(key_suggestions_by_key.get(key, [])) == 0 ]
+    if original_remaining_values:
+        for human_key, suggested_values in translate_texts(original_remaining_values, language, origin_language = 'en').iteritems():
+            for key in original_keys_by_value.get(human_key, []):
+                for suggested_value, weight in suggested_values.iteritems():
+                    value_suggestions_by_key[key].append({
+                        'target' : suggested_value,
+                        'number' : weight,
+                    })
 
     current_suggestions.append(value_suggestions_by_key)
 
@@ -238,13 +262,25 @@ def retrieve_translations_stats(translation_url, original_messages):
     if len(original_messages) == 0:
         return {}
     
-    results = db.session.query(func.count(TranslationMessageHistory.key), func.max(TranslationMessageHistory.datetime), func.min(TranslationMessageHistory.datetime), TranslationBundle.language, TranslationBundle.target).filter(
-                TranslationMessageHistory.key.in_(list(original_messages)),
-                TranslationMessageHistory.taken_from_default == False,
-                TranslationMessageHistory.bundle_id == TranslationBundle.id, 
+    results_from_users = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
+                ActiveTranslationMessage.key.in_(list(original_messages)),
+                ActiveTranslationMessage.taken_from_default == False,
+                ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
                 TranslationBundle.translation_url_id == TranslationUrl.id, 
+                TranslationBundle.from_developer == False, 
                 TranslationUrl.url == translation_url,
             ).group_by(TranslationBundle.language, TranslationBundle.target).all()
+
+    results_from_developers = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
+                ActiveTranslationMessage.key.in_(list(original_messages)),
+                ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
+                TranslationBundle.translation_url_id == TranslationUrl.id, 
+                TranslationBundle.from_developer == True, 
+                TranslationUrl.url == translation_url,
+            ).group_by(TranslationBundle.language, TranslationBundle.target).all()
+
+    results = results_from_users
+    results.extend(results_from_developers)
 
     translations = {
         # es_ES : {
@@ -366,3 +402,27 @@ def _deep_copy_translations(old_translation_url, new_translation_url):
             db.session.add(new_bundle)
             _deep_copy_bundle(old_bundle, new_bundle)
 
+def start_synchronization():
+    now = datetime.datetime.now()
+    sync_log = TranslationSyncLog(now, None)
+    db.session.add(sync_log)
+    db.session.commit()
+    db.session.refresh(sync_log)
+    return sync_log.id
+
+def end_synchronization(sync_id):
+    now = datetime.datetime.now()
+    sync_log = db.session.query(TranslationSyncLog).filter_by(id = sync_id).first()
+    if sync_log is not None:
+        sync_log.end_datetime = now
+        db.session.commit()
+
+def get_latest_synchronizations():
+    latest_syncs = db.session.query(TranslationSyncLog)[-10:]
+    return [
+        {
+            'id' : sync.id,
+            'start' : sync.start_datetime,
+            'end' : sync.end_datetime
+        } for sync in latest_syncs
+    ]

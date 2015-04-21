@@ -46,6 +46,8 @@ def push(self, translation_url, lang, target):
 
         with flask_app.app_context():
             translation_bundle = db.session.query(TranslationBundle).filter(TranslationBundle.translation_url_id == TranslationUrl.id, TranslationUrl.url == translation_url, TranslationBundle.language == lang, TranslationBundle.target == target).options(joinedload("translation_url")).first()
+            if translation_bundle is None:
+                return
             payload = {}
             max_date = datetime(1970, 1, 1)
             for message in translation_bundle.active_messages:
