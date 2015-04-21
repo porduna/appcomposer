@@ -86,7 +86,11 @@ def get_cached_session():
                     cache=FileCache(CACHE_DIR), heuristic=LastModifiedNoDate(require_date=False))
 
 def fromstring(xml_contents):
-    return ET.fromstring(xml_contents.encode('utf8'))
+    try:
+        return ET.fromstring(xml_contents.encode('utf8'))
+    except Exception as e:
+        logging.warning("Could not parse XML contents: %s" % e, exc_info = True)
+        raise TranslatorError("Could not XML contents: %s" % e)
 
 def get_text_from_response(response):
     """requests Response's text property automatically uses the default encoding to convert it to unicode
@@ -143,7 +147,11 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
         logging.warning("Could not reach locale URL: %s  Reason: %s" % (absolute_translation_url, e), exc_info = True)
         raise TranslatorError("Could not reach locale URL")
 
-    messages = extract_messages_from_translation(translation_messages_xml)
+    try:
+        messages = extract_messages_from_translation(translation_messages_xml)
+    except TranslatorError as e:
+        logging.warning("Could not load XML contents from %s Reason: %s" % (absolute_translation_url, e), exc_info = True)
+        raise TranslatorError("Could not load XML in %s" % absolute_translation_url)
     return absolute_translation_url, messages
 
 def extract_local_translations_url(app_url, force_local_cache = False):
