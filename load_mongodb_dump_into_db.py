@@ -21,10 +21,19 @@ with app.app_context():
         if language == 'all_ALL':
             print "Skipping all_ALL"
             continue
+        elif language.startswith('af'):
+            print "Skipping afghan and afrikaans"
+            continue
+
         try:
             translated_messages = json.loads(json.loads(translation['data']))
         except (ValueError, TypeError):
             translated_messages = json.loads(translation['data'])
+
+        if translated_messages is None or len(translated_messages) == 0:
+            print "Skipping empty"
+            continue
+
         from_developer = False
 
         translation_url, original_messages = extract_local_translations_url(app_url, force_local_cache = True)
