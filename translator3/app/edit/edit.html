@@ -37,7 +37,7 @@
 
 
 
-    <div ng-repeat="(key, translationItem) in translationInfo.translation">
+    <div ng-repeat="(key, translationItem) in translationInfo.translation track by $index" ng-init="index=$index">
         <ac-edit-message bundle="bundle" key="key" item="translationItem"></ac-edit-message>
     </div>
 

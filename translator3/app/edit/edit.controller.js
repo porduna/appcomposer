@@ -15,6 +15,8 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     // Scope related
     /////////
 
+    /* DATA */
+
     $scope.params = $routeParams;
     $scope.appurl = $routeParams.appurl;
 
@@ -32,6 +34,11 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     /* METHODS */
 
     $scope.changeSourceLanguage = changeSourceLanguage;
+
+    /* EVENTS */
+
+    // Event to go to the next item.
+    $scope.$on("edit-go-next", onEditGoNext);
 
     /////////
     // Implementations
@@ -68,5 +75,15 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     function onSourceLanguageChangeDismissed() {
         $log.debug("[onSourceLanguageChangeDismissed]");
     } // !onSourceLanguageChangeDismissed
+
+
+    /**
+     * Switches the active message from the one specified by the event,
+     * to the next one.
+     * @param args
+     */
+    function onEditGoNext(args, item) {
+        $scope.$broadcast("edit-message-focused", {index: item.index + 1})
+    } // !onMessageEditGoNext
 
 } // !EditController

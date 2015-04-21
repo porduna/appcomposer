@@ -76,9 +76,14 @@ function EditMessageController($scope, $log, $resource) {
         $log.debug("[onEditMessageFocused]");
 
         var key = args.key;
+        var index = args.index;
 
-        if($scope.key != key)
+        if( (key && $scope.key == key) || (index && $scope.index == index) ) {
+            $scope.messageActive = true;
+        }
+        else {
             $scope.messageActive = false;
+        }
     } // !onEditMessageFocused
 
     /**
@@ -100,6 +105,10 @@ function EditMessageController($scope, $log, $resource) {
         $log.debug("[EditMessageController/onChange]");
         if (!isSaved()) {
             // We should query a server-side update.
+
+            // Go to the next item; raise a go-next event.
+            debugger;
+            $scope.$parent.$emit("edit-go-next", {index: $scope.$parent.index});
 
             $scope.status.saving = true;
             $scope.savingValue = $scope.currentValue;
