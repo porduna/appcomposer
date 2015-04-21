@@ -19,7 +19,10 @@ function initialize($log, $location) {
 
     var src = window.location.origin + window.location.pathname;
 
+    // !!!! WARNING !!!!
+    // This assumes we serve the production API from whatever/ and the statics from /whatever/web.
     src = src.split('/');
+    src.pop();
     src.pop();
     src = src.join('/');
 
