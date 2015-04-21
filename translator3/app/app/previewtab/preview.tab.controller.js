@@ -50,6 +50,9 @@ function PreviewTabController($scope, $log, $sce) {
     } // !onPreviewSelected
 
     function onSelectedTargetChanged(newval, oldval) {
+        if(newval == "en_ALL" && oldval == undefined) {
+            return;
+        }
         if(newval != oldval) {
             // Refresh the preview.
             onSetPreviewUrl(undefined, $scope.$parent.appurl);
