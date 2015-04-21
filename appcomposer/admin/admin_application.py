@@ -39,6 +39,7 @@ def initialize_admin_component(app):
     admin.add_view(RedirectView('index', name=lazy_gettext('Back'), url = 'back', endpoint = 'admin.back'))
 
     category_translator = lazy_gettext("Translator")
+    admin.add_view(TranslationApplicationView(name = lazy_gettext('Translation apps'), category = category_translator, endpoint = 'admin.translation-apps'))
     admin.add_view(TranslationBundleView(name = lazy_gettext('Translation bundles'), category = category_translator, endpoint = 'admin.translation-bundles'))
     admin.add_view(TranslationMessageHistoryView(name = lazy_gettext('Translation history'), category = category_translator, endpoint = 'admin.translation-history'))
     admin.add_view(KeySuggestionsView(name = lazy_gettext('Suggestions by key'), category = category_translator, endpoint = 'admin.suggestions-key'))
@@ -228,6 +229,11 @@ class GoLabOAuthUserView(AdminModelView):
 
     def __init__(self, **kwargs):
         super(GoLabOAuthUserView, self).__init__(models.GoLabOAuthUser, db.session, **kwargs)
+
+class TranslationApplicationView(AdminModelView):
+
+    def __init__(self, **kwargs):
+        super(TranslationApplicationView, self).__init__(models.TranslatedApp, db.session, **kwargs)
 
 class TranslationBundleView(AdminModelView):
     column_searchable_list = ('language', 'target')
