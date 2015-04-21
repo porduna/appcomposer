@@ -1,4 +1,4 @@
-<div class="row" ng-controller="TranslationsTabCtrl">
+<div class="row" ng-controller="TranslationsTabController">
 
     <div ng-if="status.error" class="ac-translations-tab-error">
         <div class="alert alert-danger">
@@ -50,11 +50,17 @@
 
             <dl class="" style="padding-top: 1em">
 
-                <dt ac-translate-me=>URL</dt>
+                <dt ac-translate-me>URL</dt>
                 <dd>{{ appinfo["url"] }}</dd>
 
+                <dt ac-translate-me>Created:</dt>
+                <dd>{{ (appinfo.translations[selected_target.lang].targets["ALL"].creation_date|date) || "N/A" }}</dd>
+
                 <dt ac-translate-me>Last modified:</dt>
-                <dd>{{ selected.target_info["modified_date"]|date }}</dd>
+                <dd>{{ (appinfo.translations[selected_target.lang].targets["ALL"].modification_date|date) || "N/A" }}</dd>
+
+                <dt ac-translate-me>Translated:</dt>
+                <dd>{{ translatedPercent(selected_target.lang) }}</dd>
 
             </dl>
         </div>

@@ -191,7 +191,7 @@ label {
 
 
 
-/* ERROR MESSAGES */
+/* ERROR AND LOADING MESSAGES */
 
 .alert.alert-danger {
     border: none;
@@ -207,6 +207,15 @@ label {
     background-color: rgb(240, 200, 200);
     border: 0px solid black;
     padding: 5px;
+}
+
+.ac-loading {
+    font-size: 1.5em;
+    background-color: rgb(230, 230, 200);
+
+    margin-left: -5px;
+    margin-right: -5px;
+    padding: 7px 15px 15px 7px;
 }
 
 

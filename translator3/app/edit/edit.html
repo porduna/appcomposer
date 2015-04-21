@@ -1,8 +1,8 @@
 <div class="well">
 
     <h1>
-        <img class="app-title-thumb img-thumbnail" ng-src="{{ appinfo.app_thumb }}"></img>
-        <span>{{ appinfo.name }} - Edit Translation</span>
+        <img class="app-title-thumb img-thumbnail" ng-src="{{ appinfo.app_thumb || 'images/app_placeholder.png' }}"></img>
+        <span>{{ appinfo.name || 'Unregistered Application' }} - Edit Translation</span>
 
         <a class="ac-header-right header-button-wrapper" href="#/app/{{ appurl }}">
             <label for="back-btn" class="header-button-label">Back</label>
@@ -17,28 +17,70 @@
 
     </p>
 
+        <div ng-if="status.error" class="ac-translations-tab-error">
+            <div class="alert alert-danger">
+                <h3>Unfortunately, it was not possible to load the specified application or translation.</h3>
 
-    <div class="row">
-        <div class="col-lg-12" style="margin-bottom: 10px">
-            <div class="col-lg-5" style="text-align: center">
-                <h3>{{ all_languages[bundle.srclang] }}</h3>
+                <p>
+                    The application might be invalid or not exist, or there could be a server or network error. You
+                    may try again later, or translate a different application.
+                    <a class="btn btn-primary" href="#/apps">Go back to the Applications List</a>
+                </p>
+                <br>
 
-                <!-- For now, disable the CHANGE SOURCE LANGUAGE button -->
-                <!--
-                    <button class="btn btn-subtle ac-btn-left" ng-click="changeSourceLanguage()" class="ac-edit-change-source">Change source language</button>
-                -->
-            </div>
+                <div class="ac-error-description">
+                    <p>
+                        <strong>The error is:</strong>
+                    </p>
 
-            <div class="col-lg-7" style="text-align: center">
-                <h3>{{ all_languages[bundle.targetlang] }}</h3>
+                    <table style="padding-top: 20px">
+                        <tr>
+                            <td><strong>HTTP code:</strong></td>
+                            <td>{{ status.error.code }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Message:<strong></td>
+                            <td>{{ status.error.message }}</td>
+                        </tr>
+                    </table>
+                </div>
+
             </div>
         </div>
-    </div>
+
+
+        <!-- Content -->
+        <div ng-if="!status.error">
+
+            <div class="row">
+                <div class="col-lg-12" style="margin-bottom: 10px">
+                    <div class="col-lg-5" style="text-align: center">
+                        <h3>{{ all_languages[bundle.srclang] }}</h3>
+
+                        <!-- For now, disable the CHANGE SOURCE LANGUAGE button -->
+                        <!--
+                            <button class="btn btn-subtle ac-btn-left" ng-click="changeSourceLanguage()" class="ac-edit-change-source">Change source language</button>
+                        -->
+                    </div>
+
+                    <div class="col-lg-7" style="text-align: center">
+                        <h3>{{ all_languages[bundle.targetlang] }}</h3>
+                    </div>
+                </div>
+            </div>
 
 
 
-    <div ng-repeat="(key, translationItem) in translationInfo.translation track by $index" ng-init="index=$index">
-        <ac-edit-message bundle="bundle" key="key" item="translationItem"></ac-edit-message>
-    </div>
+            <div ng-repeat="(key, translationItem) in translationInfo.translation track by $index" ng-init="index=$index">
+                <ac-edit-message bundle="bundle" key="key" item="translationItem"></ac-edit-message>
+            </div>
+
+            <div ng-show="translationInfo.translation == undefined">
+                <div class="ac-loading">
+                    <i class="fa fa-spinner fa-spin"/> Loading, please wait...
+                </div>
+            </div>
+
+        </div> <!-- Endof content -->
 
 </div>

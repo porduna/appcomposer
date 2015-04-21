@@ -1,8 +1,8 @@
 <div class="well">
 
         <h1>
-            <img class="app-title-thumb img-thumbnail" ng-src="{{ appinfo.app_thumb }}"></img>
-            <span>{{ appinfo.name }}</span>
+            <img class="app-title-thumb img-thumbnail" ng-src="{{ appinfo.app_thumb || 'images/app_placeholder.png' }}"></img>
+            <span>{{ appinfo.name || "Unregistered Application" }}</span>
 
             <div class="ac-header-right">
                 <a href="#/apps" class="seamless-anchor">

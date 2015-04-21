@@ -20,6 +20,8 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     $scope.params = $routeParams;
     $scope.appurl = $routeParams.appurl;
 
+    $scope.status = {}; // For holding error status and the like.
+
     $scope.bundle = {};
     $scope.bundle.appurl = $scope.appurl;
     $scope.bundle.srclang = "all_ALL";
@@ -30,6 +32,9 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     $scope.appinfo = Appinfo.get({app_url: $scope.appurl});
     $scope.translationInfo = TranslationInfo.get({app_url: $scope.appurl, srclang: $scope.bundle.srclang,
         srcgroup: $scope.bundle.srcgroup, lang: $scope.bundle.targetlang, target: $scope.bundle.targetgroup});
+
+    $scope.translationInfo.$promise.then(onGetSuccess, onGetError);
+    $scope.appinfo.$promise.then(onGetSuccess, onGetError);
 
     /* METHODS */
 
@@ -85,5 +90,21 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     function onEditGoNext(args, item) {
         $scope.$broadcast("edit-message-focused", {index: item.index + 1})
     } // !onMessageEditGoNext
+
+
+    function onGetSuccess() {
+
+    } // !onThenSuccess
+
+    /**
+     * To be called when the Appinfo or Translation requests fail.
+     */
+    function onGetError() {
+        $log.error("Handling API request error");
+        $scope.status.error = {};
+        $scope.status.error.message = error.data;
+        $scope.status.error.code = error.status;
+        $scope.status.error.statusText = error.statusText;
+    } // !onGetError
 
 } // !EditController
