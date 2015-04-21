@@ -9,11 +9,26 @@ angular
         'datatables',
         'truncate',
         'selectionModel',
-        'ui.bootstrap.modal',
-        'ui.gravatar'
+        'ui.bootstrap.modal'
     ])
-    .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig]);
+    .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig])
+    .run(['$log', '$location', initialize]);
 
+function initialize($log, $location) {
+    $log.debug("INITIALIZING...");
+
+    var src = window.location.origin + window.location.pathname;
+
+    src = src.split('/');
+    src.pop();
+    src = src.join('/');
+
+    window.APP_DYN_ROOT = src + '/';
+
+    if(window.APP_DYN_ROOT.search("http://localhost:9000") == 0 || window.APP_DYN_ROOT.search("http://localhost:5000") == 0)
+        window.APP_DYN_ROOT = "http://localhost:5000/translator/";
+
+} // !initialize
 
 function routeConfig($routeProvider) {
     $routeProvider
