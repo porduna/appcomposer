@@ -88,6 +88,7 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
      * @param args
      */
     function onEditGoNext(args, item) {
+        $log.debug("Broadcasting edit-message-focused from EDIT. We should focus: " + (item.index + 1));
         $scope.$broadcast("edit-message-focused", {index: item.index + 1})
     } // !onMessageEditGoNext
 

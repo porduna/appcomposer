@@ -61,7 +61,9 @@ function EditMessageController($scope, $log, $resource) {
         // so that the fake onChange() call can detect it.
         $scope.setCurrentTextValue($scope.selected.suggestion.target);
 
-        $scope.focusTextInput();
+        // *Disabled for now, because we are meant to focus the next item.
+        // $scope.focusTextInput();
+
         $scope.selected.suggestion = "";
 
         // Trigger a fake onChange event.
@@ -78,8 +80,14 @@ function EditMessageController($scope, $log, $resource) {
         var key = args.key;
         var index = args.index;
 
-        if( (key && $scope.key == key) || (index && $scope.index == index) ) {
+        $log.debug("Index: " + index);
+
+        if( (key && $scope.key == key) || (index && $scope.$parent.index == index) ) {
             $scope.messageActive = true;
+
+            $log.debug("WE SHOULD SELECT: " + $scope.key + " " + index);
+            window.lastScope = $scope;
+            $scope.focusTextInput();
         }
         else {
             $scope.messageActive = false;
@@ -107,8 +115,13 @@ function EditMessageController($scope, $log, $resource) {
             // We should query a server-side update.
 
             // Go to the next item; raise a go-next event.
-            debugger;
-            $scope.$parent.$emit("edit-go-next", {index: $scope.$parent.index});
+            $log.debug("Emitting edit-go-next event");
+
+            // If we are saving and apparently we remain the active message, we are done here, so
+            // We want to automatically skip to the next.
+            if($scope.messageActive) {
+                $scope.$parent.$emit("edit-go-next", {index: $scope.$parent.index});
+            }
 
             $scope.status.saving = true;
             $scope.savingValue = $scope.currentValue;
