@@ -41,7 +41,9 @@ function acEditMessage() {
         }
 
         function focusTextInput() {
-            input.focus();
+            if($(input).is(':focus') == false) {
+                input.focus();
+            }
         }
 
     } // !acEditMessageLink
