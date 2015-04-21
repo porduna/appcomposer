@@ -5,8 +5,11 @@
     {% endif %}
 {% endblock %}
 {% block body %}
+    <h1>Latest synchronizations</h1>
     <br>
     <p>Current local date: {{ current_datetime.ctime() }}</p>
+    <br>
+    <p>Each synchronization downloads all the applications of the Go-Lab repository and registered applications in the App Composer, so as to verify what are the current messages, whether an application can be translatable or not.</p>
     <table class="table">
         <thead>
             <tr>
