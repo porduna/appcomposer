@@ -20,6 +20,24 @@ def obtain_groups():
     groups["14-18"] = gettext("Adolescence (age 14-18)")
     return groups
 
+# Taken from http://en.wikipedia.org/wiki/Languages_of_the_European_Union, April 2015
+OFFICIAL_EUROPEAN_UNION_LANGUAGES = ['bg', 'hr', 'cs', 'da', 'nl', 'en', 'et', 'fi', 'fr', 'de', 'el', 'hu', 'ga', 'it', 'lv', 'lt', 'mt', 'pl', 'pt', 'ro', 'sk', 'sl', 'es', 'sv']
+SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES = ['eu', 'ca', 'gl', 'gd', 'cy']
+OTHER_LANGUAGES = [
+    # The following languages are in Graasp
+    'uk', # Ukranian
+    'tr', # Turkish
+    'sr', # Serbian language
+    'ru', # Russian language
+    'be', # Belarussian
+    # The following languages are too widely used
+    'ar', # Arabic
+    'zh', # Chinese
+    'hi', # Hindi
+]
+
+ALL_LANGUAGES = OFFICIAL_EUROPEAN_UNION_LANGUAGES + SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
+
 def obtain_languages():
     """
     Obtains the languages (without the groups) that are available for translation,
@@ -29,7 +47,19 @@ def obtain_languages():
 
     :return:
     """
-    languages = babel.core.Locale("en", "US").languages.items()
+    babel_supported_languages = babel.core.Locale("en", "US").languages.items()
+    languages = []
+    for code, lang in babel_supported_languages:
+        golab_supported = False
+        for supported_code in ALL_LANGUAGES:
+            if code == supported_code:
+                golab_supported = True
+                break
+        if golab_supported:
+            languages.append( (code, lang) )
+    if False:
+        print "Babel Supported languages after filter: %s" % len(languages)
+        print "Go-Lab Supported languages: %s" % len(ALL_LANGUAGES)
     languages.sort(key=lambda it: it[1])
 
     # TODO: Currently, we filter languages which contain "_" in their code so as to simplify.
