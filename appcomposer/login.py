@@ -224,7 +224,7 @@ def graasp_oauth_login_redirect(next_url):
         user_data = response.json()
     except ValueError:
         logging.error("Error logging in user with data: %r" % response.text, exc_info = True)
-        return redirect("'.graasp_oauth_login')
+        return redirect(url_for('.graasp_oauth_login'))
     user = db.session.query(GoLabOAuthUser).filter_by(email = user_data['email']).first()
     if user is None:
         user = GoLabOAuthUser(email = user_data['email'], display_name = user_data['username'])
