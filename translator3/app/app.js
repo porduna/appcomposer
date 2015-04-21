@@ -19,14 +19,19 @@ function initialize($log, $location) {
 
     var src = window.location.origin + window.location.pathname;
 
-    src = src.split('/');
-    src.pop();
-    src = src.join('/');
-
-    window.APP_DYN_ROOT = src + '/';
-
-    if(window.APP_DYN_ROOT.search("http://localhost:9000") == 0 || window.APP_DYN_ROOT.search("http://localhost:5000") == 0)
+    if(src.search("http://localhost:9000") == 0 || src.search("http://localhost:5000") == 0)
         window.APP_DYN_ROOT = "http://localhost:5000/translator/";
+    else {
+
+        // !!!! WARNING !!!!
+        // This assumes we serve the production API from whatever/ and the statics from /whatever/web.
+        src = src.split('/');
+        src.pop();
+        src.pop();
+        src = src.join('/');
+
+        window.APP_DYN_ROOT = src + '/';
+    }
 
 } // !initialize
 

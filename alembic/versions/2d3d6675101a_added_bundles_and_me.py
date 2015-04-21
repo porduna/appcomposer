@@ -53,6 +53,7 @@ def upgrade():
     for pos, approw in enumerate(approws):
         if pos % 10 == 0 and pos > 0:
             print "    %s..." % pos
+        continue
         try:
             data = json.loads(approw["data"])
             app_id = approw["id"]
