@@ -4,6 +4,7 @@ import random
 import datetime
 import urllib2
 import requests
+import logging
 
 from hashlib import new as new_hash
 
@@ -217,7 +218,13 @@ def graasp_oauth_login_redirect(next_url):
         'Authorization': 'Bearer {}'.format(access_token),
     }
 
-    user_data = requests.get('http://graasp.eu/users/me', headers = headers).json()
+
+    response = requests.get('http://graasp.eu/users/me', headers = headers)
+    try:
+        user_data = response.json()
+    except ValueError:
+        logging.error("Error logging in user with data: %r" % response.text, exc_info = True)
+        return redirect("'.graasp_oauth_login')
     user = db.session.query(GoLabOAuthUser).filter_by(email = user_data['email']).first()
     if user is None:
         user = GoLabOAuthUser(email = user_data['email'], display_name = user_data['username'])
