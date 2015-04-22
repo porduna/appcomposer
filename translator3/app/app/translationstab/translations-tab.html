@@ -51,7 +51,7 @@
             <dl class="" style="padding-top: 1em">
 
                 <dt ac-translate-me>URL</dt>
-                <dd style="word-break: break-all"><a href="{{ appinfo["url"] }}">{{ appinfo["url"] }}</a></dd>
+                <dd style="word-break: break-all"><a ng-href="{{ appinfo.url }}">{{ appinfo["url"] }}</a></dd>
 
                 <dt ac-translate-me>Created:</dt>
                 <dd>{{ (appinfo.translations[selected_target.lang].targets["ALL"].creation_date|date) || "N/A" }}</dd>
