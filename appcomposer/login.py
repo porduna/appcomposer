@@ -205,14 +205,16 @@ def graasp_oauth_login():
     next_url = request.args.get('next')
     if next_url is None:
         return "No next= provided"
-    redirect_back_url = url_for('graasp_oauth_login_redirect', _external = True, next_url = requests.utils.quote(next_url, ''))
+    session['oauth_next'] = next_url
+    redirect_back_url = url_for('graasp_oauth_login_redirect', _external = True)
     return redirect('http://graasp.eu/authorize?client_id=%s&redirect_uri=%s' % (PUBLIC_APPCOMPOSER_ID, requests.utils.quote(redirect_back_url, '')))
 
-@app.route('/graasp/oauth/redirect/<path:next_url>')
-def graasp_oauth_login_redirect(next_url):
+@app.route('/graasp/oauth/redirect/')
+def graasp_oauth_login_redirect():
     access_token = request.args.get('access_token')
     refresh_token = request.args.get('refresh_token')
     timeout = request.args.get('expires_in')
+    next_url = session.get('oauth_next')
 
     headers = {
         'Authorization': 'Bearer {}'.format(access_token),
@@ -224,7 +226,7 @@ def graasp_oauth_login_redirect(next_url):
         user_data = response.json()
     except ValueError:
         logging.error("Error logging in user with data: %r" % response.text, exc_info = True)
-        return redirect(url_for('.graasp_oauth_login'))
+        raise ValueError("Error logging in user with data: %r" % response.text)
     user = db.session.query(GoLabOAuthUser).filter_by(email = user_data['email']).first()
     if user is None:
         user = GoLabOAuthUser(email = user_data['email'], display_name = user_data['username'])
