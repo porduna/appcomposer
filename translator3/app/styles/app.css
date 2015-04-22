@@ -237,10 +237,22 @@ table.dataTable tbody tr[ng-click]:hover {
 /* PREVIEW IFRAME */
 
 .ac-preview-iframe {
-    height: 100%;
+    width: 100%;
 }
 
 
 .ac-preview-iframe-wrapper {
 
+}
+
+
+
+/* APP DETAILS */
+
+.ac-translation-percent {
+    margin: 0px;
+    border-radius: 0px;
+    border: 1px solid rgb(125, 125, 209);
+    box-shadow: none;
+    max-width: 400px;
 }
