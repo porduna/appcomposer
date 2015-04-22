@@ -208,7 +208,7 @@ def graasp_oauth_login():
     redirect_back_url = url_for('graasp_oauth_login_redirect', _external = True, next_url = requests.utils.quote(next_url, ''))
     return redirect('http://graasp.eu/authorize?client_id=%s&redirect_uri=%s' % (PUBLIC_APPCOMPOSER_ID, requests.utils.quote(redirect_back_url, '')))
 
-@app.route('/graasp/oauth/redirect/<path:next_url>/')
+@app.route('/graasp/oauth/redirect/<path:next_url>')
 def graasp_oauth_login_redirect(next_url):
     access_token = request.args.get('access_token')
     refresh_token = request.args.get('refresh_token')
