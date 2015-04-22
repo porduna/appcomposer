@@ -3,6 +3,25 @@ body {
     margin: 30px;
 }
 
+/* Nobile-only screen size. We remove the paddings etc. */
+@media (max-width: 480px) {
+    .container {
+        padding: 0;
+        margin: 0;
+    }
+
+    .container-fluid {
+        padding: 0;
+        margin: 0;
+    }
+
+    body {
+        margin: 0px;
+        padding: 0px;
+    }
+}  /* ! mobile-only media query */
+
+
 .my-app-thumbnail-img {
     width: 35px;
     height: 35px;
@@ -212,3 +231,16 @@ table.dataTable tbody tr[ng-click]:hover {
     float: right;
 }
 
+
+
+
+/* PREVIEW IFRAME */
+
+.ac-preview-iframe {
+    height: 100%;
+}
+
+
+.ac-preview-iframe-wrapper {
+
+}

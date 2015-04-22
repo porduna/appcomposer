@@ -30,7 +30,7 @@
 
     <div ng-show="shouldDisplayDetails()" class="ac-edit-message-details">
             <div class="form-group">
-                <div class="col-xs-push-6 col-xs-6">
+                <div class="col-xs-push-0 col-xs-12 col-md-push-6 col-md-6">
                     <label class="control-label">
                         Suggested automatic translations:
                     </label>
@@ -43,7 +43,7 @@
             </div>
             <div class="row">
                 <div class="col-xs-push-10 col-xs-2">
-                <input type="text" ng-click="onDetailsClose()" class="btn btn-sm btn-primary ac-edit-message-details-close-btn"
+                <textarea ng-click="onDetailsClose()" class="btn btn-sm btn-primary ac-edit-message-details-close-btn"
                        value="Close"/>
                 </div>
             </div>

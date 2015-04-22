@@ -11,7 +11,7 @@ function TranslateAppController($scope, $rootScope, $resource, $location) {
     // -----------
 
     // Handle authentication: If the current URL is not auth'ed, redirect.
-    $scope.auth_result = $resource(APP_DYN_ROOT + "api/authn/:url").get({url: $location.absUrl()});
+    $scope.auth_result = $resource(APP_DYN_ROOT + "api/authn").get({app_url: $location.absUrl()});
     $scope.auth_result.$promise.then(onAuthResultAvailable);
 
     // -----------
