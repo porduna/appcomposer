@@ -17,6 +17,7 @@ from appcomposer import db
 from .models import User, GoLabOAuthUser
 
 from .application import app
+from .utils import sendmail
 from .babel import gettext, lazy_gettext
 
 
@@ -223,7 +224,9 @@ def graasp_oauth_login_redirect():
 
     response = requests.get('http://graasp.eu/users/me', headers = headers)
     if response.status_code == 500:
-        app.logger.error("There has been an error trying to log in with access token: %s and refresh_token %s; attempting to go to %s. Response: %s" % (access_token, refresh_token, next_url, response.text))
+        error_msg = "There has been an error trying to log in with access token: %s and refresh_token %s; attempting to go to %s. Response: %s" % (access_token, refresh_token, next_url, response.text)
+        app.logger.error(error_msg)
+        sendmail("Error logging in", error_msg)
         return render_template("error_login.html")
 
     try:

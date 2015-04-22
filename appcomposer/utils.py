@@ -2,7 +2,33 @@ import re
 import json
 import traceback
 import urlparse
+import smtplib
 from flask import request
+
+def sendmail(subject, body):
+    from appcomposer.application import app
+    MAIL_TPL = """From: App Composer <%(sender)s>
+    To: %(recipients)s
+    Subject: %(subject)s
+
+    %(body)s
+    """
+
+
+    smtp_server = app.config.get("SMTP_SERVER")
+    from_addr = app.config.get("SENDER_ADDR")
+    to_addrs = app.config.get("ADMINS")
+    if not smtp_server or not from_addr or not to_addrs:
+        return
+
+    server = smtplib.SMTP(smtp_server)
+
+    server.sendmail(from_addr, to_addrs, MAIL_TPL % {
+                'sender'     : from_addr,
+                'recipients' : to_addrs,
+                'subject'    : subject,
+                'body'       : body.encode('utf8')
+        })
 
 def extract_base_url(url):
     parsed = urlparse.urlparse(url)
