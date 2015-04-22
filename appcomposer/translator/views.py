@@ -3,6 +3,7 @@ New translator
 """
 
 import os
+import time
 import json
 import zipfile
 import StringIO
@@ -22,7 +23,8 @@ from flask.ext.cors import cross_origin
 from wtforms.fields.html5 import URLField
 from wtforms.validators import url, required
 
-from appcomposer import db
+from appcomposer.db import db
+from appcomposer.application import app
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp
 from appcomposer.login import requires_golab_login, current_golab_user
 from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
@@ -441,6 +443,20 @@ def sync_translations():
     else:
         submitted = False
     return render_template("translator/sync.html", latest_synchronizations = latest_synchronizations, since_id = since_id, submitted = submitted, current_datetime = datetime.datetime.now(), finished = finished)
+
+
+@translator_blueprint.route('/dev/sync/debug/')
+def sync_debug():
+    # Just in case the debug value changes during the load of modules
+    if not app.config['DEBUG']:
+        return "Not in debug mode!"
+
+    now = datetime.datetime.now()
+    t0 = time.time()
+    from appcomposer.translator.translation_listing import synchronize_apps_no_cache, synchronize_apps_cache
+    synchronize_apps_no_cache()
+    tf = time.time()
+    return "<html><body>synchronization process finished (%.2f seconds): %s </body></html>" % (tf - t0, now)
 
 @translator_blueprint.route('/dev/urls/')
 @public

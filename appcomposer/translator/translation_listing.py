@@ -237,7 +237,8 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
             repo_app.failing = True
             repo_app.failing_since = now
         else:
-            repo_app.failing = False
+            if repo_app.failing:
+                repo_app.failing = False
 
     default_user = get_golab_default_user()
 
@@ -250,7 +251,7 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
                                 original_messages = original_messages, from_developer = True)
 
         translation_percent = retrieve_translations_percent(translation_url, original_messages)
-        if repo_app is not None:
+        if repo_app is not None and translation_percent != repo_app.translation_percent:
             repo_app.translation_percent = json.dumps(translation_percent)
     
     db.session.commit()
