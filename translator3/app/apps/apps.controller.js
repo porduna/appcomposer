@@ -4,7 +4,7 @@ angular
 
 
 function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, DTColumnDefBuilder) {
-    $scope.apps = $resource(APP_DYN_ROOT + "api/translations").query();
+    $scope.apps = $resource(APP_DYN_ROOT + "api/apps/repository").query();
     $scope.dt = {};
 
     $scope.selected = {};

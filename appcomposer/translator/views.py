@@ -63,35 +63,20 @@ def api(func):
 def translator_index():
     return redirect(url_for('.static', filename='index.html'))
 
-@translator_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>", methods=["POST"])
-@requires_golab_login
-@cross_origin()
-@api
-def create_language(appurl, targetlang):
-    # TODO: this method is not needed
-    return jsonify(**{"result": "ok"})
 
-@translator_blueprint.route("/api/apps/<path:appurl>/bundles/<targetlang>/<targetgroup>", methods=["POST"])
-@requires_golab_login
-@cross_origin()
-@api
-def create_group(appurl, targetlang, targetgroup):
-    # TODO: this method is not needed
-    return jsonify(**{"result": "ok"})
-
-
-@translator_blueprint.route("/api/authn/<path:cur_url>")
+@translator_blueprint.route("/api/user/authenticate")
 @public
 @cross_origin()
 @api
-def check_authn(cur_url):
+def check_authn():
+    cur_url = request.values.get("cur_url")
     golab_user = current_golab_user()
     if golab_user:
         return jsonify(**{ "result" : "ok", "display_name" : golab_user.display_name })
     else:
         return jsonify(**{ "result" : "fail", "redirect" : url_for('graasp_oauth_login', next = cur_url, _external = True) })
 
-@translator_blueprint.route("/api/default-language")
+@translator_blueprint.route("/api/user/default_language")
 @public
 @cross_origin()
 @api
@@ -113,7 +98,7 @@ def select_translations():
     languages.sort(lambda x1, x2 : cmp(x1[1], x2[1]))
     return render_template("translator/select_translations.html", targets = targets, languages = languages)
 
-@translator_blueprint.route('/api/translations')
+@translator_blueprint.route('/api/apps/repository')
 @public
 @cross_origin()
 @api
@@ -225,15 +210,12 @@ def api_app():
     }
     return jsonify(**app_data)
 
-@translator_blueprint.route('/translate')
-@translator_blueprint.route('/api/apps/')
+@translator_blueprint.route('/api/apps/bundles/<language>/<target>')
 @public
 @cross_origin()
 @api
-def api_translate():
+def api_translate(language, target):
     app_url = request.args.get('app_url')
-    language = request.args.get('lang')
-    target = request.args.get('target')
 
     errors = []
     if not app_url:
