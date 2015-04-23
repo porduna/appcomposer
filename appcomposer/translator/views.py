@@ -277,9 +277,14 @@ def api_translate(language, target):
         'name' : name,
         'translation' : translation,
         'modificationDate': '2015-12-12T12:00:01Z',
-        'modificationDateByOther': '2015-12-12T12:00:01Z'
+        'modificationDateByOther': '2015-12-12T12:00:01Z',
+        'collaborators': [
+            {
+                'name': 'Whoever',
+                'md5': 'thisisafakemd5'
+            }
+        ]
     }
-
 
     if False:
         response = json.dumps(response, indent = 4)
