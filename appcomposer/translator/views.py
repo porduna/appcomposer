@@ -159,6 +159,25 @@ def api_languages():
 def api_groups():
     return jsonify(**obtain_groups())
 
+@translator_blueprint.route("/api/apps/bundles/<language>/<target>/checkModifications", methods=["GET"])
+@requires_golab_login
+@cross_origin()
+@api
+def check_modifications(language, target):
+    """
+    Retrieves the last modification date and the active users.
+    """
+    app_url = request.values.get('app_url')
+    key = request.values.get('key')
+
+    data = {
+        "modificationDate": "2015-07-07T23:20:08Z",
+        "modificationDateByOther": "2015-07-07T23:20:08Z"
+    }
+
+    return jsonify(**data)
+
+
 @translator_blueprint.route("/api/apps/bundles/<language>/<target>/updateMessage", methods=["GET", "PUT", "POST"])
 @requires_golab_login
 @cross_origin()
@@ -169,7 +188,7 @@ def bundle_update(language, target):
     value = request.values.get("value")
 
     if key is None or value is None:
-        return jsonify(**{"result":"error"})
+        return jsonify(**{"result": "error"})
 
     user = current_golab_user()
     translation_url, original_messages = extract_local_translations_url(app_url, force_local_cache = True)
@@ -257,6 +276,8 @@ def api_translate(language, target):
         'app_thumb' : app_thumb,
         'name' : name,
         'translation' : translation,
+        'modificationDate': '2015-12-12T12:00:01Z',
+        'modificationDateByOther': '2015-12-12T12:00:01Z'
     }
 
 
