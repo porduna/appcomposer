@@ -113,7 +113,17 @@ class MicrosoftTranslator(AbstractTranslator):
         
         return translations
 
-TRANSLATORS = [ MicrosoftTranslator() ]
+class GoogleTranslator(AbstractTranslator):
+    name = 'google'
+
+    def _translate(self, texts, language, origin_language = 'en'):
+        """ [ 'Hello' ], 'es' => { 'Hello' : 'Hola' } """
+        # We don't provide anything and asynchronously populate the database
+        return {}
+
+TRANSLATORS = [ MicrosoftTranslator(), 
+    # GoogleTranslator() 
+]
 
 def translate_texts(texts, language, origin_language = 'en'):
     """ translate_texts(['Hello', 'Bye'], 'es') -> { 'Hello' : {'Hola' : 1}, 'Bye' : { 'Adios' : 1}} """
