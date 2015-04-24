@@ -121,8 +121,9 @@ class GoogleTranslator(AbstractTranslator):
         # We don't provide anything and asynchronously populate the database
         return {}
 
-TRANSLATORS = [ MicrosoftTranslator(), 
-    # GoogleTranslator() 
+TRANSLATORS = [ 
+    MicrosoftTranslator(), 
+    GoogleTranslator() 
 ]
 
 def translate_texts(texts, language, origin_language = 'en'):
