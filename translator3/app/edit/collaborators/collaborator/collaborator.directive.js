@@ -9,7 +9,9 @@ function acCollaborator() {
         templateUrl: "edit/collaborators/collaborator/collaborator.directive.html",
         controller: "CollaboratorController",
         controllerAs: "CollaboratorsController",
-        scope: {}
+        scope: {
+            collaborator: "=collaborator"
+        }
     };
 
     function acCollaboratorLink(scope, elem, attrs, ctrl) {
