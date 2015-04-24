@@ -462,7 +462,7 @@ class TranslationValueSuggestion(db.Model):
 
 class TranslationExternalSuggestion(db.Model):
     __tablename__ = 'TranslationExternalSuggestions'
-    __table_args__ = (UniqueConstraint('engine', 'human_key_hash', 'language'), )
+#    __table_args__ = (UniqueConstraint('engine', 'human_key_hash', 'language'), )
 
     id = db.Column(db.Integer, primary_key = True)
     engine = db.Column(db.Unicode(20), index = True)
