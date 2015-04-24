@@ -285,7 +285,6 @@ def load_google_suggestions_by_lang(active_messages, language):
             translated = gs.translate(message, language)
         except Exception as e:
             logger.warning("Google Translate stopped with exception: %s" % e, exc_info = True)
-            traceback.print_exc()
             return False
 
         if translated:
@@ -294,7 +293,6 @@ def load_google_suggestions_by_lang(active_messages, language):
             db.session.commit()
         else:
             logger.warning("Google Translate returned %r for message %r. Stopping." % (translated, message))
-            print "Google devuelve %r para %r" % (translated, message)
             return False
 
     return True
@@ -307,7 +305,6 @@ def load_all_google_suggestions():
     active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == ORIGIN_LANGUAGE, ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
 
     for language in ORDERED_LANGUAGES:
-        print "Translating to %s" % language
         should_continue = load_google_suggestions_by_lang(active_messages, language)
         if not should_continue:
             logger.info("Stopping the google suggestions API until the next cycle")
