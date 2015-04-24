@@ -271,11 +271,10 @@ def load_google_suggestions_by_lang(active_messages, language):
     existing_suggestions = set([ human_key for human_key, in db.session.query(TranslationExternalSuggestion.human_key).filter_by(engine = 'google', language = language, origin_language = ORIGIN_LANGUAGE).all() ])
 
     missing_suggestions = active_messages - existing_suggestions
-    print len(active_messages)
-    print len(existing_suggestions)
-    print list(active_messages)[:10]
-    print list(existing_suggestions)[:10]
-    print missing_suggestions
+    print "Language:", language
+    print list(active_messages)[:10], len(active_messages)
+    print list(existing_suggestions)[:10], len(existing_suggestions)
+    print "Missing:", len(missing_suggestions)
 
     for message in missing_suggestions:
         if message.strip() == '':
@@ -302,7 +301,7 @@ def load_google_suggestions_by_lang(active_messages, language):
 ORDERED_LANGUAGES = SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
 
 def load_all_google_suggestions():
-    active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == ORIGIN_LANGUAGE, ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
+    active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == 'en_ALL', ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
 
     for language in ORDERED_LANGUAGES:
         should_continue = load_google_suggestions_by_lang(active_messages, language)

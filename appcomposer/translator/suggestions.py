@@ -1,3 +1,4 @@
+import hashlib
 import traceback
 from microsofttranslator import Translator as MSTranslator, TranslateApiException as MSTranslatorApiException
 
@@ -46,10 +47,12 @@ class AbstractTranslator(object):
         """
         if not self.enabled:
             return {}, texts[:]
+        
 
         language = language.split('_')[0]
+        hashed_texts = [ hashlib.md5(text).hexdigest() for text in texts ]
 
-        suggestions = db.session.query(TranslationExternalSuggestion).filter(TranslationExternalSuggestion.engine == self.name, TranslationExternalSuggestion.human_key.in_(texts), TranslationExternalSuggestion.language == language, TranslationExternalSuggestion.origin_language == origin_language).all()
+        suggestions = db.session.query(TranslationExternalSuggestion).filter(TranslationExternalSuggestion.engine == self.name, TranslationExternalSuggestion.human_key_hash.in_(hashed_texts), TranslationExternalSuggestion.language == language, TranslationExternalSuggestion.origin_language == origin_language).all()
 
         remaining_texts = texts[:]
         existing_suggestions = {}
