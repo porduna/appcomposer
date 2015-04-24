@@ -261,7 +261,7 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
     db.session.commit()
     
 
-ORIGIN_LANGUAGE = 'en_ALL'
+ORIGIN_LANGUAGE = 'en'
 
 def load_google_suggestions_by_lang(active_messages, language):
     """ Attempt to translate all the messages to a language """
