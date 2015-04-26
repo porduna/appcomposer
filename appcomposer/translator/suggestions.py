@@ -58,7 +58,8 @@ class AbstractTranslator(object):
         existing_suggestions = {}
         for suggestion in suggestions:
             existing_suggestions[suggestion.human_key] = { suggestion.value : 1 }
-            remaining_texts.remove(suggestion.human_key)
+            if suggestion.human_key in remaining_texts:
+                remaining_texts.remove(suggestion.human_key)
 
         return existing_suggestions, remaining_texts
 
