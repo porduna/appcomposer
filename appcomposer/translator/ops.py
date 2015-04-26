@@ -224,15 +224,13 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
                 'number' : value_suggestion.number,
             })
 
-    original_remaining_values = [ original_messages[key] for key in original_keys if len(value_suggestions_by_key.get(key, [])) == 0 and len(key_suggestions_by_key.get(key, [])) == 0 ]
-    if original_remaining_values:
-        for human_key, suggested_values in translate_texts(original_remaining_values, language, origin_language = 'en').iteritems():
-            for key in original_keys_by_value.get(human_key, []):
-                for suggested_value, weight in suggested_values.iteritems():
-                    value_suggestions_by_key[key].append({
-                        'target' : suggested_value,
-                        'number' : weight,
-                    })
+    for human_key, suggested_values in translate_texts(original_values, language).iteritems():
+        for key in original_keys_by_value.get(human_key, []):
+            for suggested_value, weight in suggested_values.iteritems():
+                value_suggestions_by_key[key].append({
+                    'target' : suggested_value,
+                    'number' : weight,
+                })
 
     current_suggestions.append(value_suggestions_by_key)
 

@@ -2,6 +2,8 @@
 {% block head %}
     {% if since_id is not none and not finished %}
         <meta http-equiv="refresh" content="2">
+    {% else %}
+        <meta http-equiv="refresh" content="60">
     {% endif %}
 {% endblock %}
 {% block body %}

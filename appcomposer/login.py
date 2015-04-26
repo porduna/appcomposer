@@ -17,6 +17,7 @@ from appcomposer import db
 from .models import User, GoLabOAuthUser
 
 from .application import app
+from .utils import sendmail
 from .babel import gettext, lazy_gettext
 
 
@@ -205,14 +206,16 @@ def graasp_oauth_login():
     next_url = request.args.get('next')
     if next_url is None:
         return "No next= provided"
-    redirect_back_url = url_for('graasp_oauth_login_redirect', _external = True, next_url = requests.utils.quote(next_url, ''))
+    session['oauth_next'] = next_url
+    redirect_back_url = url_for('graasp_oauth_login_redirect', _external = True)
     return redirect('http://graasp.eu/authorize?client_id=%s&redirect_uri=%s' % (PUBLIC_APPCOMPOSER_ID, requests.utils.quote(redirect_back_url, '')))
 
-@app.route('/graasp/oauth/redirect/<path:next_url>/')
-def graasp_oauth_login_redirect(next_url):
+@app.route('/graasp/oauth/redirect/')
+def graasp_oauth_login_redirect():
     access_token = request.args.get('access_token')
     refresh_token = request.args.get('refresh_token')
     timeout = request.args.get('expires_in')
+    next_url = session.get('oauth_next')
 
     headers = {
         'Authorization': 'Bearer {}'.format(access_token),
@@ -220,11 +223,17 @@ def graasp_oauth_login_redirect(next_url):
 
 
     response = requests.get('http://graasp.eu/users/me', headers = headers)
+    if response.status_code == 500:
+        error_msg = "There has been an error trying to log in with access token: %s and refresh_token %s; attempting to go to %s. Response: %s" % (access_token, refresh_token, next_url, response.text)
+        app.logger.error(error_msg)
+        sendmail("Error logging in", error_msg)
+        return render_template("error_login.html")
+
     try:
         user_data = response.json()
     except ValueError:
         logging.error("Error logging in user with data: %r" % response.text, exc_info = True)
-        return redirect(url_for('.graasp_oauth_login'))
+        raise ValueError("Error logging in user with data: %r" % response.text)
     user = db.session.query(GoLabOAuthUser).filter_by(email = user_data['email']).first()
     if user is None:
         user = GoLabOAuthUser(email = user_data['email'], display_name = user_data['username'])

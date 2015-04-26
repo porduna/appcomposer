@@ -1,3 +1,4 @@
+import hashlib
 import traceback
 from microsofttranslator import Translator as MSTranslator, TranslateApiException as MSTranslatorApiException
 
@@ -46,16 +47,19 @@ class AbstractTranslator(object):
         """
         if not self.enabled:
             return {}, texts[:]
+        
 
         language = language.split('_')[0]
+        hashed_texts = [ hashlib.md5(text).hexdigest() for text in texts ]
 
-        suggestions = db.session.query(TranslationExternalSuggestion).filter(TranslationExternalSuggestion.engine == self.name, TranslationExternalSuggestion.human_key.in_(texts), TranslationExternalSuggestion.language == language, TranslationExternalSuggestion.origin_language == origin_language).all()
+        suggestions = db.session.query(TranslationExternalSuggestion).filter(TranslationExternalSuggestion.engine == self.name, TranslationExternalSuggestion.human_key_hash.in_(hashed_texts), TranslationExternalSuggestion.language == language, TranslationExternalSuggestion.origin_language == origin_language).all()
 
         remaining_texts = texts[:]
         existing_suggestions = {}
         for suggestion in suggestions:
             existing_suggestions[suggestion.human_key] = { suggestion.value : 1 }
-            remaining_texts.remove(suggestion.human_key)
+            if suggestion.human_key in remaining_texts:
+                remaining_texts.remove(suggestion.human_key)
 
         return existing_suggestions, remaining_texts
 
@@ -113,7 +117,18 @@ class MicrosoftTranslator(AbstractTranslator):
         
         return translations
 
-TRANSLATORS = [ MicrosoftTranslator() ]
+class GoogleTranslator(AbstractTranslator):
+    name = 'google'
+
+    def _translate(self, texts, language, origin_language = 'en'):
+        """ [ 'Hello' ], 'es' => { 'Hello' : 'Hola' } """
+        # We don't provide anything and asynchronously populate the database
+        return {}
+
+TRANSLATORS = [ 
+    MicrosoftTranslator(), 
+    GoogleTranslator() 
+]
 
 def translate_texts(texts, language, origin_language = 'en'):
     """ translate_texts(['Hello', 'Bye'], 'es') -> { 'Hello' : {'Hola' : 1}, 'Bye' : { 'Adios' : 1}} """

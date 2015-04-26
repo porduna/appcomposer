@@ -43,12 +43,17 @@ cel.conf.update(
             'schedule': crontab(hour=3, minute=0),
             'args': ()
         },
+        'load_google_suggestions' : {
+            'task' : 'load_google_suggestions',
+            'schedule' : crontab(hour=5, minute=0),
+            'args' : ()
+        }
     }
 )
 
 
 from appcomposer import app as my_app
-from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache
+from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, load_all_google_suggestions
 from appcomposer.translator.mongodb_pusher import push, sync
 
 @cel.task(name='synchronize_apps_cache', bind=True)
@@ -72,4 +77,9 @@ def push_task(self, translation_url, lang, target):
 @cel.task(name="sync", bind=True)
 def sync_wrapper(self):
     return sync(self)
+
+@cel.task(name='load_google_suggestions', bind=True)
+def load_google_suggestions(self):
+    with my_app.app_context():
+        load_all_google_suggestions()
 
