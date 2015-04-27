@@ -9,7 +9,8 @@ angular
         'datatables',
         'truncate',
         'selectionModel',
-        'ui.bootstrap.modal'
+        'ui.bootstrap.modal',
+        'pascalprecht.translate'
     ])
     .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig])
     .run(['$log', '$location', initialize]);
