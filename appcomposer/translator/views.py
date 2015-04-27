@@ -6,6 +6,7 @@ import os
 import time
 import json
 import zipfile
+import hashlib
 import StringIO
 import datetime
 import traceback
@@ -25,7 +26,7 @@ from wtforms.validators import url, required
 
 from appcomposer.db import db
 from appcomposer.application import app
-from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp
+from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp, GoLabOAuthUser
 from appcomposer.login import requires_golab_login, current_golab_user
 from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 from appcomposer.translator.exc import TranslatorError
@@ -394,6 +395,18 @@ def translation_upload():
 @public
 def translations():
     return render_template("translator/translations.html")
+
+@translator_blueprint.route('/dev/users')
+@requires_golab_login
+def translation_users():
+    users = db.session.query(GoLabOAuthUser.display_name, GoLabOAuthUser.email).all()
+    users_by_gravatar = {
+    }
+    for display_name, email in users:
+        gravatar_url = 'http://gravatar.com/avatar/%s?s=40&d=identicon' % hashlib.md5(email).hexdigest()
+        users_by_gravatar[gravatar_url] = display_name.strip().split(' ')[0]
+
+    return render_template('translator/users.html', users_by_gravatar = users_by_gravatar)
 
 @translator_blueprint.route('/dev/sync/', methods = ['GET', 'POST'])
 @requires_golab_login
