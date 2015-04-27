@@ -1,4 +1,5 @@
 import pprint
+import hashlib
 import datetime
 from collections import defaultdict
 
@@ -9,7 +10,7 @@ from appcomposer import db
 from appcomposer.application import app
 from appcomposer.translator.languages import obtain_languages, obtain_groups
 from appcomposer.translator.suggestions import translate_texts
-from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser, TranslationSyncLog
+from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser, TranslationSyncLog, TranslationCurrentActiveUser
 
 DEBUG = False
 
@@ -424,3 +425,84 @@ def get_latest_synchronizations():
             'end' : sync.end_datetime
         } for sync in latest_syncs
     ]
+
+def update_user_status(language, target, app_url, user):
+    translated_app = db.session.query(TranslatedApp).filter_by(url = app_url).first()
+    if translated_app is None:
+        return
+    
+    translation_url = translated_app.translation_url
+    if translation_url is None:
+        return
+
+    bundle = db.session.query(TranslationBundle).filter_by(translation_url = translation_url, language = language, target = target).first()
+    if bundle is None:
+        return
+
+    active_user = db.session.query(TranslationCurrentActiveUser).filter_by(bundle = bundle, user = user).first()
+    if active_user is None:
+        active_user = TranslationCurrentActiveUser(user = user, bundle = bundle)
+        db.session.add(active_user)
+    else:
+        active_user.update_last_check()
+
+    db.session.commit()
+
+def get_user_status(language, target, app_url, user):
+    FORMAT = "%Y-%m-%dT%H:%M:%SZ"
+    now = datetime.datetime.utcnow()
+    now_str = now.strftime(FORMAT)
+
+    ERROR = {
+        'modificationDate': now_str,
+        'modificationDateByOther': now_str,
+        'time_now': now_str,
+        'collaborators': []
+    }
+    translated_app = db.session.query(TranslatedApp).filter_by(url = app_url).first()
+    if translated_app is None:
+        ERROR['error_msg'] = "Translation App URL not found"
+        return ERROR
+    
+    translation_url = translated_app.translation_url
+    if translation_url is None:
+        ERROR['error_msg'] = "Translation Translation URL not found"
+        return ERROR
+
+    bundle = db.session.query(TranslationBundle).filter_by(translation_url = translation_url, language = language, target = target).first()
+    if bundle is None:
+        ERROR['error_msg'] = "Bundle not found"
+        return ERROR
+
+    last_change_by_user = db.session.query(func.max(ActiveTranslationMessage.datetime), TranslationMessageHistory.user_id).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, ActiveTranslationMessage.bundle == bundle).group_by(TranslationMessageHistory.user_id).all()
+
+    modification_date = None
+    modification_date_by_other = None
+    for last_change, user_id in last_change_by_user:
+        if user_id == user.id:
+            modification_date = last_change.strftime(FORMAT)
+        else:
+            if modification_date_by_other is None or modification_date_by_other < last_change:
+                modification_date_by_other = last_change.strftime(FORMAT)
+
+    if modification_date is None and modification_date_by_other is not None:
+        modification_date = modification_date_by_other
+
+    # Find collaborators (if any)
+    latest_minutes = now - datetime.timedelta(minutes = 5)
+    db_collaborators = db.session.query(TranslationCurrentActiveUser).filter(TranslationCurrentActiveUser.bundle == bundle, TranslationCurrentActiveUser.last_check > latest_minutes).all()
+    collaborators = []
+    for collaborator in db_collaborators:
+        if collaborator.user != user:
+            collaborators.append({
+                'name' : collaborator.user.display_name,
+                'md5' : hashlib.new(collaborator.user.email).hexdigest(),
+            })
+    
+    return {
+        'modificationDate': modification_date,
+        'modificationDateByOther': modification_date_by_other,
+        'time_now': now_str,
+        'collaborators': collaborators
+    }
+

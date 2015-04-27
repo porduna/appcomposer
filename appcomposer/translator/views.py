@@ -32,7 +32,7 @@ from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
-from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, get_latest_synchronizations
+from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, get_latest_synchronizations, update_user_status, get_user_status
 from appcomposer.translator.utils import bundle_to_xml, url_to_filename, messages_to_xml
 
 import flask.ext.cors.core as cors_core
@@ -169,13 +169,22 @@ def check_modifications(language, target):
     Retrieves the last modification date and the active users.
     """
     app_url = request.values.get('app_url')
-    key = request.values.get('key')
 
-    data = {
-        "modificationDate": "2015-07-07T23:20:08Z",
-        "modificationDateByOther": "2015-07-07T23:20:08Z"
-    }
-
+    update_user_status(language = language, target = target, app_url = app_url, user = current_golab_user())
+    data = get_user_status(language = language, target = target, app_url = app_url, user = current_golab_user())
+    
+#     data = {
+#         "modificationDate": "2015-07-07T23:20:08Z",
+#         "modificationDateByOther": "2015-07-07T23:20:08Z",
+#         "time_now": "2015/12/01T20:83:23Z",
+#         'collaborators': [
+#             {
+#                 'name': 'Whoever',
+#                 'md5': 'thisisafakemd5'
+#             }
+#         ]
+#     }
+# 
     return jsonify(**data)
 
 
@@ -279,12 +288,6 @@ def api_translate(language, target):
         'translation' : translation,
         'modificationDate': '2015-12-12T12:00:01Z',
         'modificationDateByOther': '2015-12-12T12:00:01Z',
-        'collaborators': [
-            {
-                'name': 'Whoever',
-                'md5': 'thisisafakemd5'
-            }
-        ]
     }
 
     if False:
