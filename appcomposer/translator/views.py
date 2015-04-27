@@ -240,7 +240,7 @@ def api_app():
     return jsonify(**app_data)
 
 @translator_blueprint.route('/api/apps/bundles/<language>/<target>')
-@public
+@requires_golab_login
 @cross_origin()
 @api
 def api_translate(language, target):

@@ -439,6 +439,10 @@ def update_user_status(language, target, app_url, user):
     if bundle is None:
         return
 
+    if user is None:
+        print "ERROR: user can't be NULL"
+        return
+
     active_user = db.session.query(TranslationCurrentActiveUser).filter_by(bundle = bundle, user = user).first()
     if active_user is None:
         active_user = TranslationCurrentActiveUser(user = user, bundle = bundle)
