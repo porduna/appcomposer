@@ -1,0 +1,24 @@
+{% extends "translator/base.html" %}
+{% block body %}
+
+<br>
+<h1>Currently registered users</h1>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>Gravatar</th>
+            <th>First name</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for gravatar_id in users_by_gravatar %}
+        <tr>
+            <td><img src="{{ gravatar_id }}"></td>
+            <td>{{ users_by_gravatar[gravatar_id] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endblock %}
