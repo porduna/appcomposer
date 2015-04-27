@@ -37,11 +37,36 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
     ];
 
 
-    $scope.completionToColor = completionToColor;
+
+    // ------------------------------------
+    // SCOPE RELATED
+    // ------------------------------------
+
+
+    // -- METHODS --
+
     $scope.selectApp = selectApp;
     $scope.isSelected = isSelected;
+    $scope.extractLangName = extractLangName;
+    $scope.completionToColor = completionToColor;
+
+
+    // -- EVENTS --
 
     $scope.$on('event:dataTableLoaded', dataTableLoadedHandler);
+
+
+
+    // ------------------------------------
+    // IMPLEMENTATIONS
+    // ------------------------------------
+
+    /**
+     * Extracts an app name. That is, extracts 'en' from 'en_ALL_ALL', for instance.
+     */
+    function extractLangName(name) {
+        return name.split("_")[0];
+    } // !extractAppName
 
 
     /**
