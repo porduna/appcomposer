@@ -85,6 +85,8 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
         if(lastDate > date) {
             $log.debug("Bundle change detected: Refreshing.");
             retrieveTranslationInfo();
+        } else {
+            $log.debug("No changes according to date");
         }
     } // !onCheckModificationsSuccess
 
