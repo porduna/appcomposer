@@ -281,13 +281,16 @@ def api_translate(language, target):
         if name and app_thumb:
             break
 
+    update_user_status(language, target, app_url, current_golab_user())
+    users_status = get_user_status(language, target, app_url, current_golab_user())
+
     response = {
         'url' : app_url,
         'app_thumb' : app_thumb,
         'name' : name,
         'translation' : translation,
-        'modificationDate': '2015-12-12T12:00:01Z',
-        'modificationDateByOther': '2015-12-12T12:00:01Z',
+        'modificationDate': users_status['modificationDate'],
+        'modificationDateByOther': users_status['modificationDateByOther'],
         'automatic': True
     }
 
