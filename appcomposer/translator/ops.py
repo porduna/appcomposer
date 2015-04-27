@@ -480,10 +480,10 @@ def get_user_status(language, target, app_url, user):
     modification_date_by_other = None
     for last_change, user_id in last_change_by_user:
         if user_id == user.id:
-            modification_date = last_change.strftime(FORMAT)
+            modification_date = last_change
         else:
             if modification_date_by_other is None or modification_date_by_other < last_change:
-                modification_date_by_other = last_change.strftime(FORMAT)
+                modification_date_by_other = last_change
 
     if modification_date is None and modification_date_by_other is not None:
         modification_date = modification_date_by_other
@@ -496,12 +496,12 @@ def get_user_status(language, target, app_url, user):
         if collaborator.user != user:
             collaborators.append({
                 'name' : collaborator.user.display_name,
-                'md5' : hashlib.new(collaborator.user.email).hexdigest(),
+                'md5' : hashlib.md5(collaborator.user.email).hexdigest(),
             })
     
     return {
-        'modificationDate': modification_date,
-        'modificationDateByOther': modification_date_by_other,
+        'modificationDate': modification_date.strftime(FORMAT) if modification_date is not None else None,
+        'modificationDateByOther': modification_date_by_other.strftime(FORMAT) if modification_date_by_other is not None else None,
         'time_now': now_str,
         'collaborators': collaborators
     }
