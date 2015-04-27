@@ -159,7 +159,7 @@ def extract_local_translations_url(app_url, force_local_cache = False):
         # Under some situations (e.g., updating a single message), it is better to have a cache
         # than contacting the foreign server. Only if requested, this method will try to check
         # in a local cache in the database.
-        last_hour = datetime.datetime.now() - datetime.timedelta(hours = 1)
+        last_hour = datetime.datetime.utcnow() - datetime.timedelta(hours = 1)
         cached = db.session.query(TranslationFastCache.translation_url, TranslationFastCache.original_messages).filter(TranslationFastCache.app_url == app_url, TranslationFastCache.datetime > last_hour).first()
         if cached is not None:
             translation_url, original_messages = cached
@@ -180,7 +180,7 @@ def extract_local_translations_url(app_url, force_local_cache = False):
     absolute_translation_url, messages = _retrieve_messages_from_relative_url(app_url, relative_translation_url, cached_requests)
 
     db.session.query(TranslationFastCache).filter_by(app_url = app_url).delete()
-    cache = TranslationFastCache(app_url = app_url, translation_url =  absolute_translation_url, original_messages = json.dumps(messages), datetime = datetime.datetime.now())
+    cache = TranslationFastCache(app_url = app_url, translation_url =  absolute_translation_url, original_messages = json.dumps(messages), datetime = datetime.datetime.utcnow())
     db.session.add(cache)
     try:
         db.session.commit()

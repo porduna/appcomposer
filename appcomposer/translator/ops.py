@@ -89,7 +89,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                     unchanged.append(key)
         
         # For each translation message
-        now = datetime.datetime.now()
+        now = datetime.datetime.utcnow()
         for key, value in translated_messages.iteritems():
             if key not in unchanged:
                 # Create a new history message
@@ -137,7 +137,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
             # Somebody else concurrently run this
             db.session.rollback() 
 
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     existing_keys = [ key for key, in db.session.query(ActiveTranslationMessage.key).filter_by(bundle = db_translation_bundle).all() ]
     for key, value in original_messages.iteritems():
         if key not in existing_keys:
@@ -357,7 +357,7 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
         src_message_ids[msg.id] = t_history.id
         historic[msg.id] = t_history
 
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     for msg in src_bundle.active_messages:
         history = historic.get(msg.history_id)
         active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, history, now, msg.taken_from_default)
@@ -368,7 +368,7 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
 def _merge_bundle(src_bundle, dst_bundle):
     """Copy all the messages. The destination bundle already existed, so we can only copy those
     messages not present."""
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     for msg in src_bundle.active_messages:
         existing_translation = db.session.query(ActiveTranslationMessage).filter_by(bundle = dst_bundle, key = msg.key).first()
         if existing_translation is None:
@@ -402,7 +402,7 @@ def _deep_copy_translations(old_translation_url, new_translation_url):
             _deep_copy_bundle(old_bundle, new_bundle)
 
 def start_synchronization():
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     sync_log = TranslationSyncLog(now, None)
     db.session.add(sync_log)
     db.session.commit()
@@ -410,7 +410,7 @@ def start_synchronization():
     return sync_log.id
 
 def end_synchronization(sync_id):
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     sync_log = db.session.query(TranslationSyncLog).filter_by(id = sync_id).first()
     if sync_log is not None:
         sync_log.end_datetime = now

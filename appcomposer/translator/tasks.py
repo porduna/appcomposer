@@ -92,7 +92,7 @@ def load_google_suggestions(self):
 @cel.task(name='delete_old_realtime_active_users', bind=True)
 def delete_old_realtime_active_users(self):
     with my_app.app_context():
-        two_hours_ago = datetime.datetime.now() - datetime.timedelta(hours = 2)
+        two_hours_ago = datetime.datetime.utcnow() - datetime.timedelta(hours = 2)
         old_active_users = db.session.query(TranslationCurrentActiveUser).filter(TranslationCurrentActiveUser.last_check < two_hours_ago).all()
         for old_active_user in old_active_users:
             db.session.delete(old_active_user)
