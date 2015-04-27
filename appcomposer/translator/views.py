@@ -470,7 +470,7 @@ def sync_translations():
         return redirect(url_for('.sync_translations', since = latest_id))
     else:
         submitted = False
-    return render_template("translator/sync.html", latest_synchronizations = latest_synchronizations, since_id = since_id, submitted = submitted, current_datetime = datetime.datetime.now(), finished = finished)
+    return render_template("translator/sync.html", latest_synchronizations = latest_synchronizations, since_id = since_id, submitted = submitted, current_datetime = datetime.datetime.utcnow(), finished = finished)
 
 
 @translator_blueprint.route('/dev/sync/debug/')
@@ -479,7 +479,7 @@ def sync_debug():
     if not app.config['DEBUG']:
         return "Not in debug mode!"
 
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     t0 = time.time()
     from appcomposer.translator.translation_listing import synchronize_apps_no_cache, synchronize_apps_cache
     synchronize_apps_no_cache()

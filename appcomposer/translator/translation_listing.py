@@ -213,7 +213,7 @@ def _sync_regular_apps(cached_requests, already_synchronized_app_urls, force_rel
             _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, task = tasks_by_app_url[app_url])
 
 def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, task = None):
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
 
     if DEBUG:
         logger.debug("Starting %s" % app_url)
