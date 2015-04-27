@@ -258,6 +258,7 @@ def api_translate(language, target):
         'app_thumb' : app_thumb,
         'name' : name,
         'translation' : translation,
+        'automatic': True
     }
 
 
