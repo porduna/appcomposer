@@ -288,6 +288,7 @@ def api_translate(language, target):
         'translation' : translation,
         'modificationDate': '2015-12-12T12:00:01Z',
         'modificationDateByOther': '2015-12-12T12:00:01Z',
+        'automatic': True
     }
 
     if False:

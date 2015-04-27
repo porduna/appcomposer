@@ -202,6 +202,16 @@ label {
     color: rgb(90, 20, 20);
 }
 
+.alert.alert-info {
+    border: none;
+    border-radius: 0;
+    margin-left: -5px;
+    margin-right: -5px;
+    margin-top: -30px;
+
+    color: rgb(20, 20, 90);
+}
+
 .ac-error-description {
     font-family: "Courier New", courier, monospace;
     background-color: rgb(240, 200, 200);

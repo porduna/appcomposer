@@ -117,6 +117,18 @@ GENERAL TYPESETTING
 FOR THE APP / EDIT SCREEN
 ---------------------------*/
 
+
+/* App screen badges */
+.ac-badge-notoriginal-complete {
+    background-color: rgb(190, 230, 190);
+}
+
+.ac-badge-notoriginal-incomplete {
+    background-color: rgb(230, 170, 170);
+}
+
+
+
 .ac-app-description {
     padding-top: 10px;
     padding-bottom: 10px;

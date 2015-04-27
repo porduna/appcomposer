@@ -37,12 +37,51 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
     ];
 
 
-    $scope.completionToColor = completionToColor;
+
+    // ------------------------------------
+    // SCOPE RELATED
+    // ------------------------------------
+
+
+    // -- METHODS --
+
     $scope.selectApp = selectApp;
     $scope.isSelected = isSelected;
+    $scope.extractLangName = extractLangName;
+    $scope.completionToColor = completionToColor;
+    $scope.onlyTranslatedLanguages = onlyTranslatedLanguages;
+
+    // -- EVENTS --
 
     $scope.$on('event:dataTableLoaded', dataTableLoadedHandler);
 
+
+
+    // ------------------------------------
+    // IMPLEMENTATIONS
+    // ------------------------------------
+
+    /**
+     * Extracts an app name. That is, extracts 'en' from 'en_ALL_ALL', for instance.
+     */
+    function extractLangName(name) {
+        return name.split("_")[0];
+    } // !extractAppName
+
+    /**
+     * Retrieves the dictionary of translations but removing original-translations.
+     */
+    function onlyTranslatedLanguages(app) {
+        var langs = {};
+
+        angular.forEach(app.translated_languages, function(value, key){
+            if(app.original_languages_simplified.indexOf(extractLangName(key)) == -1) {
+                langs[key] = value;
+            }
+        });
+
+        return langs;
+    } // !onlyTranslatedLanguages
 
     /**
      * Get a reference to the jQuery DataTable.
