@@ -43,9 +43,21 @@ function EditMessageController($scope, $log, $resource) {
     // Listen for focus events from our sibling directives.
     $scope.$on("edit-message-focused", onEditMessageFocused);
 
+    $scope.$watch("messageActive", onMessageActive);
+
     // --------------
     // Implementations
     // --------------
+
+
+    function onMessageActive(newval, oldval) {
+        if(!newval && !oldval)
+            return;
+
+        if(newval && !oldval) {
+            $scope.focusTextInput();
+        }
+    } // !onMessageActive
 
     /**
      * A suggestion was clicked. We should apply it and unfocus the control.
@@ -84,12 +96,13 @@ function EditMessageController($scope, $log, $resource) {
 
         if( (key && $scope.key == key) || (index && $scope.$parent.index == index) ) {
             $scope.messageActive = true;
+            $log.debug("Message active to True");
 
             $log.debug("WE SHOULD SELECT: " + $scope.key + " " + index);
             window.lastScope = $scope;
-            $scope.focusTextInput();
         }
         else {
+            $log.debug("Message active to False");
             $scope.messageActive = false;
         }
     } // !onEditMessageFocused
@@ -101,7 +114,10 @@ function EditMessageController($scope, $log, $resource) {
         return $scope.savedValue == $scope.getCurrentTextValue();
     } // !isSaved
 
-    function onFocus() {
+    function onFocus(event) {
+
+        event.preventDefault();
+
         $scope.messageActive = true;
 
         // Inform whoever may be interested (probably our sibling edit-message directives) that we have been
