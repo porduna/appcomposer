@@ -404,7 +404,7 @@ def translation_users():
 
     for display_name, email in users:
         gravatar_url = 'http://gravatar.com/avatar/%s?s=40&d=identicon' % hashlib.md5(email).hexdigest()
-        users_by_gravatar[gravatar_url] = display_name.strip().split(' ')[0]
+        users_by_gravatar[gravatar_url] = display_name.strip().replace('.', ' ').title().split(' ')[0]
 
     return render_template('translator/users.html', users_by_gravatar = users_by_gravatar)
 
