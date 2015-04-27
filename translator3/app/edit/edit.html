@@ -52,6 +52,19 @@
         <!-- Content -->
         <div ng-if="!status.error">
 
+            <div ng-show="translationInfo.automatic == false" class="alert alert-info">
+                <h3>The translation will not be applied instantly</h3>
+
+                <p>
+                    Thank you for translating this application! Please note that though you can translate
+                    this application and it will be saved as you go,
+                    the translation will need to be applied by the original application
+                    developer before the changes take effect, so it may take a while.
+                </p>
+                <br>
+
+            </div>
+
             <div class="row">
                 <div class="col-lg-12" style="margin-bottom: 10px">
                     <div class="col-lg-5" style="text-align: center">
