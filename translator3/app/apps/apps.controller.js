@@ -49,7 +49,7 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
     $scope.isSelected = isSelected;
     $scope.extractLangName = extractLangName;
     $scope.completionToColor = completionToColor;
-
+    $scope.onlyTranslatedLanguages = onlyTranslatedLanguages;
 
     // -- EVENTS --
 
@@ -68,6 +68,20 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
         return name.split("_")[0];
     } // !extractAppName
 
+    /**
+     * Retrieves the dictionary of translations but removing original-translations.
+     */
+    function onlyTranslatedLanguages(app) {
+        var langs = {};
+
+        angular.forEach(app.translated_languages, function(value, key){
+            if(app.original_languages_simplified.indexOf(extractLangName(key)) == -1) {
+                langs[key] = value;
+            }
+        });
+
+        return langs;
+    } // !onlyTranslatedLanguages
 
     /**
      * Get a reference to the jQuery DataTable.
