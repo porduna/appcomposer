@@ -58,7 +58,7 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
      * Setups the check modifications trigger.
      */
     function doCheckModifications() {
-        $scope.checkModifications = getCheckModifications();
+        retrieveCheckModifications();
 
         $scope.checkModifications.$promise.then(onCheckModificationsSuccess, onCheckModificationsError);
     } // !setupCheckModifications
@@ -69,6 +69,7 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
      * @param result
      */
     function onCheckModificationsSuccess(result) {
+        $log.debug("onCheckModificationsSuccess");
         if(result.modificationDateByOther == undefined) {
             // An error occurred, etc.
             // Ignore it for now.
@@ -124,9 +125,15 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
      * GET request to get the modification date and update if needed.
      * @returns {*}
      */
-    function getCheckModifications() {
-        return CheckModifications.get({app_url: $scope.appurl, srclang: $scope.bundle.srclang,
-            srcgroup: $scope.bundle.srcgroup, lang: $scope.bundle.targetlang, target: $scope.bundle.targetgroup});
+    function retrieveCheckModifications() {
+        var args = {app_url: $scope.appurl, srclang: $scope.bundle.srclang,
+            srcgroup: $scope.bundle.srcgroup, lang: $scope.bundle.targetlang, target: $scope.bundle.targetgroup};
+
+        if($scope.checkModifications == undefined)
+            $scope.checkModifications = CheckModifications.get(args);
+        else
+            $scope.checkModifications.$get(args);
+
     } // !getCheckModifications
 
     function onSourceLanguageChanged(selected) {
