@@ -493,7 +493,7 @@ def get_user_status(language, target, app_url, user):
     db_collaborators = db.session.query(TranslationCurrentActiveUser).filter(TranslationCurrentActiveUser.bundle == bundle, TranslationCurrentActiveUser.last_check > latest_minutes).all()
     collaborators = []
     for collaborator in db_collaborators:
-        if collaborator.user != user:
+        if collaborator.user != user and collaborator.user is not None:
             collaborators.append({
                 'name' : collaborator.user.display_name,
                 'md5' : hashlib.md5(collaborator.user.email).hexdigest(),
