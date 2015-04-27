@@ -21,7 +21,10 @@ def upgrade():
     op.create_index(u'ix_TranslationExternalSuggestions_human_key_hash', 'TranslationExternalSuggestions', ['human_key_hash'], unique=False)
     ### end Alembic commands ###
 
-    op.drop_constraint("engine", "TranslationExternalSuggestions", "unique")
+    try:
+        op.drop_constraint("engine", "TranslationExternalSuggestions", "unique")
+    except:
+        print "drop constraint not supported in SQLite"
 
     metadata = sa.MetaData()
     ExternalSuggestions = sa.Table('TranslationExternalSuggestions', metadata,
