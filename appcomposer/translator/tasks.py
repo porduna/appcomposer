@@ -47,12 +47,18 @@ cel.conf.update(
             'task' : 'load_google_suggestions',
             'schedule' : crontab(hour=5, minute=0),
             'args' : ()
+        },
+        'delete_old_realtime_active_users' : {
+            'task' : 'delete_old_realtime_active_users',
+            'schedule' : datetime.timedelta(hours = 1),
+            'args' : ()
         }
     }
 )
 
 
-from appcomposer import app as my_app
+from appcomposer import app as my_app, db
+from appcomposer.models import TranslationCurrentActiveUser
 from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, load_all_google_suggestions
 from appcomposer.translator.mongodb_pusher import push, sync
 
@@ -83,3 +89,15 @@ def load_google_suggestions(self):
     with my_app.app_context():
         load_all_google_suggestions()
 
+@cel.task(name='delete_old_realtime_active_users', bind=True)
+def delete_old_realtime_active_users(self):
+    with my_app.app_context():
+        two_hours_ago = datetime.datetime.utcnow() - datetime.timedelta(hours = 2)
+        old_active_users = db.session.query(TranslationCurrentActiveUser).filter(TranslationCurrentActiveUser.last_check < two_hours_ago).all()
+        for old_active_user in old_active_users:
+            db.session.delete(old_active_user)
+        if len(old_active_users):
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()

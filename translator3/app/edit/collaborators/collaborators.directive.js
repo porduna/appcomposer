@@ -11,7 +11,7 @@ function acCollaborators() {
         controller: "CollaboratorsController",
         controllerAs: "collaboratorsController",
         scope: {
-
+            collaborators: "=collaborators"
         }
     }; // !return
 

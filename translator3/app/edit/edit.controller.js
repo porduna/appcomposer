@@ -2,7 +2,7 @@ angular
     .module("translateApp")
     .controller("EditController", EditController);
 
-function EditController($scope, $resource, $routeParams, $log, $modal) {
+function EditController($scope, $resource, $routeParams, $log, $modal, $timeout, $interval) {
 
     /////////
     // Initialization
@@ -10,6 +10,7 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
 
     var TranslationInfo = $resource(APP_DYN_ROOT + "api/apps/bundles/:lang/:target"); // Query parameters are needed
     var Appinfo = $resource(APP_DYN_ROOT + "api/apps");
+    var CheckModifications = $resource(APP_DYN_ROOT + "api/apps/bundles/:lang/:target/checkModifications"); // Query parameters are needed
 
     /////////
     // Scope related
@@ -30,11 +31,15 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     $scope.bundle.targetgroup = $routeParams.targetgroup;
 
     $scope.appinfo = Appinfo.get({app_url: $scope.appurl});
-    $scope.translationInfo = TranslationInfo.get({app_url: $scope.appurl, srclang: $scope.bundle.srclang,
-        srcgroup: $scope.bundle.srcgroup, lang: $scope.bundle.targetlang, target: $scope.bundle.targetgroup});
+
+    $scope.translationInfo = undefined;
+    retrieveTranslationInfo();
 
     $scope.translationInfo.$promise.then(onGetSuccess, onGetError);
     $scope.appinfo.$promise.then(onGetSuccess, onGetError);
+
+    $scope.checkModifications = undefined;
+    $scope.checkModificationsInterval = $interval(doCheckModifications, 6000);
 
     /* METHODS */
 
@@ -48,6 +53,46 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
     /////////
     // Implementations
     /////////
+
+    /**
+     * Setups the check modifications trigger.
+     */
+    function doCheckModifications() {
+        retrieveCheckModifications();
+
+        $scope.checkModifications.$promise.then(onCheckModificationsSuccess, onCheckModificationsError);
+    } // !setupCheckModifications
+
+    /**
+     * If apparently the bundle has been modified recently, we need to refresh it.
+     * We ignore changes made by ourselves.
+     * @param result
+     */
+    function onCheckModificationsSuccess(result) {
+        $log.debug("onCheckModificationsSuccess");
+        if(result.modificationDateByOther == undefined) {
+            // An error occurred, etc.
+            // Ignore it for now.
+            $log.error("checkModifications: Unknown error. Result: ");
+            $log.debug(result);
+            return;
+        }
+
+        var date = new Date(result.modificationDateByOther);
+
+        // Compare against the last update date.
+        var lastDate = new Date($scope.translationInfo.modificationDateByOther);
+        if(lastDate > date) {
+            $log.debug("Bundle change detected: Refreshing.");
+            retrieveTranslationInfo();
+        } else {
+            $log.debug("No changes according to date");
+        }
+    } // !onCheckModificationsSuccess
+
+    function onCheckModificationsError() {
+        // Do nothing. The interval will make the request again on its own.
+    } // !onCheckModificationsError
 
     function changeSourceLanguage() {
         $log.debug("[changeSourceLanguage]");
@@ -64,6 +109,34 @@ function EditController($scope, $resource, $routeParams, $log, $modal) {
 
         modal.result.then(onSourceLanguageChanged, onSourceLanguageChangeDismissed);
     } // !changeSourceLanguage
+
+    /**
+     * Retrieve or refresh the translation info.
+     */
+    function retrieveTranslationInfo() {
+        var args = {app_url: $scope.appurl, srclang: $scope.bundle.srclang,
+            srcgroup: $scope.bundle.srcgroup, lang: $scope.bundle.targetlang, target: $scope.bundle.targetgroup};
+
+        if($scope.translationInfo == undefined)
+            $scope.translationInfo = TranslationInfo.get(args);
+        else
+            $scope.translationInfo.$get(args);
+    } // !retrieveTranslationInfo
+
+    /**
+     * GET request to get the modification date and update if needed.
+     * @returns {*}
+     */
+    function retrieveCheckModifications() {
+        var args = {app_url: $scope.appurl, srclang: $scope.bundle.srclang,
+            srcgroup: $scope.bundle.srcgroup, lang: $scope.bundle.targetlang, target: $scope.bundle.targetgroup};
+
+        if($scope.checkModifications == undefined)
+            $scope.checkModifications = CheckModifications.get(args);
+        else
+            $scope.checkModifications.$get(args);
+
+    } // !getCheckModifications
 
     function onSourceLanguageChanged(selected) {
         $log.debug("[onSourceLanguageChanged]");

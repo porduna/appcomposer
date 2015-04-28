@@ -1,5 +1,9 @@
-<div style="display: none" class="ac-collaborators">
+<div style="" class="ac-collaborators">
 
-    <ac-collaborator ng-repeat="i in [2, 3, 4]"></ac-collaborator>
+    <div class="ac-collaborators-description">
+        Recently active:
+    </div>
+
+    <ac-collaborator ng-repeat="collaborator in collaborators" collaborator="collaborator"></ac-collaborator>
 
 </div>

@@ -32,7 +32,7 @@ from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
-from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, get_latest_synchronizations
+from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, get_latest_synchronizations, update_user_status, get_user_status
 from appcomposer.translator.utils import bundle_to_xml, url_to_filename, messages_to_xml
 
 import flask.ext.cors.core as cors_core
@@ -160,6 +160,34 @@ def api_languages():
 def api_groups():
     return jsonify(**obtain_groups())
 
+@translator_blueprint.route("/api/apps/bundles/<language>/<target>/checkModifications", methods=["GET"])
+@requires_golab_login
+@cross_origin()
+@api
+def check_modifications(language, target):
+    """
+    Retrieves the last modification date and the active users.
+    """
+    app_url = request.values.get('app_url')
+
+    update_user_status(language = language, target = target, app_url = app_url, user = current_golab_user())
+    data = get_user_status(language = language, target = target, app_url = app_url, user = current_golab_user())
+    
+#     data = {
+#         "modificationDate": "2015-07-07T23:20:08Z",
+#         "modificationDateByOther": "2015-07-07T23:20:08Z",
+#         "time_now": "2015/12/01T20:83:23Z",
+#         'collaborators': [
+#             {
+#                 'name': 'Whoever',
+#                 'md5': 'thisisafakemd5'
+#             }
+#         ]
+#     }
+# 
+    return jsonify(**data)
+
+
 @translator_blueprint.route("/api/apps/bundles/<language>/<target>/updateMessage", methods=["GET", "PUT", "POST"])
 @requires_golab_login
 @cross_origin()
@@ -170,7 +198,7 @@ def bundle_update(language, target):
     value = request.values.get("value")
 
     if key is None or value is None:
-        return jsonify(**{"result":"error"})
+        return jsonify(**{"result": "error"})
 
     user = current_golab_user()
     translation_url, original_messages = extract_local_translations_url(app_url, force_local_cache = True)
@@ -212,7 +240,7 @@ def api_app():
     return jsonify(**app_data)
 
 @translator_blueprint.route('/api/apps/bundles/<language>/<target>')
-@public
+@requires_golab_login
 @cross_origin()
 @api
 def api_translate(language, target):
@@ -253,14 +281,18 @@ def api_translate(language, target):
         if name and app_thumb:
             break
 
+    update_user_status(language, target, app_url, current_golab_user())
+    users_status = get_user_status(language, target, app_url, current_golab_user())
+
     response = {
         'url' : app_url,
         'app_thumb' : app_thumb,
         'name' : name,
         'translation' : translation,
+        'modificationDate': users_status['modificationDate'],
+        'modificationDateByOther': users_status['modificationDateByOther'],
         'automatic': True
     }
-
 
     if False:
         response = json.dumps(response, indent = 4)
@@ -438,7 +470,7 @@ def sync_translations():
         return redirect(url_for('.sync_translations', since = latest_id))
     else:
         submitted = False
-    return render_template("translator/sync.html", latest_synchronizations = latest_synchronizations, since_id = since_id, submitted = submitted, current_datetime = datetime.datetime.now(), finished = finished)
+    return render_template("translator/sync.html", latest_synchronizations = latest_synchronizations, since_id = since_id, submitted = submitted, current_datetime = datetime.datetime.utcnow(), finished = finished)
 
 
 @translator_blueprint.route('/dev/sync/debug/')
@@ -447,7 +479,7 @@ def sync_debug():
     if not app.config['DEBUG']:
         return "Not in debug mode!"
 
-    now = datetime.datetime.now()
+    now = datetime.datetime.utcnow()
     t0 = time.time()
     from appcomposer.translator.translation_listing import synchronize_apps_no_cache, synchronize_apps_cache
     synchronize_apps_no_cache()

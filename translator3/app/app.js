@@ -10,7 +10,8 @@ angular
         'truncate',
         'selectionModel',
         'ui.bootstrap.modal',
-        'pascalprecht.translate'
+        'pascalprecht.translate',
+        'ui.gravatar'
     ])
     .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig])
     .run(['$log', '$location', initialize]);

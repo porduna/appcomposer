@@ -509,3 +509,25 @@ class TranslationSyncLog(db.Model):
         self.start_datetime = start_datetime
         self.end_datetime = end_datetime
 
+class TranslationCurrentActiveUser(db.Model):
+    __tablename__ = 'TranslationCurrentActiveUsers'
+
+    id = db.Column(db.Integer, primary_key = True)
+    user_id = db.Column(db.Integer, ForeignKey('GoLabOAuthUsers.id'))
+    bundle_id = db.Column(db.Integer, ForeignKey('TranslationBundles.id'))
+    last_check = db.Column(db.DateTime, index = True)
+
+    user = relation("GoLabOAuthUser", backref="realtime_translations")
+    bundle = relation("TranslationBundle", backref="realtime_translations")
+
+    def __init__(self, user, bundle, last_check = None):
+        self.user = user
+        self.bundle = bundle
+        if last_check is None:
+            self.last_check = datetime.datetime.utcnow()
+        else:
+            self.last_check = last_check
+
+    def update_last_check(self):
+        self.last_check = datetime.datetime.utcnow()
+
