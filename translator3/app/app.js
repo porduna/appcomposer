@@ -124,16 +124,8 @@ function configFunc($routeProvider, $compileProvider, $translateProvider) {
         MESSAGE_PROVIDED: "This message translation is provided by the App and cannot be modified",
         COULDNT_SAVE: "Could not save the last changes.",
         SUGGESTED_AUTOMATIC_TRANSLATIONS: "Suggested automatic translations:",
-        RECENTLY_ACTIVE: "Recently active:",
-
-
-
-
-
-
-
-
-
+        RECENTLY_ACTIVE: "Recently active:"
+        
     });
     $translateProvider.translations('de', {
         TITLE: 'Hallo',
