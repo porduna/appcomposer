@@ -82,7 +82,7 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
 
         // Compare against the last update date.
         var lastDate = new Date($scope.translationInfo.modificationDateByOther);
-        if(lastDate > date) {
+        if(lastDate < date) {
             $log.debug("Bundle change detected: Refreshing.");
             retrieveTranslationInfo();
         } else {
