@@ -15,18 +15,18 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
         .withDisplayLength(10)
         .withOption("autoWidth", true)
         .withOption("language", {
-            "search": $filter("translate")("Search:"),
-            "processing": $filter("translate")("Processing..."),
-            "info": $filter("translate")("Showing page _PAGE_ of _PAGES_"),
-            "lengthMenu": $filter("translate")("Display _MENU_ records per page"),
-            "zeroRecords": $filter("translate")("Nothing found"),
-            "infoEmpty": $filter("translate")("No records available"),
-            "infoFiltered": $filter("translate")("(filtered from _MAX_ total records)"),
+            "search": $filter("translate")("JQT_SEARCH"),
+            "processing": $filter("translate")("JQT_PROCESSING"),
+            "info": $filter("translate")("JQT_INFO"),
+            "lengthMenu": $filter("translate")("JQT_LEN"),
+            "zeroRecords": $filter("translate")("JQT_ZERO"),
+            "infoEmpty": $filter("translate")("JQT_INFOEMPTY"),
+            "infoFiltered": $filter("translate")("JQT_INFOFILTERED"),
             "paginate": {
-                first: $filter("translate")("First"),
-                previous: $filter("translate")("Previous"),
-                next: $filter("translate")("Next"),
-                last: $filter("translate")("Last")
+                first: $filter("translate")("JQT_PAG_FIRST"),
+                previous: $filter("translate")("JQT_PAG_PREV"),
+                next: $filter("translate")("JQT_PAG_NEXT"),
+                last: $filter("translate")("JQT_PAG_LAST")
             }
         });
 

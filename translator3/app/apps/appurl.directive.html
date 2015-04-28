@@ -3,27 +3,27 @@
     <form name="appurlForm" class="form-horizontal" id="geturl" name="geturl"
           novalidate>
         <div class="col-xs-12">
-            <h1><i class="fa fa-cogs"></i> {{ 'Custom application URL' | translate }}</h1>
+            <h1><i class="fa fa-cogs"></i> {{ 'CUSTOM_APP_URL' | translate }}</h1>
             <p>
                 <span class="fa fa-warning"/>
-                {{ "This will generally be required by developers only. Most users should choose an application from the Applications List above." | translate }}
+                {{ "DEVS_ONLY_WARNING" | translate }}
             </p>
             <br>
             <div class="form-group">
-                <label for="appurl" class="col-lg-1 control-label" ac-translate-me>URL: </label>
+                <label for="appurl" class="col-lg-1 control-label">{{ 'URL' | translate }} </label>
 
                 <div class="col-lg-10">
                     <input ng-model="url" required type="text" id="appurl" name="appurl" class="form-control"
-                           ng-attr-placeholder="{{ 'URL of the app'|translate }}"
+                           ng-attr-placeholder="{{ 'APP_URL' | translate }}"
                            ac-enter="onEnter()">
                     <!--<span class="help-block" ac-translate-me>The URL of the app you want to translate.</span>-->
-                    <span ng-hide="isValid()" class="text-danger">Please, provide the URL for the custom application</span>
+                    <span ng-hide="isValid()" class="text-danger" translate>PLEASE_PROVIDE_URL</span>
                 </div>
             </div>
         </div>
         <div class="col-xs-3 col-xs-offset-1">
             <a ng-disabled="!isValid()" ng-href="{{ calculateUrl(url) }}" class="btn btn-success">
-                <i class="fa fa-book"></i> {{ 'Translate' | translate }}
+                <i class="fa fa-book"></i> {{ 'TRANSLATE' | translate }}
             </a>
         </div>
     </form>

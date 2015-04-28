@@ -13,7 +13,7 @@ angular
         'pascalprecht.translate',
         'ui.gravatar'
     ])
-    .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig])
+    .config(['$routeProvider', '$compileProvider', '$translateProvider', configFunc])
     .run(['$log', '$location', initialize]);
 
 function initialize($log, $location) {
@@ -21,7 +21,7 @@ function initialize($log, $location) {
 
     var src = window.location.origin + window.location.pathname;
 
-    if(src.search("http://localhost:9000") == 0 || src.search("http://localhost:5000") == 0)
+    if (src.search("http://localhost:9000") == 0 || src.search("http://localhost:5000") == 0)
         window.APP_DYN_ROOT = "http://localhost:5000/translator/";
     else {
 
@@ -37,7 +37,7 @@ function initialize($log, $location) {
 
 } // !initialize
 
-function routeConfig($routeProvider) {
+function configFunc($routeProvider, $compileProvider, $translateProvider) {
     $routeProvider
         .when('/apps', {
             templateUrl: 'apps/apps.html',
@@ -54,9 +54,50 @@ function routeConfig($routeProvider) {
         .otherwise({
             redirectTo: '/apps'
         });
-}
 
-
-function compileProviderConfig($compileProvider) {
     $compileProvider.aHrefSanitizationWhitelist(/^\s*(https?|ftp|mailto):/);
-}
+
+    $translateProvider.translations('en', {
+        // apps
+        TITLE: "Title",
+        DESCRIPTION: "Description",
+        TRANSLATIONS: "Translations",
+        CHOOSE_APP_TRANSLATE: "Choose an application to translate: ",
+        APPS_LIST: " Applications List",
+
+        // apps/app-details
+        FULL_NAME: "Full Name: ",
+        XML_URL: "XML URL: ",
+        SOURCE: "Source: ",
+        TRANSLATE: "Translate",
+
+        // apps/appurl
+        CUSTOM_APP_URL: "Custom application URL",
+        DEVS_ONLY_WARNING: "This will generally be required by developers only. Most users should choose an application from the Applications List above.",
+        URL: "URL: ",
+        APP_URL: "URL of the app",
+        PLEASE_PROVIDE_URL: "Please, provide the URL for the custom application",
+
+        // apps/"jquery-table"
+        JQT_SEARCH: "Search:",
+        JQT_PROCESSING: "Processing...",
+        JQT_INFO: "Showing page _PAGE_ of _PAGES_",
+        JQT_LEN: "Display _MENU_ records per page",
+        JQT_ZERO: "Nothing found",
+        JQT_INFOEMPTY: "No records available",
+        JQT_INFOFILTERED: "(filtered from _MAX_ total records)",
+        JQT_PAG_FIRST: "First",
+        JQT_PAG_PREV: "Previous",
+        JQT_PAG_NEXT: "Next",
+        JQT_PAG_LAST: "Last"
+    });
+    $translateProvider.translations('de', {
+        TITLE: 'Hallo',
+        FOO: 'Dies ist ein Paragraph.',
+        BUTTON_LANG_EN: 'englisch',
+        BUTTON_LANG_DE: 'deutsch'
+    });
+
+    $translateProvider.preferredLanguage('en');
+
+} // !translateProviderConfig
