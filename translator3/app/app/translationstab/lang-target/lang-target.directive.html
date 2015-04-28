@@ -1,12 +1,12 @@
 <div class="col-md-3 col-sm-6">
     <form role="form">
         <div class="form-group">
-            <label class="label-header" for="langSelectControl" class="control-label" ac-translate-me>Language:</label>
+            <label class="label-header" for="langSelectControl" class="control-label" translate>LANGUAGE</label>
         </div>
 
         <div style="padding-top: 0px">
             <ui-select ng-model="selected.lang" theme="select2" style="min-width: 200px; padding-bottom: 5px">
-                <ui-select-match placeholder="Select a language">
+                <ui-select-match placeholder="{{ 'SELECT_LANG' | translate }}">
                     {{ all_languages[selected.lang] }}</ui-select-match>
                 <!-- we get all_languages from $parent because otherwise it doesn't seem to work -->
                 <ui-select-choices repeat="lang in languages() | langTargetSearchFilter: $select.search : all_languages">

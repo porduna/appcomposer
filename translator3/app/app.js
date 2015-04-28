@@ -89,7 +89,30 @@ function configFunc($routeProvider, $compileProvider, $translateProvider) {
         JQT_PAG_FIRST: "First",
         JQT_PAG_PREV: "Previous",
         JQT_PAG_NEXT: "Next",
-        JQT_PAG_LAST: "Last"
+        JQT_PAG_LAST: "Last",
+
+        // app
+        PREVIEW: "Preview",
+        COULD_NOT_LOAD_APP: "Unfortunately, it was not possible to load the specified application.",
+        INVALID_APP: "The application might be invalid or not exist, or there could be a server or network error. You may try again later, or translate a different application.",
+        BACK_TO_APPS_LIST: "Go back to the Applications List",
+        ERROR_IS: "The error is:",
+        HTTP_CODE: "HTTP code:",
+        MESSAGE: "Message:",
+        DETAILS: "Details:",
+        EDIT_TRANSLATION: "Edit translation",
+        PLEASE_CHOOSE_LANG: "Please, choose a language.",
+        A_URL: "URL",
+        NOT_AVAIL: "N/A",
+        CREATED: "Created:",
+        LAST_MODIFIED: "Last modified:",
+        TRANSLATED: "Translated:",
+
+        // app/lang-target
+        LANGUAGE: "Language:",
+        SELECT_LANG: "Select a language"
+
+
     });
     $translateProvider.translations('de', {
         TITLE: 'Hallo',
