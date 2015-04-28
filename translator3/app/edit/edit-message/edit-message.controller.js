@@ -44,12 +44,32 @@ function EditMessageController($scope, $log, $resource) {
     $scope.$on("edit-message-focused", onEditMessageFocused);
 
     $scope.$watch("messageActive", onMessageActive);
+    $scope.$watch("item.target", onItemChanged);
 
     // --------------
     // Implementations
     // --------------
 
+    /**
+     * Listen for item change events. These will happen when other client edits the translation.
+     * @param newval
+     * @param oldval
+     */
+    function onItemChanged(newval, oldval) {
+        if($scope.currentValue != $scope.item.target) {
+            $scope.currentValue = $scope.item.target;
+            $scope.savedValue = $scope.currentValue;
+            $scope.flashElement();
+        }
+    } // !onItemChanged
 
+
+    /**
+     * To be called when the messageActive status changes, so that we can focus
+     * on the text control if appropriate.
+     * @param newval
+     * @param oldval
+     */
     function onMessageActive(newval, oldval) {
         if(!newval && !oldval)
             return;
@@ -92,17 +112,11 @@ function EditMessageController($scope, $log, $resource) {
         var key = args.key;
         var index = args.index;
 
-        $log.debug("Index: " + index);
-
         if( (key && $scope.key == key) || (index && $scope.$parent.index == index) ) {
             $scope.messageActive = true;
-            $log.debug("Message active to True");
-
-            $log.debug("WE SHOULD SELECT: " + $scope.key + " " + index);
             window.lastScope = $scope;
         }
         else {
-            $log.debug("Message active to False");
             $scope.messageActive = false;
         }
     } // !onEditMessageFocused
