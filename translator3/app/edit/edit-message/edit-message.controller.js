@@ -116,8 +116,6 @@ function EditMessageController($scope, $log, $resource) {
 
     function onFocus(event) {
 
-        event.preventDefault();
-
         $scope.messageActive = true;
 
         // Inform whoever may be interested (probably our sibling edit-message directives) that we have been

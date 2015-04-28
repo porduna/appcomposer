@@ -493,7 +493,7 @@ def get_user_status(language, target, app_url, user):
         modification_date = modification_date_by_other
 
     # Find collaborators (if any)
-    latest_minutes = now - datetime.timedelta(minutes = 5)
+    latest_minutes = now - datetime.timedelta(minutes = 1)
     db_collaborators = db.session.query(TranslationCurrentActiveUser).filter(TranslationCurrentActiveUser.bundle == bundle, TranslationCurrentActiveUser.last_check > latest_minutes).all()
     collaborators = []
     for collaborator in db_collaborators:
