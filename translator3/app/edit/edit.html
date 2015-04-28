@@ -3,10 +3,10 @@
 
     <h1>
         <img class="app-title-thumb img-thumbnail" ng-src="{{ appinfo.app_thumb || 'images/app_placeholder.png' }}"></img>
-        <span>{{ appinfo.name || 'Unregistered Application' }} - Edit Translation</span>
+        <span>{{ appinfo.name || 'Unregistered Application' }} - {{ 'EDIT_TRANSLATION'|translate }}</span>
 
         <a class="ac-header-right header-button-wrapper" href="#/app/{{ appurl }}">
-            <label for="back-btn" class="header-button-label">Back</label>
+            <label for="back-btn" class="header-button-label" translate>BACK</label>
             <button id="back-btn" class="header-button"><i class="fa fa-backward fa-2x"/></button>
         </a>
 
@@ -20,27 +20,26 @@
 
         <div ng-if="status.error" class="ac-translations-tab-error">
             <div class="alert alert-danger">
-                <h3>Unfortunately, it was not possible to load the specified application or translation.</h3>
+                <h3 translate>ERROR_LOADING</h3>
 
                 <p>
-                    The application might be invalid or not exist, or there could be a server or network error. You
-                    may try again later, or translate a different application.
-                    <a class="btn btn-primary" href="#/apps">Go back to the Applications List</a>
+                    {{ 'APP_MAYBE_INVALID' | translate }}
+                    <a class="btn btn-primary" href="#/apps" translate>BACK_TO_APPS_LIST</a>
                 </p>
                 <br>
 
                 <div class="ac-error-description">
                     <p>
-                        <strong>The error is:</strong>
+                        <strong translate>ERROR_IS</strong>
                     </p>
 
                     <table style="padding-top: 20px">
                         <tr>
-                            <td><strong>HTTP code:</strong></td>
+                            <td><strong translate>HTTP_CODE</strong></td>
                             <td>{{ status.error.code }}</td>
                         </tr>
                         <tr>
-                            <td><strong>Message:<strong></td>
+                            <td><strong translate>MESSAGE</strong></td>
                             <td>{{ status.error.message }}</td>
                         </tr>
                     </table>
@@ -54,14 +53,10 @@
         <div ng-if="!status.error">
 
             <div ng-show="translationInfo.automatic == false" class="alert alert-info">
-                <h3><span class="fa fa-info-circle"/> The translation will not be applied instantly</h3>
+                <h3><span class="fa fa-info-circle"/><span translate>TRANS_NOT_INSTANT</span></h3>
 
-                <p>
-                    Thank you for translating this application! Please note that though you can translate
-                    this application and it will be saved as you go,
-                    the translation will need to be applied by the original application
-                    developer before the changes take effect, so it may take a while.
-                </p>
+                <p translate>TRANS_NOT_INSTANT_MESSAGE</p>
+
                 <br>
 
             </div>
@@ -91,7 +86,7 @@
 
             <div ng-show="translationInfo.translation == undefined">
                 <div class="ac-loading">
-                    <i class="fa fa-spinner fa-spin"/> Loading, please wait...
+                    <i class="fa fa-spinner fa-spin"/> <span translate>LOADING_PLEASE_WAIT</span>
                 </div>
             </div>
 

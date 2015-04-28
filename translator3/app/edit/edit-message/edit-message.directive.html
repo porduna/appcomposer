@@ -12,12 +12,10 @@
                   ng-class="{'ac-icon-error': status.error}" class="fa fa-save form-control-feedback ac-fa-control-feedback"></span>
             <span ng-show="status.saving" class="fa fa-spinner fa-spin form-control-feedback ac-fa-control-feedback"></span>
 
-            <span ng-show="status.error" class="ac-edit-message-error">
-                Could not save the last changes.
-            </span>
+            <span ng-show="status.error" class="ac-edit-message-error" translate>COULDNT_SAVE</span>
         </div>
         <div ng-show="!item.can_edit" class="col-xs-6">
-            <div tooltip="This message translation is provided by the App and cannot be modified">
+            <div tooltip="{{ 'MESSAGE_PROVIDED' | translate }}">
                 <input disabled="disabled" ng-model="currentValue" name="ac-edit-message-input"
                        class="form-control ac-edit-message-input ac-edit-message-input-disabled"
                         type="text" placeholder=""
@@ -31,9 +29,7 @@
     <div ng-show="shouldDisplayDetails()" class="ac-edit-message-details">
             <div class="form-group">
                 <div class="col-xs-push-0 col-xs-12 col-md-push-6 col-md-6">
-                    <label class="control-label">
-                        Suggested automatic translations:
-                    </label>
+                    <label class="control-label" translate>SUGGESTED_AUTOMATIC_TRANSLATIONS</label>
                     <select ng-change="suggestionSelected()" ng-click="" class="form-control ac-edit-suggestion-select" size="6" ng-model="selected.suggestion"
                         ng-options="suggestion as suggestion.target for suggestion in item.suggestions | orderBy:'suggestion.weight'"
                         class="form-control">

@@ -100,7 +100,7 @@ function configFunc($routeProvider, $compileProvider, $translateProvider) {
         HTTP_CODE: "HTTP code:",
         MESSAGE: "Message:",
         DETAILS: "Details:",
-        EDIT_TRANSLATION: "Edit translation",
+        EDIT_TRANSLATION: "Edit Translation",
         PLEASE_CHOOSE_LANG: "Please, choose a language.",
         A_URL: "URL",
         NOT_AVAIL: "N/A",
@@ -110,7 +110,28 @@ function configFunc($routeProvider, $compileProvider, $translateProvider) {
 
         // app/lang-target
         LANGUAGE: "Language:",
-        SELECT_LANG: "Select a language"
+        SELECT_LANG: "Select a language",
+
+        // edit
+        BACK: "Back",
+        ERROR_LOADING: "Unfortunately, it was not possible to load the specified application or translation.",
+        APP_MAYBE_INVALID: "The application might be invalid or not exist, or there could be a server or network error. You may try again later, or translate a different application.",
+        TRANS_NOT_INSTANT: "The translation will not be applied instantly",
+        TRANS_NOT_INSTANT_MESSAGE: "Thank you for translating this application! Please note that though you can translate this application and it will be saved as you go, the translation will need to be applied by the original application developer before the changes take effect, so it may take a while.",
+        LOADING_PLEASE_WAIT: "Loading. Please, wait...",
+
+        // edit/message
+        MESSAGE_PROVIDED: "This message translation is provided by the App and cannot be modified",
+        COULDNT_SAVE: "Could not save the last changes.",
+        SUGGESTED_AUTOMATIC_TRANSLATIONS: "Suggested automatic translations:",
+        RECENTLY_ACTIVE: "Recently active:",
+
+
+
+
+
+
+
 
 
     });
