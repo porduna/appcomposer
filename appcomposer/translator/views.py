@@ -264,11 +264,25 @@ def api_translate(language, target):
     for key, original_message_pack in original_messages.iteritems():
         value = original_message_pack['text']
         stored = stored_translations.get(key, {})
+        current_suggestions = list(suggestions.get(key, []))
+        current_target = stored.get('value')
+        if current_target:
+            found = False
+            for current_suggestion in current_suggestions:
+                if current_suggestion['target'] == current_target:
+                    found = True
+                    break
+            if not found:
+                current_suggestions.append({ 
+                    'target' : current_target,
+                    'weight' : 0.0
+                })
+
         translation[key] = {
             'source' : value,
-            'target' : stored.get('value'),
+            'target' : current_target,
             'from_default' : stored.get('from_default', False),
-            'suggestions' : suggestions.get(key, []),
+            'suggestions' : current_suggestions,
             'can_edit' : not from_developer
         }
 
