@@ -163,7 +163,8 @@ def extract_local_translations_url(app_url, force_local_cache = False):
         cached = db.session.query(TranslationFastCache.translation_url, TranslationFastCache.original_messages).filter(TranslationFastCache.app_url == app_url, TranslationFastCache.datetime > last_hour).first()
         if cached is not None:
             translation_url, original_messages = cached
-            return translation_url, json.loads(original_messages)
+            original_messages_loaded = json.loads(original_messages)
+            return translation_url, original_messages_loaded
 
     cached_requests = get_cached_session()
 
@@ -215,7 +216,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
                     logging.warning(u"Could not load %s translation for app URL: %s Reason: %s" % (lang, app_url, e), exc_info = True)
                     continue
                 else:
-                    original_translations[lang] = messages
+                    original_translations[lang] = [ msg['text'] for msg in messages ]
                     original_translation_urls[lang] = absolute_url
 
             if (lang is None or lang.lower() == 'all') and messages_url:
@@ -242,10 +243,18 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
 def extract_messages_from_translation(xml_contents):
     contents = fromstring(xml_contents)
     messages = {}
-    for xml_msg in contents.findall('msg'):
+    for pos, xml_msg in enumerate(contents.findall('msg')):
         if 'name' not in xml_msg.attrib:
             raise TranslatorError("Invalid translation file: no name in msg tag")
-        messages[xml_msg.attrib['name']] = xml_msg.text
+        if 'category' in xml_msg.attrib:
+            category = xml_msg.attrib['category']
+        else:
+            category = None
+        messages[xml_msg.attrib['name']] = {
+            'text' : xml_msg.text,
+            'category' : category,
+            'position' : pos,
+        }
     return messages
 
 

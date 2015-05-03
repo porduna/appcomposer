@@ -103,7 +103,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                 db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False)
                 db.session.add(db_active_translation_message)
                 
-                if original_messages.get(key, object()) == value:
+                if original_messages.get(key, {}).get('text', object()) == value:
                     # If the message in the original language is the same as in the target language, then
                     # it can be two things: 
                     # 
@@ -124,7 +124,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
 
                 # Create a suggestion based on the value
                 if original_messages is not None and key in original_messages:
-                    human_key = original_messages[key]
+                    human_key = original_messages[key]['text']
 
                     db_existing_human_key_suggestion = db.session.query(TranslationValueSuggestion).filter_by(human_key = human_key, value = value, language = language, target = target).first()
                     if db_existing_human_key_suggestion:
@@ -141,7 +141,8 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
 
     now = datetime.datetime.utcnow()
     existing_keys = [ key for key, in db.session.query(ActiveTranslationMessage.key).filter_by(bundle = db_translation_bundle).all() ]
-    for key, value in original_messages.iteritems():
+    for key, original_message_pack in original_messages.iteritems():
+        value = original_message_pack['text']
         if key not in existing_keys:
             # Create a new translation establishing that it was generated with the default value (and therefore it should be changed)
             db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, None, True)
@@ -197,11 +198,12 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
     original_keys = [ key for key in original_messages ]
     if SKIP_SUGGESTIONS_IF_STORED:
         original_keys = [ key for key in original_keys if key not in stored_translations ]
-    original_values = [ original_messages[key] for key in original_keys ]
+    original_values = [ original_messages[key]['text'] for key in original_keys ]
     original_keys_by_value = { 
         # value : [key1, key2]
     }
-    for key, value in original_messages.iteritems():
+    for key, original_message_pack in original_messages.iteritems():
+        value = original_message_pack['text']
         if value not in original_keys_by_value:
             original_keys_by_value[value] = []
         original_keys_by_value[value].append(key)
