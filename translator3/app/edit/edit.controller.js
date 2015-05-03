@@ -35,7 +35,6 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
     $scope.translationInfo = undefined;
     retrieveTranslationInfo();
 
-    $scope.translationInfo.$promise.then(onGetSuccess, onGetError);
     $scope.appinfo.$promise.then(onGetSuccess, onGetError);
 
     $scope.checkModifications = undefined;
@@ -69,7 +68,6 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
      * @param result
      */
     function onCheckModificationsSuccess(result) {
-        $log.debug("onCheckModificationsSuccess");
         if(result.modificationDateByOther == undefined) {
             // An error occurred, etc.
             // Ignore it for now.
@@ -82,11 +80,11 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
 
         // Compare against the last update date.
         var lastDate = new Date($scope.translationInfo.modificationDateByOther);
-        if(lastDate > date) {
+        if(lastDate < date) {
             $log.debug("Bundle change detected: Refreshing.");
             retrieveTranslationInfo();
         } else {
-            $log.debug("No changes according to date");
+            // $log.debug("No changes according to date");
         }
     } // !onCheckModificationsSuccess
 
@@ -121,6 +119,8 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
             $scope.translationInfo = TranslationInfo.get(args);
         else
             $scope.translationInfo.$get(args);
+
+        $scope.translationInfo.$promise.then(onGetSuccess, onGetError);
     } // !retrieveTranslationInfo
 
     /**
@@ -167,7 +167,6 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
 
 
     function onGetSuccess() {
-
     } // !onThenSuccess
 
     /**
