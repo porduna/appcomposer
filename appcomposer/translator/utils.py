@@ -276,10 +276,12 @@ def indent(elem, level=0):
 def bundle_to_xml(db_bundle):
     xml_bundle = ET.Element("messagebundle")
     active_messages = [ am for am in db_bundle.active_messages ]
-    active_messages.sort(lambda am1, am2 : cmp(am1.key, am2.key))
+    active_messages.sort(lambda am1, am2 : cmp(am1.position, am2.position))
     for message in active_messages:
         xml_msg = ET.SubElement(xml_bundle, 'msg')
         xml_msg.attrib['name'] = message.key
+        if message.category:
+            xml_msg.attrib['category'] = message.category
         xml_msg.text = message.value
     indent(xml_bundle)
     xml_string = ET.tostring(xml_bundle, encoding = 'utf8')

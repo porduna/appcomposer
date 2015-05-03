@@ -87,20 +87,29 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                     parent_translation_ids[key] = existing_active_translation.history.id
                     db.session.delete(existing_active_translation)
                 else:
+                    position = original_messages.get(key, {}).get('position')
+                    if position is not None and existing_active_translation.position != position:
+                        existing_active_translation.position = position
+
+                    category = original_messages.get(key, {}).get('category')
+                    if category is not None and existing_active_translation.category != category:
+                        existing_active_translation.category = category
+                    
                     unchanged.append(key)
-        
 
         # For each translation message
         now = datetime.datetime.utcnow()
         for key, value in translated_messages.iteritems():
-            if key not in unchanged:
+            if key not in unchanged and key in original_messages:
                 # Create a new history message
                 parent_translation_id = parent_translation_ids.get(key, None)
                 db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, parent_translation_id, False)
                 db.session.add(db_history)
 
                 # Establish that thew new active message points to this history message
-                db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False)
+                position = original_messages[key]['position']
+                category = original_messages[key]['category']
+                db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False, position, category)
                 db.session.add(db_active_translation_message)
                 
                 if original_messages.get(key, {}).get('text', object()) == value:
@@ -143,13 +152,15 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
     existing_keys = [ key for key, in db.session.query(ActiveTranslationMessage.key).filter_by(bundle = db_translation_bundle).all() ]
     for key, original_message_pack in original_messages.iteritems():
         value = original_message_pack['text']
+        position = original_message_pack['position']
+        category = original_message_pack['category']
         if key not in existing_keys:
             # Create a new translation establishing that it was generated with the default value (and therefore it should be changed)
             db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, None, True)
             db.session.add(db_history)
-
+            
             # Establish that thew new active message points to this history message
-            db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, True)
+            db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, True, position, category)
             db.session.add(db_active_translation_message)
 
     # Commit!
@@ -364,7 +375,7 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
     now = datetime.datetime.utcnow()
     for msg in src_bundle.active_messages:
         history = historic.get(msg.history_id)
-        active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, history, now, msg.taken_from_default)
+        active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, history, now, msg.taken_from_default, msg.position, msg.category)
         db.session.add(active_t)
 
     db.session.commit()
@@ -378,14 +389,14 @@ def _merge_bundle(src_bundle, dst_bundle):
         if existing_translation is None:
             t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, None, msg.taken_from_default)
             db.session.add(t_history)
-            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default)
+            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category)
             db.session.add(active_t)
             db.session.commit()
         elif existing_translation.taken_from_default and not msg.taken_from_default:
             # Merge it
             t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, existing_translation.history.id, msg.taken_from_default)
             db.session.add(t_history)
-            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default)
+            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category)
             db.session.add(active_t)
             db.session.delete(existing_translation)
             db.session.commit()
