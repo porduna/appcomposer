@@ -216,7 +216,11 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
                     logging.warning(u"Could not load %s translation for app URL: %s Reason: %s" % (lang, app_url, e), exc_info = True)
                     continue
                 else:
-                    original_translations[lang] = [ msg['text'] for msg in messages ]
+                    new_messages = {}
+                    if messages:
+                        for key, value in messages.iteritems():
+                            new_messages[key] = value['text']
+                    original_translations[lang] = new_messages
                     original_translation_urls[lang] = absolute_url
 
             if (lang is None or lang.lower() == 'all') and messages_url:
