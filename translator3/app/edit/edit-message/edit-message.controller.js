@@ -78,6 +78,9 @@ function EditMessageController($scope, $log, $resource) {
 
         $scope.selected.suggestion = "";
 
+        // Force a save.
+        $scope.savedValue = undefined;
+
         // Trigger a fake onChange event.
         onChange();
     } // !suggestionSelected
