@@ -415,11 +415,12 @@ class ActiveTranslationMessage(db.Model):
     taken_from_default = db.Column(db.Boolean, index = True)
     position = db.Column(db.Integer, index = True) # position in the XML file, starting by 0
     category = db.Column(db.Unicode(255), index = True) # optional category for each translation
+    from_developer = db.Column(db.Boolean, index = True) # a from_developer bundle can contain some messages which are not from the developer
 
     bundle = relation("TranslationBundle", backref="active_messages")
     history = relation("TranslationMessageHistory", backref="active")
 
-    def __init__(self, bundle, key, value, history, datetime, taken_from_default, position, category):
+    def __init__(self, bundle, key, value, history, datetime, taken_from_default, position, category, from_developer):
         self.bundle = bundle
         self.key = key
         self.value = value
@@ -428,6 +429,7 @@ class ActiveTranslationMessage(db.Model):
         self.taken_from_default = taken_from_default
         self.position = position
         self.category = category
+        self.from_developer = from_developer
 
 
 class TranslationKeySuggestion(db.Model):
