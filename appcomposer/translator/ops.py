@@ -70,8 +70,19 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
         # If this is an existing translation from a developer and it comes from a user (and not a developer)
         # then it should not be accepted.
         return
-        
-   
+
+    for existing_active_translation in db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle).all():
+        key = existing_active_translation.key
+
+        position = original_messages.get(key, {}).get('position')
+        if position is not None and existing_active_translation.position != position:
+            existing_active_translation.position = position
+
+        category = original_messages.get(key, {}).get('category')
+        if category is not None and existing_active_translation.category != category:
+            existing_active_translation.category = category
+
+
     if translated_messages is not None:
         # Delete active translations that are going to be replaced
         # Store which were the parents of those translations and
@@ -87,14 +98,6 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                     parent_translation_ids[key] = existing_active_translation.history.id
                     db.session.delete(existing_active_translation)
                 else:
-                    position = original_messages.get(key, {}).get('position')
-                    if position is not None and existing_active_translation.position != position:
-                        existing_active_translation.position = position
-
-                    category = original_messages.get(key, {}).get('category')
-                    if category is not None and existing_active_translation.category != category:
-                        existing_active_translation.category = category
-                    
                     unchanged.append(key)
 
         # For each translation message
@@ -162,6 +165,12 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
             # Establish that thew new active message points to this history message
             db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, True, position, category)
             db.session.add(db_active_translation_message)
+
+    for existing_key in existing_keys:
+        if existing_key not in original_messages:
+            old_translations = db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle, key = existing_key).all()
+            for old_translation in old_translations:
+                db.session.delete(old_translation)
 
     # Commit!
     try:
