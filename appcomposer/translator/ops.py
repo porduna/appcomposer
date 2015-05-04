@@ -69,7 +69,15 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
     if not from_developer and db_translation_bundle.from_developer:
         # If this is an existing translation from a developer and it comes from a user (and not a developer)
         # then it should not be accepted.
-        return
+        if translated_messages is not None:
+            translated_messages = translated_messages.copy()
+            for msg in db_translation_bundle.active_messages:
+                if msg.from_developer:
+                    translated_messages.pop(msg.key, None)
+            # Continue with the remaining translated_messages
+
+    if translated_messages is not None and len(translated_messages) == 0:
+        translated_messages = None
 
     for existing_active_translation in db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle).all():
         key = existing_active_translation.key
@@ -93,8 +101,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
         for existing_active_translation in db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle).all():
             key = existing_active_translation.key
             if key in translated_messages:
-                # When calling this, if taken_from_default is True, we can remove it
-                if existing_active_translation.value != translated_messages[key] or existing_active_translation.taken_from_default:
+                if existing_active_translation.value != translated_messages[key] or (not from_developer and existing_active_translation.taken_from_default):
                     parent_translation_ids[key] = existing_active_translation.history.id
                     db.session.delete(existing_active_translation)
                 else:
@@ -209,6 +216,7 @@ def retrieve_stored(translation_url, language, target):
         response[message.key] = {
             'value' : message.value,
             'from_default' : message.taken_from_default,
+            'from_developer' : message.from_developer,
         }
     return response, bundle.from_developer
 
@@ -297,6 +305,7 @@ def retrieve_translations_stats(translation_url, original_messages):
     results_from_developers = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
                 ActiveTranslationMessage.key.in_(list(original_messages)),
                 ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
+                ActiveTranslationMessage.from_developer == True,
                 TranslationBundle.translation_url_id == TranslationUrl.id, 
                 TranslationBundle.from_developer == True, 
                 TranslationUrl.url == translation_url,

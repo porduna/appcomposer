@@ -278,10 +278,10 @@ def api_translate(language, target):
                     'weight' : 0.0
                 })
 
-        if not from_developer:
-            can_edit = True
+        if from_developer:
+            can_edit = not stored.get('from_developer', True)
         else:
-            can_edit = stored.get('from_developer', False)
+            can_edit = True
 
         translation[key] = {
             'source' : value,

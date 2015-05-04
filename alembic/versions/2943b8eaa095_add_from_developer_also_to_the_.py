@@ -12,6 +12,24 @@ down_revision = '435d360d3398'
 
 from alembic import op
 import sqlalchemy as sa
+import sqlalchemy.sql as sql
+
+metadata = sa.MetaData()
+active_translation = sa.Table('ActiveTranslationMessages', metadata,
+    sa.Column('id', sa.Integer()),
+    sa.Column('bundle_id', sa.Integer),
+    sa.Column('taken_from_default', sa.Boolean),
+    sa.Column('from_developer', sa.Boolean),
+    sa.Column('key', sa.Unicode(255)),
+    sa.Column('value', sa.UnicodeText),
+)
+bundle = sa.Table('TranslationBundles', metadata,
+    sa.Column('id', sa.Integer()),
+    sa.Column('from_developer', sa.Boolean),
+    sa.Column('translation_url_id', sa.Integer),
+    sa.Column('language', sa.Unicode(20)),
+    sa.Column('target', sa.Unicode(20)),
+)
 
 
 def upgrade():
@@ -19,6 +37,52 @@ def upgrade():
     op.add_column('ActiveTranslationMessages', sa.Column('from_developer', sa.Boolean(), nullable=True))
     op.create_index(u'ix_ActiveTranslationMessages_from_developer', 'ActiveTranslationMessages', ['from_developer'], unique=False)
     ### end Alembic commands ###
+
+    active_translations = {
+        # bundle_id : {
+            # key : value,
+        # }
+    }
+    for key, value, bundle_id in op.get_bind().execute(sql.select([active_translation.c.key, active_translation.c.value, active_translation.c.bundle_id])):
+        if bundle_id not in active_translations:
+            active_translations[bundle_id] = {}
+        active_translations[bundle_id][key] = value
+
+    default_bundle_ids = {
+        # translation_url_id : bundle_id # pointing to English
+    }
+
+    for bundle_id, translation_url_id, target in op.get_bind().execute(sql.select([bundle.c.id, bundle.c.translation_url_id, bundle.c.target], bundle.c.language == 'en_ALL')):
+        default_bundle_ids[translation_url_id] = bundle_id
+
+    active_translation_query = sql.select([active_translation.c.id, active_translation.c.taken_from_default, bundle.c.from_developer, bundle.c.translation_url_id, bundle.c.id, active_translation.c.key, active_translation.c.value], active_translation.c.bundle_id == bundle.c.id, use_labels = True)
+
+    for row in op.get_bind().execute(active_translation_query):
+        active_msg_id = row[active_translation.c.id]
+        from_default = row[active_translation.c.taken_from_default]
+        bundle_from_developer = row[bundle.c.from_developer]
+        bundle_id = row[bundle.c.id]
+        translation_url_id = row[bundle.c.translation_url_id]
+        current_value = row[active_translation.c.value]
+        current_key = row[active_translation.c.key]
+        
+        default_bundle_id = default_bundle_ids.get(translation_url_id)
+        default_value = active_translations.get(default_bundle_id, {}).get(current_key)
+
+        if bundle_id == default_bundle_id:
+            from_developer = True
+        else:
+            if bundle_from_developer and not from_default:
+                if default_value is not None and current_value != default_value and current_value:
+                    from_developer = True
+                else:
+                    from_developer = False
+                    from_default = True
+            else:
+                from_developer = False
+
+        update_stmt = active_translation.update().where(active_translation.c.id == active_msg_id).values(from_developer = from_developer, taken_from_default = from_default)
+        op.execute(update_stmt)
 
 
 def downgrade():
