@@ -12,7 +12,7 @@ from celery.utils.log import get_task_logger
 
 from appcomposer.application import app
 from appcomposer.db import db
-from appcomposer.models import RepositoryApp, TranslatedApp, ActiveTranslationMessage, TranslationBundle, TranslationExternalSuggestion
+from appcomposer.models import RepositoryApp, TranslatedApp, ActiveTranslationMessage, TranslationBundle, TranslationUrl, TranslationExternalSuggestion
 
 from appcomposer.translator.languages import SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES, OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES
 from appcomposer.translator.utils import get_cached_session, extract_metadata_information
@@ -253,6 +253,15 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
             add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url, 
                                 language = language, target = u'ALL', translated_messages = translated_messages, 
                                 original_messages = original_messages, from_developer = True)
+
+        db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
+        if db_translation_url:
+            for translation_bundle in db.session.query(TranslationBundle).filter_by(translation_url = db_translation_url).all():
+                if translation_bundle.target != u'ALL' or translation_bundle.language not in metadata_information['original_translations']:
+                    add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url, 
+                                language = translation_bundle.language, target = translation_bundle.target, translated_messages = None,
+                                original_messages = original_messages, from_developer = False)
+                   
 
         translation_percent = retrieve_translations_percent(translation_url, original_messages)
         if repo_app is not None and translation_percent != repo_app.translation_percent:

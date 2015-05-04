@@ -261,7 +261,8 @@ def api_translate(language, target):
 
     stored_translations, from_developer = retrieve_stored(translation_url, language, target)
     suggestions = retrieve_suggestions(original_messages, language, target, stored_translations)
-    for key, value in original_messages.iteritems():
+    for key, original_message_pack in original_messages.iteritems():
+        value = original_message_pack['text']
         stored = stored_translations.get(key, {})
         current_suggestions = list(suggestions.get(key, []))
         current_target = stored.get('value')

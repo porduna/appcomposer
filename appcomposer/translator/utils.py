@@ -163,7 +163,8 @@ def extract_local_translations_url(app_url, force_local_cache = False):
         cached = db.session.query(TranslationFastCache.translation_url, TranslationFastCache.original_messages).filter(TranslationFastCache.app_url == app_url, TranslationFastCache.datetime > last_hour).first()
         if cached is not None:
             translation_url, original_messages = cached
-            return translation_url, json.loads(original_messages)
+            original_messages_loaded = json.loads(original_messages)
+            return translation_url, original_messages_loaded
 
     cached_requests = get_cached_session()
 
@@ -215,7 +216,11 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
                     logging.warning(u"Could not load %s translation for app URL: %s Reason: %s" % (lang, app_url, e), exc_info = True)
                     continue
                 else:
-                    original_translations[lang] = messages
+                    new_messages = {}
+                    if messages:
+                        for key, value in messages.iteritems():
+                            new_messages[key] = value['text']
+                    original_translations[lang] = new_messages
                     original_translation_urls[lang] = absolute_url
 
             if (lang is None or lang.lower() == 'all') and messages_url:
@@ -242,10 +247,18 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
 def extract_messages_from_translation(xml_contents):
     contents = fromstring(xml_contents)
     messages = {}
-    for xml_msg in contents.findall('msg'):
+    for pos, xml_msg in enumerate(contents.findall('msg')):
         if 'name' not in xml_msg.attrib:
             raise TranslatorError("Invalid translation file: no name in msg tag")
-        messages[xml_msg.attrib['name']] = xml_msg.text
+        if 'category' in xml_msg.attrib:
+            category = xml_msg.attrib['category']
+        else:
+            category = None
+        messages[xml_msg.attrib['name']] = {
+            'text' : xml_msg.text,
+            'category' : category,
+            'position' : pos,
+        }
     return messages
 
 
@@ -267,10 +280,12 @@ def indent(elem, level=0):
 def bundle_to_xml(db_bundle):
     xml_bundle = ET.Element("messagebundle")
     active_messages = [ am for am in db_bundle.active_messages ]
-    active_messages.sort(lambda am1, am2 : cmp(am1.key, am2.key))
+    active_messages.sort(lambda am1, am2 : cmp(am1.position, am2.position))
     for message in active_messages:
         xml_msg = ET.SubElement(xml_bundle, 'msg')
         xml_msg.attrib['name'] = message.key
+        if message.category:
+            xml_msg.attrib['category'] = message.category
         xml_msg.text = message.value
     indent(xml_bundle)
     xml_string = ET.tostring(xml_bundle, encoding = 'utf8')
