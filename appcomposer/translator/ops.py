@@ -82,12 +82,14 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
         for existing_active_translation in db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle).all():
             key = existing_active_translation.key
             if key in translated_messages:
-                if existing_active_translation.value != translated_messages[key]:
+                # When calling this, if taken_from_default is True, we can remove it
+                if existing_active_translation.value != translated_messages[key] or existing_active_translation.taken_from_default:
                     parent_translation_ids[key] = existing_active_translation.history.id
                     db.session.delete(existing_active_translation)
                 else:
                     unchanged.append(key)
         
+
         # For each translation message
         now = datetime.datetime.utcnow()
         for key, value in translated_messages.iteritems():

@@ -263,12 +263,16 @@ def api_translate(language, target):
     suggestions = retrieve_suggestions(original_messages, language, target, stored_translations)
     for key, value in original_messages.iteritems():
         stored = stored_translations.get(key, {})
+        if from_developer:
+            can_edit = stored.get('from_default', False)
+        else:
+            can_edit = True
         translation[key] = {
             'source' : value,
             'target' : stored.get('value'),
             'from_default' : stored.get('from_default', False),
             'suggestions' : suggestions.get(key, []),
-            'can_edit' : not from_developer
+            'can_edit' : can_edit
         }
 
     app_thumb = None
@@ -291,7 +295,7 @@ def api_translate(language, target):
         'translation' : translation,
         'modificationDate': users_status['modificationDate'],
         'modificationDateByOther': users_status['modificationDateByOther'],
-        'automatic': True
+        'automatic': not from_developer
     }
 
     if False:
