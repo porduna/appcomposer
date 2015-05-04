@@ -32,11 +32,12 @@
                         </span>
                     </td>
                     <td>
-                        <span class="badge" ng-repeat="lang in app.original_languages_simplified">
-                            {{ lang }}
+                        <span class="badge ac-lang-badge" ng-repeat="lang in app.original_languages_simplified">
+                            {{ lang }} {{ (app.translated_languages[lang + '_ALL_ALL'] | percentage:0) || '100%' }}
                         </span>
-                        <span class="badge" ng-class="{ 'ac-badge-notoriginal-complete': value == 1, 'ac-badge-notoriginal-incomplete': value < 1}"
-                              ng-repeat="(lang, value) in onlyTranslatedLanguages(app)"> {{ extractLangName(lang) }}
+                        <span class="badge ac-lang-badge" ng-class="{ 'ac-badge-notoriginal-complete': value == 1, 'ac-badge-notoriginal-incomplete': value < 1}"
+                              ng-repeat="(lang, value) in onlyTranslatedLanguages(app)">
+                            {{ extractLangName(lang) }} {{ app.translated_languages[extractLangName(lang) + '_ALL_ALL'] | percentage:0 }}
                         </span>
                     </td>
                 </tr>
