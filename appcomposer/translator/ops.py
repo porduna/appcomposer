@@ -3,7 +3,7 @@ import hashlib
 import datetime
 from collections import defaultdict
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
 
 from appcomposer import db
@@ -309,20 +309,24 @@ def retrieve_translations_stats(translation_url, original_messages):
         return {}
     
     results_from_users = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
-                ActiveTranslationMessage.key.in_(list(original_messages)),
+                TranslationBundle.from_developer == False, 
+
                 ActiveTranslationMessage.taken_from_default == False,
+
+                ActiveTranslationMessage.key.in_(list(original_messages)),
                 ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
                 TranslationBundle.translation_url_id == TranslationUrl.id, 
-                TranslationBundle.from_developer == False, 
+
                 TranslationUrl.url == translation_url,
             ).group_by(TranslationBundle.language, TranslationBundle.target).all()
 
     results_from_developers = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
+                TranslationBundle.from_developer == True, 
+                or_(ActiveTranslationMessage.from_developer == True, ActiveTranslationMessage.taken_from_default == False),
+
                 ActiveTranslationMessage.key.in_(list(original_messages)),
                 ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
-                ActiveTranslationMessage.from_developer == True,
                 TranslationBundle.translation_url_id == TranslationUrl.id, 
-                TranslationBundle.from_developer == True, 
                 TranslationUrl.url == translation_url,
             ).group_by(TranslationBundle.language, TranslationBundle.target).all()
 
@@ -366,26 +370,19 @@ def retrieve_translations_stats(translation_url, original_messages):
 
 
 def retrieve_translations_percent(translation_url, original_messages):
-    if len(original_messages) == 0:
-        return {}
-
-    results = db.session.query(func.count(ActiveTranslationMessage.key), TranslationBundle.language, TranslationBundle.target).filter(
-                ActiveTranslationMessage.key.in_(list(original_messages)),
-                ActiveTranslationMessage.taken_from_default == False,
-                ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
-                TranslationBundle.translation_url_id == TranslationUrl.id, 
-                TranslationUrl.url == translation_url,
-            ).group_by(TranslationBundle.language, TranslationBundle.target).all()
-
-    translations = {
+    percent = {
         # es_ES_ALL : 0.8
     }
 
-    for count, lang, target in results:
-        bundle = u'%s_%s' % (lang, target)
-        translations[bundle] = 1.0 * count / len(original_messages)
+    translations_stats = retrieve_translations_stats(translation_url, original_messages)
+    for lang, lang_package in translations_stats.iteritems():
+        targets = lang_package.get('targets', {})
+        for target, target_stats in targets.iteritems():
+            translated = target_stats['translated']
+            total_items = target_stats['items']
+            percent['%s_%s' % (lang, target)] = 1.0 * translated / total_items
 
-    return translations
+    return percent
 
 def _deep_copy_bundle(src_bundle, dst_bundle):
     """Copy all the messages. Safely assume that there is no translation in the destination, so

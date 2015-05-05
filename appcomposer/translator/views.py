@@ -104,10 +104,6 @@ def select_translations():
 @cross_origin()
 @api
 def api_translations():
-    # XXX: Removed: author (not the original one), app_type (always OpenSocial). 
-    # XXX: original_languages does not have target (nobody has it)
-    # XXX: app_golabz_page renamed as app_link
-
     applications = []
     for repo_app in db.session.query(RepositoryApp).filter_by(translatable = True).all():
         original_languages = repo_app.original_translations.split(',')
