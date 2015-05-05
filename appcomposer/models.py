@@ -421,6 +421,8 @@ class ActiveTranslationMessage(db.Model):
     history = relation("TranslationMessageHistory", backref="active")
 
     def __init__(self, bundle, key, value, history, datetime, taken_from_default, position, category, from_developer):
+        if value is None:
+            value = ""
         self.bundle = bundle
         self.key = key
         self.value = value

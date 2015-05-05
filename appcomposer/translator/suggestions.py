@@ -35,6 +35,9 @@ class AbstractTranslator(object):
                 db.session.commit()
             except IntegrityError:
                 db.session.rollback()
+            except:
+                db.session.rollback()
+                raise
         return existing_suggestions
 
     def existing_translations(self, texts, language, origin_language = 'en'):

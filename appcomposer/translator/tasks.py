@@ -101,3 +101,4 @@ def delete_old_realtime_active_users(self):
                 db.session.commit()
             except:
                 db.session.rollback()
+                raise

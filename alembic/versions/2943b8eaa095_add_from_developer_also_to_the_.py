@@ -38,6 +38,10 @@ def upgrade():
     op.create_index(u'ix_ActiveTranslationMessages_from_developer', 'ActiveTranslationMessages', ['from_developer'], unique=False)
     ### end Alembic commands ###
 
+    
+    update_stmt = active_translation.update().where(active_translation.c.value == None).values(value = "")
+    op.execute(update_stmt)
+
     active_translations = {
         # bundle_id : {
             # key : value,

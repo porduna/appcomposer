@@ -186,6 +186,7 @@ def extract_local_translations_url(app_url, force_local_cache = False):
     try:
         db.session.commit()
     except SQLAlchemyError as e:
+        db.session.rollback()
         logging.warning("Could not add element to cache: %s" % e, exc_info = True)
     return absolute_translation_url, messages
 
@@ -255,7 +256,7 @@ def extract_messages_from_translation(xml_contents):
         else:
             category = None
         messages[xml_msg.attrib['name']] = {
-            'text' : xml_msg.text,
+            'text' : xml_msg.text or "",
             'category' : category,
             'position' : pos,
         }

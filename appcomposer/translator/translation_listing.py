@@ -145,7 +145,11 @@ def _sync_golab_translations(cached_requests, force_reload):
             if external_id not in apps_by_id:
                 # Delete old apps (translations are kept, and the app is kept, but not listed in the repository apps)
                 db.session.delete(repo_app)
-                db.session.commit()
+                try:
+                    db.session.commit()
+                except:
+                    db.session.rollback()
+                    raise
             else:
                 stored_ids.append(external_id)
                 app = apps_by_id[external_id]
@@ -267,7 +271,11 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
         if repo_app is not None and translation_percent != repo_app.translation_percent:
             repo_app.translation_percent = json.dumps(translation_percent)
     
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        raise
     
 
 ORIGIN_LANGUAGE = 'en'
@@ -298,7 +306,11 @@ def load_google_suggestions_by_lang(active_messages, language):
         if translated:
             suggestion = TranslationExternalSuggestion(engine = 'google', human_key = message, language = language, origin_language = ORIGIN_LANGUAGE, value = translated)
             db.session.add(suggestion)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()
+                raise
         else:
             logger.warning("Google Translate returned %r for message %r. Stopping." % (translated, message))
             return False
