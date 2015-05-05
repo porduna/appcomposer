@@ -23,6 +23,9 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
 
     $scope.status = {}; // For holding error status and the like.
 
+    $scope.preview = {};
+    $scope.preview.shown = false;
+
     $scope.bundle = {};
     $scope.bundle.appurl = $scope.appurl;
     $scope.bundle.srclang = "all_ALL";
@@ -44,6 +47,10 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
 
     $scope.changeSourceLanguage = changeSourceLanguage;
 
+    $scope.previewNow = previewNow;
+    $scope.refreshPreview = refreshPreview;
+    $scope.closePreview = closePreview;
+
     /* EVENTS */
 
     // Event to go to the next item.
@@ -52,6 +59,18 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
     /////////
     // Implementations
     /////////
+
+    function previewNow() {
+        $scope.preview.shown = true;
+    } // !previewNow
+
+    function closePreview() {
+        $scope.preview.shown = false;
+    } // !hidePreview
+
+    function refreshPreview() {
+        $scope.$broadcast("refresh");
+    } // !refreshPreview
 
     /**
      * Setups the check modifications trigger.

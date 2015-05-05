@@ -95,6 +95,34 @@
                 </div>
             </div>
 
+
+            <div ng-if="!status.error">
+
+                <div style="margin-top: 15px" ng-show="translationInfo.automatic == true" class="alert alert-info">
+                    <h3><span class="fa fa-warning-circle"/>Thank you</h3>
+
+                    <p>
+                        Thank you for translating this application!
+                        The changes will be applied automatically, though it may take some minutes before
+                        you see them.
+                    </p>
+
+                    <br>
+
+                    <button ng-show="preview.shown == false" ng-click="previewNow()" class="btn btn-primary btn-small">Preview application now</button>
+                    <button ng-show="preview.shown == true" ng-click="refreshPreview()" class="btn btn-primary btn-small">
+                        <span class="fa fa-refresh"/> Refresh
+                    </button>
+                    <button ng-show="preview.shown == true" ng-click="closePreview()" class="btn btn-warning btn-small">Close preview</button>
+
+                </div>
+
+                <div ng-if="preview.shown">
+                    <ac-preview lang="bundle.targetlang" appurl="translationInfo.url"></ac-preview>
+                </div>
+
+            </div>
+
         </div> <!-- Endof content -->
 
 </div>
