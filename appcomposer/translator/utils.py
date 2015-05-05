@@ -278,9 +278,17 @@ def indent(elem, level=0):
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
 
-def bundle_to_xml(db_bundle):
+NO_CATEGORY = 'no-category'
+
+def bundle_to_xml(db_bundle, category = None):
     xml_bundle = ET.Element("messagebundle")
-    active_messages = [ am for am in db_bundle.active_messages ]
+    if category is None:
+        active_messages = [ am for am in db_bundle.active_messages ]
+    elif category == NO_CATEGORY:
+        active_messages = [ am for am in db_bundle.active_messages if am.category == None ]
+    else:
+        active_messages = [ am for am in db_bundle.active_messages if am.category == category ]
+
     active_messages.sort(lambda am1, am2 : cmp(am1.position, am2.position))
     for message in active_messages:
         xml_msg = ET.SubElement(xml_bundle, 'msg')

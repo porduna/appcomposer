@@ -1,6 +1,40 @@
 {% extends "translator/base.html" %}
 {% block body %}
 
+{% macro display_bundles(apps) %}
+    {% for url, url_resources in apps.iteritems() %}
+        {% set bundles = url_resources['translations'] %}
+        <h4><a target="_blank" href="{{ url }}">{{ url }}</a></h4>
+        
+        <div>
+        <a class="btn btn-primary" href="{{ url_for('.translations_app_url_zip', app_url = url) }}">All languages</a>
+        {% for bundle in bundles %}
+            <a class="btn {% if bundle['from_developer'] %}btn-default{% else %}btn-info{% endif %}" href="{{ url_for('.translations_app_xml', lang=bundle['lang'], target=bundle['target'], app_url = url) }}">{{ bundle['lang'] }} - {{ bundle['target'] }}</a>
+        {% endfor %}
+        </div>
+        
+        {% if url_resources['categories'] %}
+            <br>
+            <h4>Partial translations by category:</h4>
+        {% endif %}
+        {% for category in url_resources['categories'] %}
+        <div class="col-sm-offset-1">
+        <h4>{{ category }}</h4>
+        <div>
+        <a class="btn btn-primary" href="{{ url_for('.translations_app_url_zip', app_url = url, category = category) }}">All languages</a>
+        {% for bundle in bundles %}
+            <a class="btn {% if bundle['from_developer'] %}btn-default{% else %}btn-info{% endif %}" href="{{ url_for('.translations_app_xml', lang=bundle['lang'], target=bundle['target'], app_url = url, category = category) }}">{{ bundle['lang'] }} - {{ bundle['target'] }}</a>
+        {% endfor %}
+        </div>
+        </div>
+        {% endfor %}
+
+        {% if not loop.last %}
+            <hr>
+        {% endif %}
+    {% endfor %}
+{% endmacro %}
+
 {% if not golab_apps and not other_apps %}
     <div class="alert alert-warning">No app found</div>
 {% else %}
@@ -17,39 +51,13 @@
     <br><br>
     <h2>Go-Lab repository applications</h2>
     <br><br>
-    {% for url, bundles in golab_apps.iteritems() %}
-        <h4><a target="_blank" href="{{ url }}">{{ url }}</a></h4>
-        
-        <div>
-        <a class="btn btn-primary" href="{{ url_for('.translations_app_url_zip', app_url = url) }}">All languages</a>
-        {% for bundle in bundles %}
-            <a class="btn {% if bundle['from_developer'] %}btn-default{% else %}btn-info{% endif %}" href="{{ url_for('.translations_app_xml', lang=bundle['lang'], target=bundle['target'], app_url = url) }}">{{ bundle['lang'] }} - {{ bundle['target'] }}</a>
-        {% endfor %}
-        </div>
-
-        {% if not loop.last %}
-            <hr>
-        {% endif %}
-    {% endfor %}
+    {{ display_bundles(golab_apps) }}
 
     <hr>
     <br><br>
     <h2>Other applications</h2>
     <br><br>
-    {% for url, bundles in other_apps.iteritems() %}
-        <h4><a target="_blank" href="{{ url }}">{{ url }}</a></h4>
-        
-        <div>
-        <a class="btn btn-primary" href="{{ url_for('.translations_app_url_zip', app_url = url) }}">All languages</a>
-        {% for bundle in bundles %}
-            <a class="btn {% if bundle['from_developer'] %}btn-default{% else %}btn-info{% endif %}" href="{{ url_for('.translations_app_xml', lang=bundle['lang'], target=bundle['target'], app_url = url) }}">{{ bundle['lang'] }} - {{ bundle['target'] }}</a>
-        {% endfor %}
-        </div>
-
-        {% if not loop.last %}
-            <hr>
-        {% endif %}
-    {% endfor %}
+    {{ display_bundles(other_apps) }}
 
 {% endif %}
 
