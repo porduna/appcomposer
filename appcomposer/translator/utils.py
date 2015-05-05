@@ -234,6 +234,17 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
             default_translations = messages
             default_translation_url = absolute_url
 
+            # No English? Default is always English!
+            if 'en_ALL' not in original_translations:
+                lang = 'en_ALL'
+                new_messages = {}
+                if messages:
+                    for key, value in messages.iteritems():
+                        new_messages[key] = value['text']
+
+                original_translations[lang] = new_messages
+                original_translation_urls[lang] = absolute_url
+
     adaptable = ' data-configuration ' in body and ' data-configuration-definition ' in body
 
     return {
