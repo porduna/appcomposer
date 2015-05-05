@@ -4,7 +4,7 @@
 {% macro display_bundles(apps) %}
     {% for url, url_resources in apps.iteritems() %}
         {% set bundles = url_resources['translations'] %}
-        <h4><a target="_blank" href="{{ url }}">{{ url }}</a></h4>
+        <h4><a name="{{ url }}"></a><a target="_blank" href="{{ url }}">{{ url }}</a></h4>
         
         <div>
         <a class="btn btn-primary" href="{{ url_for('.translations_app_url_zip', app_url = url) }}">All languages</a>
