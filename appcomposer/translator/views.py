@@ -14,6 +14,7 @@ from functools import wraps
 
 from collections import OrderedDict
 
+from sqlalchemy import distinct
 from sqlalchemy.orm import joinedload_all
 
 from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify
@@ -26,14 +27,14 @@ from wtforms.validators import url, required
 
 from appcomposer.db import db
 from appcomposer.application import app
-from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp, GoLabOAuthUser
+from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp, GoLabOAuthUser, ActiveTranslationMessage
 from appcomposer.login import requires_golab_login, current_golab_user
 from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, get_latest_synchronizations, update_user_status, get_user_status
-from appcomposer.translator.utils import bundle_to_xml, url_to_filename, messages_to_xml
+from appcomposer.translator.utils import bundle_to_xml, url_to_filename, messages_to_xml, NO_CATEGORY
 
 import flask.ext.cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
@@ -104,10 +105,6 @@ def select_translations():
 @cross_origin()
 @api
 def api_translations():
-    # XXX: Removed: author (not the original one), app_type (always OpenSocial). 
-    # XXX: original_languages does not have target (nobody has it)
-    # XXX: app_golabz_page renamed as app_link
-
     applications = []
     for repo_app in db.session.query(RepositoryApp).filter_by(translatable = True).all():
         original_languages = repo_app.original_translations.split(',')
@@ -261,7 +258,8 @@ def api_translate(language, target):
 
     stored_translations, from_developer = retrieve_stored(translation_url, language, target)
     suggestions = retrieve_suggestions(original_messages, language, target, stored_translations)
-    for key, value in original_messages.iteritems():
+    for key, original_message_pack in original_messages.iteritems():
+        value = original_message_pack['text']
         stored = stored_translations.get(key, {})
         current_suggestions = list(suggestions.get(key, []))
         current_target = stored.get('value')
@@ -277,12 +275,17 @@ def api_translate(language, target):
                     'weight' : 0.0
                 })
 
+        if from_developer:
+            can_edit = not stored.get('from_developer', True)
+        else:
+            can_edit = True
+
         translation[key] = {
             'source' : value,
             'target' : current_target,
             'from_default' : stored.get('from_default', False),
             'suggestions' : current_suggestions,
-            'can_edit' : not from_developer
+            'can_edit' : can_edit
         }
 
     app_thumb = None
@@ -305,7 +308,7 @@ def api_translate(language, target):
         'translation' : translation,
         'modificationDate': users_status['modificationDate'],
         'modificationDateByOther': users_status['modificationDateByOther'],
-        'automatic': True
+        'automatic': not from_developer
     }
 
     if False:
@@ -521,22 +524,43 @@ def translations_apps():
     other_apps = {}
     golab_app_urls = [ url for url, in db.session.query(RepositoryApp.url).all() ]
 
+    categories_per_bundle_id = {
+        # bundle_id : set(category1, category2)
+    }
+    for category, bundle_id in db.session.query(distinct(ActiveTranslationMessage.category), ActiveTranslationMessage.bundle_id).group_by(ActiveTranslationMessage.category, ActiveTranslationMessage.bundle_id).all():
+        if bundle_id not in categories_per_bundle_id:
+            categories_per_bundle_id[bundle_id] = set()
+        if category is None:
+            category = NO_CATEGORY
+        categories_per_bundle_id[bundle_id].add(category)
+
     for app in db.session.query(TranslatedApp).options(joinedload_all('translation_url.bundles')):
         if app.url in golab_app_urls:
             current_apps = golab_apps
         else:
             current_apps = other_apps
-        current_apps[app.url] = []
+        current_apps[app.url] = {
+            'categories' : set(),
+            'translations' : [],
+        }
         if app.translation_url is not None:
             for bundle in app.translation_url.bundles:
-                current_apps[app.url].append({
+                current_apps[app.url]['translations'].append({
                     'from_developer' : bundle.from_developer,
                     'target' : bundle.target,
                     'lang' : bundle.language,
                 })
+                
+                for category in categories_per_bundle_id.get(bundle.id, []):
+                    current_apps[app.url]['categories'].add(category)
         else:
             # TODO: invalid state
             pass
+
+        current_apps[app.url]['categories'] = sorted(list(current_apps[app.url]['categories']))
+        if len(current_apps[app.url]['categories']) == 1 and current_apps[app.url]['categories'][0] is NO_CATEGORY:
+            current_apps[app.url]['categories'] = []
+
     return render_template("translator/translations_apps.html", golab_apps = golab_apps, other_apps = other_apps)
 
 @translator_blueprint.route('/dev/apps/<lang>/<target>/<path:app_url>')
@@ -554,6 +578,7 @@ def translations_app_all_zip():
     translated_apps = db.session.query(TranslatedApp).filter_by().all()
     sio = StringIO.StringIO()
     zf = zipfile.ZipFile(sio, 'w')
+
     for translated_app in translated_apps:
         translated_app_filename = url_to_filename(translated_app.url)
         if translated_app.translation_url:
@@ -573,12 +598,13 @@ def translations_app_url_zip(app_url):
     if translated_app is None:
         return "Translation App not found in the database", 404
    
+    category = request.args.get('category', None)
     sio = StringIO.StringIO()
     zf = zipfile.ZipFile(sio, 'w')
     translated_app_filename = url_to_filename(translated_app.url)
     if translated_app.translation_url:
         for bundle in translated_app.translation_url.bundles:
-            xml_contents = bundle_to_xml(bundle)
+            xml_contents = bundle_to_xml(bundle, category)
             zf.writestr('%s_%s.xml' % (bundle.language, bundle.target), xml_contents)
     zf.close()
 
@@ -599,7 +625,8 @@ def translations_url_xml(lang, target, url):
     if bundle is None:
         return "Translation URL found, but no translation for that language or target"
 
-    messages_xml = bundle_to_xml(bundle)
+    category = request.args.get('category', None)
+    messages_xml = bundle_to_xml(bundle, category)
     resp = make_response(messages_xml)
     resp.content_type = 'application/xml'
     return resp

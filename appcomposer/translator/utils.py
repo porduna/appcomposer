@@ -163,7 +163,8 @@ def extract_local_translations_url(app_url, force_local_cache = False):
         cached = db.session.query(TranslationFastCache.translation_url, TranslationFastCache.original_messages).filter(TranslationFastCache.app_url == app_url, TranslationFastCache.datetime > last_hour).first()
         if cached is not None:
             translation_url, original_messages = cached
-            return translation_url, json.loads(original_messages)
+            original_messages_loaded = json.loads(original_messages)
+            return translation_url, original_messages_loaded
 
     cached_requests = get_cached_session()
 
@@ -185,6 +186,7 @@ def extract_local_translations_url(app_url, force_local_cache = False):
     try:
         db.session.commit()
     except SQLAlchemyError as e:
+        db.session.rollback()
         logging.warning("Could not add element to cache: %s" % e, exc_info = True)
     return absolute_translation_url, messages
 
@@ -215,7 +217,11 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
                     logging.warning(u"Could not load %s translation for app URL: %s Reason: %s" % (lang, app_url, e), exc_info = True)
                     continue
                 else:
-                    original_translations[lang] = messages
+                    new_messages = {}
+                    if messages:
+                        for key, value in messages.iteritems():
+                            new_messages[key] = value['text']
+                    original_translations[lang] = new_messages
                     original_translation_urls[lang] = absolute_url
 
             if (lang is None or lang.lower() == 'all') and messages_url:
@@ -227,6 +233,17 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
             absolute_url, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = False)
             default_translations = messages
             default_translation_url = absolute_url
+
+            # No English? Default is always English!
+            if 'en_ALL' not in original_translations:
+                lang = 'en_ALL'
+                new_messages = {}
+                if messages:
+                    for key, value in messages.iteritems():
+                        new_messages[key] = value['text']
+
+                original_translations[lang] = new_messages
+                original_translation_urls[lang] = absolute_url
 
     adaptable = ' data-configuration ' in body and ' data-configuration-definition ' in body
 
@@ -242,10 +259,18 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
 def extract_messages_from_translation(xml_contents):
     contents = fromstring(xml_contents)
     messages = {}
-    for xml_msg in contents.findall('msg'):
+    for pos, xml_msg in enumerate(contents.findall('msg')):
         if 'name' not in xml_msg.attrib:
             raise TranslatorError("Invalid translation file: no name in msg tag")
-        messages[xml_msg.attrib['name']] = xml_msg.text
+        if 'category' in xml_msg.attrib:
+            category = xml_msg.attrib['category']
+        else:
+            category = None
+        messages[xml_msg.attrib['name']] = {
+            'text' : xml_msg.text or "",
+            'category' : category,
+            'position' : pos,
+        }
     return messages
 
 
@@ -264,13 +289,23 @@ def indent(elem, level=0):
         if level and (not elem.tail or not elem.tail.strip()):
             elem.tail = i
 
-def bundle_to_xml(db_bundle):
+NO_CATEGORY = 'no-category'
+
+def bundle_to_xml(db_bundle, category = None):
     xml_bundle = ET.Element("messagebundle")
-    active_messages = [ am for am in db_bundle.active_messages ]
-    active_messages.sort(lambda am1, am2 : cmp(am1.key, am2.key))
+    if category is None:
+        active_messages = [ am for am in db_bundle.active_messages ]
+    elif category == NO_CATEGORY:
+        active_messages = [ am for am in db_bundle.active_messages if am.category == None ]
+    else:
+        active_messages = [ am for am in db_bundle.active_messages if am.category == category ]
+
+    active_messages.sort(lambda am1, am2 : cmp(am1.position, am2.position))
     for message in active_messages:
         xml_msg = ET.SubElement(xml_bundle, 'msg')
         xml_msg.attrib['name'] = message.key
+        if message.category:
+            xml_msg.attrib['category'] = message.category
         xml_msg.text = message.value
     indent(xml_bundle)
     xml_string = ET.tostring(xml_bundle, encoding = 'utf8')

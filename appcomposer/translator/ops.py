@@ -3,7 +3,7 @@ import hashlib
 import datetime
 from collections import defaultdict
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
 
 from appcomposer import db
@@ -27,6 +27,10 @@ def get_golab_default_user():
             db.session.commit()
         except IntegrityError:
             default_user = db.session.query(GoLabOAuthUser).filter_by(email = default_email).first()
+            db.session.rollback()
+        except:
+            db.session.rollback()
+            raise
     return default_user
 
 def _get_or_create_app(app_url, translation_url):
@@ -69,9 +73,27 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
     if not from_developer and db_translation_bundle.from_developer:
         # If this is an existing translation from a developer and it comes from a user (and not a developer)
         # then it should not be accepted.
-        return
-        
-   
+        if translated_messages is not None:
+            translated_messages = translated_messages.copy()
+            for msg in db_translation_bundle.active_messages:
+                if msg.from_developer:
+                    translated_messages.pop(msg.key, None)
+            # Continue with the remaining translated_messages
+
+    if translated_messages is not None and len(translated_messages) == 0:
+        translated_messages = None
+
+    for existing_active_translation in db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle).all():
+        key = existing_active_translation.key
+
+        position = original_messages.get(key, {}).get('position')
+        if position is not None and existing_active_translation.position != position:
+            existing_active_translation.position = position
+
+        category = original_messages.get(key, {}).get('category')
+        if category is not None and existing_active_translation.category != category:
+            existing_active_translation.category = category
+    
     if translated_messages is not None:
         # Delete active translations that are going to be replaced
         # Store which were the parents of those translations and
@@ -82,28 +104,31 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
         for existing_active_translation in db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle).all():
             key = existing_active_translation.key
             if key in translated_messages:
-                # When calling this, if taken_from_default is True, we can remove it
-                if existing_active_translation.value != translated_messages[key] or existing_active_translation.taken_from_default:
+                if (translated_messages[key] and existing_active_translation.value != translated_messages[key]) or (not from_developer and existing_active_translation.taken_from_default):
                     parent_translation_ids[key] = existing_active_translation.history.id
                     db.session.delete(existing_active_translation)
                 else:
                     unchanged.append(key)
-        
 
         # For each translation message
         now = datetime.datetime.utcnow()
         for key, value in translated_messages.iteritems():
-            if key not in unchanged:
+            if value is None:
+                value = ""
+
+            if key not in unchanged and key in original_messages:
                 # Create a new history message
                 parent_translation_id = parent_translation_ids.get(key, None)
                 db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, parent_translation_id, False)
                 db.session.add(db_history)
 
                 # Establish that thew new active message points to this history message
-                db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False)
+                position = original_messages[key]['position']
+                category = original_messages[key]['category']
+                db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False, position, category, from_developer)
                 db.session.add(db_active_translation_message)
                 
-                if original_messages.get(key, object()) == value:
+                if original_messages.get(key, {}).get('text', object()) == value:
                     # If the message in the original language is the same as in the target language, then
                     # it can be two things: 
                     # 
@@ -124,7 +149,7 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
 
                 # Create a suggestion based on the value
                 if original_messages is not None and key in original_messages:
-                    human_key = original_messages[key]
+                    human_key = original_messages[key]['text']
 
                     db_existing_human_key_suggestion = db.session.query(TranslationValueSuggestion).filter_by(human_key = human_key, value = value, language = language, target = target).first()
                     if db_existing_human_key_suggestion:
@@ -138,18 +163,30 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
         except IntegrityError:
             # Somebody else concurrently run this
             db.session.rollback() 
+        except:
+            db.session.rollback()
+            raise
 
     now = datetime.datetime.utcnow()
     existing_keys = [ key for key, in db.session.query(ActiveTranslationMessage.key).filter_by(bundle = db_translation_bundle).all() ]
-    for key, value in original_messages.iteritems():
+    for key, original_message_pack in original_messages.iteritems():
+        value = original_message_pack['text'] or ''
+        position = original_message_pack['position']
+        category = original_message_pack['category']
         if key not in existing_keys:
             # Create a new translation establishing that it was generated with the default value (and therefore it should be changed)
             db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, None, True)
             db.session.add(db_history)
-
+            
             # Establish that thew new active message points to this history message
-            db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, True)
+            db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, True, position, category, from_developer = False)
             db.session.add(db_active_translation_message)
+
+    for existing_key in existing_keys:
+        if existing_key not in original_messages:
+            old_translations = db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle, key = existing_key).all()
+            for old_translation in old_translations:
+                db.session.delete(old_translation)
 
     # Commit!
     try:
@@ -157,6 +194,9 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
     except IntegrityError:
         # Somebody else did this
         db.session.rollback()
+    except:
+        db.session.rollback()
+        raise
     else:
         from appcomposer.translator.tasks import push_task
         push_task.delay(translation_url, language, target)
@@ -168,6 +208,9 @@ def register_app_url(app_url, translation_url):
     except IntegrityError:
         # Somebody else did this process
         db.session.rollback()
+    except:
+        db.session.rollback()
+        raise
     else:
         # Delay the synchronization process
         from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper
@@ -188,6 +231,7 @@ def retrieve_stored(translation_url, language, target):
         response[message.key] = {
             'value' : message.value,
             'from_default' : message.taken_from_default,
+            'from_developer' : message.from_developer,
         }
     return response, bundle.from_developer
 
@@ -197,11 +241,12 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
     original_keys = [ key for key in original_messages ]
     if SKIP_SUGGESTIONS_IF_STORED:
         original_keys = [ key for key in original_keys if key not in stored_translations ]
-    original_values = [ original_messages[key] for key in original_keys ]
+    original_values = [ original_messages[key]['text'] for key in original_keys ]
     original_keys_by_value = { 
         # value : [key1, key2]
     }
-    for key, value in original_messages.iteritems():
+    for key, original_message_pack in original_messages.iteritems():
+        value = original_message_pack['text']
         if value not in original_keys_by_value:
             original_keys_by_value[value] = []
         original_keys_by_value[value].append(key)
@@ -264,19 +309,24 @@ def retrieve_translations_stats(translation_url, original_messages):
         return {}
     
     results_from_users = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
-                ActiveTranslationMessage.key.in_(list(original_messages)),
+                TranslationBundle.from_developer == False, 
+
                 ActiveTranslationMessage.taken_from_default == False,
+
+                ActiveTranslationMessage.key.in_(list(original_messages)),
                 ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
                 TranslationBundle.translation_url_id == TranslationUrl.id, 
-                TranslationBundle.from_developer == False, 
+
                 TranslationUrl.url == translation_url,
             ).group_by(TranslationBundle.language, TranslationBundle.target).all()
 
     results_from_developers = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
+                TranslationBundle.from_developer == True, 
+                or_(ActiveTranslationMessage.from_developer == True, ActiveTranslationMessage.taken_from_default == False),
+
                 ActiveTranslationMessage.key.in_(list(original_messages)),
                 ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
                 TranslationBundle.translation_url_id == TranslationUrl.id, 
-                TranslationBundle.from_developer == True, 
                 TranslationUrl.url == translation_url,
             ).group_by(TranslationBundle.language, TranslationBundle.target).all()
 
@@ -320,26 +370,19 @@ def retrieve_translations_stats(translation_url, original_messages):
 
 
 def retrieve_translations_percent(translation_url, original_messages):
-    if len(original_messages) == 0:
-        return {}
-
-    results = db.session.query(func.count(ActiveTranslationMessage.key), TranslationBundle.language, TranslationBundle.target).filter(
-                ActiveTranslationMessage.key.in_(list(original_messages)),
-                ActiveTranslationMessage.taken_from_default == False,
-                ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
-                TranslationBundle.translation_url_id == TranslationUrl.id, 
-                TranslationUrl.url == translation_url,
-            ).group_by(TranslationBundle.language, TranslationBundle.target).all()
-
-    translations = {
+    percent = {
         # es_ES_ALL : 0.8
     }
 
-    for count, lang, target in results:
-        bundle = u'%s_%s' % (lang, target)
-        translations[bundle] = 1.0 * count / len(original_messages)
+    translations_stats = retrieve_translations_stats(translation_url, original_messages)
+    for lang, lang_package in translations_stats.iteritems():
+        targets = lang_package.get('targets', {})
+        for target, target_stats in targets.iteritems():
+            translated = target_stats['translated']
+            total_items = target_stats['items']
+            percent['%s_%s' % (lang, target)] = 1.0 * translated / total_items
 
-    return translations
+    return percent
 
 def _deep_copy_bundle(src_bundle, dst_bundle):
     """Copy all the messages. Safely assume that there is no translation in the destination, so
@@ -354,7 +397,11 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
     for msg in src_bundle.all_messages:
         t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.user, msg.datetime, src_message_ids.get(msg.parent_translation_id), msg.taken_from_default)
         db.session.add(t_history)
-        db.session.commit()
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
+            raise
         db.session.refresh(t_history)
         src_message_ids[msg.id] = t_history.id
         historic[msg.id] = t_history
@@ -362,10 +409,14 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
     now = datetime.datetime.utcnow()
     for msg in src_bundle.active_messages:
         history = historic.get(msg.history_id)
-        active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, history, now, msg.taken_from_default)
+        active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer)
         db.session.add(active_t)
 
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        raise
 
 def _merge_bundle(src_bundle, dst_bundle):
     """Copy all the messages. The destination bundle already existed, so we can only copy those
@@ -376,17 +427,25 @@ def _merge_bundle(src_bundle, dst_bundle):
         if existing_translation is None:
             t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, None, msg.taken_from_default)
             db.session.add(t_history)
-            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default)
+            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer)
             db.session.add(active_t)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()
+                raise
         elif existing_translation.taken_from_default and not msg.taken_from_default:
             # Merge it
             t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, existing_translation.history.id, msg.taken_from_default)
             db.session.add(t_history)
-            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default)
+            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer)
             db.session.add(active_t)
             db.session.delete(existing_translation)
-            db.session.commit()
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()
+                raise
 
 def _deep_copy_translations(old_translation_url, new_translation_url):
     """Given an old translation of a URL, take the old bundles and copy them to the new one."""
@@ -407,7 +466,11 @@ def start_synchronization():
     now = datetime.datetime.utcnow()
     sync_log = TranslationSyncLog(now, None)
     db.session.add(sync_log)
-    db.session.commit()
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        raise
     db.session.refresh(sync_log)
     return sync_log.id
 
@@ -416,7 +479,11 @@ def end_synchronization(sync_id):
     sync_log = db.session.query(TranslationSyncLog).filter_by(id = sync_id).first()
     if sync_log is not None:
         sync_log.end_datetime = now
-        db.session.commit()
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
+            raise
 
 def get_latest_synchronizations():
     latest_syncs = db.session.query(TranslationSyncLog)[-10:]
@@ -451,8 +518,12 @@ def update_user_status(language, target, app_url, user):
         db.session.add(active_user)
     else:
         active_user.update_last_check()
-
-    db.session.commit()
+    
+    try:
+        db.session.commit()
+    except:
+        db.session.rollback()
+        raise
 
 def get_user_status(language, target, app_url, user):
     FORMAT = "%Y-%m-%dT%H:%M:%SZ"

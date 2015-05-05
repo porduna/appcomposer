@@ -10,7 +10,8 @@ angular
         'truncate',
         'selectionModel',
         'ui.bootstrap.modal',
-        'ui.gravatar'
+        'ui.gravatar',
+        'percentage'
     ])
     .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig])
     .run(['$log', '$location', initialize]);
