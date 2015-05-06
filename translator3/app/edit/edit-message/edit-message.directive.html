@@ -30,7 +30,21 @@
 
     <div ng-show="shouldDisplayDetails()" class="ac-edit-message-details">
             <div class="form-group">
-                <div class="col-xs-push-0 col-xs-12 col-md-push-6 col-md-6">
+
+                <div class="col-xs-12 col-md-6">
+                    <div ng-show="shouldShowFromDefaultWarning()" class="alert alert-warning ac-from-default-warning">
+                        <p>
+                        <span class="fa fa-warning fa-2x"/> <span translate>The current translation is equal to the English message, which is
+                        sometimes not correct. Please, if it is the right translation confirm it, and this warning
+                        will be removed.</span>
+                        </p>
+                        <p>
+                        <button ng-click="confirmTranslation()" class="btn btn-small btn-success"><span class="fa fa-check"/> {{ 'Confirm current translation' | translate }}</button>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-xs-12 col-md-6">
                     <label class="control-label">
                         Suggested automatic translations:
                     </label>

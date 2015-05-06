@@ -29,6 +29,8 @@ function EditMessageController($scope, $log, $resource) {
 
     /* SCOPE METHODS */
 
+    $scope.confirmTranslation = confirmTranslation;
+    $scope.shouldShowFromDefaultWarning = shouldShowFromDefaultWarning;
     $scope.onFocus = onFocus;
     $scope.onChange = onChange;
     $scope.onKey = onKey;
@@ -49,6 +51,32 @@ function EditMessageController($scope, $log, $resource) {
     // --------------
     // Implementations
     // --------------
+
+    /**
+     * Whether we should show the from-default warning message. We should show it if an item
+     * is from_default and at the same time if the message is the original.
+     */
+    function shouldShowFromDefaultWarning() {
+        return $scope.item.from_default && $scope.getCurrentTextValue() == $scope.savedValue;
+    } // !shouldShowFromDefaultWarning
+
+    /**
+     * To confirm that the current translation is right, and an update should
+     * be carried out and from_default removed.
+     */
+    function confirmTranslation() {
+
+        $log.debug("Confirming translation");
+
+        // Force a save.
+        $scope.savedValue = "";
+        onChange();
+
+        // Locally change the from_default to indicate that we no longer should show the warning etc.
+        // The server should have received the update already, so in a refresh from_default will
+        // also be set to false.
+        $scope.item.from_default = false;
+    } // !confirmTranslation
 
     /**
      * Listen for item change events. These will happen when other client edits the translation.

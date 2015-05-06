@@ -210,6 +210,11 @@ span[name=ac-shield-icon] {
     display:none;
 }
 
+.ac-from-default-warning {
+    margin-top: 10px;
+}
+
+
 
 /* DATA TABLES HOVER FIX */
 
