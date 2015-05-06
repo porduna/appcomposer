@@ -212,6 +212,7 @@ def bundle_update(language, target):
 def api_app():
     app_url = request.args.get('app_url')
     app_thumb = None
+    app_link = None
     name = None
     desc = None
 
@@ -222,6 +223,8 @@ def api_app():
             app_thumb = repo_app.app_thumb
         if repo_app.description is not None:
             desc = repo_app.description
+        if repo_app.app_link is not None:
+            app_link = repo_app.app_link
 
     translation_url, original_messages = extract_local_translations_url(app_url, force_local_cache = True)
     translations = retrieve_translations_stats(translation_url, original_messages)
@@ -229,7 +232,8 @@ def api_app():
 
     app_data = {
         'url' : app_url,
-        'app_thumb' : app_thumb,
+        'app_thumb': app_thumb,
+        'app_link' : app_link,
         'name' : name,
         'desc' : desc,
         'translations' : translations,
