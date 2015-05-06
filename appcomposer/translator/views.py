@@ -263,17 +263,6 @@ def api_translate(language, target):
         stored = stored_translations.get(key, {})
         current_suggestions = list(suggestions.get(key, []))
         current_target = stored.get('value')
-        if current_target:
-            found = False
-            for current_suggestion in current_suggestions:
-                if current_suggestion['target'] == current_target:
-                    found = True
-                    break
-            if not found:
-                current_suggestions.append({ 
-                    'target' : current_target,
-                    'weight' : 0.0
-                })
 
         if from_developer:
             can_edit = not stored.get('from_developer', True)
