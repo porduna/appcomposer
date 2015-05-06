@@ -52,16 +52,19 @@
 
             <dl class="" style="padding-top: 1em">
 
-                <dt ac-translate-me>URL</dt>
+                <dt translate>URL</dt>
+                <dd style="word-break: break-all"><a ng-href="{{ appinfo.app_link }}">{{ appinfo.app_link }}</a></dd>
+
+                <dt translate>XML</dt>
                 <dd style="word-break: break-all"><a ng-href="{{ appinfo.url }}">{{ appinfo["url"] }}</a></dd>
 
-                <dt ac-translate-me>Created:</dt>
+                <dt translate>Created:</dt>
                 <dd>{{ (appinfo.translations[selected_target.lang].targets["ALL"].creation_date|date) || "N/A" }}</dd>
 
-                <dt ac-translate-me>Last modified:</dt>
+                <dt translate>Last modified:</dt>
                 <dd>{{ (appinfo.translations[selected_target.lang].targets["ALL"].modification_date|date) || "N/A" }}</dd>
 
-                <dt ac-translate-me>Translated:</dt>
+                <dt translate>Translated:</dt>
                 <dd>
                     <progressbar class="ac-translation-percent" animate="false" value="translatedPercent(selected_target.lang) * 100" type="success">
                         <span ng-if="translatedPercent(selected_target.lang) > 0.15">{{ translatedPercentStr(selected_target.lang) }}</span>

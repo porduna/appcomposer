@@ -5,15 +5,19 @@
     <div style="display: block">
         <table cellpadding="5" cellspacing="0" border="0" style="padding-left: 50px;" class="my-disabled-hover">
             <tr>
-                <td ac-translate-me>Full name: </td>
+                <td translate>Full name:</td>
                 <td>{{ app.title }}</td>
             </tr>
             <tr>
-                <td ac-translate-me>XML URL: </td>
+                <td translate>App Link:</td>
+                <td><a ng-href="{{ app.app_link }}">{{ app.app_link }}</a></td>
+            </tr>
+            <tr>
+                <td translate>XML URL:</td>
                 <td><a ng-href="{{ app.app_url }}">{{ app.app_url }}</a></td>
             </tr>
             <tr ng-show="app.source">
-                <td ac-translate-me>Source: </td>
+                <td translate>Source:</td>
                 <td>{{ app.source }}</td>
             </tr>
             <tr ng-show="app.app_golabz_page">
