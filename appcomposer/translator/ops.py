@@ -358,12 +358,16 @@ def retrieve_translations_stats(translation_url, original_messages):
         mdate = modification_date.strftime("%Y-%m-%d") if modification_date is not None else None
         cdate = creation_date.strftime("%Y-%m-%d") if creation_date is not None else None
 
+        items = len(original_messages)
+        if count > items:
+            count = items
+
         translations[lang]['targets'][target] = {
             'modification_date' : mdate,
             'creation_date' : cdate,
             'name' : GROUPS.get(target),
             'translated' : count,
-            'items' : len(original_messages)
+            'items' : items,
         }
     
     return translations
