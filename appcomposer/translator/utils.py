@@ -262,13 +262,21 @@ def extract_messages_from_translation(xml_contents):
     for pos, xml_msg in enumerate(contents.findall('msg')):
         if 'name' not in xml_msg.attrib:
             raise TranslatorError("Invalid translation file: no name in msg tag")
+
         if 'category' in xml_msg.attrib:
             category = xml_msg.attrib['category']
         else:
             category = None
+
+        if 'namespace' in xml_msg.attrib:
+            namespace = xml_msg.attrib['namespace']
+        else:
+            namespace = None
+
         messages[xml_msg.attrib['name']] = {
             'text' : xml_msg.text or "",
             'category' : category,
+            'namespace' : namespace,
             'position' : pos,
         }
     return messages
@@ -306,6 +314,8 @@ def bundle_to_xml(db_bundle, category = None):
         xml_msg.attrib['name'] = message.key
         if message.category:
             xml_msg.attrib['category'] = message.category
+        if message.namespace:
+            xml_msg.attrib['namespace'] = message.namespace
         xml_msg.text = message.value
     indent(xml_bundle)
     xml_string = ET.tostring(xml_bundle, encoding = 'utf8')
