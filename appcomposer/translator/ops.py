@@ -590,6 +590,7 @@ def start_synchronization():
         db.session.rollback()
         raise
     db.session.refresh(sync_log)
+    print "Starting synchronization %s" % sync_log.id
     return sync_log.id
 
 def end_synchronization(sync_id):
@@ -597,6 +598,7 @@ def end_synchronization(sync_id):
     sync_log = db.session.query(TranslationSyncLog).filter_by(id = sync_id).first()
     if sync_log is not None:
         sync_log.end_datetime = now
+        print "Synchronization %s finished" % sync_log.id
         try:
             db.session.commit()
         except:
