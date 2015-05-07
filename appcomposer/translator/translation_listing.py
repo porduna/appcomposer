@@ -16,7 +16,7 @@ from appcomposer.models import RepositoryApp, TranslatedApp, ActiveTranslationMe
 
 from appcomposer.translator.languages import SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES, OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES
 from appcomposer.translator.utils import get_cached_session, extract_metadata_information
-from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user, start_synchronization, end_synchronization
+from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user, start_synchronization, end_synchronization, get_bundles_by_key_namespaces
 
 GOLAB_REPO = u'golabz'
 EXTERNAL_REPO = u'external'
@@ -257,6 +257,24 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
             add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url, 
                                 language = language, target = u'ALL', translated_messages = translated_messages, 
                                 original_messages = original_messages, from_developer = True)
+
+        namespaces = set([ msg['namespace'] for msg in original_messages.values() if msg['namespace'] ])
+        if namespaces:
+            pairs = []
+            for key, msg in original_messages.iteritems():
+                if msg['namespace']:
+                    pairs.append({
+                        'key' : key,
+                        'namespace' : msg['namespace'],
+                    })
+                    
+            for language_pack in get_bundles_by_key_namespaces(pairs):
+                language = language_pack['language']
+                target = language_pack['target']
+
+                add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url,
+                                language = language, target = target, translated_messages = {},
+                                original_messages = original_messages, from_developer = False)
 
         db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
         if db_translation_url:

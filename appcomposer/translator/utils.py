@@ -146,6 +146,10 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
     except Exception as e:
         logging.warning("Could not reach locale URL: %s  Reason: %s" % (absolute_translation_url, e), exc_info = True)
         raise TranslatorError("Could not reach locale URL")
+    
+    # XXX TODO: Remove this list
+    if absolute_translation_url.startswith('http://go-lab.gw.utwente.nl/production/'):
+        translation_messages_xml = translation_messages_xml.replace("<messagebundle>", '<messagebundle namespace="http://go-lab.gw.utwente.nl/production/">')
 
     try:
         messages = extract_messages_from_translation(translation_messages_xml)
@@ -259,6 +263,9 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
 def extract_messages_from_translation(xml_contents):
     contents = fromstring(xml_contents)
     messages = {}
+    default_namespace = None
+    if 'namespace' in contents.attrib:
+        default_namespace = contents.attrib['namespace']
     for pos, xml_msg in enumerate(contents.findall('msg')):
         if 'name' not in xml_msg.attrib:
             raise TranslatorError("Invalid translation file: no name in msg tag")
@@ -271,7 +278,7 @@ def extract_messages_from_translation(xml_contents):
         if 'namespace' in xml_msg.attrib:
             namespace = xml_msg.attrib['namespace']
         else:
-            namespace = None
+            namespace = default_namespace
 
         messages[xml_msg.attrib['name']] = {
             'text' : xml_msg.text or "",

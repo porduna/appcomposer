@@ -5,6 +5,7 @@ from collections import defaultdict
 
 from sqlalchemy import func, or_
 from sqlalchemy.exc import IntegrityError
+from sqlalchemy.orm import joinedload_all
 
 from appcomposer import db
 from appcomposer.application import app
@@ -64,6 +65,34 @@ def _get_or_create_bundle(app_url, translation_url, language, target, from_devel
         db.session.add(db_translation_bundle)
     return db_translation_bundle
 
+def get_bundles_by_key_namespaces(pairs):
+    """ given a list of pairs (key, namespace), return the list of bundles which contain translations like those """
+    keys = [ pair['key'] for pair in pairs ]
+    namespaces = [ pair['namespace'] for pair in pairs if pair['namespace'] ]
+
+    pairs_found = {}
+
+    for key, namespace, bundle_id in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace, ActiveTranslationMessage.bundle_id).filter(ActiveTranslationMessage.key.in_(keys), ActiveTranslationMessage.namespace.in_(namespaces), ActiveTranslationMessage.taken_from_default == False).all():
+        pairs_found[key, namespace] = bundle_id
+
+    bundle_ids = set()
+
+    for pair in pairs:
+        key = pair['key']
+        namespace = pair['namespace']
+        bundle_id = pairs_found.get((key, namespace))
+        if bundle_id is not None:
+            bundle_ids.add(bundle_id)
+    
+    bundles = []
+    if bundle_ids:
+        for lang, target in db.session.query(TranslationBundle.language, TranslationBundle.target).filter(TranslationBundle.id.in_(bundle_ids)).all():
+            bundles.append({
+                'language' : lang,
+                'target' : target,
+            })
+    return bundles
+
 def add_full_translation_to_app(user, app_url, translation_url, language, target, translated_messages, original_messages, from_developer):
     db_translation_bundle = _get_or_create_bundle(app_url, translation_url, language, target, from_developer)
     if from_developer and not db_translation_bundle.from_developer:
@@ -83,6 +112,10 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
     if translated_messages is not None and len(translated_messages) == 0:
         translated_messages = None
 
+    existing_namespaces = set()
+    existing_namespace_keys = set()
+    existing_active_translations_with_namespace_with_default_value = []
+
     for existing_active_translation in db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle).all():
         key = existing_active_translation.key
 
@@ -97,7 +130,42 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
         namespace = original_messages.get(key, {}).get('namespace')
         if namespace is not None and existing_active_translation.namespace != namespace:
             existing_active_translation.namespace = namespace
-   
+
+        if namespace is not None and existing_active_translation.taken_from_default:
+            existing_namespaces.add(namespace)
+            existing_namespace_keys.add(key)
+            existing_active_translations_with_namespace_with_default_value.append(existing_active_translation)
+
+    if existing_namespaces:
+        existing_namespace_translations = {}
+        for key, namespace, value, from_developer in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace, ActiveTranslationMessage.value, ActiveTranslationMessage.from_developer).filter(ActiveTranslationMessage.key.in_(list(existing_namespace_keys)), ActiveTranslationMessage.namespace.in_(list(existing_namespaces)), ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == db_translation_bundle.language, TranslationBundle.target == db_translation_bundle.target, ActiveTranslationMessage.bundle_id != db_translation_bundle.id, ActiveTranslationMessage.taken_from_default == False).all():
+            existing_namespace_translations[key, namespace] = (value, from_developer)
+
+        for wrong_message in existing_active_translations_with_namespace_with_default_value:
+            now = datetime.datetime.utcnow()
+            pack = existing_namespace_translations.get((wrong_message.key, wrong_message.namespace))
+            if pack:
+                value, current_from_developer = pack
+                key = wrong_message.key
+                namespace_key = wrong_message.namespace
+                wrong_history = wrong_message.history
+                wrong_history_parent_id = wrong_history.id
+                wrong_message_position = wrong_message.position
+                wrong_message_category = wrong_message.category
+                wrong_message_bundle = wrong_message.bundle
+
+                # 1st) Delete the current translation message
+                db.session.delete(wrong_message)
+
+                # 2nd) Create a new historic translation message
+                new_db_history = TranslationMessageHistory(wrong_message_bundle, key, value, user, now, wrong_history_parent_id, False)
+                db.session.add(new_db_history)
+
+                # 3rd) Create a new active translation message
+                new_db_active_translation_message = ActiveTranslationMessage(wrong_message_bundle, key, value, new_db_history, now, False, wrong_message_position, wrong_message_category, current_from_developer, namespace)
+                print "CREANDO EN 1"
+                db.session.add(new_db_active_translation_message)
+
     if translated_messages is not None:
         # Delete active translations that are going to be replaced
         # Store which were the parents of those translations and
@@ -131,8 +199,9 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                 category = original_messages[key]['category']
                 namespace = original_messages[key]['namespace']
                 db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False, position, category, from_developer, namespace)
+                print "CREANDO EN 2"
                 db.session.add(db_active_translation_message)
-                
+
                 if original_messages.get(key, {}).get('text', object()) == value:
                     # If the message in the original language is the same as in the target language, then
                     # it can be two things: 
@@ -143,6 +212,30 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
                     # Given that the original language will be a suggestion anyway, it's better to avoid storing this message as suggestion
                     continue
 
+
+                if namespace:
+                    for wrong_message in db.session.query(ActiveTranslationMessage).filter(ActiveTranslationMessage.key == key, ActiveTranslationMessage.namespace == namespace, ActiveTranslationMessage.value != value, ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == db_translation_bundle.language, TranslationBundle.target == db_translation_bundle.target, TranslationBundle.id != db_translation_bundle.id).options(joinedload_all('bundle')).all():
+                        # wrong_message is a message for same language, target, key and namespace with a different value.
+                        # We must update it with the current credentials
+                        wrong_history = wrong_message.history
+                        wrong_history_parent_id = wrong_history.id
+                        wrong_message_position = wrong_message.position
+                        wrong_message_category = wrong_message.category
+                        wrong_message_bundle = wrong_message.bundle
+
+                        # 1st) Delete the current translation message
+                        db.session.delete(wrong_message)
+                        print "ELIMINANDO", wrong_message.id, translation_url, wrong_message.key, wrong_message.value, value
+
+                        # 2nd) Create a new historic translation message
+                        new_db_history = TranslationMessageHistory(wrong_message_bundle, key, value, user, now, wrong_history_parent_id, False)
+                        db.session.add(new_db_history)
+
+                        # 3rd) Create a new active translation message
+                        new_db_active_translation_message = ActiveTranslationMessage(wrong_message_bundle, key, value, new_db_history, now, False, wrong_message_position, wrong_message_category, from_developer, namespace)
+                        print "CREANDO EN 3"
+                        db.session.add(new_db_active_translation_message)
+                
                 # Create a suggestion based on the key
                 db_existing_key_suggestion = db.session.query(TranslationKeySuggestion).filter_by(key = key, value = value, language = language, target = target).first()
                 if db_existing_key_suggestion:
@@ -174,18 +267,37 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
 
     now = datetime.datetime.utcnow()
     existing_keys = [ key for key, in db.session.query(ActiveTranslationMessage.key).filter_by(bundle = db_translation_bundle).all() ]
+
+    namespaces = [ value['namespace'] for key, value in original_messages.iteritems() if key not in existing_keys and value['namespace'] ]
+    if namespaces:
+        existing_namespaces = {}
+        for key, namespace, value in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace, ActiveTranslationMessage.value).filter(ActiveTranslationMessage.key.in_(original_messages.keys()), ActiveTranslationMessage.namespace.in_(list(namespaces)), ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == db_translation_bundle.language, TranslationBundle.target == db_translation_bundle.target, ActiveTranslationMessage.taken_from_default == False).all():
+            existing_namespaces[key, namespace] = value
+    else:
+        existing_namespaces = {}
+
     for key, original_message_pack in original_messages.iteritems():
-        value = original_message_pack['text'] or ''
-        position = original_message_pack['position']
-        category = original_message_pack['category']
-        namespace = original_message_pack['namespace']
         if key not in existing_keys:
+            value = original_message_pack['text'] or ''
+            position = original_message_pack['position']
+            category = original_message_pack['category']
+            namespace = original_message_pack['namespace']
+            taken_from_default = True
+            
+            # If there is a namespace, try to get the value from other namespaces
+            if namespace:
+                new_value = existing_namespaces.get((key, namespace), None)
+                if new_value is not None:
+                    taken_from_default = False
+                    value = new_value
+
             # Create a new translation establishing that it was generated with the default value (and therefore it should be changed)
-            db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, None, True)
+            db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, None, taken_from_default = taken_from_default)
             db.session.add(db_history)
             
             # Establish that thew new active message points to this history message
-            db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, True, position, category, from_developer = False, namespace = namespace)
+            db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, taken_from_default = taken_from_default, position = position, category = category, from_developer = False, namespace = namespace)
+            print "CREANDO EN 4"
             db.session.add(db_active_translation_message)
 
     for existing_key in existing_keys:
