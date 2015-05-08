@@ -120,16 +120,25 @@ FOR THE APP / EDIT SCREEN
 
 /* App screen badges */
 .ac-lang-badge {
+    color: black;
     margin-left: 2px;
     margin-right: 2px;
 }
 
-.ac-badge-notoriginal-complete {
+.ac-badge-complete {
     background-color: rgb(190, 230, 190);
 }
 
-.ac-badge-notoriginal-incomplete {
+.ac-badge-incomplete {
     background-color: rgb(230, 170, 170);
+}
+
+.ac-badge-original {
+    border: none;
+}
+
+.ac-badge-icon-locked {
+    color: rgb(80, 80, 80);
 }
 
 
