@@ -488,7 +488,7 @@ class TranslationExternalSuggestion(db.Model):
     def __init__(self, engine, human_key, language, origin_language, value):
         self.engine = engine
         self.human_key = human_key
-        self.human_key_hash = hashlib.md5(human_key).hexdigest()
+        self.human_key_hash = hashlib.md5(human_key.encode('utf8')).hexdigest()
         self.language = language
         self.origin_language = origin_language
         self.value = value
