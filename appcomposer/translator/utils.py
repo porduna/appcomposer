@@ -280,6 +280,9 @@ def extract_messages_from_translation(xml_contents):
         else:
             namespace = default_namespace
 
+        if not category and namespace:
+            category = namespace
+
         messages[xml_msg.attrib['name']] = {
             'text' : xml_msg.text or "",
             'category' : category,
