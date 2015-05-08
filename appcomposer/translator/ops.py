@@ -115,6 +115,8 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
     existing_namespaces = set()
     existing_namespace_keys = set()
     existing_active_translations_with_namespace_with_default_value = []
+    
+    # First, update translations
 
     for existing_active_translation in db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle).all():
         key = existing_active_translation.key
@@ -135,6 +137,8 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
             existing_namespaces.add(namespace)
             existing_namespace_keys.add(key)
             existing_active_translations_with_namespace_with_default_value.append(existing_active_translation)
+    
+    # Then, check namespaces
 
     if existing_namespaces:
         # 
@@ -328,6 +332,21 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
             for old_translation in old_translations:
                 db.session.delete(old_translation)
 
+    for key, namespace in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace).filter_by(bundle = db_translation_bundle).group_by(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace).having(func.count(ActiveTranslationMessage.key) > 1).all():
+        best_chance = None
+        all_chances = []
+        for am in db.session.query(ActiveTranslationMessage).filter_by(key = key, namespace = namespace, bundle = db_translation_bundle).all():
+            all_chances.append(am)
+            if best_chance is None:
+                best_chance = am
+            elif not am.taken_from_default and best_chance.taken_from_default:
+                best_chance = am
+            elif am.from_developer and not best_chance.from_developer:
+                best_chance = am
+        for chance in all_chances:
+            if chance != best_chance:
+                db.session.delete(chance)
+
     # Commit!
     try:
         db.session.commit()
@@ -499,8 +518,6 @@ def retrieve_translations_stats(translation_url, original_messages):
         cdate = creation_date.strftime("%Y-%m-%d") if creation_date is not None else None
 
         items = len(original_messages)
-        if count > items:
-            count = items
 
         translations[lang]['targets'][target] = {
             'modification_date' : mdate,
