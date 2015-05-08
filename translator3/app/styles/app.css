@@ -120,7 +120,7 @@ FOR THE APP / EDIT SCREEN
 
 /* App screen badges */
 .ac-lang-badge {
-    color: black;
+    color: rgb(50, 50, 50);
     margin-left: 2px;
     margin-right: 2px;
 }
