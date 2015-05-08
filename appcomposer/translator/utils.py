@@ -270,6 +270,8 @@ def extract_messages_from_translation(xml_contents):
         if 'name' not in xml_msg.attrib:
             raise TranslatorError("Invalid translation file: no name in msg tag")
 
+        name = xml_msg.attrib['name']
+
         if 'category' in xml_msg.attrib:
             category = xml_msg.attrib['category']
         else:
@@ -282,8 +284,12 @@ def extract_messages_from_translation(xml_contents):
 
         if not category and namespace:
             category = namespace
+            # TODO: remove this trick
+            if namespace == 'http://go-lab.gw.utwente.nl/production/':
+                if '.' in name:
+                    category = name.split('.')[0]
 
-        messages[xml_msg.attrib['name']] = {
+        messages[name] = {
             'text' : xml_msg.text or "",
             'category' : category,
             'namespace' : namespace,
