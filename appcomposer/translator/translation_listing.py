@@ -105,6 +105,8 @@ class RunInParallel(object):
         for task in self.tasks:
             task.join()
 
+        print "All apps downloaded"
+
 def _sync_golab_translations(cached_requests, force_reload):
     try:
         apps_response = cached_requests.get("http://www.golabz.eu/rest/apps/retrieve.json")

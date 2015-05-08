@@ -110,7 +110,7 @@ def get_text_from_response(response):
 
 def _extract_locales(app_url, cached_requests):
     try:
-        response = cached_requests.get(app_url)
+        response = cached_requests.get(app_url, timeout = 30)
         response.raise_for_status()
         xml_contents = get_text_from_response(response)
     except requests.RequestException as e:
@@ -138,7 +138,7 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
         absolute_translation_url = '/'.join((base_url, messages_url))
 
     try:
-        translation_messages_response = cached_requests.get(absolute_translation_url)
+        translation_messages_response = cached_requests.get(absolute_translation_url, timeout = 30)
         translation_messages_response.raise_for_status()
         if only_if_new and translation_messages_response.from_cache:
             return absolute_translation_url, None
