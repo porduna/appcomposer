@@ -41,7 +41,7 @@
 
                             <span tooltip="{{ getBadgeTitle(langname, lang) }}"
                                   class="badge ac-lang-badge"
-                                ng-style="{'background-color': getGradientColor('#ff0000', '#00ff00', lang.progress)}"
+                                ng-style="{'background-color': getGradientColor(lang.progress)}"
                                 ng-class="{'ac-badge-original': lang.original, 'ac-badge-notoriginal': !lang.original,
                                 'ac-badge-complete': lang.progress == 1}">
 

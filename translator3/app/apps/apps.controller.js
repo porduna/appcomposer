@@ -131,55 +131,36 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
     }
 
     /**
-     * Method from stackoverflow to get a linear gradient between two colors.
-     * http://stackoverflow.com/questions/3080421/javascript-color-gradient
-     * @param start_color
-     * @param end_color
+     * Method from stackoverflow to get a green to red gradient
+     * http://stackoverflow.com/a/7128796
      * @param percent
      */
-    function getGradientColor(start_color, end_color, percent) {
-        // strip the leading # if it's there
-        start_color = start_color.replace(/^\s*#|\s*$/g, '');
-        end_color = end_color.replace(/^\s*#|\s*$/g, '');
+    function getGradientColor(percent) {
+        var percentColors = [
+            { percent: 0.0, color: { r: 0xff, g: 0x00, b: 0 } },
+            { percent: 0.5, color: { r: 0xff, g: 0xff, b: 0 } },
+            { percent: 1.0, color: { r: 0x00, g: 0xff, b: 0 } } ];
 
-        // convert 3 char codes --> 6, e.g. `E0F` --> `EE00FF`
-        if (start_color.length == 3) {
-            start_color = start_color.replace(/(.)/g, '$1$1');
+        for (var i = 1; i < percentColors.length - 1; i++) {
+            if (percent < percentColors[i].percent) {
+                break;
+            }
         }
-
-        if (end_color.length == 3) {
-            end_color = end_color.replace(/(.)/g, '$1$1');
-        }
-
-        // get colors
-        var start_red = parseInt(start_color.substr(0, 2), 16),
-            start_green = parseInt(start_color.substr(2, 2), 16),
-            start_blue = parseInt(start_color.substr(4, 2), 16);
-
-        var end_red = parseInt(end_color.substr(0, 2), 16),
-            end_green = parseInt(end_color.substr(2, 2), 16),
-            end_blue = parseInt(end_color.substr(4, 2), 16);
-
-        // calculate new color
-        var diff_red = end_red - start_red;
-        var diff_green = end_green - start_green;
-        var diff_blue = end_blue - start_blue;
-
-        diff_red = ( (diff_red * percent) + start_red ).toString(16).split('.')[0];
-        diff_green = ( (diff_green * percent) + start_green ).toString(16).split('.')[0];
-        diff_blue = ( (diff_blue * percent) + start_blue ).toString(16).split('.')[0];
-
-        // ensure 2 digits by color
-        if (diff_red.length == 1)
-            diff_red = '0' + diff_red
-
-        if (diff_green.length == 1)
-            diff_green = '0' + diff_green
-
-        if (diff_blue.length == 1)
-            diff_blue = '0' + diff_blue
-
-        return '#' + diff_red + diff_green + diff_blue;
+        var lower = percentColors[i - 1];
+        var upper = percentColors[i];
+        var range = upper.percent - lower.percent;
+        var rangePct = (percent - lower.percent) / range;
+        var pctLower = 1 - rangePct;
+        var pctUpper = rangePct;
+        var color = {
+            r: Math.floor(lower.color.r * pctLower + upper.color.r * pctUpper),
+            g: Math.floor(lower.color.g * pctLower + upper.color.g * pctUpper),
+            b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
+        };
+        var result = 'rgb(' + [color.r, color.g, color.b].join(',') + ')';
+        console.log(percent);
+        console.log(result);
+        return result;
     } // !getGradientColor
 
     /**
