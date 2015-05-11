@@ -52,7 +52,12 @@ cel.conf.update(
             'task' : 'delete_old_realtime_active_users',
             'schedule' : datetime.timedelta(hours = 1),
             'args' : ()
-        }
+        },
+        'run_notifications' : {
+            'task' : 'run_notifications',
+            'schedule' : datetime.timedelta(minutes = 5),
+            'args' : ()
+        },
     }
 )
 
@@ -61,6 +66,12 @@ from appcomposer import app as my_app, db
 from appcomposer.models import TranslationCurrentActiveUser
 from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, load_all_google_suggestions
 from appcomposer.translator.mongodb_pusher import push, sync
+from appcomposer.translator.notifications import run_notifications
+
+@cel.task(name='run_notifications', bind=True)
+def run_notifications_task(self):
+    with my_app.app_context():
+        return run_notifications()
 
 @cel.task(name='synchronize_apps_cache', bind=True)
 def synchronize_apps_cache_wrapper(self):

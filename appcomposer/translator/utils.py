@@ -141,7 +141,7 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
         translation_messages_response = cached_requests.get(absolute_translation_url, timeout = 30)
         translation_messages_response.raise_for_status()
         if only_if_new and translation_messages_response.from_cache:
-            return absolute_translation_url, None
+            return absolute_translation_url, None, {}
         translation_messages_xml = get_text_from_response(translation_messages_response)
     except Exception as e:
         logging.warning("Could not reach locale URL: %s  Reason: %s" % (absolute_translation_url, e), exc_info = True)
@@ -190,7 +190,7 @@ def extract_local_translations_url(app_url, force_local_cache = False):
         db.session.query(TranslationFastCache).filter_by(app_url = app_url).delete()
     except SQLAlchemyError as e:
         db.session.rollback()
-        logging.warning("Error deleting existing caches" % e, exc_info = True)
+        logging.warning("Error deleting existing caches: %s" % e, exc_info = True)
 
     cache = TranslationFastCache(app_url = app_url, translation_url =  absolute_translation_url, original_messages = json.dumps(messages), datetime = datetime.datetime.utcnow(), app_metadata = json.dumps(metadata))
     db.session.add(cache)

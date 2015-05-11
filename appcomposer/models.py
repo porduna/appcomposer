@@ -342,6 +342,39 @@ class TranslationUrl(db.Model):
     def __unicode__(self):
         return self.url
 
+class TranslationNotificationRecipient(db.Model):
+    __tablename__ = 'TranslationNotificationRecipients'
+
+    id = db.Column(db.Integer, primary_key = True)
+    email = db.Column(db.Unicode(255), unique = True, nullable = False, index = True)
+    created = db.Column(db.DateTime, index = True)
+
+    def __init__(self, email):
+        self.email = email
+        self.created = datetime.datetime.now()
+
+class TranslationSubscription(db.Model):
+    __tablename__ = 'TranslationSubscriptions'
+
+    id = db.Column(db.Integer, primary_key = True)
+    translation_url_id = db.Column(db.Integer, ForeignKey('TranslationUrls.id'))
+    recipient_id = db.Column(db.Integer, ForeignKey('TranslationNotificationRecipients.id'))
+    mechanism = db.Column(db.Unicode(255), nullable = False, index = True)
+    last_check = db.Column(db.DateTime, index = True)
+    # mechanism: web, file (...)
+
+    translation_url = relation("TranslationUrl", backref="subscriptions")
+    recipient = relation("TranslationNotificationRecipient", backref="subscriptions")
+
+    def __init__(self, translation_url, recipient, mechanism):
+        self.translation_url = translation_url
+        self.recipient = recipient
+        self.mechanism = mechanism
+        self.last_check = datetime.datetime.utcnow() - datetime.timedelta(hours = 24)
+
+    def update(self):
+        self.last_check = datetime.datetime.utcnow()
+
 class TranslatedApp(db.Model):
     __tablename__ = 'TranslatedApps'
 

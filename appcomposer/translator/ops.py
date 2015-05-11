@@ -11,7 +11,7 @@ from appcomposer import db
 from appcomposer.application import app
 from appcomposer.translator.languages import obtain_languages, obtain_groups
 from appcomposer.translator.suggestions import translate_texts
-from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser, TranslationSyncLog, TranslationCurrentActiveUser
+from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser, TranslationSyncLog, TranslationCurrentActiveUser, TranslationSubscription, TranslationNotificationRecipient
 
 DEBUG = False
 
@@ -44,6 +44,26 @@ def _get_or_create_app(app_url, translation_url, metadata):
     else:
         if db_translation_url.automatic != automatic:
             db_translation_url.automatic = automatic
+
+    SUBSCRIPTION_MECHANISM = 'translation-url'
+    subscribed_emails = set([ email for email, in db.session.query(TranslationNotificationRecipient.email).filter(TranslationSubscription.translation_url == db_translation_url, TranslationSubscription.mechanism == SUBSCRIPTION_MECHANISM, TranslationSubscription.recipient_id == TranslationNotificationRecipient.id).all() ])
+
+    subscription_requests = set(metadata.get('mails', []))
+    
+    pending_subscriptions = subscription_requests - subscribed_emails
+    subscriptions_to_delete = subscribed_emails - subscription_requests
+
+    if subscriptions_to_delete:
+        db.session.query(TranslationSubscription).filter(TranslationSubscription.mechanism == SUBSCRIPTION_MECHANISM, TranslationSubscription.translation_url == db_translation_url, TranslationSubscription.recipient_id == TranslationNotificationRecipient.id, TranslationNotificationRecipient.email.in_(list(subscriptions_to_delete))).delete()
+
+    if pending_subscriptions:
+        for pending_subscription in pending_subscriptions:
+            recipient = db.session.query(TranslationNotificationRecipient).filter_by(email = pending_subscription).first()
+            if not recipient:
+                recipient = TranslationNotificationRecipient(pending_subscription)
+                db.session.add(recipient)
+
+            db.session.add(TranslationSubscription(translation_url = db_translation_url, recipient = recipient, mechanism = SUBSCRIPTION_MECHANISM))
 
     # Create the app if not present
     db_app_url = db.session.query(TranslatedApp).filter_by(url = app_url).first()
