@@ -126,11 +126,12 @@ FOR THE APP / EDIT SCREEN
 }
 
 .ac-badge-complete {
-    background-color: rgb(190, 230, 190);
+    /*background-color: rgb(190, 230, 190);*/
+    border: 2px solid gold !important;
 }
 
 .ac-badge-incomplete {
-    background-color: rgb(230, 170, 170);
+    /*background-color: rgb(230, 170, 170);*/
 }
 
 .ac-badge-original {
