@@ -333,9 +333,11 @@ class TranslationUrl(db.Model):
 
     id = db.Column(db.Integer, primary_key = True)
     url = db.Column(db.Unicode(255), unique = True, nullable = False, index = True)
+    automatic = db.Column(db.Boolean, index = True)
 
-    def __init__(self, url):
+    def __init__(self, url, automatic = True):
         self.url = url
+        self.automatic = automatic
 
     def __unicode__(self):
         return self.url

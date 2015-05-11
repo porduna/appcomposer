@@ -184,7 +184,12 @@ def extract_local_translations_url(app_url, force_local_cache = False):
 
     absolute_translation_url, messages = _retrieve_messages_from_relative_url(app_url, relative_translation_url, cached_requests)
 
-    db.session.query(TranslationFastCache).filter_by(app_url = app_url).delete()
+    try:
+        db.session.query(TranslationFastCache).filter_by(app_url = app_url).delete()
+    except SQLAlchemyError as e:
+        db.session.rollback()
+        logging.warning("Error deleting existing caches" % e, exc_info = True)
+
     cache = TranslationFastCache(app_url = app_url, translation_url =  absolute_translation_url, original_messages = json.dumps(messages), datetime = datetime.datetime.utcnow())
     db.session.add(cache)
     try:

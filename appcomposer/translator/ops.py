@@ -378,12 +378,12 @@ def register_app_url(app_url, translation_url):
 def retrieve_stored(translation_url, language, target):
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
     if db_translation_url is None:
-        return {}, False
+        return {}, False, False
 
     bundle = db.session.query(TranslationBundle).filter_by(translation_url = db_translation_url, language = language, target = target).first()
 
     if bundle is None:
-        return {}, False
+        return {}, False, False
 
     response = {}
     for message in bundle.active_messages:
@@ -392,7 +392,7 @@ def retrieve_stored(translation_url, language, target):
             'from_default' : message.taken_from_default,
             'from_developer' : message.from_developer,
         }
-    return response, bundle.from_developer
+    return response, bundle.from_developer, db_translation_url.automatic
 
 SKIP_SUGGESTIONS_IF_STORED = False
 

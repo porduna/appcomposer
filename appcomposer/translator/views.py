@@ -270,7 +270,7 @@ def api_translate(language, target):
     translation_url, original_messages = extract_local_translations_url(app_url)
     translation = {}
 
-    stored_translations, from_developer = retrieve_stored(translation_url, language, target)
+    stored_translations, from_developer, automatic = retrieve_stored(translation_url, language, target)
     suggestions = retrieve_suggestions(original_messages, language, target, stored_translations)
     for key, original_message_pack in original_messages.iteritems():
         value = original_message_pack['text']
@@ -311,7 +311,7 @@ def api_translate(language, target):
         'translation' : translation,
         'modificationDate': users_status['modificationDate'],
         'modificationDateByOther': users_status['modificationDateByOther'],
-        'automatic': not from_developer
+        'automatic': automatic and not from_developer
     }
 
     if False:
