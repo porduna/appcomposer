@@ -152,11 +152,11 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
         translation_messages_xml = translation_messages_xml.replace("<messagebundle>", '<messagebundle namespace="http://go-lab.gw.utwente.nl/production/">')
 
     try:
-        messages = extract_messages_from_translation(translation_messages_xml)
+        messages, metadata = extract_messages_from_translation(translation_messages_xml)
     except TranslatorError as e:
         logging.warning("Could not load XML contents from %s Reason: %s" % (absolute_translation_url, e), exc_info = True)
         raise TranslatorError("Could not load XML in %s" % absolute_translation_url)
-    return absolute_translation_url, messages
+    return absolute_translation_url, messages, metadata
 
 def extract_local_translations_url(app_url, force_local_cache = False):
     if force_local_cache:
@@ -164,11 +164,13 @@ def extract_local_translations_url(app_url, force_local_cache = False):
         # than contacting the foreign server. Only if requested, this method will try to check
         # in a local cache in the database.
         last_hour = datetime.datetime.utcnow() - datetime.timedelta(hours = 1)
-        cached = db.session.query(TranslationFastCache.translation_url, TranslationFastCache.original_messages).filter(TranslationFastCache.app_url == app_url, TranslationFastCache.datetime > last_hour).first()
+        cached = db.session.query(TranslationFastCache.translation_url, TranslationFastCache.original_messages, TranslationFastCache.app_metadata).filter(TranslationFastCache.app_url == app_url, TranslationFastCache.datetime > last_hour).first()
         if cached is not None:
-            translation_url, original_messages = cached
-            original_messages_loaded = json.loads(original_messages)
-            return translation_url, original_messages_loaded
+            translation_url, original_messages, metadata = cached
+            if metadata is not None:
+                original_messages_loaded = json.loads(original_messages)
+                metadata_loaded = json.loads(metadata)
+                return translation_url, original_messages_loaded, metadata_loaded
 
     cached_requests = get_cached_session()
 
@@ -182,7 +184,7 @@ def extract_local_translations_url(app_url, force_local_cache = False):
     if not relative_translation_url:
         raise TranslatorError("Default Locale not provided message attribute")
 
-    absolute_translation_url, messages = _retrieve_messages_from_relative_url(app_url, relative_translation_url, cached_requests)
+    absolute_translation_url, messages, metadata = _retrieve_messages_from_relative_url(app_url, relative_translation_url, cached_requests)
 
     try:
         db.session.query(TranslationFastCache).filter_by(app_url = app_url).delete()
@@ -190,14 +192,14 @@ def extract_local_translations_url(app_url, force_local_cache = False):
         db.session.rollback()
         logging.warning("Error deleting existing caches" % e, exc_info = True)
 
-    cache = TranslationFastCache(app_url = app_url, translation_url =  absolute_translation_url, original_messages = json.dumps(messages), datetime = datetime.datetime.utcnow())
+    cache = TranslationFastCache(app_url = app_url, translation_url =  absolute_translation_url, original_messages = json.dumps(messages), datetime = datetime.datetime.utcnow(), app_metadata = json.dumps(metadata))
     db.session.add(cache)
     try:
         db.session.commit()
     except SQLAlchemyError as e:
         db.session.rollback()
         logging.warning("Could not add element to cache: %s" % e, exc_info = True)
-    return absolute_translation_url, messages
+    return absolute_translation_url, messages, metadata
 
 def extract_metadata_information(app_url, cached_requests = None, force_reload = False):
     if cached_requests is None:
@@ -208,6 +210,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
     original_translation_urls = {}
     default_translations = {}
     default_translation_url = None
+    default_metadata = {}
     if len(locales) == 0:
         translatable = False
     else:
@@ -221,7 +224,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
                     lang = u'%s_ALL' % lang
                 only_if_new = not force_reload
                 try:
-                    absolute_url, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = only_if_new)
+                    absolute_url, messages, metadata = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = only_if_new)
                 except TranslatorError as e:
                     logging.warning(u"Could not load %s translation for app URL: %s Reason: %s" % (lang, app_url, e), exc_info = True)
                     continue
@@ -239,9 +242,10 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
 
         if default_locale is not None:
             messages_url = default_locale.attrib.get('messages')
-            absolute_url, messages = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = False)
+            absolute_url, messages, metadata = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = False)
             default_translations = messages
             default_translation_url = absolute_url
+            default_metadata = metadata
 
             # No English? Default is always English!
             if 'en_ALL' not in original_translations:
@@ -263,6 +267,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
         'original_translation_urls' : original_translation_urls,
         'default_translations' : default_translations,
         'default_translation_url' : default_translation_url,
+        'default_metadata' : default_metadata,
     }
 
 def extract_messages_from_translation(xml_contents):
@@ -271,6 +276,14 @@ def extract_messages_from_translation(xml_contents):
     default_namespace = None
     if 'namespace' in contents.attrib:
         default_namespace = contents.attrib['namespace']
+
+    if 'mails' in contents.attrib:
+        mails = [ mail.strip() for mail in contents.attrib['mails'].split(',') ]
+    else:
+        mails = []
+
+    automatic = contents.attrib.get('automatic', 'true').lower() == 'true'
+
     for pos, xml_msg in enumerate(contents.findall('msg')):
         if 'name' not in xml_msg.attrib:
             raise TranslatorError("Invalid translation file: no name in msg tag")
@@ -300,7 +313,11 @@ def extract_messages_from_translation(xml_contents):
             'namespace' : namespace,
             'position' : pos,
         }
-    return messages
+    metadata = {
+        'mails' : mails,
+        'automatic' : automatic,
+    }
+    return messages, metadata
 
 
 def indent(elem, level=0):
@@ -339,7 +356,7 @@ def bundle_to_xml(db_bundle, category = None):
             xml_msg.attrib['namespace'] = message.namespace
         xml_msg.text = message.value
     indent(xml_bundle)
-    xml_string = ET.tostring(xml_bundle, encoding = 'utf8')
+    xml_string = ET.tostring(xml_bundle, encoding = 'UTF-8')
     return xml_string
 
 def messages_to_xml(messages):
@@ -351,7 +368,7 @@ def messages_to_xml(messages):
         xml_msg.attrib['name'] = key
         xml_msg.text = value
     indent(xml_bundle)
-    xml_string = ET.tostring(xml_bundle, encoding = 'utf8')
+    xml_string = ET.tostring(xml_bundle, encoding = 'UTF-8')
     return xml_string
 
 
