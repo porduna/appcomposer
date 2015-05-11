@@ -116,6 +116,30 @@ def _sync_golab_translations(cached_requests, force_reload):
         logger.warning("Error retrieving applications from golabz", exc_info = True)
         return []
 
+    try:
+        labs_response = cached_requests.get("http://www.golabz.eu/rest/labs/retrieve.json")
+        labs_response.raise_for_status()
+        labs = labs_response.json()
+    except requests.RequestException:
+        logger.warning("Error retrieving laboratories from golabz", exc_info = True)
+        return []
+
+    labs_adapted = []
+    for lab in labs:
+        current_lab = lab.copy()
+        lab_id = lab['id']
+        current_lab['app_image'] = current_lab.get('lab_image')
+        current_lab['app_thumb'] = current_lab.get('lab_thumb')
+        current_lab['app_golabz_page'] = current_lab.get('lab_golabz_page')
+        for pos, internal_lab in enumerate(lab.get('lab_apps', [])):
+            current_lab['id'] = '%s-%s' % (lab_id, pos)
+            current_lab['app_url'] = internal_lab['app_url']
+            current_lab['app_title'] = internal_lab['app_title']
+            current_lab['app_type'] = internal_lab['app_type']
+            labs_adapted.append(current_lab)
+
+    apps.extend(labs_adapted)
+
     apps_by_url = {}
     for app in apps:
         apps_by_url[app['app_url']] = app

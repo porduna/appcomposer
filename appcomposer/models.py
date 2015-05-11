@@ -271,7 +271,7 @@ class RepositoryApp(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     name = db.Column(db.Unicode(200), nullable = False, index = True)
-    url = db.Column(db.Unicode(255), unique = True, nullable = False, index = True)
+    url = db.Column(db.Unicode(255), nullable = False, index = True)
     app_thumb = db.Column(db.Unicode(255))
     description = db.Column(db.UnicodeText)
     app_link = db.Column(db.Unicode(255))
