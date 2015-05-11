@@ -116,10 +116,20 @@ def api_translations():
         except ValueError:
             translated_languages = {}
 
+        languages = {}
+        for translated_lang, progress in translated_languages.iteritems():
+            translated_lang_simplified = translated_lang.split('_')[0]
+            translated_lang_country = '_'.join(translated_lang.split('_')[:2])
+            languages[translated_lang_simplified] = {
+                'original' : translated_lang_country in original_languages,
+                'progress' : progress
+            }
+
         applications.append({
             'original_languages' : original_languages,
             'original_languages_simplified' : original_languages_simplified,
             'translated_languages' : translated_languages,
+            'languages' : languages,
             'source' : repo_app.repository,
             'id' : repo_app.external_id,
             'description': repo_app.description,
