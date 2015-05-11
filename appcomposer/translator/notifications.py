@@ -1,6 +1,8 @@
 import datetime
 import traceback
 import smtplib
+from email.mime.multipart import MIMEMultipart
+from email.mime.text import MIMEText
 from sqlalchemy import func
 
 from appcomposer.db import db
@@ -106,28 +108,35 @@ def run_notifications():
         translation_urls_by_id[translation_url.id] = translation_url
 
     for recipient_id, recipient_messages in pending_emails.iteritems():
-        msg = "Hi,\nThe following changes have been detected in applications on which you're subscribed:\n"
+        txt_msg = "Hi,\nThe following changes have been detected in applications on which you're subscribed:\n"
+        html_msg = "<p>Hi,</p><p>The following changes have been detected in applications on which you're subscribed:</p><ul>\n"
         for translation_url_id, translation_url_changes in recipient_messages.iteritems():
-            msg += " - %s \n" % translation_urls_by_id[translation_url_id].url
+            txt_msg += " - %s \n" % translation_urls_by_id[translation_url_id].url
+            html_msg += "<li>%s<ul>" % translation_urls_by_id[translation_url_id].url
             for language, language_changes in translation_url_changes.iteritems():
-                msg += "   * %s\n" % language
+                txt_msg += "   * %s\n" % language
+                html_msg += "<li>%s<ul>" % language
                 for user_id, number_of_changes in language_changes.iteritems():
                     user = users_by_id[user_id]
-                    msg += "     + User %s <%s> has made %s changes on the %s translation\n" % (user.display_name, user.email, number_of_changes, language)
-            msg += "\n"
-        msg += "\nYou can find the translations in different formats in:\n    - http://composer.golabz.eu/translator/dev/apps/\n\n"
-        msg += "\nIf you don't want to receive these messages, reply this e-mail.\n\n--\nThe Go-Lab App Composer team"
+                    txt_msg += "     + %s <%s> has made %s changes on the %s translation\n" % (user.display_name, user.email, number_of_changes, language)
+                    html_msg += "<li>%s <%s> has made %s changes on the %s translation</li>" % (user.display_name, user.email, number_of_changes, language)
+                html_msg += "</ul></li>"
+            txt_msg += "\n"
+            html_msg += "</ul></li>\n"
+        txt_msg += "\nYou can find the translations in different formats in:\n    - http://composer.golabz.eu/translator/dev/apps/\n\n"
+        html_msg += "</ul><p>You can find the translations <a href='http://composer.golabz.eu/translator/dev/apps/'>here</a></p>"
+        txt_msg += "\nIf you don't want to receive these messages, please reply this e-mail.\n\n--\nThe Go-Lab App Composer team"
+        html_msg += "<p>If you don't want to receive these e-mails, please reply this e-mail</p><p>--<b>The Go-Lab App Composer team<p>"
 
         recipient = recipients_by_id[recipient_id]
         
         try:
-            send_notification(recipient.email, msg)
+            send_notification(recipient.email, txt_msg, html_msg)
         except:
             traceback.print_exc()
 
 
-def send_notification(recipient, body):
-    subject = "[AppComposer] New translations on your applications"
+def send_notification(recipient, txt_body, html_body):
     # TODO
     to_addrs = list(app.config.get('ADMINS', [])) # + [ recipient ]
     from_addr = 'weblab@deusto.es'
@@ -142,16 +151,18 @@ def send_notification(recipient, body):
     if not smtp_server or not from_addr or not to_addrs:
         return
 
-    print "Send to %s" % to_addrs
-    print body
+    msg = MIMEMultipart('alternative')
+    msg['Subject'] = "[AppComposer] New translations on your applications"
+    msg['From'] = "App Composer Translator <weblab@deusto.es>"
+    msg['To'] = recipient
+
+    part1 = MIMEText(txt_body, 'plain')
+    part2 = MIMEText(html_body, 'html')
+    msg.attach(part1)
+    msg.attach(part2)
 
     server = smtplib.SMTP(smtp_server)
-    server.sendmail(from_addr, to_addrs, MAIL_TPL % {
-                'sender'     : from_addr,
-                'recipients' : to_addrs,
-                'subject'    : subject,
-                'body'       : body.encode('utf8')
-        })
+    server.sendmail(from_addr, to_addrs, msg.as_string())
 
 
 if __name__ == '__main__':
