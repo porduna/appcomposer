@@ -333,9 +333,11 @@ class TranslationUrl(db.Model):
 
     id = db.Column(db.Integer, primary_key = True)
     url = db.Column(db.Unicode(255), unique = True, nullable = False, index = True)
+    automatic = db.Column(db.Boolean, index = True)
 
-    def __init__(self, url):
+    def __init__(self, url, automatic = True):
         self.url = url
+        self.automatic = automatic
 
     def __unicode__(self):
         return self.url
@@ -502,13 +504,15 @@ class TranslationFastCache(db.Model):
     app_url = db.Column(db.Unicode(255), unique = True, index = True)
     translation_url = db.Column(db.Unicode(255))
     original_messages = db.Column(db.UnicodeText)
+    app_metadata = db.Column(db.UnicodeText)
     datetime = db.Column(db.DateTime, index = True)
     
-    def __init__(self, app_url = app_url, translation_url = translation_url, original_messages = original_messages, datetime = datetime):
+    def __init__(self, app_url, translation_url, original_messages, datetime, app_metadata):
         self.app_url = app_url
         self.translation_url = translation_url
         self.original_messages = original_messages
         self.datetime = datetime
+        self.app_metadata = app_metadata
 
 class TranslationSyncLog(db.Model):
     __tablename__ = 'TranslationSyncLogs'

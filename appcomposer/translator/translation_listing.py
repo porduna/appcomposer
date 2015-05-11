@@ -255,8 +255,10 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
     if metadata_information.get('translatable'):
         translation_url = metadata_information.get('default_translation_url')
         original_messages = metadata_information['default_translations']
+        default_metadata = metadata_information['default_metadata']
         for language, translated_messages in metadata_information['original_translations'].iteritems():
             add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url, 
+                                app_metadata = default_metadata,
                                 language = language, target = u'ALL', translated_messages = translated_messages, 
                                 original_messages = original_messages, from_developer = True)
 
@@ -275,6 +277,7 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
                 target = language_pack['target']
 
                 add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url,
+                                app_metadata = default_metadata,
                                 language = language, target = target, translated_messages = {},
                                 original_messages = original_messages, from_developer = False)
 
@@ -283,6 +286,7 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
             for translation_bundle in db.session.query(TranslationBundle).filter_by(translation_url = db_translation_url).all():
                 if translation_bundle.target != u'ALL' or translation_bundle.language not in metadata_information['original_translations']:
                     add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url, 
+                                app_metadata = default_metadata,
                                 language = translation_bundle.language, target = translation_bundle.target, translated_messages = None,
                                 original_messages = original_messages, from_developer = False)
                    
@@ -312,6 +316,7 @@ def load_google_suggestions_by_lang(active_messages, language):
     print list(active_messages)[:10], len(active_messages)
     print list(existing_suggestions)[:10], len(existing_suggestions)
     print "Missing:", len(missing_suggestions)
+    counter = 0
 
     for message in missing_suggestions:
         if message.strip() == '':
@@ -321,7 +326,9 @@ def load_google_suggestions_by_lang(active_messages, language):
             translated = gs.translate(message, language)
         except Exception as e:
             logger.warning("Google Translate stopped with exception: %s" % e, exc_info = True)
-            return False
+            return False, counter
+        else:
+            counter += 1
 
         if translated:
             suggestion = TranslationExternalSuggestion(engine = 'google', human_key = message, language = language, origin_language = ORIGIN_LANGUAGE, value = translated)
@@ -333,9 +340,9 @@ def load_google_suggestions_by_lang(active_messages, language):
                 raise
         else:
             logger.warning("Google Translate returned %r for message %r. Stopping." % (translated, message))
-            return False
+            return False, counter
 
-    return True
+    return True, counter
 
 
 # ORDERED_LANGUAGES: first the semi official ones (less likely to have translations in Microsoft Translator API), then the official ones and then the rest
@@ -343,9 +350,16 @@ ORDERED_LANGUAGES = SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UN
 
 def load_all_google_suggestions():
     active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == 'en_ALL', ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
+    
+    total_counter = 0
 
     for language in ORDERED_LANGUAGES:
-        should_continue = load_google_suggestions_by_lang(active_messages, language)
+        should_continue, counter = load_google_suggestions_by_lang(active_messages, language)
+        total_counter += counter
+        if total_counter > 1000:
+            logger.info("Stopping the google suggestions API after performing %s queries until the next cycle" % total_counter)
+            break
+
         if not should_continue:
             logger.info("Stopping the google suggestions API until the next cycle")
             # There was an error: keep in the next iteration ;-)

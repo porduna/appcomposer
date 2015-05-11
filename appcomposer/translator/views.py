@@ -208,10 +208,10 @@ def bundle_update(language, target):
         return jsonify(**{"result": "error"})
 
     user = current_golab_user()
-    translation_url, original_messages = extract_local_translations_url(app_url, force_local_cache = True)
+    translation_url, original_messages, metadata = extract_local_translations_url(app_url, force_local_cache = True)
     translated_messages = { key : value }
 
-    add_full_translation_to_app(user, app_url, translation_url, language, target, translated_messages, original_messages, from_developer = False)
+    add_full_translation_to_app(user, app_url, translation_url, metadata, language, target, translated_messages, original_messages, from_developer = False)
 
     return jsonify(**{"result": "success"})
 
@@ -236,9 +236,9 @@ def api_app():
         if repo_app.app_link is not None:
             app_link = repo_app.app_link
 
-    translation_url, original_messages = extract_local_translations_url(app_url, force_local_cache = True)
+    translation_url, original_messages, metadata = extract_local_translations_url(app_url, force_local_cache = True)
     translations = retrieve_translations_stats(translation_url, original_messages)
-    register_app_url(app_url, translation_url)
+    register_app_url(app_url, translation_url, metadata)
 
     app_data = {
         'url' : app_url,
@@ -267,10 +267,10 @@ def api_translate(language, target):
     if errors:
         return '; '.join(errors), 400
 
-    translation_url, original_messages = extract_local_translations_url(app_url)
+    translation_url, original_messages, metadata = extract_local_translations_url(app_url)
     translation = {}
 
-    stored_translations, from_developer = retrieve_stored(translation_url, language, target)
+    stored_translations, from_developer, automatic = retrieve_stored(translation_url, language, target)
     suggestions = retrieve_suggestions(original_messages, language, target, stored_translations)
     for key, original_message_pack in original_messages.iteritems():
         value = original_message_pack['text']
@@ -311,7 +311,7 @@ def api_translate(language, target):
         'translation' : translation,
         'modificationDate': users_status['modificationDate'],
         'modificationDateByOther': users_status['modificationDateByOther'],
-        'automatic': not from_developer
+        'automatic': automatic and not from_developer
     }
 
     if False:
@@ -420,7 +420,7 @@ def translation_upload():
         app_url = form.url.data
 
         try:
-            translation_url, original_messages = extract_local_translations_url(app_url)
+            translation_url, original_messages, metadata = extract_local_translations_url(app_url)
         except Exception as e:
             traceback.print_exc()
             form.url.errors = [unicode(e)]
@@ -430,7 +430,7 @@ def translation_upload():
         if isinstance(xml_contents, str):
             xml_contents = unicode(xml_contents, 'utf8')
         try:
-            translated_messages = extract_messages_from_translation(xml_contents)
+            translated_messages, metadata = extract_messages_from_translation(xml_contents)
         except Exception as e:
             traceback.print_exc()
             form.opensocial_xml.errors = [unicode(e)]
@@ -439,7 +439,7 @@ def translation_upload():
         if not errors:
             language = form.language.data
             target = form.target.data
-            add_full_translation_to_app(current_golab_user(), app_url, translation_url, language, target, translated_messages, original_messages, from_developer = False)
+            add_full_translation_to_app(current_golab_user(), app_url, translation_url, metadata, language, target, translated_messages, original_messages, from_developer = False)
             flash("Contents successfully added")
 
     return render_template('translator/translations_upload.html', form=form)

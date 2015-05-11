@@ -34,12 +34,16 @@ def get_golab_default_user():
             raise
     return default_user
 
-def _get_or_create_app(app_url, translation_url):
+def _get_or_create_app(app_url, translation_url, metadata):
     # Create the translation url if not present
+    automatic = metadata.get('automatic', True)
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
     if not db_translation_url:
-        db_translation_url = TranslationUrl(url = translation_url)
+        db_translation_url = TranslationUrl(url = translation_url, automatic = automatic)
         db.session.add(db_translation_url)
+    else:
+        if db_translation_url.automatic != automatic:
+            db_translation_url.automatic = automatic
 
     # Create the app if not present
     db_app_url = db.session.query(TranslatedApp).filter_by(url = app_url).first()
@@ -55,8 +59,8 @@ def _get_or_create_app(app_url, translation_url):
     db.session.add(db_app_url)
     return db_translation_url
 
-def _get_or_create_bundle(app_url, translation_url, language, target, from_developer):
-    db_translation_url = _get_or_create_app(app_url, translation_url)
+def _get_or_create_bundle(app_url, translation_url, metadata, language, target, from_developer):
+    db_translation_url = _get_or_create_app(app_url, translation_url, metadata)
 
     # Create the bundle if not present
     db_translation_bundle = db.session.query(TranslationBundle).filter_by(translation_url = db_translation_url, language = language, target = target).first()
@@ -93,8 +97,8 @@ def get_bundles_by_key_namespaces(pairs):
             })
     return bundles
 
-def add_full_translation_to_app(user, app_url, translation_url, language, target, translated_messages, original_messages, from_developer):
-    db_translation_bundle = _get_or_create_bundle(app_url, translation_url, language, target, from_developer)
+def add_full_translation_to_app(user, app_url, translation_url, app_metadata, language, target, translated_messages, original_messages, from_developer):
+    db_translation_bundle = _get_or_create_bundle(app_url, translation_url, app_metadata, language, target, from_developer)
     if from_developer and not db_translation_bundle.from_developer:
         # If this is an existing translation and it comes from a developer, establish that it is from developer
         db_translation_bundle.from_developer = from_developer
@@ -360,8 +364,8 @@ def add_full_translation_to_app(user, app_url, translation_url, language, target
         from appcomposer.translator.tasks import push_task
         push_task.delay(translation_url, language, target)
     
-def register_app_url(app_url, translation_url):
-    _get_or_create_app(app_url, translation_url)
+def register_app_url(app_url, translation_url, metadata):
+    _get_or_create_app(app_url, translation_url, metadata)
     try:
         db.session.commit()
     except IntegrityError:
@@ -378,12 +382,12 @@ def register_app_url(app_url, translation_url):
 def retrieve_stored(translation_url, language, target):
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
     if db_translation_url is None:
-        return {}, False
+        return {}, False, False
 
     bundle = db.session.query(TranslationBundle).filter_by(translation_url = db_translation_url, language = language, target = target).first()
 
     if bundle is None:
-        return {}, False
+        return {}, False, False
 
     response = {}
     for message in bundle.active_messages:
@@ -392,7 +396,7 @@ def retrieve_stored(translation_url, language, target):
             'from_default' : message.taken_from_default,
             'from_developer' : message.from_developer,
         }
-    return response, bundle.from_developer
+    return response, bundle.from_developer, db_translation_url.automatic
 
 SKIP_SUGGESTIONS_IF_STORED = False
 
