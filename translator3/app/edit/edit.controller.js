@@ -191,7 +191,7 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
     /**
      * To be called when the Appinfo or Translation requests fail.
      */
-    function onGetError() {
+    function onGetError(error) {
         $log.error("Handling API request error");
         $scope.status.error = {};
         $scope.status.error.message = error.data;
