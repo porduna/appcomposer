@@ -360,6 +360,7 @@ class TranslationSubscription(db.Model):
     translation_url_id = db.Column(db.Integer, ForeignKey('TranslationUrls.id'))
     recipient_id = db.Column(db.Integer, ForeignKey('TranslationNotificationRecipients.id'))
     mechanism = db.Column(db.Unicode(255), nullable = False, index = True)
+    last_check = db.Column(db.DateTime, index = True)
     # mechanism: web, file (...)
 
     translation_url = relation("TranslationUrl", backref="subscriptions")
@@ -369,6 +370,10 @@ class TranslationSubscription(db.Model):
         self.translation_url = translation_url
         self.recipient = recipient
         self.mechanism = mechanism
+        self.last_check = datetime.datetime.utcnow() - datetime.timedelta(hours = 24)
+
+    def update(self):
+        self.last_check = datetime.datetime.utcnow()
 
 class TranslatedApp(db.Model):
     __tablename__ = 'TranslatedApps'
