@@ -35,6 +35,7 @@
                     </td>
                     <td>
 
+                        <!-- Display each badge for each language -->
                         <a ng-repeat="(langname, lang) in app.languages"
                                 ng-href="#/edit/{{ langname }}_ALL/ALL/{{ app.app_url }}">
 
@@ -49,20 +50,6 @@
                             </span>
                         </a>
 
-                        <!--<a ng-repeat="lang in app.original_languages_simplified"
-                                ng-href="#/edit/{{ lang }}_ALL/ALL/{{ app.app_url }}">
-                            <span title="{{ 'This translation is provided by the original developer and will not be applied automatically' | translate }}"
-                              class="badge ac-lang-badge ac-badge-original"
-                              ng-class="{ 'ac-badge-complete': app.translated_languages[lang + '_ALL_ALL'] == 1 || app.translated_languages[lang + '_ALL_ALL'] == undefined, 'ac-badge-incomplete': app.translated_languages[lang + '_ALL_ALL'] < 1}">
-                            <span class="fa fa-shield ac-badge-icon-locked"/> {{ lang }}
-                            </span>
-                        </a>
-
-                        <a ng-repeat="(lang, value) in onlyTranslatedLanguages(app)" ng-href="#/edit/{{ extractLangName(lang) }}_ALL/ALL/{{ app.app_url }}">
-                            <span class="badge ac-lang-badge" ng-class="{ 'ac-badge-complete': value == 1, 'ac-badge-incomplete': value < 1}">
-                                {{ extractLangName(lang) }}
-                            </span>
-                        </a>-->
                     </td>
                 </tr>
             </tbody>
