@@ -49,6 +49,10 @@ app.jinja_env.add_extension("jinja2.ext.i18n")
 # Add custom filter to jinja2
 app.jinja_env.filters['relativize_paths'] = relativize_paths
 
+@app.template_filter('hash')
+def hash_filter(url):
+    return hash(url)
+
 # Support old deployments
 if not app.config.get('SQLALCHEMY_DATABASE_URI', False):
     if app.config.get('SQLALCHEMY_ENGINE_STR', False):
