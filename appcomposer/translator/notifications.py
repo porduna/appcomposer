@@ -1,13 +1,15 @@
 import datetime
 import traceback
 import smtplib
+from collections import defaultdict
 from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
+
 from sqlalchemy import func
 
 from appcomposer.db import db
 from appcomposer.application import app
-from appcomposer.models import TranslationSubscription, TranslationNotificationRecipient, TranslationUrl, TranslationBundle, ActiveTranslationMessage, GoLabOAuthUser, TranslationMessageHistory
+from appcomposer.models import TranslationSubscription, TranslationNotificationRecipient, TranslationUrl, TranslationBundle, ActiveTranslationMessage, GoLabOAuthUser, TranslationMessageHistory, TranslatedApp
 
 def run_notifications():
     print "Starting notifications process"
@@ -98,7 +100,7 @@ def run_notifications():
 
                 pending_emails[recipient_id][translation_url_id] = changes
 
-                subscription = db.session.query(TranslationSubscription).filter_by(id = subscription_ids).first()
+                subscription = db.session.query(TranslationSubscription).filter_by(id = subscription_id).first()
                 if subscription:
                     subscription.update()
                     any_update = True
@@ -127,6 +129,10 @@ def run_notifications():
     translation_urls_by_id = {}
     for translation_url in db.session.query(TranslationUrl).filter(TranslationUrl.id.in_(list(all_translation_url_ids))).all():
         translation_urls_by_id[translation_url.id] = translation_url
+    
+    translation_apps_by_translation_url_id = defaultdict(list)
+    for translation_app in db.session.query(TranslatedApp).filter(TranslatedApp.translation_url_id.in_(list(all_translation_url_ids))).all():
+        translation_apps_by_translation_url_id[translation_app.translation_url_id].append(translation_app.url)
 
     for recipient_id, recipient_messages in pending_emails.iteritems():
         translation_urls = []
@@ -137,6 +143,13 @@ def run_notifications():
             translation_urls.append(translation_url)
             txt_msg += " - %s \n" % translation_url
             html_msg += "<li>%s<ul>" % translation_url
+            translation_apps = translation_apps_by_translation_url_id[translation_url_id]
+            if translation_apps:
+                html_msg += "<li>Applications:<ul>\n"
+                for translation_app in translation_apps:
+                    html_msg += "<li>%s</li>" % translation_app
+                html_msg += "</ul></li>"
+            html_msg += "<li>Changes:<ul>\n"
             for language, language_changes in translation_url_changes.iteritems():
                 txt_msg += "   * %s\n" % language
                 html_msg += "<li>%s<ul>" % language
@@ -146,11 +159,12 @@ def run_notifications():
                     html_msg += "<li>%s <%s> has made %s changes on the %s translation</li>" % (user.display_name, user.email, number_of_changes, language)
                 html_msg += "</ul></li>"
             txt_msg += "\n"
-            html_msg += "</ul></li>\n"
+            html_msg += "</ul></li></ul>"
+            html_msg += "</li>\n"
         txt_msg += "\nYou can find the translations in different formats in:\n    - http://composer.golabz.eu/translator/dev/apps/\n\n"
-        html_msg += "</ul><p>You can find the translations <a href='http://composer.golabz.eu/translator/dev/apps/'>here</a></p>"
+        html_msg += "</ul><p>You can find the translations <a href='http://composer.golabz.eu/translator/dev/apps/'>here</a>.</p>"
         txt_msg += "\nIf you don't want to receive these messages, please reply this e-mail.\n\n--\nThe Go-Lab App Composer team"
-        html_msg += "<p>If you don't want to receive these e-mails, please reply this e-mail</p><p>--<b>The Go-Lab App Composer team<p>"
+        html_msg += "<p>If you don't want to receive these e-mails, please reply this e-mail.</p><p>--<br>The Go-Lab App Composer team<p>"
 
         recipient = recipients_by_id[recipient_id]
 
@@ -183,8 +197,8 @@ def send_notification(recipient, txt_body, html_body):
     msg['From'] = "App Composer Translator <weblab@deusto.es>"
     msg['To'] = recipient
 
-    part1 = MIMEText(txt_body, 'plain')
-    part2 = MIMEText(html_body, 'html')
+    part1 = MIMEText(txt_body.encode('utf8'), 'plain')
+    part2 = MIMEText(html_body.encode('utf8'), 'html')
     msg.attach(part1)
     msg.attach(part2)
 
