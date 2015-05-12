@@ -53,8 +53,8 @@ cel.conf.update(
             'schedule' : datetime.timedelta(hours = 1),
             'args' : ()
         },
-        'run_notifications' : {
-            'task' : 'run_notifications',
+        'notify_changes' : {
+            'task' : 'notify_changes',
             'schedule' : datetime.timedelta(minutes = 5),
             'args' : ()
         },
@@ -68,8 +68,8 @@ from appcomposer.translator.translation_listing import synchronize_apps_cache, s
 from appcomposer.translator.mongodb_pusher import push, sync
 from appcomposer.translator.notifications import run_notifications
 
-@cel.task(name='run_notifications', bind=True)
-def run_notifications_task(self):
+@cel.task(name='notify_changes', bind=True)
+def notify_changes(self):
     with my_app.app_context():
         return run_notifications()
 
