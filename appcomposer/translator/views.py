@@ -14,7 +14,7 @@ from functools import wraps
 
 from collections import OrderedDict
 
-from sqlalchemy import distinct
+from sqlalchemy import distinct, func
 from sqlalchemy.orm import joinedload_all
 
 from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify
@@ -27,14 +27,14 @@ from wtforms.validators import url, required
 
 from appcomposer.db import db
 from appcomposer.application import app
-from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp, GoLabOAuthUser, ActiveTranslationMessage
+from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp, GoLabOAuthUser, ActiveTranslationMessage, TranslationMessageHistory
 from appcomposer.login import requires_golab_login, current_golab_user
 from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, get_latest_synchronizations, update_user_status, get_user_status
-from appcomposer.translator.utils import bundle_to_xml, url_to_filename, messages_to_xml, NO_CATEGORY
+from appcomposer.translator.utils import bundle_to_xml, bundle_to_jquery_i18n, bundle_to_json, bundle_to_properties, url_to_filename, messages_to_xml, NO_CATEGORY
 
 import flask.ext.cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
@@ -520,6 +520,15 @@ def translations_urls():
             })
     return render_template("translator/translations_urls.html", urls = urls)
 
+def _sort_dicts_by_datetime(dictionary):
+    all_values = [ (key, value) for key, value in dictionary.iteritems() ]
+    all_values.sort(lambda (k1, v1), (k2, v2) : cmp(v1.get('last_change'), v2.get('last_change')), reverse = True)
+    new_dict = OrderedDict()
+    for key, value in all_values:
+        new_dict[key] = value
+    return new_dict
+
+
 @translator_blueprint.route('/dev/apps/')
 @public
 def translations_apps():
@@ -539,6 +548,14 @@ def translations_apps():
             category = NO_CATEGORY
         categories_per_bundle_id[bundle_id].add(category)
 
+    max_date_per_translation_url_id = {}
+    for max_date, translation_url_id in (db.session.query(func.max(ActiveTranslationMessage.datetime), TranslationBundle.translation_url_id)
+                                            .filter(
+                                                ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
+                                                ActiveTranslationMessage.history_id == TranslationMessageHistory.id)
+                                            .group_by(TranslationBundle.translation_url_id).all()):
+        max_date_per_translation_url_id[translation_url_id] = max_date
+
     for app in db.session.query(TranslatedApp).options(joinedload_all('translation_url.bundles')):
         if app.url in golab_app_by_url:
             current_apps = golab_apps
@@ -549,6 +566,7 @@ def translations_apps():
             'translations' : [],
         }
         if app.translation_url is not None:
+            current_apps[app.url]['last_change'] = max_date_per_translation_url_id.get(app.translation_url_id, None)
             for bundle in app.translation_url.bundles:
                 current_apps[app.url]['translations'].append({
                     'from_developer' : bundle.from_developer,
@@ -566,20 +584,116 @@ def translations_apps():
         if len(current_apps[app.url]['categories']) == 1 and current_apps[app.url]['categories'][0] is NO_CATEGORY:
             current_apps[app.url]['categories'] = []
 
-    return render_template("translator/translations_apps.html", golab_apps = golab_apps, other_apps = other_apps, golab_app_by_url = golab_app_by_url)
+    golab_apps = _sort_dicts_by_datetime(golab_apps)
+    other_apps = _sort_dicts_by_datetime(other_apps)
+
+    return render_template("translator/translations_apps.html", golab_apps = golab_apps, other_apps = other_apps, golab_app_by_url = golab_app_by_url, NAMES = NAMES)
+
+
+FORMAT_OPENSOCIAL = 'opensocial'
+FORMAT_JQUERY_I18N = 'jquery_i18n'
+FORMAT_JSON = 'json'
+FORMAT_PROPERTIES = 'properties'
+
+SERIALIZERS = {
+    FORMAT_OPENSOCIAL : bundle_to_xml,
+    FORMAT_JQUERY_I18N : bundle_to_jquery_i18n,
+    FORMAT_PROPERTIES : bundle_to_properties,
+    FORMAT_JSON : bundle_to_json,
+}
+
+MIMETYPES = {
+    FORMAT_OPENSOCIAL : 'application/xml',
+    FORMAT_JQUERY_I18N : 'application/json',
+    FORMAT_JSON : 'application/json',
+    FORMAT_PROPERTIES : 'text/plain; charset=utf-8',
+}
+
+EXTENSIONS = {
+    FORMAT_OPENSOCIAL : 'xml',
+    FORMAT_JQUERY_I18N : 'json',
+    FORMAT_JSON : 'json',
+    FORMAT_PROPERTIES : 'properties',
+}
+
+NAMES = OrderedDict()
+NAMES[FORMAT_OPENSOCIAL] = "OpenSocial"
+NAMES[FORMAT_PROPERTIES] = "Properties file"
+NAMES[FORMAT_JSON] = "JSON"
+NAMES[FORMAT_JQUERY_I18N] = "jQuery i18n plug-in"
+
+
+# 
+# Old openSocial links (not indexed anymore)
+# 
 
 @translator_blueprint.route('/dev/apps/<lang>/<target>/<path:app_url>')
 @public
 def translations_app_xml(lang, target, app_url):
-    translation_app = db.session.query(TranslatedApp).filter_by(url = app_url).first()
-    if translation_app is None:
-        return "Translation App not found in the database", 404
-
-    return translations_url_xml(lang, target, translation_app.translation_url.url)
+    return _translate_app(lang, target, app_url, output_format = FORMAT_OPENSOCIAL)
 
 @translator_blueprint.route('/dev/apps/all.zip')
 @public
 def translations_app_all_zip():
+    return _translate_app_all_zip(output_format = FORMAT_OPENSOCIAL)
+
+@translator_blueprint.route('/dev/apps/all/<path:app_url>')
+@public
+def translations_app_url_zip(app_url):
+    return _translations_app_url_zip(app_url, output_format = FORMAT_OPENSOCIAL)
+
+@translator_blueprint.route('/dev/urls/<lang>/<target>/<path:url>')
+@public
+def translations_url_xml(lang, target, url):
+    return _translate_url(lang, target, url, output_format = FORMAT_OPENSOCIAL)
+
+# 
+# Generic links
+# 
+
+@translator_blueprint.route('/dev/apps/<format_key>/<lang>/<target>/<path:app_url>')
+@public
+def translations_app_format(format_key, lang, target, app_url):
+    if format_key not in NAMES:
+        return "Invalid format", 404
+    return _translate_app(lang, target, app_url, output_format = format_key)
+
+@translator_blueprint.route('/dev/apps/<format_key>/all.zip')
+@public
+def translations_app_all_format_zip(format_key):
+    if format_key not in NAMES:
+        return "Invalid format", 404
+    return _translate_app_all_zip(output_format = format_key)
+
+@translator_blueprint.route('/dev/apps/<format_key>/<path:app_url>')
+@public
+def translations_app_url_format_zip(format_key, app_url):
+    if format_key not in NAMES:
+        return "Invalid format", 404
+    return _translations_app_url_zip(app_url, output_format = format_key)
+
+@translator_blueprint.route('/dev/urls/<format_key>/<lang>/<target>/<path:url>')
+@public
+def translations_url_format(format_key, lang, target, url):
+    if format_key not in NAMES:
+        return "Invalid format", 404
+    return _translate_url(lang, target, url, output_format = format_key)
+
+# 
+# Real implementations (format agnostic)
+# 
+
+def _translate_app(lang, target, app_url, output_format):
+    translation_app = db.session.query(TranslatedApp).filter_by(url = app_url).first()
+    if translation_app is None:
+        return "Translation App not found in the database", 404
+
+    return _translate_url(lang, target, translation_app.translation_url.url, output_format = output_format)
+
+def _translate_app_all_zip(output_format):
+    serializer = SERIALIZERS[output_format]
+    extension = EXTENSIONS[output_format]
+
     translated_apps = db.session.query(TranslatedApp).filter_by().all()
     sio = StringIO.StringIO()
     zf = zipfile.ZipFile(sio, 'w')
@@ -588,17 +702,18 @@ def translations_app_all_zip():
         translated_app_filename = url_to_filename(translated_app.url)
         if translated_app.translation_url:
             for bundle in translated_app.translation_url.bundles:
-                xml_contents = bundle_to_xml(bundle)
-                zf.writestr('%s_%s.xml' % (os.path.join(translated_app_filename, bundle.language), bundle.target), xml_contents)
+                xml_contents = serializer(bundle)
+                zf.writestr('%s_%s.%s' % (os.path.join(translated_app_filename, bundle.language), bundle.target, extension), xml_contents)
     zf.close()
 
     resp = make_response(sio.getvalue())
     resp.content_type = 'application/zip'
     return resp
 
-@translator_blueprint.route('/dev/apps/all/<path:app_url>')
-@public
-def translations_app_url_zip(app_url):
+def _translations_app_url_zip(app_url, output_format):
+    serializer = SERIALIZERS[output_format]
+    extension = EXTENSIONS[output_format]
+
     translated_app = db.session.query(TranslatedApp).filter_by(url = app_url).first()
     if translated_app is None:
         return "Translation App not found in the database", 404
@@ -609,8 +724,8 @@ def translations_app_url_zip(app_url):
     translated_app_filename = url_to_filename(translated_app.url)
     if translated_app.translation_url:
         for bundle in translated_app.translation_url.bundles:
-            xml_contents = bundle_to_xml(bundle, category)
-            zf.writestr('%s_%s.xml' % (bundle.language, bundle.target), xml_contents)
+            xml_contents = serializer(bundle, category)
+            zf.writestr('%s_%s.%s' % (bundle.language, bundle.target, extension), xml_contents)
     zf.close()
 
     resp = make_response(sio.getvalue())
@@ -618,10 +733,8 @@ def translations_app_url_zip(app_url):
     resp.headers['Content-Disposition'] = 'attachment;filename=%s.zip' % translated_app_filename
     return resp
 
-
-@translator_blueprint.route('/dev/urls/<lang>/<target>/<path:url>')
-@public
-def translations_url_xml(lang, target, url):
+def _translate_url(lang, target, url, output_format):
+    
     translation_url = db.session.query(TranslationUrl).filter_by(url = url).first()
     if translation_url is None:
         return "Translation URL not found in the database", 404
@@ -631,9 +744,9 @@ def translations_url_xml(lang, target, url):
         return "Translation URL found, but no translation for that language or target"
 
     category = request.args.get('category', None)
-    messages_xml = bundle_to_xml(bundle, category)
+    messages_xml = SERIALIZERS[output_format](bundle, category)
     resp = make_response(messages_xml)
-    resp.content_type = 'application/xml'
+    resp.content_type = MIMETYPES[output_format]
     return resp
 
 @translator_blueprint.route('/dev/mongodb/')

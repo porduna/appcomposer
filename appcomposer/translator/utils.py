@@ -4,6 +4,8 @@ import codecs
 import logging
 import calendar
 import datetime
+import StringIO
+from collections import OrderedDict
 import xml.etree.ElementTree as ET
 from email.utils import formatdate, parsedate, parsedate_tz
 
@@ -337,8 +339,7 @@ def indent(elem, level=0):
 
 NO_CATEGORY = 'no-category'
 
-def bundle_to_xml(db_bundle, category = None):
-    xml_bundle = ET.Element("messagebundle")
+def _get_sorted_messages(db_bundle, category):
     if category is None:
         active_messages = [ am for am in db_bundle.active_messages ]
     elif category == NO_CATEGORY:
@@ -347,7 +348,11 @@ def bundle_to_xml(db_bundle, category = None):
         active_messages = [ am for am in db_bundle.active_messages if am.category == category ]
 
     active_messages.sort(lambda am1, am2 : cmp(am1.position, am2.position))
-    for message in active_messages:
+    return active_messages
+
+def bundle_to_xml(db_bundle, category = None):
+    xml_bundle = ET.Element("messagebundle")
+    for message in _get_sorted_messages(db_bundle, category):
         xml_msg = ET.SubElement(xml_bundle, 'msg')
         xml_msg.attrib['name'] = message.key
         if message.category:
@@ -358,6 +363,50 @@ def bundle_to_xml(db_bundle, category = None):
     indent(xml_bundle)
     xml_string = ET.tostring(xml_bundle, encoding = 'UTF-8')
     return xml_string
+
+def bundle_to_properties(db_bundle, category = None):
+    properties_file = StringIO.StringIO()
+    for message in _get_sorted_messages(db_bundle, category):
+        properties_file.write(message.key)
+        properties_file.write(" = ")
+        properties_file.write(message.value.strip())
+        properties_file.write("\n")
+    return properties_file.getvalue()
+
+def bundle_to_json(db_bundle, category = None):
+    result = {}
+    for message in _get_sorted_messages(db_bundle, category):
+        value = {
+            'value' : message.value
+        }
+        if message.category:
+            value['category'] = message.category
+        if message.namespace:
+            value['namespace'] = message.namespace
+        result[message.key] = value
+    return json.dumps(result, indent = 4)
+
+def bundle_to_jquery_i18n(db_bundle, category = None):
+    result = OrderedDict()
+    active_messages = _get_sorted_messages(db_bundle, category)
+
+    result["@metadata"] = {
+        "locale" : db_bundle.language,
+        "message-documentation": ""
+    }
+    datetimes = [ am.datetime for am in active_messages ]
+    if datetimes:
+        result["@metadata"]["last-updated"] = max(datetimes).strftime("%Y-%m-%d")
+    
+    # 
+    # We don't want to avoid being anonymous, but this one should be quite easy
+    # users = set([ am.history.user.display_name for am in active_messages ])
+    # if users:
+    #     result["@metadata"]["authors"] = list(users)
+
+    for message in active_messages:
+        result[message.key] = message.value
+    return json.dumps(result, indent = 4)
 
 def messages_to_xml(messages):
     xml_bundle = ET.Element("messagebundle")
