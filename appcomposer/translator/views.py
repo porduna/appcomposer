@@ -525,7 +525,9 @@ def translations_urls():
 def translations_apps():
     golab_apps = {}
     other_apps = {}
-    golab_app_urls = [ url for url, in db.session.query(RepositoryApp.url).all() ]
+    golab_app_by_url = {}
+    for app in db.session.query(RepositoryApp).all():
+        golab_app_by_url[app.url] = app
 
     categories_per_bundle_id = {
         # bundle_id : set(category1, category2)
@@ -538,7 +540,7 @@ def translations_apps():
         categories_per_bundle_id[bundle_id].add(category)
 
     for app in db.session.query(TranslatedApp).options(joinedload_all('translation_url.bundles')):
-        if app.url in golab_app_urls:
+        if app.url in golab_app_by_url:
             current_apps = golab_apps
         else:
             current_apps = other_apps
@@ -564,7 +566,7 @@ def translations_apps():
         if len(current_apps[app.url]['categories']) == 1 and current_apps[app.url]['categories'][0] is NO_CATEGORY:
             current_apps[app.url]['categories'] = []
 
-    return render_template("translator/translations_apps.html", golab_apps = golab_apps, other_apps = other_apps)
+    return render_template("translator/translations_apps.html", golab_apps = golab_apps, other_apps = other_apps, golab_app_by_url = golab_app_by_url)
 
 @translator_blueprint.route('/dev/apps/<lang>/<target>/<path:app_url>')
 @public

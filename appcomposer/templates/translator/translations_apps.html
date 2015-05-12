@@ -8,7 +8,11 @@
             <div class="panel-heading" role="tab" id="heading-{{ url|hash }}">
                 <a name="{{ url }}"></a>
                 <h4 class="panel-title">
-                    <a data-toggle="collapse" data-parent="#accordion-{{ id }}" href="#collapse-{{ url|hash }}" aria-expanded="true" aria-controls="collapse-{{ url|hash }}">
+                    <a data-toggle="collapse" data-parent="#accordion-{{ id }}" href="#collapse-{{ url|hash }}" aria-expanded="true" aria-controls="collapse-{{ url|hash }}">{% if url in golab_app_by_url %}
+        {% set app = golab_app_by_url[url] %}
+        <img src="{{ app.app_thumb }}" height="50px" style="margin-right: 20px">
+        {{ app.name }} - 
+    {% endif %}
                         {{ url }}
                     </a>
                 </h4>
@@ -57,7 +61,7 @@
     <div class="text-center col-sm-12">
         <h1>App translations</h1>
         <div class="row">
-        <div class="alert alert-info col-sm-6 col-sm-offset-3">This is an automatic listing of all the applications stored in the App Composer Translator.</div>
+        <div class="alert alert-info col-sm-6 col-sm-offset-3">This is an automatic listing of all the applications stored in the App Composer Translator database.</div>
         </div>
         <div class="row">
         <div><a href="{{ url_for('.translations_app_all_zip') }}" class="btn btn-primary">Download all</a><a class="btn btn-danger" href="{{ url_for('.translation_upload') }}">Upload</a></div>
