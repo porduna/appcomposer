@@ -23,19 +23,24 @@ def run_notifications():
         default_user_id = -1
     
     # Get subscriptions that have not been checked in this period
-    subscriptions = db.session.query(TranslationSubscription.id, TranslationSubscription.translation_url_id, TranslationSubscription.last_check, TranslationSubscription.recipient_id).filter(TranslationSubscription.last_check < last_period).all()
+    subscriptions = db.session.query(TranslationSubscription.id, TranslationSubscription.translation_url_id, TranslationSubscription.last_check, TranslationSubscription.recipient_id).all()
     if not subscriptions:
         return
+    
+    # When was the oldest last notification?
+    min_last_check = min([ sub.last_check for sub in subscriptions ])
 
     # Now, get the list of translation_url_ids
     translation_url_ids = [ translation_url_id for subscription_id, translation_url_id, last_check, recipient_id in subscriptions ]
 
-    # And retrieve all the active messages which have been updated at least some minutes ago (otherwise it seems that somebody is still working)
-    active_messages = db.session.query(func.max(ActiveTranslationMessage.datetime), TranslationBundle.id, TranslationBundle.translation_url_id).filter(TranslationBundle.translation_url_id.in_(translation_url_ids), ActiveTranslationMessage.bundle_id == TranslationBundle.id, ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id != default_user_id).group_by(TranslationBundle.id).having(func.max(ActiveTranslationMessage.datetime) < still_working_period).all()
+    # And retrieve all the active messages which have been updated at least some minutes ago (otherwise it seems that somebody is still working),
+    # but also after the minimum subscription's last_check (which can be 2 years ago, so it's a small filter)
+    active_messages = db.session.query(func.max(ActiveTranslationMessage.datetime), TranslationBundle.id, TranslationBundle.translation_url_id).filter(TranslationBundle.translation_url_id.in_(translation_url_ids), ActiveTranslationMessage.bundle_id == TranslationBundle.id, ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id != default_user_id).group_by(TranslationBundle.id).having(func.max(ActiveTranslationMessage.datetime) < still_working_period, func.max(ActiveTranslationMessage.datetime) > min_last_check).all()
     
     if not active_messages:
         return
-
+    
+    # Calculate the maximum last update
     active_messages_by_url_id = {}
     for active_message_last_update, bundle_id, translation_url_id in active_messages:
         if translation_url_id not in active_messages_by_url_id:
@@ -56,6 +61,8 @@ def run_notifications():
     all_user_ids = set()
     all_recipient_ids = set()
     all_translation_url_ids = set()
+
+    any_update = False
 
     for subscription_id, translation_url_id, last_check, recipient_id in subscriptions:
         last_update = active_messages_by_url_id.get(translation_url_id, datetime.datetime(1980,1,1))
@@ -81,18 +88,23 @@ def run_notifications():
                     pending_emails[recipient_id] = {}
 
                 pending_emails[recipient_id][translation_url_id] = changes
-    
+
+                subscription = db.session.query(TranslationSubscription).filter_by(id = subscription_ids).first()
+                if subscription:
+                    subscription.update()
+                    any_update = True
+
+
     if not all_user_ids:
         # Nothing to notify
         print "No user to notify"
         return
 
-    # Update them all
-    subscription_ids = [ pack[0] for pack in subscriptions ]
-    for subscription in db.session.query(TranslationSubscription).filter(TranslationSubscription.id.in_(subscription_ids)).all():
-        subscription.update()
-
-    db.session.commit()
+    if any_update:
+        try:
+            db.session.commit()
+        except:
+            db.session.rollback()
 
     # Lookup all the users and recipients involved
     users_by_id = {}
