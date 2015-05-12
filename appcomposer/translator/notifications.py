@@ -178,8 +178,11 @@ def run_notifications():
 
 
 def send_notification(recipient, txt_body, html_body):
-    # TODO
-    to_addrs = list(app.config.get('ADMINS', [])) # + [ recipient ]
+    ACTIVE = True
+    if ACTIVE:
+        to_addrs = list(app.config.get('ADMINS', [])) + [ recipient ]
+    else:
+        to_addrs = list(app.config.get('ADMINS', [])) # + [ recipient ]
     from_addr = 'weblab@deusto.es'
 
     MAIL_TPL = """From: App Composer Translator <%(sender)s>
