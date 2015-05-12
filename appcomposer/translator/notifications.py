@@ -10,6 +10,7 @@ from appcomposer.application import app
 from appcomposer.models import TranslationSubscription, TranslationNotificationRecipient, TranslationUrl, TranslationBundle, ActiveTranslationMessage, GoLabOAuthUser, TranslationMessageHistory
 
 def run_notifications():
+    print "Starting notifications process"
     MIN_INTERVAL = 30 # minutes
     STILL_WORKING = 5 # minutes 
     last_period = datetime.datetime.utcnow() - datetime.timedelta(minutes = MIN_INTERVAL)
@@ -25,6 +26,7 @@ def run_notifications():
     # Get subscriptions that have not been checked in this period
     subscriptions = db.session.query(TranslationSubscription.id, TranslationSubscription.translation_url_id, TranslationSubscription.last_check, TranslationSubscription.recipient_id).all()
     if not subscriptions:
+        print "Finish: no subscription"
         return
     
     # When was the oldest last notification?
@@ -38,6 +40,7 @@ def run_notifications():
     active_messages = db.session.query(func.max(ActiveTranslationMessage.datetime), TranslationBundle.id, TranslationBundle.translation_url_id).filter(TranslationBundle.translation_url_id.in_(translation_url_ids), ActiveTranslationMessage.bundle_id == TranslationBundle.id, ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id != default_user_id).group_by(TranslationBundle.id).having(func.max(ActiveTranslationMessage.datetime) < still_working_period, func.max(ActiveTranslationMessage.datetime) > min_last_check).all()
     
     if not active_messages:
+        print "Finish: no active message"
         return
     
     # Calculate the maximum last update
@@ -120,11 +123,14 @@ def run_notifications():
         translation_urls_by_id[translation_url.id] = translation_url
 
     for recipient_id, recipient_messages in pending_emails.iteritems():
+        translation_urls = []
         txt_msg = "Hi,\nThe following changes have been detected in applications on which you're subscribed:\n"
         html_msg = "<p>Hi,</p><p>The following changes have been detected in applications on which you're subscribed:</p><ul>\n"
         for translation_url_id, translation_url_changes in recipient_messages.iteritems():
-            txt_msg += " - %s \n" % translation_urls_by_id[translation_url_id].url
-            html_msg += "<li>%s<ul>" % translation_urls_by_id[translation_url_id].url
+            translation_url = translation_urls_by_id[translation_url_id].url
+            translation_urls.append(translation_url)
+            txt_msg += " - %s \n" % translation_url
+            html_msg += "<li>%s<ul>" % translation_url
             for language, language_changes in translation_url_changes.iteritems():
                 txt_msg += "   * %s\n" % language
                 html_msg += "<li>%s<ul>" % language
@@ -141,11 +147,14 @@ def run_notifications():
         html_msg += "<p>If you don't want to receive these e-mails, please reply this e-mail</p><p>--<b>The Go-Lab App Composer team<p>"
 
         recipient = recipients_by_id[recipient_id]
-        
+
         try:
             send_notification(recipient.email, txt_msg, html_msg)
         except:
             traceback.print_exc()
+        else:
+            print "Notification sent to %s about changes in %s" % (recipient.email, repr(translation_urls))
+    print "Finished notification process"
 
 
 def send_notification(recipient, txt_body, html_body):
