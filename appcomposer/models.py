@@ -351,7 +351,7 @@ class TranslationNotificationRecipient(db.Model):
 
     def __init__(self, email):
         self.email = email
-        self.created = datetime.datetime.now()
+        self.created = datetime.datetime.utcnow()
 
 class TranslationSubscription(db.Model):
     __tablename__ = 'TranslationSubscriptions'

@@ -36,8 +36,14 @@ def run_notifications():
     translation_url_ids = [ translation_url_id for subscription_id, translation_url_id, last_check, recipient_id in subscriptions ]
 
     # And retrieve all the active messages which have been updated at least some minutes ago (otherwise it seems that somebody is still working),
-    # but also after the minimum subscription's last_check (which can be 2 years ago, so it's a small filter)
-    active_messages = db.session.query(func.max(ActiveTranslationMessage.datetime), TranslationBundle.id, TranslationBundle.translation_url_id).filter(TranslationBundle.translation_url_id.in_(translation_url_ids), ActiveTranslationMessage.bundle_id == TranslationBundle.id, ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id != default_user_id).group_by(TranslationBundle.id).having(func.max(ActiveTranslationMessage.datetime) < still_working_period, func.max(ActiveTranslationMessage.datetime) > min_last_check).all()
+    active_messages = (db.session.query(func.max(ActiveTranslationMessage.datetime), TranslationBundle.id, TranslationBundle.translation_url_id)
+                        .filter(
+                            TranslationBundle.translation_url_id.in_(translation_url_ids), 
+                            ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
+                            ActiveTranslationMessage.history_id == TranslationMessageHistory.id, 
+                            TranslationMessageHistory.user_id != default_user_id)
+                        .group_by(TranslationBundle.id)
+                        .having(func.max(ActiveTranslationMessage.datetime) < still_working_period).all())
     
     if not active_messages:
         print "Finish: no active message"
