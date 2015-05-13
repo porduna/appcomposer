@@ -156,7 +156,7 @@ def run_notifications():
                 for user_id, number_of_changes in language_changes.iteritems():
                     user = users_by_id[user_id]
                     txt_msg += "     + %s <%s> has made %s changes on the %s translation\n" % (user.display_name, user.email, number_of_changes, language)
-                    html_msg += "<li>%s <%s> has made %s changes on the %s translation</li>" % (user.display_name, user.email, number_of_changes, language)
+                    html_msg += "<li><a href=\"mailto:%s\">%s</a> has made %s changes on the %s translation</li>" % (user.email, user.display_name, number_of_changes, language)
                 html_msg += "</ul></li>"
             txt_msg += "\n"
             html_msg += "</ul></li></ul>"
