@@ -43,6 +43,8 @@ def run_notifications():
                             TranslationBundle.translation_url_id.in_(translation_url_ids), 
                             ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
                             ActiveTranslationMessage.history_id == TranslationMessageHistory.id, 
+                            ActiveTranslationMessage.taken_from_default == False, 
+                            ActiveTranslationMessage.from_developer == False, 
                             TranslationMessageHistory.user_id != default_user_id)
                         .group_by(TranslationBundle.id)
                         .having(func.max(ActiveTranslationMessage.datetime) < still_working_period).all())
@@ -84,7 +86,16 @@ def run_notifications():
                 #    user_id : number
                 # }
             }
-            changes_per_language = db.session.query(TranslationMessageHistory.user_id, func.count(ActiveTranslationMessage.id), TranslationBundle.language).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.translation_url_id == translation_url_id, ActiveTranslationMessage.datetime > last_check, TranslationMessageHistory.user_id != default_user_id, ActiveTranslationMessage.history_id == TranslationMessageHistory.id).group_by(TranslationBundle.language, TranslationMessageHistory.user_id).all()
+            changes_per_language = (db.session.query(TranslationMessageHistory.user_id, func.count(ActiveTranslationMessage.id), TranslationBundle.language)
+                                    .filter(
+                                        ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
+                                        TranslationBundle.translation_url_id == translation_url_id, 
+                                        ActiveTranslationMessage.datetime > last_check, 
+                                        TranslationMessageHistory.user_id != default_user_id, 
+                                        ActiveTranslationMessage.taken_from_default == False, 
+                                        ActiveTranslationMessage.from_developer == False, 
+                                        ActiveTranslationMessage.history_id == TranslationMessageHistory.id
+                                    ).group_by(TranslationBundle.language, TranslationMessageHistory.user_id).all())
             for user_id, number_of_changes, language in changes_per_language:
                 if number_of_changes:
                     if language not in changes:
