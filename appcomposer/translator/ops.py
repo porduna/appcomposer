@@ -97,24 +97,30 @@ def get_bundles_by_key_namespaces(pairs):
     pairs_found = {}
 
     for key, namespace, bundle_id in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace, ActiveTranslationMessage.bundle_id).filter(ActiveTranslationMessage.key.in_(keys), ActiveTranslationMessage.namespace.in_(namespaces), ActiveTranslationMessage.taken_from_default == False).all():
-        pairs_found[key, namespace] = bundle_id
+        if (key, namespace) not in pairs_found:
+            pairs_found[key, namespace] = set()
+        pairs_found[key, namespace].add(bundle_id)
 
     bundle_ids = set()
 
     for pair in pairs:
         key = pair['key']
         namespace = pair['namespace']
-        bundle_id = pairs_found.get((key, namespace))
-        if bundle_id is not None:
-            bundle_ids.add(bundle_id)
-    
+        new_bundle_ids = pairs_found.get((key, namespace))
+        if new_bundle_ids:
+            bundle_ids.update(new_bundle_ids)
+
     bundles = []
+    existing_bundles = []
     if bundle_ids:
         for lang, target in db.session.query(TranslationBundle.language, TranslationBundle.target).filter(TranslationBundle.id.in_(bundle_ids)).all():
-            bundles.append({
-                'language' : lang,
-                'target' : target,
-            })
+            key = "%s@%s" % (target, lang)
+            if key not in existing_bundles:
+                existing_bundles.append(key)
+                bundles.append({
+                    'language' : lang,
+                    'target' : target,
+                })
     return bundles
 
 def add_full_translation_to_app(user, app_url, translation_url, app_metadata, language, target, translated_messages, original_messages, from_developer):

@@ -288,6 +288,7 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
                                 original_messages = original_messages, from_developer = True)
 
         namespaces = set([ msg['namespace'] for msg in original_messages.values() if msg['namespace'] ])
+        processed_languages = []
         if namespaces:
             pairs = []
             for key, msg in original_messages.iteritems():
@@ -296,24 +297,41 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
                         'key' : key,
                         'namespace' : msg['namespace'],
                     })
-                    
+        
             for language_pack in get_bundles_by_key_namespaces(pairs):
-                language = language_pack['language']
-                target = language_pack['target']
+                cur_language = language_pack['language']
+                cur_target = language_pack['target']
 
+                if cur_target == 'ALL' and cur_language in metadata_information['original_translations']:
+                    # Already processed
+                    continue
+
+                processed_languages.append((cur_language, cur_target))
                 add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url,
                                 app_metadata = default_metadata,
-                                language = language, target = target, translated_messages = {},
+                                language = cur_language, target = cur_target, translated_messages = {},
                                 original_messages = original_messages, from_developer = False)
 
         db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
         if db_translation_url:
             for translation_bundle in db.session.query(TranslationBundle).filter_by(translation_url = db_translation_url).all():
-                if translation_bundle.target != u'ALL' or translation_bundle.language not in metadata_information['original_translations']:
-                    add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url, 
-                                app_metadata = default_metadata,
-                                language = translation_bundle.language, target = translation_bundle.target, translated_messages = None,
-                                original_messages = original_messages, from_developer = False)
+                if translation_bundle.target == u'ALL' and translation_bundle.language in metadata_information['original_translations']:
+                    # Already processed
+                    continue
+                found = False
+                for processed_language, processed_target in processed_languages:
+                    if translation_bundle.target == processed_target and translation_bundle.language == processed_language:
+                        found = True
+                        break
+
+                if found:
+                    # Already processed
+                    continue
+
+                add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url, 
+                            app_metadata = default_metadata,
+                            language = translation_bundle.language, target = translation_bundle.target, translated_messages = None,
+                            original_messages = original_messages, from_developer = False)
                    
 
         translation_percent = retrieve_translations_percent(translation_url, original_messages)
