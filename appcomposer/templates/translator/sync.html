@@ -9,7 +9,7 @@
 {% block body %}
     <h1>Latest synchronizations</h1>
     <br>
-    <p>Current local date: {{ current_datetime.ctime() }}</p>
+    <p>Current local date: {{ current_datetime.ctime() }} UTC</p>
     <br>
     <p>Each synchronization downloads all the applications of the Go-Lab repository and registered applications in the App Composer, so as to verify what are the current messages, whether an application can be translatable or not.</p>
     <table class="table">
@@ -25,12 +25,12 @@
             {% for latest_sync in latest_synchronizations %}
                 <tr>
                     <td>{{ latest_sync['id'] }}</td>
-                    <td>{{ latest_sync['start'].ctime() }}</td>
+                    <td>{{ latest_sync['start'].ctime() }} UTC</td>
                     {% if latest_sync['end'] is none %}
                     <td>Not finished</td>
                     <td></td>
                     {% else %}
-                    <td>{{ latest_sync['end'].ctime() }}</td>
+                    <td>{{ latest_sync['end'].ctime() }} UTC</td>
                     <td>{{ '%i' % (latest_sync['end'] - latest_sync['start']).total_seconds()}}</td>
                     {% endif %}
                 </tr>
