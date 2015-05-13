@@ -211,7 +211,7 @@ def send_notification(recipient, txt_body, html_body):
     msg['From'] = "App Composer Translator <weblab@deusto.es>"
     msg['To'] = recipient
 
-    part1 = MIMEText(txt_body.encode('utf8'), 'text/plain', _charset='UTF-8')
+    part1 = MIMEText(txt_body.encode('utf8'), 'plain', _charset='UTF-8')
     part2 = MIMEText(html_body.encode('utf8'), 'html', _charset='UTF-8')
     msg.attach(part1)
     msg.attach(part2)
