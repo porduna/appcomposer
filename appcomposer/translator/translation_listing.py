@@ -132,6 +132,7 @@ def _sync_golab_translations(cached_requests, force_reload):
         current_lab['app_thumb'] = current_lab.get('lab_thumb')
         current_lab['app_golabz_page'] = current_lab.get('lab_golabz_page')
         for pos, internal_lab in enumerate(lab.get('lab_apps', [])):
+            current_lab = current_lab.copy()
             current_lab['id'] = '%s-%s' % (lab_id, pos)
             current_lab['app_url'] = internal_lab['app_url']
             current_lab['app_title'] = internal_lab['app_title']
