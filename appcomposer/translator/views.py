@@ -54,9 +54,11 @@ def api(func):
             return func(*args, **kwargs)
         except TranslatorError as e:
             traceback.print_exc()
+            app.logger.error("Error processing request: %s" % e, exc_info = True)
             return make_response(json.dumps({ 'result' : 'error', 'message' : e.args[0] }), e.code)
         except Exception as e:
             traceback.print_exc()
+            app.logger.error("Unknown error processing request: %s" % e, exc_info = True)
             return make_response(json.dumps({ 'result' : 'error', 'message' : e.args[0] }), 500)
     return wrapper
 
