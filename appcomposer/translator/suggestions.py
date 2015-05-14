@@ -142,6 +142,8 @@ def translate_texts(texts, language, origin_language = 'en'):
     for translator in TRANSLATORS:
         current_translations = translator.translate_texts(texts, language, origin_language)
         for key, values in current_translations.iteritems():
+            if key not in translations:
+                continue
             for value, weight in values.iteritems():
                 if value not in translations[key]:
                     translations[key][value] = 0
