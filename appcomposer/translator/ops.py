@@ -55,7 +55,7 @@ def _get_or_create_app(app_url, translation_url, metadata):
 
     if subscriptions_to_delete:
         for db_subscription in db.session.query(TranslationSubscription).filter(TranslationSubscription.mechanism == SUBSCRIPTION_MECHANISM, TranslationSubscription.translation_url == db_translation_url, TranslationSubscription.recipient_id == TranslationNotificationRecipient.id, TranslationNotificationRecipient.email.in_(list(subscriptions_to_delete))).all():
-            db_subscription.delete()
+            db.session.delete(db_subscription)
 
     if pending_subscriptions:
         for pending_subscription in pending_subscriptions:
