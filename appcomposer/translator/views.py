@@ -541,71 +541,71 @@ def _dict2sorted_list(dictionary, key_name = 'id'):
     return sorted_list
 
 
-@translator_blueprint.route('/dev/apps/')
-@public
-def translations_apps():
-    golab_apps = {}
-    other_apps = {}
-    golab_app_by_url = {}
-    for app in db.session.query(RepositoryApp).all():
-        golab_app_by_url[app.url] = app
-
-    categories_per_bundle_id = {
-        # bundle_id : set(category1, category2)
-    }
-    for category, bundle_id in db.session.query(distinct(ActiveTranslationMessage.category), ActiveTranslationMessage.bundle_id).group_by(ActiveTranslationMessage.category, ActiveTranslationMessage.bundle_id).all():
-        if bundle_id not in categories_per_bundle_id:
-            categories_per_bundle_id[bundle_id] = set()
-        if category is None:
-            category = NO_CATEGORY
-        categories_per_bundle_id[bundle_id].add(category)
-
-    max_date_per_translation_url_id = {}
-    for max_date, translation_url_id in (db.session.query(func.max(ActiveTranslationMessage.datetime), TranslationBundle.translation_url_id)
-                                            .filter(
-                                                ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
-                                                ActiveTranslationMessage.history_id == TranslationMessageHistory.id)
-                                            .group_by(TranslationBundle.translation_url_id).all()):
-        max_date_per_translation_url_id[translation_url_id] = max_date
-
-    for app in db.session.query(TranslatedApp).options(joinedload_all('translation_url.bundles')):
-        if app.url in golab_app_by_url:
-            current_apps = golab_apps
-        else:
-            current_apps = other_apps
-        current_apps[app.url] = {
-            'categories' : set(),
-            'translations' : [],
-        }
-        if app.translation_url is not None:
-            current_apps[app.url]['last_change'] = max_date_per_translation_url_id.get(app.translation_url_id, None)
-            for bundle in app.translation_url.bundles:
-                current_apps[app.url]['translations'].append({
-                    'from_developer' : bundle.from_developer,
-                    'target' : bundle.target,
-                    'lang' : bundle.language,
-                })
-                
-                for category in categories_per_bundle_id.get(bundle.id, []):
-                    current_apps[app.url]['categories'].add(category)
-        else:
-            # TODO: invalid state
-            pass
-
-        current_apps[app.url]['categories'] = sorted(list(current_apps[app.url]['categories']))
-        if len(current_apps[app.url]['categories']) == 1 and current_apps[app.url]['categories'][0] is NO_CATEGORY:
-            current_apps[app.url]['categories'] = []
-
-    golab_apps = _sort_dicts_by_datetime(golab_apps)
-    other_apps = _sort_dicts_by_datetime(other_apps)
-    return render_template("translator/translations_apps.html", golab_apps = golab_apps, other_apps = other_apps, golab_app_by_url = golab_app_by_url, NAMES = NAMES)
+# @translator_blueprint.route('/dev/apps/')
+# @public
+# def translations_apps():
+#     golab_apps = {}
+#     other_apps = {}
+#     golab_app_by_url = {}
+#     for app in db.session.query(RepositoryApp).all():
+#         golab_app_by_url[app.url] = app
+# 
+#     categories_per_bundle_id = {
+#         # bundle_id : set(category1, category2)
+#     }
+#     for category, bundle_id in db.session.query(distinct(ActiveTranslationMessage.category), ActiveTranslationMessage.bundle_id).group_by(ActiveTranslationMessage.category, ActiveTranslationMessage.bundle_id).all():
+#         if bundle_id not in categories_per_bundle_id:
+#             categories_per_bundle_id[bundle_id] = set()
+#         if category is None:
+#             category = NO_CATEGORY
+#         categories_per_bundle_id[bundle_id].add(category)
+# 
+#     max_date_per_translation_url_id = {}
+#     for max_date, translation_url_id in (db.session.query(func.max(ActiveTranslationMessage.datetime), TranslationBundle.translation_url_id)
+#                                             .filter(
+#                                                 ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
+#                                                 ActiveTranslationMessage.history_id == TranslationMessageHistory.id)
+#                                             .group_by(TranslationBundle.translation_url_id).all()):
+#         max_date_per_translation_url_id[translation_url_id] = max_date
+# 
+#     for app in db.session.query(TranslatedApp).options(joinedload_all('translation_url.bundles')):
+#         if app.url in golab_app_by_url:
+#             current_apps = golab_apps
+#         else:
+#             current_apps = other_apps
+#         current_apps[app.url] = {
+#             'categories' : set(),
+#             'translations' : [],
+#         }
+#         if app.translation_url is not None:
+#             current_apps[app.url]['last_change'] = max_date_per_translation_url_id.get(app.translation_url_id, None)
+#             for bundle in app.translation_url.bundles:
+#                 current_apps[app.url]['translations'].append({
+#                     'from_developer' : bundle.from_developer,
+#                     'target' : bundle.target,
+#                     'lang' : bundle.language,
+#                 })
+#                 
+#                 for category in categories_per_bundle_id.get(bundle.id, []):
+#                     current_apps[app.url]['categories'].add(category)
+#         else:
+#             # TODO: invalid state
+#             pass
+# 
+#         current_apps[app.url]['categories'] = sorted(list(current_apps[app.url]['categories']))
+#         if len(current_apps[app.url]['categories']) == 1 and current_apps[app.url]['categories'][0] is NO_CATEGORY:
+#             current_apps[app.url]['categories'] = []
+# 
+#     golab_apps = _sort_dicts_by_datetime(golab_apps)
+#     other_apps = _sort_dicts_by_datetime(other_apps)
+#     return render_template("translator/translations_apps.html", golab_apps = golab_apps, other_apps = other_apps, golab_app_by_url = golab_app_by_url, NAMES = NAMES)
 
 
 SITE_ROOT = '.'
 
-@translator_blueprint.route('/dev/apps2/')
+@translator_blueprint.route('/dev/apps/')
 @public
-def translations_apps2():
+def translations_apps():
     # Takes 1ms to load these two files. And putting it here is better for being able to change the code dynamically
     apps_angular_code = open(os.path.join(SITE_ROOT, "appcomposer/templates/translator/apps_angular_js.js")).read()
     apps_angular_html = open(os.path.join(SITE_ROOT, "appcomposer/templates/translator/apps_angular_html.html")).read()
