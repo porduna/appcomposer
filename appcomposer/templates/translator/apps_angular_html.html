@@ -1,3 +1,41 @@
+<script type="text/ng-template" id="panelbody.html">
+        <div ng-repeat="fmt in APP_FORMATS">
+            <hr>
+            <h4>Format: {{ fmt.name }}</h4>
+            <br>
+            <div>
+                <a class="btn btn-primary" href='{{ fmt.all_langs_link.replace("URL", app.app_url) }}'>All languages</a>
+                
+                <span ng-repeat="translation in app.translations">
+                    <a class='btn {{ translation.from_developer?"btn-default":"btn-info" }}' 
+                        href='{{ fmt.lang_link.replace("LANGUAGE", translation.lang).replace("TARGET", translation.target).replace("URL", app.app_url) }}'>
+                        {{ translation.lang }} - {{ translation.target }}
+                    </a>
+                </span>
+            </div>
+
+            <div ng-if="app.categories.length > 0">
+                <br>
+                <h5>Partial translations by category:</h5>
+                <br>
+                <div class="col-sm-offset-1" ng-repeat="category in app.categories">
+                <h5>{{ category.name }}</h5>
+                <div>
+                <a class="btn btn-primary" href='{{ fmt.all_langs_cat_link.replace("URL", app.app_url).replace("CATEGORY", category.name) }}'>All languages</a>
+
+                <span ng-repeat="translation in app.translations">
+                    <a class='btn {{ translation.from_developer?"btn-default":"btn-info" }}'
+
+                        href='{{ fmt.lang_cat_link.replace("URL", app.app_url).replace("LANGUAGE", translation.lang).replace("TARGET", translation.target).replace("CATEGORY", category.name) }}'>
+                        {{ translation.lang }} - {{ translation.target }}
+                    </a>
+                </span>
+                </div>
+                </div>
+            </div>
+        </div>
+</script>
+
 <div ng-controller="AppListCtrl" id="applist" class="ng-cloak">
     <div ng-repeat="appset in apps">
         <br><br>
@@ -9,7 +47,12 @@
                 <div class="panel-heading" role="tab" id="heading-{{ app.app_url_hash }}">
                     <a name="{{ app.app_url }}"></a>
                     <div class="panel-title">
-                        <a data-toggle="collapse" data-parent="#accordion-{{ appset.appset_id }}" href="#collapse-{{ app.app_url_hash }}" aria-expanded="true" aria-controls="collapse-{{ app.app_url_hash }}">
+                        <a data-toggle="collapse" 
+                            data-parent="#accordion-{{ appset.appset_id }}" 
+                            href="#collapse-{{ app.app_url_hash }}" 
+                            aria-expanded="true" 
+                            aria-controls="collapse-{{ app.app_url_hash }}"
+                            ng-click="app.current_include = 'panelbody.html'">
                             <h4><img ng-if="app.app_thumb" ng-src="{{ app.app_thumb }}" height="60px" style="margin-right: 20px">{{ app.app_name ? app.app_name + " - " : "" }}{{ app.app_url }}</h4>
                             <br>
                             <h6 ng-if="app.last_change" style="margin-top: -15px; font-style: italic">Last updated: {{ app.last_change }} UTC</h6>
@@ -18,45 +61,12 @@
                 </div>
 
                 <div id="collapse-{{ app.app_url_hash }}" class="panel-collapse collapse" role="tabpanel" aria-labelledby="heading-{{ app.app_url_hash }}">
-                <div class="panel-body">
-                    <h5>App URL: <a target="_blank" href="{{ app.app_url }}">{{ app.app_url }}</a></h5>
-                    <div ng-repeat="fmt in APP_FORMATS">
-                        <hr>
-                        <h4>Format: {{ fmt.name }}</h4>
-                        <br>
-                        <div>
-                            <a class="btn btn-primary" href='{{ fmt.all_langs_link.replace("URL", app.app_url) }}'>All languages</a>
-                            
-                            <a class='btn {{ translation.from_developer?"btn-default":"btn-info" }}' 
-                                ng-repeat="translation in app.translations"
-                                href='{{ fmt.lang_link.replace("LANGUAGE", translation.lang).replace("TARGET", translation.target).replace("URL", app.app_url) }}'>
-                                {{ translation.lang }} - {{ translation.target }}
-                            </a>
-                        </div>
+                    <div class="panel-body">
+                        <h5>App URL: <a target="_blank" href="{{ app.app_url }}">{{ app.app_url }}</a></h5>
 
-                        <div ng-if="app.categories.length > 0">
-                            <br>
-                            <h5>Partial translations by category:</h5>
-                            <br>
-                            <div class="col-sm-offset-1" ng-repeat="category in app.categories">
-                            <h5>{{ category.name }}</h5>
-                            <div>
-                            <a class="btn btn-primary" href='{{ fmt.all_langs_cat_link.replace("URL", app.app_url).replace("CATEGORY", category.name) }}'>All languages</a>
-
-                            <span ng-repeat="translation in app.translations">
-                                <a class='btn {{ translation.from_developer?"btn-default":"btn-info" }}'
-
-                                    href='{{ fmt.lang_cat_link.replace("URL", app.app_url).replace("LANGUAGE", translation.lang).replace("TARGET", translation.target).replace("CATEGORY", category.name) }}'>
-                                    {{ translation.lang }} - {{ translation.target }}
-                                </a>
-                            </span>
-                            </div>
-                            </div>
-                        </div>
+                        <div ng-include="app.current_include"></div>
                     </div>
                 </div>
-            </div>
-
             </div>
         </div>
     </div>
