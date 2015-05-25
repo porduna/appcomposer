@@ -615,6 +615,13 @@ def translations_apps():
 @translator_blueprint.route('/dev/apps/apps.json')
 @public
 def translations_apps_json():
+    global_max_date = db.session.query(func.max(ActiveTranslationMessage.datetime)).first()
+    if global_max_date:
+        global_max_date = global_max_date[0]
+        if request.if_modified_since == global_max_date:
+            return Response(status=304)
+    
+
     golab_apps = {}
     other_apps = {}
     golab_app_by_url = {}
@@ -702,7 +709,10 @@ def translations_apps_json():
             }
         ],
     }
-    return Response(json.dumps(response, indent = 0), content_type = 'application/json')
+    response = Response(json.dumps(response, indent = 0), content_type = 'application/json')
+    response.last_modified = global_max_date
+    response.headers['Cache-Control'] = 'must-revalidate'
+    return response
 
 FORMAT_OPENSOCIAL = 'opensocial'
 FORMAT_JQUERY_I18N = 'jquery_i18n'
