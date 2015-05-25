@@ -1,5 +1,18 @@
 {% extends "translator/base.html" %}
 {% set html_header = 'ng-app="appList"'|safe %}
+{% block head %}
+    {{ super() }}
+    <style>
+/* 
+  Allow angular.js to be loaded in body, hiding cloaked elements until 
+  templates compile.  The !important is important given that there may be 
+  other selectors that are more specific or come later and might alter display.  
+ */
+[ng\:cloak], [ng-cloak], .ng-cloak {
+  display: none !important;
+}
+    </style>
+{% endblock %}
 {% block body %}
     <div class="text-center col-sm-12">
         <h1>App translations</h1>
