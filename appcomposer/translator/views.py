@@ -654,7 +654,7 @@ def translations_apps_json():
             'translations' : [],
         }
         if app.translation_url is not None:
-            current_apps[app.url]['last_change'] = max_date_per_translation_url_id.get(app.translation_url_id, None).ctime()
+            current_apps[app.url]['last_change'] = max_date_per_translation_url_id.get(app.translation_url_id, None)
             for bundle in app.translation_url.bundles:
                 current_apps[app.url]['translations'].append({
                     'from_developer' : bundle.from_developer,
@@ -682,9 +682,12 @@ def translations_apps_json():
         app['app_thumb'] = app_data['app_thumb']
         app['app_link'] = app_data['app_link']
         app['app_name'] = app_data['name']
+        app['last_change'] = app['last_change'].ctime()
 
     for app in other_apps:
         app['app_url_hash'] = hash(app['app_url'])
+        app['last_change'] = app['last_change'].ctime()
+
     response = {
         'apps' : [
             {
