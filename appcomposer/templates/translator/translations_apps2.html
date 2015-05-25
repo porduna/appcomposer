@@ -1,0 +1,37 @@
+{% extends "translator/base.html" %}
+{% set html_header = 'ng-app="appList"'|safe %}
+{% block body %}
+    <div class="text-center col-sm-12">
+        <h1>App translations</h1>
+        <div class="row">
+        <div class="alert alert-info col-sm-6 col-sm-offset-3">This is an automatic listing of all the applications stored in the App Composer Translator database.</div>
+        </div>
+        <div class="row">
+        <div><a href="{{ url_for('.translations_app_all_zip') }}" class="btn btn-primary">Download all</a><a class="btn btn-danger" href="{{ url_for('.translation_upload') }}">Upload</a></div>
+        </div>
+    </div>
+
+
+    {{ angular_html | safe }}
+{% endblock %}
+
+{% block tail %}
+    <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
+    <script>
+        var APPS_URL = "{{ url_for('.translations_apps_json') }}";
+        var FORMATS = [
+        {% for format_key, name in NAMES.iteritems() %}
+            {
+                'name' : '{{ name }}',
+                'all_langs_link' : "{{ url_for('.translations_app_url_format_zip', format_key = format_key, app_url = 'URL') }}",
+                'lang_link' : "{{ url_for('.translations_app_format', format_key = format_key, lang='LANGUAGE', target='TARGET', app_url = 'URL') }}",
+                'all_langs_cat_link' : "{{ url_for('.translations_app_url_format_zip', format_key = format_key, app_url = 'URL', category = 'CATEGORY') }}",
+                'lang_cat_link' : "{{ url_for('.translations_app_format', format_key = format_key, lang='LANGUAGE', target='TARGET', app_url = 'URL', category = 'CATEGORY') }}"
+            }{% if not loop.last %},{% endif %}
+        {% endfor %}
+        ];
+    </script>
+    <script>
+        {{ angular_js | safe }}
+    </script>
+{% endblock %}

@@ -17,7 +17,7 @@ from collections import OrderedDict
 from sqlalchemy import distinct, func
 from sqlalchemy.orm import joinedload_all
 
-from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify
+from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify, Response, send_file
 from flask.ext.wtf import Form
 from flask.ext.wtf.file import FileField
 from flask.ext.admin.form import Select2Field
@@ -531,6 +531,15 @@ def _sort_dicts_by_datetime(dictionary):
         new_dict[key] = value
     return new_dict
 
+def _dict2sorted_list(dictionary, key_name = 'id'):
+    all_values = [ (key, value) for key, value in dictionary.iteritems() ]
+    all_values.sort(lambda (k1, v1), (k2, v2) : cmp(v1.get('last_change'), v2.get('last_change')), reverse = True)
+    sorted_list = []
+    for key, value in all_values:
+        value[key_name] = key
+        sorted_list.append(value)
+    return sorted_list
+
 
 @translator_blueprint.route('/dev/apps/')
 @public
@@ -589,9 +598,108 @@ def translations_apps():
 
     golab_apps = _sort_dicts_by_datetime(golab_apps)
     other_apps = _sort_dicts_by_datetime(other_apps)
-
     return render_template("translator/translations_apps.html", golab_apps = golab_apps, other_apps = other_apps, golab_app_by_url = golab_app_by_url, NAMES = NAMES)
 
+
+SITE_ROOT = '.'
+
+@translator_blueprint.route('/dev/apps2/')
+@public
+def translations_apps2():
+    # Takes 1ms to load these two files. And putting it here is better for being able to change the code dynamically
+    apps_angular_code = open(os.path.join(SITE_ROOT, "appcomposer/templates/translator/apps_angular_js.js")).read()
+    apps_angular_html = open(os.path.join(SITE_ROOT, "appcomposer/templates/translator/apps_angular_html.html")).read()
+
+    return render_template("translator/translations_apps2.html", angular_js = apps_angular_code, angular_html = apps_angular_html, NAMES = NAMES)
+
+@translator_blueprint.route('/dev/apps/apps.json')
+@public
+def translations_apps_json():
+    golab_apps = {}
+    other_apps = {}
+    golab_app_by_url = {}
+    for app in db.session.query(RepositoryApp).all():
+        golab_app_by_url[app.url] = {
+                'app_thumb' : app.app_thumb,
+                'url' : app.url,
+                'app_link' : app.app_link,
+                'name' : app.name,
+            }
+
+    categories_per_bundle_id = {
+        # bundle_id : set(category1, category2)
+    }
+    for category, bundle_id in db.session.query(distinct(ActiveTranslationMessage.category), ActiveTranslationMessage.bundle_id).group_by(ActiveTranslationMessage.category, ActiveTranslationMessage.bundle_id).all():
+        if bundle_id not in categories_per_bundle_id:
+            categories_per_bundle_id[bundle_id] = set()
+        if category is None:
+            category = NO_CATEGORY
+        categories_per_bundle_id[bundle_id].add(category)
+
+    max_date_per_translation_url_id = {}
+    for max_date, translation_url_id in (db.session.query(func.max(ActiveTranslationMessage.datetime), TranslationBundle.translation_url_id)
+                                            .filter(
+                                                ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
+                                                ActiveTranslationMessage.history_id == TranslationMessageHistory.id)
+                                            .group_by(TranslationBundle.translation_url_id).all()):
+        max_date_per_translation_url_id[translation_url_id] = max_date
+
+    for app in db.session.query(TranslatedApp).options(joinedload_all('translation_url.bundles')):
+        if app.url in golab_app_by_url:
+            current_apps = golab_apps
+        else:
+            current_apps = other_apps
+        current_apps[app.url] = {
+            'categories' : set(),
+            'translations' : [],
+        }
+        if app.translation_url is not None:
+            current_apps[app.url]['last_change'] = max_date_per_translation_url_id.get(app.translation_url_id, None).ctime()
+            for bundle in app.translation_url.bundles:
+                current_apps[app.url]['translations'].append({
+                    'from_developer' : bundle.from_developer,
+                    'target' : bundle.target,
+                    'lang' : bundle.language,
+                })
+                
+                for category in categories_per_bundle_id.get(bundle.id, []):
+                    current_apps[app.url]['categories'].add(category)
+        else:
+            # TODO: invalid state
+            pass
+
+        current_apps[app.url]['categories'] = sorted(list(current_apps[app.url]['categories']))
+        if len(current_apps[app.url]['categories']) == 1 and current_apps[app.url]['categories'][0] is NO_CATEGORY:
+            current_apps[app.url]['categories'] = []
+
+        current_apps[app.url]['categories'] = [ { 'name' : cat } for cat in current_apps[app.url]['categories'] ]
+
+    golab_apps = _dict2sorted_list(golab_apps, key_name = 'app_url')
+    other_apps = _dict2sorted_list(other_apps, key_name = 'app_url')
+    for app in golab_apps:
+        app['app_url_hash'] = hash(app['app_url'])
+        app_data = golab_app_by_url[app['app_url']]
+        app['app_thumb'] = app_data['app_thumb']
+        app['app_link'] = app_data['app_link']
+        app['app_name'] = app_data['name']
+
+    for app in other_apps:
+        app['app_url_hash'] = hash(app['app_url'])
+    response = {
+        'apps' : [
+            {
+                'appset_id' : 'golab_apps',
+                'name' : 'Go-Lab repository applications',
+                'apps' : golab_apps,
+            },
+            {
+                'appset_id' : 'other_apps',
+                'name' : 'Other applications',
+                'apps' : other_apps,
+            }
+        ],
+    }
+    return Response(json.dumps(response, indent = 0), content_type = 'application/json')
 
 FORMAT_OPENSOCIAL = 'opensocial'
 FORMAT_JQUERY_I18N = 'jquery_i18n'
