@@ -1,0 +1,13 @@
+
+<div style="border: 1px solid gold; margin-bottom: 30px">
+
+    <button ng-click="toggleFilter()" type="button" id="filter-button" class="btn btn-primary" data-toggle="button"
+            aria-pressed="false" autocomplete="off">
+        {{ filterEnabled ? "Stop filtering" : "Filter" }}
+    </button>
+
+    <div ng-show="filterEnabled">
+        <span>Show</span>
+    </div>
+
+</div>
