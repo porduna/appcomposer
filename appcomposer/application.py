@@ -222,6 +222,10 @@ app.register_blueprint(dummy_blueprint, url_prefix=dummy_info["url"])
 from .translator import translator_blueprint
 app.register_blueprint(translator_blueprint, url_prefix='/translator')
 
+from .ejs import ejs_blueprint
+app.register_blueprint(ejs_blueprint, url_prefix='/ejs')
+
+
 # Mostly for debugging purposes, this snippet will print the site-map so that we can check
 # which methods we are routing.
 @app.route("/site-map")
