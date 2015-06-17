@@ -151,7 +151,7 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
     
     # XXX TODO: Remove this list
     if absolute_translation_url.startswith('http://go-lab.gw.utwente.nl/production/'):
-        translation_messages_xml = translation_messages_xml.replace("<messagebundle>", '<messagebundle namespace="http://go-lab.gw.utwente.nl/production/">')
+        translation_messages_xml = translation_messages_xml.replace("<messagebundle>", '<messagebundle mails="pablo.orduna@deusto.es" namespace="http://go-lab.gw.utwente.nl/production/">')
 
     try:
         messages, metadata = extract_messages_from_translation(translation_messages_xml)

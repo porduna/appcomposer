@@ -24,7 +24,8 @@ DEBUG = True
 
 logger = get_task_logger(__name__)
 
-cel = Celery('pusher_tasks', backend='amqp', broker='amqp://')
+# cel = Celery('pusher_tasks', backend='amqp', broker='amqp://')
+cel = Celery('pusher_tasks', backend='redis', broker='redis://localhost:6379/6')
 
 cel.conf.update(
     CELERYD_PREFETCH_MULTIPLIER="4",
