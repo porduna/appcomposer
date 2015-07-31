@@ -602,4 +602,31 @@ class EmbedApplication(db.Model):
             identifier = unicode(uuid.uuid4())
             while EmbedApplication.query.filter_by(identifier=identifier).first() is not None:
                 identifier = unicode(uuid.uuid4())
-        
+        self.url = url
+        self.name = name
+        self.owner = owner
+        self.identifier = identifier
+        self.creation = creation
+        self.last_update = last_update
+
+    def update(self, url = None, name = None):
+        if url is not None:
+            self.url = url
+        if name is not None:
+            self.name = name
+        self.last_update = datetime.datetime.utcnow()
+
+class EmbedApplicationTranslation(db.Model):
+    __tablename__ = 'EmbedApplicationTranslation'
+
+    id = db.Column(db.Integer, primary_key = True)
+    embed_application_id = db.Column(db.Integer, ForeignKey('EmbedApplications.id'))
+    url = db.Column(db.Unicode(255), index = True, nullable = False)
+    language = db.Column(db.Unicode(10), index = True, nullable = False)
+
+    embed_application = relation("EmbedApplication", backref="translations")
+
+    def __init__(self, embed_application, url, language):
+        self.embed_application = embed_application
+        self.url = url
+        self.language = language
