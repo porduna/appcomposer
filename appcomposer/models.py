@@ -580,3 +580,26 @@ class TranslationCurrentActiveUser(db.Model):
     def update_last_check(self):
         self.last_check = datetime.datetime.utcnow()
 
+class EmbedApplication(db.Model):
+    __tablename__ = 'EmbedApplications'
+
+    id = db.Column(db.Integer, primary_key = True)
+    url = db.Column(db.Unicode(255), index = True, nullable = False)
+    name = db.Column(db.Unicode(100), index = True, nullable = False)
+    owner_id = db.Column(db.Integer, ForeignKey('GoLabOAuthUsers.id'))
+    identifier = db.Column(db.Unicode(36), index = True, nullable = False, unique = True)
+    creation = db.Column(db.DateTime, index = True, nullable = False)
+    last_update = db.Column(db.DateTime, index = True, nullable = False)
+
+    owner = relation("GoLabOAuthUser", backref="embed_applications")
+
+    def __init__(self, url, name, owner, identifier = None, creation = None, last_update = None):
+        if creation is None:
+            creation = datetime.datetime.utcnow()
+        if last_update is None:
+            last_update = datetime.datetime.utcnow()
+        if identifier is None:
+            identifier = unicode(uuid.uuid4())
+            while EmbedApplication.query.filter_by(identifier=identifier).first() is not None:
+                identifier = unicode(uuid.uuid4())
+        
