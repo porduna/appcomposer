@@ -5,6 +5,7 @@ from appcomposer.login import requires_golab_login, current_golab_user
 from appcomposer.models import EmbedApplication, EmbedApplicationTranslation
 
 from flask.ext.wtf import Form
+from wtforms import TextField
 
 embed_blueprint = Blueprint('embed', __name__)
 

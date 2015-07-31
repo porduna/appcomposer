@@ -5,7 +5,7 @@ services:
     - rabbitmq
 python: 2.7
 install:
-    - pip install -r requirements.txt -r requirements_translator.txt
+    - pip install -r requirements.txt
     - cp config.py.dist config.py
     - echo ACTIVATE_TRANSLATOR = True >> config.py
     - echo ACTIVATE_TRANSLATOR_MONGODB_PUSHES = True >> config.py
