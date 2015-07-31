@@ -1,0 +1,10 @@
+<Module>
+ <ModulePrefs title="{{ app.name }}">
+    <Require feature="osapi" />
+ </ModulePrefs>
+ <Content type="html" view="home,canvas">
+ <![CDATA[
+    <iframe width="100%" {% if app.height %}height="{{ app.height }}px"{% else %}height="800px"{% endif %}src="{{ app.url }}"></iframe>
+ ]]>
+</Content>
+</Module>

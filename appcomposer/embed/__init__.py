@@ -1,5 +1,5 @@
 import traceback
-from flask import Blueprint, render_template
+from flask import Blueprint, render_template, make_response, redirect
 
 from appcomposer import db
 from appcomposer.babel import gettext, lazy_gettext
@@ -40,7 +40,9 @@ def app_xml(identifier):
     if application is None:
         return render_template("embed/error.xml", message = gettext("Application '{identifier}' not found").format(identifier=identifier)), 404
 
-    return render_template("embed/app.html", app = application, title = gettext("Application {name}").format(name=application.name))
+    response = make_response(render_template("embed/app.xml", app = application, title = gettext("Application {name}").format(name=application.name)))
+    response.content_type = 'application/xml'
+    return response
 
 # 
 # Management URLs
@@ -55,13 +57,14 @@ def index():
 class ApplicationForm(Form):
     name = TextField(lazy_gettext("Name:"), validators=[required()])
     url = URLField(lazy_gettext("Web:"), validators=[required()])
+    height = TextField(lazy_gettext("Height:"), validators=[required()])
 
 @embed_blueprint.route('/create', methods = ['GET', 'POST'])
 @requires_golab_login
 def create():
     form = ApplicationForm()
     if form.validate_on_submit():
-        application = EmbedApplication(url = form.url.data, name = form.name.data, owner = current_golab_user())
+        application = EmbedApplication(url = form.url.data, name = form.name.data, owner = current_golab_user(), height=form.height.data)
         db.session.add(application)
         try:
             db.session.commit()
@@ -71,7 +74,7 @@ def create():
         else:
             return redirect(url_for('.edit', identifier=application.identifier))
             
-    return render_template("embed/create.html", form=form)
+    return render_template("embed/create.html", form=form, header_message=gettext("Add a web"))
 
 @embed_blueprint.route('/edit/<identifier>/', methods = ['GET', 'POST'])
 @requires_golab_login
@@ -79,7 +82,7 @@ def edit(identifier):
     application = db.session.query(EmbedApplication).filter_by(identifier = identifier).first()
     form = ApplicationForm(obj=application)
     if form.validate_on_submit():
-        application.update(url=form.url.data, name=form.name.data)
+        application.update(url=form.url.data, name=form.name.data, height=form.height.data)
         db.session.commit()
-    return render_template("embed/edit.html", form=form)
+    return render_template("embed/create.html", form=form, header_message=gettext("Edit web"))
 

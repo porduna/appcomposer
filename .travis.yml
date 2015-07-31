@@ -14,5 +14,6 @@ before_script:
     - nohup python run.py &
     - export SELENIUM_HEADLESS=ENABLE
 script:
+    - echo "Tests not executed"
 #    - nosetests appcomposer
 #    - nosetests appcomposer/selenium/*.py

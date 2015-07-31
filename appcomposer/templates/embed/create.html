@@ -6,17 +6,19 @@
    
     <div class="row">
         <div class="col-lg-10 col-lg-offset-1">
-            <h1>Add a web</h1>
+            <h1>{{ header_message }}</h1>
                 <form method="POST" action="{{ request.url }}" class="form-horizontal" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
 
                     <fieldset>
                         {{ render_field(form.name) }}
                         {{ render_field(form.url) }}
+                        {{ render_field(form.height) }}
 
                         <div class="text-center">
                             <div class="form-actions">
                                 <button type="submit" class="btn btn-primary">{{ gettext("Save") }}</button>
+                                <a href="{{ url_for('.index') }}" class="btn btn-danger">{{ gettext("Cancel") }}</a>
                             </div>
                         </div>
                     </fieldset>

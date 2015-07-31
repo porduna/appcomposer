@@ -587,13 +587,14 @@ class EmbedApplication(db.Model):
     url = db.Column(db.Unicode(255), index = True, nullable = False)
     name = db.Column(db.Unicode(100), index = True, nullable = False)
     owner_id = db.Column(db.Integer, ForeignKey('GoLabOAuthUsers.id'))
+    height = db.Column(db.Integer)
     identifier = db.Column(db.Unicode(36), index = True, nullable = False, unique = True)
     creation = db.Column(db.DateTime, index = True, nullable = False)
     last_update = db.Column(db.DateTime, index = True, nullable = False)
 
     owner = relation("GoLabOAuthUser", backref="embed_applications")
 
-    def __init__(self, url, name, owner, identifier = None, creation = None, last_update = None):
+    def __init__(self, url, name, owner, height = None, identifier = None, creation = None, last_update = None):
         if creation is None:
             creation = datetime.datetime.utcnow()
         if last_update is None:
@@ -608,12 +609,15 @@ class EmbedApplication(db.Model):
         self.identifier = identifier
         self.creation = creation
         self.last_update = last_update
+        self.height = height
 
-    def update(self, url = None, name = None):
+    def update(self, url = None, name = None, height = None):
         if url is not None:
             self.url = url
         if name is not None:
             self.name = name
+        if height is not None:
+            self.height = height
         self.last_update = datetime.datetime.utcnow()
 
 class EmbedApplicationTranslation(db.Model):
