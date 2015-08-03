@@ -7,15 +7,41 @@ from appcomposer.login import requires_golab_login, current_golab_user
 from appcomposer.models import EmbedApplication, EmbedApplicationTranslation
 
 from flask.ext.wtf import Form
-from wtforms import TextField
+from wtforms import TextField, HiddenField
 from wtforms.validators import required
 from wtforms.fields.html5 import URLField
+from wtforms.widgets import HiddenInput
+from wtforms.widgets.html5 import URLInput
 
 embed_blueprint = Blueprint('embed', __name__)
 
 @embed_blueprint.context_processor
 def inject_variables():
     return dict(current_golab_user=current_golab_user)
+
+class AngularJSInput(object):
+    def __init__(self, **kwargs):
+        self._internal_kwargs = kwargs
+        super(AngularJSInput, self).__init__()
+
+    # Support render_field(form.field, ng_value="foo")
+    # http://stackoverflow.com/questions/20440056/custom-attributes-for-flask-wtforms
+    def __call__(self, field, **kwargs):
+        for key in list(kwargs):
+            if key.startswith('ng_'):
+                kwargs['ng-' + key[3:]] = kwargs.pop(key)
+
+        for key in list(self._internal_kwargs):
+            if key.startswith('ng_'):
+                kwargs['ng-' + key[3:]] = self._internal_kwargs[key]
+
+        return super(AngularJSInput, self).__call__(field, **kwargs)
+
+class AngularJSURLInput(AngularJSInput, URLInput):
+    pass
+
+class AngularJSHiddenInput(AngularJSInput, HiddenInput):
+    pass
 
 # 
 # Public URLs
@@ -56,8 +82,8 @@ def index():
 
 class ApplicationForm(Form):
     name = TextField(lazy_gettext("Name:"), validators=[required()])
-    url = URLField(lazy_gettext("Web:"), validators=[required()])
-    height = TextField(lazy_gettext("Height:"), validators=[required()])
+    url = URLField(lazy_gettext("Web:"), validators=[required()], widget = AngularJSURLInput(ng_model='embed.url'))
+    height = HiddenField(lazy_gettext("Height:"), validators=[required()], widget = AngularJSHiddenInput(ng_model='embed.height'))
 
 @embed_blueprint.route('/create', methods = ['GET', 'POST'])
 @requires_golab_login
