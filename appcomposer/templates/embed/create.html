@@ -1,10 +1,15 @@
 {% extends "embed/base-logged.html" %}
 
+{% block head %}
+    {{ super() }}
+    <link href="{{ url_for('static', filename='bootstrap-slider.min.css') }}" rel="stylesheet">
+{% endblock %}
+
 {% block body %}
     {{ super() }}
     {% from "embed/_form_helpers.html" import render_field %}
    
-    <div class="row">
+    <div class="row" ng-controller="EmbedScreenController">
         <div class="col-lg-10 col-lg-offset-1">
             <h1>{{ header_message }}</h1>
                 <form method="POST" action="{{ request.url }}" class="form-horizontal" enctype="multipart/form-data">
@@ -13,7 +18,6 @@
                     <fieldset>
                         {{ render_field(form.name) }}
                         {{ render_field(form.url) }}
-                        {{ render_field(form.height) }}
 
                         <div class="text-center">
                             <div class="form-actions">
@@ -23,7 +27,51 @@
                         </div>
                     </fieldset>
                 </form>
+                <br><br>
+                <div id="slider_container" style="width: 100%">
+                    <input id="slider" style="width: 100%" data-slider-id='height_slider' type="text" data-slider-min="0" data-slider-max="2000" data-slider-step="10" data-slider-value="{{ form.height.data }}"/>
+                    <iframe {% raw %}ng-src="{{embed.url|trustAsResourceUrl}}" {% endraw %} frameborder='no' id='iframe' width='100%' height='{{ form.height.data }}px'></iframe>
+                </div>
         </div>
     </div>
 
 {% endblock %}
+
+{% block tail %}
+    {{ super() }}
+    <script src="{{ url_for('static', filename="bootstrap-slider.min.js") }}"></script>
+    <script src="{{ url_for('static', filename="js/angular.min.js") }}"></script>
+    <script>
+        angular
+                .module("embedScreen", [])
+                .filter('trustAsResourceUrl', ['$sce', function($sce) {
+                    return function(val) {
+                        return $sce.trustAsResourceUrl(val);
+                    };
+                }]) 
+                .controller("EmbedScreenController", EmbedScreenController);
+
+        function EmbedScreenController($scope, $sce) {
+            $scope.embed = {
+                url: "{{ form.url.data }}",
+                height: {{ form.height.data }}
+            };
+        }
+
+        $('#slider').slider({
+            formatter: function(value) {
+                return 'Current value: ' + value;
+            }
+        }).on("slide", function(evt) {
+            $("#iframe").attr("height", (evt.value + 10) + "px");
+            // $scope.embed.height = evt.value;
+            // TODO: the code above should be necessary
+            $("input[name='height']").val(evt.value);
+        });
+
+        angular.element(document).ready(function () {
+            angular.bootstrap(document, ['embedScreen']);
+        });
+    </script>
+{% endblock %}
+
