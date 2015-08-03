@@ -1,5 +1,11 @@
 {% extends "embed/base-logged.html" %}
 
+{% if form.height.data %}
+    {% set initial_height = form.height.data %}
+{% else %}
+    {% set initial_height = 900 %}
+{% endif %}
+
 {% block head %}
     {{ super() }}
     <link href="{{ url_for('static', filename='bootstrap-slider.min.css') }}" rel="stylesheet">
@@ -28,9 +34,9 @@
                     </fieldset>
                 </form>
                 <br><br>
-                <div id="slider_container" style="width: 100%">
-                    <input id="slider" style="width: 100%" data-slider-id='height_slider' type="text" data-slider-min="0" data-slider-max="2000" data-slider-step="10" data-slider-value="{{ form.height.data }}"/>
-                    <iframe {% raw %}ng-src="{{embed.url|trustAsResourceUrl}}" {% endraw %} frameborder='no' id='iframe' width='100%' height='{{ form.height.data }}px'></iframe>
+                <div ng-cloak ng-show="embed.url.length > 0" id="slider_container" style="width: 100%">
+                    <input id="slider" style="width: 100%" data-slider-id='height_slider' type="text" data-slider-min="0" data-slider-max="2000" data-slider-step="10" data-slider-value="{{ initial_height }}"/>
+                    <iframe {% raw %}ng-src="{{embed.url|trustAsResourceUrl}}" {% endraw %} frameborder='no' id='iframe' width='100%' height='{{ initial_height }}px'></iframe>
                 </div>
         </div>
     </div>
@@ -53,10 +59,15 @@
 
         function EmbedScreenController($scope, $sce) {
             $scope.embed = {
-                url: "{{ form.url.data }}",
-                height: {{ form.height.data }}
+                url: "",
+                height: {{ initial_height }}
             };
+            {% if form.url.data %}
+            $scope.embed.url = "{{ form.url.data }}";
+            {% endif %}
         }
+
+        $("input[name='height']").val({{ initial_height }});
 
         $('#slider').slider({
             formatter: function(value) {
