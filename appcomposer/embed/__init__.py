@@ -110,5 +110,5 @@ def edit(identifier):
     if form.validate_on_submit():
         application.update(url=form.url.data, name=form.name.data, height=form.height.data)
         db.session.commit()
-    return render_template("embed/create.html", form=form, header_message=gettext("Edit web"))
+    return render_template("embed/create.html", form=form, identifier=identifier, header_message=gettext("Edit web"))
 
