@@ -171,6 +171,7 @@ def edit(identifier):
         # Delete old ones
         for existing_language, translation in existing_languages_db.items():
             if existing_language not in posted_languages:
+                existing_languages.pop(existing_language)
                 db.session.delete(translation)
 
         application.update(url=form.url.data, name=form.name.data, height=form.height.data)

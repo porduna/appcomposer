@@ -19,7 +19,16 @@
     <div class="row" ng-controller="EmbedScreenController">
         <div class="col-lg-10 col-lg-offset-1">
                 <a href="{{ url_for('.index') }}" class="btn"><i class="glyphicon glyphicon-list"></i> {{ gettext("Back to list") }}</a>
+
+                {% if identifier %}
+                <div class="alert alert-info" style="margin-top: 10px">
+                    <p>{{ gettext("The following link is an OpenSocial widget that embeds your app:") }}</p>
+                    <input class="link_input" type="text" value="{{ url_for('.app_xml', identifier=identifier, _external=True) }}" style="width: 95%">
+                </div>
+                {% endif %}
+
                 <h1>{{ header_message }}</h1> 
+
                 <form method="POST" name="embed_form" ng-submit="submitForm()" action="{{ request.url }}" class="form-horizontal" enctype="multipart/form-data">
                     {{ form.hidden_tag() }}
 
@@ -87,12 +96,6 @@
                     </fieldset>
                 </form>
 
-                {% if identifier %}
-                <div class="alert alert-info" style="margin-top: 10px">
-                    <p>{{ gettext("The following link is an OpenSocial widget that embeds your app:") }}</p>
-                    <input class="link_input" type="text" value="{{ url_for('.app_xml', identifier=identifier, _external=True) }}" style="width: 95%">
-                </div>
-                {% endif %}
                 <div ng-cloak ng-show="embed.url.length > 0" id="slider_container" style="width: 100%">
                     <h2>{{ gettext("Preview") }}</h2>
                     <p>{{ gettext("Note: adjust height by moving the slider") }}</p>
