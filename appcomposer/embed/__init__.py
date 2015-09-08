@@ -1,5 +1,5 @@
 import traceback
-from flask import Blueprint, render_template, make_response, redirect, url_for
+from flask import Blueprint, render_template, make_response, redirect, url_for, request
 
 from appcomposer import db
 from appcomposer.babel import gettext, lazy_gettext
@@ -11,7 +11,7 @@ from flask.ext.wtf import Form
 from wtforms import TextField, HiddenField
 from wtforms.validators import required
 from wtforms.fields.html5 import URLField
-from wtforms.widgets import HiddenInput
+from wtforms.widgets import HiddenInput, TextInput
 from wtforms.widgets.html5 import URLInput
 
 embed_blueprint = Blueprint('embed', __name__)
@@ -37,6 +37,9 @@ class AngularJSInput(object):
                 kwargs['ng-' + key[3:]] = self._internal_kwargs[key]
 
         return super(AngularJSInput, self).__call__(field, **kwargs)
+
+class AngularJSTextInput(AngularJSInput, TextInput):
+    pass
 
 class AngularJSURLInput(AngularJSInput, URLInput):
     pass
@@ -82,8 +85,8 @@ def index():
     return render_template("embed/index.html", applications = applications)
 
 class ApplicationForm(Form):
-    name = TextField(lazy_gettext("Name:"), validators=[required()])
-    url = URLField(lazy_gettext("Web:"), validators=[required()], widget = AngularJSURLInput(ng_model='embed.url'))
+    name = TextField(lazy_gettext("Name:"), validators=[required()], widget = AngularJSTextInput(ng_enter="submitForm()"))
+    url = URLField(lazy_gettext("Web:"), validators=[required()], widget = AngularJSURLInput(ng_model='embed.url', ng_enter="submitForm()"))
     height = HiddenField(lazy_gettext("Height:"), validators=[required()], widget = AngularJSHiddenInput(ng_model='embed.height'))
 
 def obtain_formatted_languages(existing_language_codes):
@@ -115,13 +118,73 @@ def create():
 @embed_blueprint.route('/edit/<identifier>/', methods = ['GET', 'POST'])
 @requires_golab_login
 def edit(identifier):
+    existing_languages = {
+        # lang: {
+        #     'code': 'es',
+        #     'name': 'Spanish',
+        #     'url': 'http://....'
+        # }
+    }
+    existing_languages_db = {
+        # lang: db_instance
+    }
+    all_languages = list_of_languages()
+    
+    # Obtain from the database
     application = db.session.query(EmbedApplication).filter_by(identifier = identifier).first()
-    existing_languages = []
+    if application is None:
+        return "Application does not exist", 404
+
+    for translation in application.translations:
+        existing_languages_db[translation.language] = translation
+        existing_languages[translation.language] = {
+            'code': translation.language,
+            'name': all_languages.get(translation.language) or 'Language not supported anymore',
+            'url': translation.url
+        }
+    
+    # languages added by the UI
+    posted_languages = {
+        # 'es' : 'http://.../'
+    }
+
+    if request.method == 'POST':
+        for key in request.form:
+            if key.startswith('language.'):
+                lang_code = key[len('language.'):]
+                if lang_code in all_languages:
+                    posted_languages[lang_code] = request.form[key]
+                
+
     form = ApplicationForm(obj=application)
     if form.validate_on_submit():
+        # Check for new ones or changed
+        for posted_language, url in posted_languages.items():
+            if posted_language in existing_languages_db:
+                translation = existing_languages_db[posted_language]
+                if translation.url != url: # Don't trigger unnecessary UPDATEs
+                    translation.url = url
+            else:
+                translation = EmbedApplicationTranslation(embed_application = application, url=url, language=posted_language)
+                db.session.add(translation)
+
+        # Delete old ones
+        for existing_language, translation in existing_languages_db.items():
+            if existing_language not in posted_languages:
+                db.session.delete(translation)
+
         application.update(url=form.url.data, name=form.name.data, height=form.height.data)
         db.session.commit()
 
-    languages = obtain_formatted_languages([])
-    return render_template("embed/create.html", form=form, identifier=identifier, header_message=gettext("Edit web"), languages=languages, all_languages=list_of_languages(), existing_languages=existing_languages)
+    # Add the posted languages to the existing ones
+    for lang_code, url in posted_languages.items():
+        existing_languages[lang_code] = {
+            'code' : lang_code,
+            'name' : all_languages[lang_code],
+            'url' : url
+        }
+
+    # Obtain the languages formatted as required but excluding those already added
+    languages = obtain_formatted_languages(existing_languages)
+    return render_template("embed/create.html", form=form, identifier=identifier, header_message=gettext("Edit web"), languages=languages, existing_languages=list(existing_languages.values()), all_languages=all_languages)
 
