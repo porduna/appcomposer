@@ -1,10 +1,24 @@
 <Module>
- <ModulePrefs title="{{ app.name }}">
+ <ModulePrefs title="{{ app.name }}" height="{{ app.height + 20 }}">
     <Require feature="osapi" />
  </ModulePrefs>
  <Content type="html" view="home,canvas">
  <![CDATA[
-    <iframe width="100%" {% if app.height %}height="{{ app.height }}px"{% else %}height="800px" {% endif %}src="{{ app.url }}"></iframe>
+    <iframe id="app_url" width="98.9%" frameborder="0" {% if app.height %}height="{{ app.height }}px"{% else %}height="800px" {% endif %}></iframe>
+
+    <script type="text/javascript">
+        function init() {
+            var prefs = new gadgets.Prefs();
+            var urls_per_language = {{ apps_per_language|tojson }};
+            var default_url = {{ app.url|tojson }};
+            var url = urls_per_language[prefs.getLang()];
+            if (!url) 
+                url = default_url;
+            document.getElementById("app_url").src = url;
+        }
+
+        gadgets.util.registerOnLoadHandler(init);
+    </script>
  ]]>
 </Content>
 </Module>

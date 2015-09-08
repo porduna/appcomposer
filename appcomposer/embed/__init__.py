@@ -70,7 +70,11 @@ def app_xml(identifier):
     if application is None:
         return render_template("embed/error.xml", message = gettext("Application '{identifier}' not found").format(identifier=identifier)), 404
 
-    response = make_response(render_template("embed/app.xml", app = application, title = gettext("Application {name}").format(name=application.name)))
+    apps_per_language = {}
+    for translation in application.translations:
+        apps_per_language[translation.language] = translation.url
+
+    response = make_response(render_template("embed/app.xml", app = application, apps_per_language = apps_per_language, title = gettext("Application {name}").format(name=application.name)))
     response.content_type = 'application/xml'
     return response
 
