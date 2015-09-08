@@ -1,4 +1,4 @@
-Flask==0.9
+Flask==0.10.1
 Flask-Admin==1.0.8
 Flask-Cors==2.0.0
 Flask-Login==0.2.2
