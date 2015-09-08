@@ -5,6 +5,7 @@ from appcomposer import db
 from appcomposer.babel import gettext, lazy_gettext
 from appcomposer.login import requires_golab_login, current_golab_user
 from appcomposer.models import EmbedApplication, EmbedApplicationTranslation
+from appcomposer.translator.languages import obtain_languages
 
 from flask.ext.wtf import Form
 from wtforms import TextField, HiddenField
@@ -85,6 +86,15 @@ class ApplicationForm(Form):
     url = URLField(lazy_gettext("Web:"), validators=[required()], widget = AngularJSURLInput(ng_model='embed.url'))
     height = HiddenField(lazy_gettext("Height:"), validators=[required()], widget = AngularJSHiddenInput(ng_model='embed.height'))
 
+def obtain_formatted_languages(existing_language_codes):
+    languages = [ (lang.split('_')[0], name) for lang, name in obtain_languages().items() if lang != 'en_ALL' and name != 'DEFAULT']
+
+    return [ { 'code' : language, 'name' : name } for language, name in languages if language not in existing_language_codes]
+
+def list_of_languages():
+    return { key.split('_')[0] : value for key, value in obtain_languages().items() }
+        
+
 @embed_blueprint.route('/create', methods = ['GET', 'POST'])
 @requires_golab_login
 def create():
@@ -106,9 +116,12 @@ def create():
 @requires_golab_login
 def edit(identifier):
     application = db.session.query(EmbedApplication).filter_by(identifier = identifier).first()
+    existing_languages = []
     form = ApplicationForm(obj=application)
     if form.validate_on_submit():
         application.update(url=form.url.data, name=form.name.data, height=form.height.data)
         db.session.commit()
-    return render_template("embed/create.html", form=form, identifier=identifier, header_message=gettext("Edit web"))
+
+    languages = obtain_formatted_languages([])
+    return render_template("embed/create.html", form=form, identifier=identifier, header_message=gettext("Edit web"), languages=languages, all_languages=list_of_languages(), existing_languages=existing_languages)
 
