@@ -43,6 +43,7 @@ import view_duplicate
 import view_edit
 import view_appsearch
 import view_preview
+import view_ajax
 
 
 #

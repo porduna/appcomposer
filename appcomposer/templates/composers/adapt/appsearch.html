@@ -212,7 +212,7 @@
             );
 
 
-            $.getJSON("{{ url_for("translate.appslist_proxy", type="adapt") }}")
+            $.getJSON("{{ url_for("adapt.appslist_proxy", type="adapt") }}")
                     .done(function (data) {
                         console.log("AppsList retrieved");
 
