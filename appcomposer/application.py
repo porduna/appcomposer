@@ -222,6 +222,9 @@ app.register_blueprint(dummy_blueprint, url_prefix=dummy_info["url"])
 from .translator import translator_blueprint
 app.register_blueprint(translator_blueprint, url_prefix='/translator')
 
+from .graasp_i18n import graasp_i18n_blueprint
+app.register_blueprint(graasp_i18n_blueprint, url_prefix='/graasp_i18n')
+
 from .embed import embed_blueprint
 app.register_blueprint(embed_blueprint, url_prefix='/embed')
 

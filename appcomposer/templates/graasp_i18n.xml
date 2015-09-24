@@ -1,0 +1,16 @@
+<Module>
+ <ModulePrefs title="Graasp" height="720">
+    <Require feature="osapi" />
+
+    <Locale messages="{{ url_for('.locale', language='en') }}"/>
+    {% for lang in languages %}
+    <Locale lang="{{ lang }}" messages="{{ url_for('.locale', language='en') }}"/>
+    {% endfor %}
+
+ </ModulePrefs>
+ <Content type="html" view="home,canvas">
+ <![CDATA[
+    Thank you for translating this application!
+ ]]>
+</Content>
+</Module>
