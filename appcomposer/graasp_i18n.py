@@ -56,7 +56,7 @@ def _parse_contents(contents, dictionary, parent_key = ''):
 def messages_to_xml(messages):
     xml_bundle = ET.Element("messagebundle")
     xml_bundle.attrib.update({
-        'mails' : 'pablo.orduna@deusto.es',
+        'mails' : 'pablo.orduna@deusto.es,alex.wild@epfl.ch',
         'automatic' : 'false'
     })
     keys = sorted(messages.keys())
