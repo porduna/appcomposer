@@ -5,12 +5,12 @@ from appcomposer.translator.utils import get_cached_session, indent
 
 graasp_i18n_blueprint = Blueprint('graasp_i18n', __name__)
 
-BASE_URL = 'http://weblab.deusto.es/pub/graasp-translations'
+SPACE_URL = 'http://graasp.eu/spaces/560410b2f0e1b09f6c8116da'
 
 def get_languages():
     requests = get_cached_session()
     languages = []
-    for item in requests.get("http://graasp.eu/spaces/560410b2f0e1b09f6c8116da", headers = {'Accept' : 'application/json' }).json()['items']:
+    for item in requests.get(SPACE_URL, headers = {'Accept' : 'application/json' }).json()['items']:
         if item['name'].endswith('.json'):
             lang_name = item['name'].rsplit('.json', 1)[0]
             if len(lang_name) == 2:
@@ -20,7 +20,7 @@ def get_languages():
 def get_contents(lang):
     requests = get_cached_session()
     languages = []
-    for item in requests.get("http://graasp.eu/spaces/560410b2f0e1b09f6c8116da", headers = {'Accept' : 'application/json' }).json()['items']:
+    for item in requests.get(SPACE_URL, headers = {'Accept' : 'application/json' }).json()['items']:
         if item['name'] == '%s.json' % lang:
             resource_id = item['_id']
             return requests.get("http://graasp.eu/resources/{0}/raw".format(resource_id)).json()
