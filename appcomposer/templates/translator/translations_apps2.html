@@ -14,13 +14,15 @@
     </style>
 {% endblock %}
 {% block body %}
-    <div class="text-center col-sm-12">
-        <h1>App translations</h1>
-        <div class="row">
-        <div class="alert alert-info col-sm-6 col-sm-offset-3">This is an automatic listing of all the applications stored in the App Composer Translator database.</div>
-        </div>
-        <div class="row">
-        <div><a href="{{ url_for('.translations_app_all_zip') }}" class="btn btn-primary">Download all</a><a class="btn btn-danger" href="{{ url_for('.translation_upload') }}">Upload</a></div>
+    <div class="row">
+        <div class="text-center col-sm-12">
+            <h1>App translations</h1>
+            <div class="row">
+            <div class="alert alert-info col-sm-6 col-sm-offset-3">This is an automatic listing of all the applications stored in the App Composer Translator database.</div>
+            </div>
+            <div class="row">
+            <div><a href="{{ url_for('.translations_app_all_zip') }}" class="btn btn-primary">Download all</a><a class="btn btn-danger" href="{{ url_for('.translation_upload') }}">Upload</a></div>
+            </div>
         </div>
     </div>
 

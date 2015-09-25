@@ -36,8 +36,15 @@
         </div>
 </script>
 
-<div ng-controller="AppListCtrl" id="applist" class="ng-cloak">
-    <div ng-repeat="appset in apps">
+<div ng-controller="AppListCtrl" id="applist">
+
+    <div class="row" ng-show="apps.length == 0" style="margin: 10px">
+        <div class="well">
+            <h3>Loading apps...</h3>
+        </div>
+    </div>
+
+    <div ng-repeat="appset in apps" class="ng-cloak">
         <br><br>
         <h2>{{ appset.name }}</h2>
         <br><br>
@@ -55,7 +62,7 @@
                             ng-click="app.current_include = 'panelbody.html'">
                             <h4><img ng-if="app.app_thumb" ng-src="{{ app.app_thumb }}" height="60px" style="margin-right: 20px">{{ app.app_name ? app.app_name + " - " : "" }}{{ app.app_url }}</h4>
                             <br>
-                            <h6 ng-if="app.last_change" style="margin-top: -15px; font-style: italic">Last updated: {{ app.last_change }} UTC</h6>
+                            <h6 ng-if="app.last_change" style="margin-top: -15px; font-style: italic">Last updated: {{ app.last_change }}</h6>
                         </a>
                     </div>
                 </div>

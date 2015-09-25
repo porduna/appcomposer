@@ -116,13 +116,14 @@ def _extract_locales(app_url, cached_requests):
         response.raise_for_status()
         xml_contents = get_text_from_response(response)
     except requests.RequestException as e:
-        logging.warning(u"Could not load this app URL: %s" % e, exc_info = True)
+        logging.warning(u"Could not load this app URL (%s): %s" % (app_url, e), exc_info = True)
         raise TranslatorError(u"Could not load this app URL: %s" % e)
 
     try:
         root = fromstring(xml_contents)
     except Exception as e:
-        logging.warning(u"Invalid XML document: %s" % e, exc_info = True)
+        logging.warning(u"Invalid XML document (%s): %s" % (app_url, e), exc_info = True)
+        print(u"Invalid XML document (%s): %s" % (app_url, e))
         raise TranslatorError("Invalid XML document: %s" % e)
 
     module_prefs = root.findall("ModulePrefs")
@@ -158,6 +159,7 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
     except TranslatorError as e:
         logging.warning("Could not load XML contents from %s Reason: %s" % (absolute_translation_url, e), exc_info = True)
         raise TranslatorError("Could not load XML in %s" % absolute_translation_url)
+
     return absolute_translation_url, messages, metadata
 
 def extract_local_translations_url(app_url, force_local_cache = False):

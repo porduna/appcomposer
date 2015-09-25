@@ -9,7 +9,8 @@
 {% block body %}
     <h1>Latest synchronizations</h1>
     <br>
-    <p>Current local date: {{ current_datetime.ctime() }} UTC</p>
+    {% set FORMAT = '%Y-%m-%d %H:%M:%SZ' %}
+    <p>Page generated at: <span data-date="{{ current_datetime.strftime(FORMAT) }}"></span></p>
     <br>
     <p>Each synchronization downloads all the applications of the Go-Lab repository and registered applications in the App Composer, so as to verify what are the current messages, whether an application can be translatable or not.</p>
     <table class="table">
@@ -25,12 +26,12 @@
             {% for latest_sync in latest_synchronizations %}
                 <tr>
                     <td>{{ latest_sync['id'] }}</td>
-                    <td>{{ latest_sync['start'].ctime() }} UTC</td>
+                    <td><span data-date="{{ latest_sync['start'].strftime(FORMAT) }}"></span></td>
                     {% if latest_sync['end'] is none %}
                     <td>Not finished</td>
                     <td></td>
                     {% else %}
-                    <td>{{ latest_sync['end'].ctime() }} UTC</td>
+                    <td><span data-date="{{ latest_sync['end'].strftime(FORMAT) }}"></span></td>
                     <td>{{ '%i' % (latest_sync['end'] - latest_sync['start']).total_seconds()}}</td>
                     {% endif %}
                 </tr>
@@ -55,4 +56,21 @@
             </form>
         {% endif %}
     {% endif %}
+{% endblock %}
+
+{% block tail %}
+    <script>
+        function zfill(n) {
+            if (n < 10) 
+                return "0" + n;
+            return n;
+        }
+
+        $("span[data-date]").each(function (pos, value) {
+            var datestring = $(value).data("date");
+            var d = new Date(datestring.replace(/ /, 'T'));
+            $(value).text(d.getFullYear() + "-" + zfill(d.getMonth() + 1) + "-" + zfill(d.getDate()) + " " + zfill(d.getHours()) + ":" + zfill(d.getMinutes()) + ":" + zfill(d.getSeconds()));
+        });
+    </script>
+
 {% endblock %}
