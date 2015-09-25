@@ -2,9 +2,9 @@
  <ModulePrefs title="Graasp" height="720">
     <Require feature="osapi" />
 
-    <Locale messages="{{ url_for('.locale', language='en') }}"/>
+    <Locale messages="{{ url_for('.locale', language='en', _external = True) }}"/>
     {% for lang in languages %}
-    <Locale lang="{{ lang }}" messages="{{ url_for('.locale', language='en') }}"/>
+    <Locale lang="{{ lang }}" messages="{{ url_for('.locale', language=lang, _external = True) }}"/>
     {% endfor %}
 
  </ModulePrefs>
