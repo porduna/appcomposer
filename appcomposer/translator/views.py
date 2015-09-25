@@ -689,11 +689,11 @@ def translations_apps_json():
         app['app_thumb'] = app_data['app_thumb']
         app['app_link'] = app_data['app_link']
         app['app_name'] = app_data['name']
-        app['last_change'] = app['last_change'].ctime()
+        app['last_change'] = app['last_change'].strftime('%Y-%m-%d %H:%M:%SZ')
 
     for app in other_apps:
         app['app_url_hash'] = hash(app['app_url'])
-        app['last_change'] = app['last_change'].ctime()
+        app['last_change'] = app['last_change'].strftime('%Y-%m-%d %H:%M:%SZ')
 
     response = {
         'apps' : [
