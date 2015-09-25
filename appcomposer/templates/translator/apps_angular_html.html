@@ -36,8 +36,15 @@
         </div>
 </script>
 
-<div ng-controller="AppListCtrl" id="applist" class="ng-cloak">
-    <div ng-repeat="appset in apps">
+<div ng-controller="AppListCtrl" id="applist">
+
+    <div class="row" ng-show="apps.length == 0" style="margin: 10px">
+        <div class="well">
+            <h3>Loading apps...</h3>
+        </div>
+    </div>
+
+    <div ng-repeat="appset in apps" class="ng-cloak">
         <br><br>
         <h2>{{ appset.name }}</h2>
         <br><br>
