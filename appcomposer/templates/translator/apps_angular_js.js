@@ -2,6 +2,7 @@ var appList = angular.module('appList', []);
 appList.controller('AppListCtrl', function ($scope) {
     $scope.apps = [];
     $scope.APP_FORMATS = FORMATS;
+    $scope.encodeURIComponent = encodeURIComponent;
     $.ajax({
       url: APPS_URL,
       success: function (obj) {
