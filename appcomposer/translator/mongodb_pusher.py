@@ -36,65 +36,57 @@ def retrieve_mongodb_contents():
 
     return { 'bundles' : json.loads(bundles_serialized), 'translation_urls' : json.loads(translations_url_serialized) }
 
-
-def push_all(self, use_cache):
+def push(self, translation_url, lang, target):
     if not flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
         return
 
     try:
-        logger.info("[PUSH] Pushing all tasks. Cache: %s" % use_cache)
-        print("[PUSH] Pushing all tasks. Cache: %s" % use_cache)
-
-        if use_cache:
-            oldest = datetime.datetime.utcnow() - datetime.timedelta(hours=1)
-        else:
-            oldest = datetime.datetime(1970, 1, 1)
+        logger.info("[PUSH] Pushing to %s@%s" % (lang, translation_url))
+        print("[PUSH] Pushing to %s@%s" % (lang, translation_url))
 
         with flask_app.app_context():
-            for translation_bundle in db.session.query(TranslationBundle).filter(ActiveTranslationMessage.datetime >= oldest, ActiveTranslationMessage.bundle_id == TranslationBundle.id).group_by(TranslationBundle.id).options(joinedload("translation_url")).all():
-                lang = translation_bundle.language
-                target = translation_bundle.target
-                translation_url = translation_bundle.translation_url.url
+            translation_bundle = db.session.query(TranslationBundle).filter(TranslationBundle.translation_url_id == TranslationUrl.id, TranslationUrl.url == translation_url, TranslationBundle.language == lang, TranslationBundle.target == target).options(joinedload("translation_url")).first()
+            if translation_bundle is None:
+                return
+            payload = {}
+            max_date = datetime(1970, 1, 1)
+            for message in translation_bundle.active_messages:
+                payload[message.key] = message.value
+                if message.datetime > max_date:
+                    max_date = message.datetime
+            data = json.dumps(payload)
 
-                payload = {}
-                max_date = datetime(1970, 1, 1)
-                for message in translation_bundle.active_messages:
-                    payload[message.key] = message.value
-                    if message.datetime > max_date:
-                        max_date = message.datetime
-                data = json.dumps(payload)
+            lang_pack = lang + '_' + target
 
-                lang_pack = lang + '_' + target
-
-                bundle_id = lang_pack + '::' + translation_url
-                bundle = { '_id' : bundle_id, 'url' : translation_url,  'bundle' : lang_pack, 'data' : data, 'time' : max_date }
+            bundle_id = lang_pack + '::' + translation_url
+            bundle = { '_id' : bundle_id, 'url' : translation_url,  'bundle' : lang_pack, 'data' : data, 'time' : max_date }
+            try:
+                mongo_translation_urls.update({'_id' : bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
+                logger.info("[PUSH]: Updated translation URL bundle %s" % bundle_id)
+                print("[PUSH]: Updated translation URL bundle %s" % bundle_id)
+            except DuplicateKeyError:
+                print("[PUSH]: Ignoring push for translation URL bundle %s (newer date exists already)" % bundle_id)
+            
+            app_bundle_ids = []
+            for application in translation_bundle.translation_url.apps:
+                bundle_id = lang_pack + '::' + application.url
+                app_bundle_ids.append(bundle_id)
+                bundle = { '_id' : bundle_id, 'spec' : application.url,  'bundle' : lang_pack, 'data' : data, 'time' : max_date }
                 try:
-                    mongo_translation_urls.update({'_id' : bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
-                    logger.info("[PUSH]: Updated translation URL bundle %s" % bundle_id)
+                    mongo_bundles.update({'_id' : bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
+                    logger.info("[PUSH]: Updated application bundle %s" % bundle_id)
+                    print("[PUSH]: Updated application bundle %s" % bundle_id)
                 except DuplicateKeyError:
-                    logger.info("[PUSH]: Ignoring push for translation URL bundle %s (newer date exists already)" % bundle_id)
-                
-                app_bundle_ids = []
-                for application in translation_bundle.translation_url.apps:
-                    bundle_id = lang_pack + '::' + application.url
-                    app_bundle_ids.append(bundle_id)
-                    bundle = { '_id' : bundle_id, 'spec' : application.url,  'bundle' : lang_pack, 'data' : data, 'time' : max_date }
-                    try:
-                        mongo_bundles.update({'_id' : bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
-                        logger.info("[PUSH]: Updated application bundle %s" % bundle_id)
-                        print("[PUSH]: Updated application bundle %s" % bundle_id)
-                    except DuplicateKeyError:
-                        logger.info("[PUSH]: Ignoring push for application bundle %s (newer date exists already)" % bundle_id)
-                        print("[PUSH]: Ignoring push for application bundle %s (newer date exists already)" % bundle_id)
+                    print("[PUSH]: Ignoring push for application bundle %s (newer date exists already)" % bundle_id)
 
+            return bundle_id, app_bundle_ids
     except Exception as exc:
         logger.warn("[PUSH]: Exception occurred. Retrying soon.", exc_info = True)
         print("[PUSH]: Exception occurred. Retrying soon.")
         if self is not None:
             raise self.retry(exc=exc, default_retry_delay=60, max_retries=None)
 
-
-def sync(self):
+def sync(self, only_recent):
     """
     Fully synchronizes the local database leading translations with
     the MongoDB.
@@ -106,12 +98,17 @@ def sync(self):
 
     start_time = datetime.utcnow()
 
+    if only_recent:
+        oldest = datetime.utcnow() - timedelta(hours=1)
+    else:
+        oldest = datetime(1970, 1, 1)
+
     with flask_app.app_context():
         translation_bundles = [ {
                 'translation_url' : bundle.translation_url.url,
                 'language' : bundle.language,
                 'target' : bundle.target
-            } for bundle in db.session.query(TranslationBundle).options(joinedload("translation_url")).all() ]
+            } for bundle in db.session.query(TranslationBundle).filter(ActiveTranslationMessage.datetime >= oldest, ActiveTranslationMessage.bundle_id == TranslationBundle.id).group_by(TranslationBundle.id).options(joinedload("translation_url")).all() ]
     
     all_translation_url_ids = []
     all_app_ids = []

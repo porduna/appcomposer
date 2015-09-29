@@ -1,0 +1,27 @@
+{% extends "translator/base.html" %}
+{% block body %}
+<h1>Failing applications</h1>
+{% if failing_apps %}
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th colspan="2">Name</th>
+            <th>URL</th>
+            <th>Since</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for app in failing_apps %}
+        <tr>
+            <td><img src="{{ app.app_thumb }}" width="50px"></td>
+            <td><a href="{{ app.app_link }}">{{ app.name }}</a></td>
+            <td><a href="{{ app.url }}">{{ app.url[:70] }}{% if app.url|length > 70 %}...{% endif %}</a></td>
+            <td>{{ app.failing_since }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% else %}
+    <p>There are no failing apps. Let's celebrate it!</p>
+{% endif %}
+{% endblock %}

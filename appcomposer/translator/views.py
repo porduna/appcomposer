@@ -215,6 +215,9 @@ def bundle_update(language, target):
     translated_messages = { key : value }
 
     add_full_translation_to_app(user, app_url, translation_url, metadata, language, target, translated_messages, original_messages, from_developer = False)
+    from appcomposer.translator.tasks import synchronize_apps_cache_wrapper
+    synchronize_apps_cache_wrapper.delay()
+
 
     return jsonify(**{"result": "success"})
 
@@ -443,6 +446,8 @@ def translation_upload():
             language = form.language.data
             target = form.target.data
             add_full_translation_to_app(current_golab_user(), app_url, translation_url, metadata, language, target, translated_messages, original_messages, from_developer = False)
+            from appcomposer.translator.tasks import synchronize_apps_cache_wrapper
+            synchronize_apps_cache_wrapper.delay()
             flash("Contents successfully added")
 
     return render_template('translator/translations_upload.html', form=form)
@@ -611,6 +616,12 @@ def translations_apps():
     apps_angular_html = open(os.path.join(SITE_ROOT, "appcomposer/templates/translator/apps_angular_html.html")).read()
 
     return render_template("translator/translations_apps2.html", angular_js = apps_angular_code, angular_html = apps_angular_html, NAMES = NAMES)
+
+@translator_blueprint.route('/dev/apps/failing/')
+@public
+def apps_failing():
+    failing_apps = db.session.query(RepositoryApp).filter_by(failing = True).all()
+    return render_template("translator/failing_apps.html", failing_apps = failing_apps)
 
 @translator_blueprint.route('/dev/apps/apps.json')
 @public
