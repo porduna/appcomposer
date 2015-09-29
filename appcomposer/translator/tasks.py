@@ -66,7 +66,7 @@ cel.conf.update(
 from appcomposer import app as my_app, db
 from appcomposer.models import TranslationCurrentActiveUser
 from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, load_all_google_suggestions
-from appcomposer.translator.mongodb_pusher import push, sync
+from appcomposer.translator.mongodb_pusher import sync
 from appcomposer.translator.notifications import run_notifications
 
 @cel.task(name='notify_changes', bind=True)
@@ -75,26 +75,26 @@ def notify_changes(self):
         return run_notifications()
 
 @cel.task(name='synchronize_apps_cache', bind=True)
-def synchronize_apps_cache_wrapper(self):
+def synchronize_apps_cache_wrapper(self, single_app_url = None):
     with my_app.app_context():
-        result = synchronize_apps_cache()
-    sync(self)
+        result = synchronize_apps_cache(single_app_url)
+    sync(self, True)
     return result
 
 @cel.task(name='synchronize_apps_no_cache', bind=True)
-def synchronize_apps_no_cache_wrapper(self):
+def synchronize_apps_no_cache_wrapper(self, single_app_url = None):
     with my_app.app_context():
-        result = synchronize_apps_no_cache()
-    sync(self)
+        result = synchronize_apps_no_cache(single_app_url)
+    sync(self, False)
     return result
-
-@cel.task(name="push", bind=True)
-def push_task(self, translation_url, lang, target):
-    return push(self, translation_url, lang, target)
 
 @cel.task(name="sync", bind=True)
 def sync_wrapper(self):
-    return sync(self)
+    return sync(self, True)
+
+@cel.task(name="sync_no_cache", bind=True)
+def sync_no_cache_wrapper(self):
+    return sync(self, False)
 
 @cel.task(name='load_google_suggestions', bind=True)
 def load_google_suggestions(self):

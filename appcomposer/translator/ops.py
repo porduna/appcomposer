@@ -1,6 +1,7 @@
 import pprint
 import hashlib
 import datetime
+import threading
 from collections import defaultdict
 
 from sqlalchemy import func, or_
@@ -387,9 +388,6 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
     except:
         db.session.rollback()
         raise
-    else:
-        from appcomposer.translator.tasks import push_task
-        push_task.delay(translation_url, language, target)
     
 def register_app_url(app_url, translation_url, metadata):
     _get_or_create_app(app_url, translation_url, metadata)
