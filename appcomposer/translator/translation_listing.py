@@ -33,6 +33,8 @@ def synchronize_apps_cache():
         cached_requests = get_cached_session()
         synced_apps = _sync_golab_translations(cached_requests, force_reload = False)
         _sync_regular_apps(cached_requests, synced_apps, force_reload = False)
+        from appcomposer.translator.tasks import push_all_task
+        push_all_task.delay()
     finally:
         end_synchronization(sync_id)
     
@@ -43,6 +45,8 @@ def synchronize_apps_no_cache():
         cached_requests = get_cached_session()
         synced_apps = _sync_golab_translations(cached_requests, force_reload = True)
         _sync_regular_apps(cached_requests, synced_apps, force_reload = True)
+        from appcomposer.translator.tasks import push_all_no_cache_task
+        push_all_no_cache_task.delay()
     finally:
         end_synchronization(sync_id)
 

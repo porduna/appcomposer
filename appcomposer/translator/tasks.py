@@ -44,6 +44,11 @@ cel.conf.update(
             'schedule': crontab(hour=3, minute=0),
             'args': ()
         },
+        'push_all_no_cache': {
+            'task': 'push_all_no_cache',
+            'schedule': crontab(hour=4, minute=0),
+            'args': ()
+        },
         'load_google_suggestions' : {
             'task' : 'load_google_suggestions',
             'schedule' : crontab(hour=5, minute=0),
@@ -66,7 +71,7 @@ cel.conf.update(
 from appcomposer import app as my_app, db
 from appcomposer.models import TranslationCurrentActiveUser
 from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, load_all_google_suggestions
-from appcomposer.translator.mongodb_pusher import push, sync
+from appcomposer.translator.mongodb_pusher import push_all, sync
 from appcomposer.translator.notifications import run_notifications
 
 @cel.task(name='notify_changes', bind=True)
@@ -88,9 +93,13 @@ def synchronize_apps_no_cache_wrapper(self):
     sync(self)
     return result
 
-@cel.task(name="push", bind=True)
-def push_task(self, translation_url, lang, target):
-    return push(self, translation_url, lang, target)
+@cel.task(name='push_all_no_cache', bind=True)
+def push_all_no_cache_task(self):
+    return push_all(self, use_cache = False)
+
+@cel.task(name='push_all_cache', bind=True)
+def push_all_task(self):
+    return push_all(self, use_cache = True)
 
 @cel.task(name="sync", bind=True)
 def sync_wrapper(self):
