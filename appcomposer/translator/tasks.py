@@ -75,16 +75,16 @@ def notify_changes(self):
         return run_notifications()
 
 @cel.task(name='synchronize_apps_cache', bind=True)
-def synchronize_apps_cache_wrapper(self):
+def synchronize_apps_cache_wrapper(self, single_app_url = None):
     with my_app.app_context():
-        result = synchronize_apps_cache()
+        result = synchronize_apps_cache(single_app_url)
     sync(self, True)
     return result
 
 @cel.task(name='synchronize_apps_no_cache', bind=True)
-def synchronize_apps_no_cache_wrapper(self):
+def synchronize_apps_no_cache_wrapper(self, single_app_url = None):
     with my_app.app_context():
-        result = synchronize_apps_no_cache()
+        result = synchronize_apps_no_cache(single_app_url)
     sync(self, False)
     return result
 

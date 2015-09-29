@@ -25,24 +25,24 @@ DEBUG = True
 
 logger = get_task_logger(__name__)
 
-def synchronize_apps_cache():
+def synchronize_apps_cache(single_app_url = None):
     """Force obtaining the results and checking everything again to avoid inconsistences. 
     This can safely be run every few minutes, since most applications will be in the cache."""
     sync_id = start_synchronization()
     try:
         cached_requests = get_cached_session()
-        synced_apps = _sync_golab_translations(cached_requests, force_reload = False)
-        _sync_regular_apps(cached_requests, synced_apps, force_reload = False)
+        synced_apps = _sync_golab_translations(cached_requests, force_reload = False, single_app_url = single_app_url)
+        _sync_regular_apps(cached_requests, synced_apps, force_reload = False, single_app_url = single_app_url)
     finally:
         end_synchronization(sync_id)
     
-def synchronize_apps_no_cache():
+def synchronize_apps_no_cache(single_app_url = None):
     """Force obtaining the results and checking everything again to avoid inconsistences. This should be run once a day."""
     sync_id = start_synchronization()
     try:
         cached_requests = get_cached_session()
-        synced_apps = _sync_golab_translations(cached_requests, force_reload = True)
-        _sync_regular_apps(cached_requests, synced_apps, force_reload = True)
+        synced_apps = _sync_golab_translations(cached_requests, force_reload = True, single_app_url = single_app_url)
+        _sync_regular_apps(cached_requests, synced_apps, force_reload = True, single_app_url = single_app_url)
     finally:
         end_synchronization(sync_id)
 
@@ -107,7 +107,7 @@ class RunInParallel(object):
 
         print "All apps downloaded"
 
-def _sync_golab_translations(cached_requests, force_reload):
+def _sync_golab_translations(cached_requests, force_reload, single_app_url = None):
     try:
         apps_response = cached_requests.get("http://www.golabz.eu/rest/apps/retrieve.json")
         apps_response.raise_for_status()
@@ -154,6 +154,8 @@ def _sync_golab_translations(cached_requests, force_reload):
     tasks_list = []
     tasks_by_app_url = {}
     for app_url in apps_by_url:
+        if single_app_url is not None and app_url != single_app_url:
+            continue
         task = MetadataTask(app_url, force_reload)
         tasks_list.append(task)
         tasks_by_app_url[app_url] = task
@@ -170,6 +172,10 @@ def _sync_golab_translations(cached_requests, force_reload):
         external_id = unicode(repo_app.external_id)
         try:
             if external_id not in apps_by_id:
+                if single_app_url is not None:
+                    # In the single_app_url, do not do these things
+                    continue
+
                 # Delete old apps (translations are kept, and the app is kept, but not listed in the repository apps)
                 db.session.delete(repo_app)
                 try:
@@ -178,6 +184,8 @@ def _sync_golab_translations(cached_requests, force_reload):
                     db.session.rollback()
                     raise
             else:
+                if single_app_url is not None and single_app_url != app['app_url']:
+                    continue
                 stored_ids.append(external_id)
                 app = apps_by_id[external_id]
                 _update_existing_app(cached_requests, repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app['app_thumb'], description = app['description'], app_image = app['app_image'], app_link = app['app_golabz_page'], force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']))
@@ -190,6 +198,9 @@ def _sync_golab_translations(cached_requests, force_reload):
     # Add new apps
     #
     for app in apps:
+        if single_app_url is not None and single_app_url != app['app_url']:
+            continue
+
         if app['id'] not in stored_ids:
             try:
                 _add_new_app(cached_requests, repository = GOLAB_REPO, 
@@ -227,8 +238,18 @@ def _add_new_app(cached_requests, repository, app_url, title, external_id, app_t
 
     _add_or_update_app(cached_requests, app_url, force_reload, repo_app, task)
 
-def _sync_regular_apps(cached_requests, already_synchronized_app_urls, force_reload):
+def _sync_regular_apps(cached_requests, already_synchronized_app_urls, force_reload, single_app_url = None):
     app_urls = db.session.query(TranslatedApp.url).all()
+    if single_app_url is not None:
+        found = False
+        for app_url, in app_urls:
+            if app_url == single_app_url:
+                found = True
+                break
+        if found:
+            app_urls = [ (single_app_url,) ]
+        else:
+            app_urls = []
     tasks_list = []
     tasks_by_app_url = {}
     for app_url, in app_urls:
