@@ -1,6 +1,7 @@
 import pprint
 import hashlib
 import datetime
+import threading
 from collections import defaultdict
 
 from sqlalchemy import func, or_
@@ -124,7 +125,20 @@ def get_bundles_by_key_namespaces(pairs):
                 })
     return bundles
 
+_THREADLOCAL_VARIABLES = threading.local()
+
+def _initialize_modification():
+    _THREADLOCAL_VARIABLES.modified = False
+
+def _check_modified():
+    if db.session.is_modified():
+        _THREADLOCAL_VARIABLES.modified = True
+
+def _was_modified():
+    return getattr(_THREADLOCAL_VARIABLES, 'modified', False)
+
 def add_full_translation_to_app(user, app_url, translation_url, app_metadata, language, target, translated_messages, original_messages, from_developer):
+    _initialize_modification()
     db_translation_bundle = _get_or_create_bundle(app_url, translation_url, app_metadata, language, target, from_developer)
     if from_developer and not db_translation_bundle.from_developer:
         # If this is an existing translation and it comes from a developer, establish that it is from developer
@@ -304,6 +318,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                         db_human_key_suggestion = TranslationValueSuggestion(human_key = human_key, language = language, target = target, value = value, number = 1)
                         db.session.add(db_human_key_suggestion)
         try:
+            _check_modified()
             db.session.commit()
         except IntegrityError:
             # Somebody else concurrently run this
@@ -380,6 +395,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
 
     # Commit!
     try:
+        _check_modified()
         db.session.commit()
     except IntegrityError:
         # Somebody else did this
@@ -388,8 +404,12 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
         db.session.rollback()
         raise
     else:
-        from appcomposer.translator.tasks import push_task
-        push_task.delay(translation_url, language, target)
+        # We should be able to use _was_modified, but of course, this depends on whether it was modified by other apps or not
+        print "Was modified?", _was_modified(), app_url, translation_url, app_metadata, language, target
+        from appcomposer.translator.mongodb_pusher import push
+        push(translation_url, language, target)
+        # from appcomposer.translator.tasks import push_task
+        # push_task.delay(translation_url, language, target)
     
 def register_app_url(app_url, translation_url, metadata):
     _get_or_create_app(app_url, translation_url, metadata)
@@ -590,6 +610,7 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
         t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.user, msg.datetime, src_message_ids.get(msg.parent_translation_id), msg.taken_from_default)
         db.session.add(t_history)
         try:
+            _check_modified()
             db.session.commit()
         except:
             db.session.rollback()
@@ -605,6 +626,7 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
         db.session.add(active_t)
 
     try:
+        _check_modified()
         db.session.commit()
     except:
         db.session.rollback()
@@ -622,6 +644,7 @@ def _merge_bundle(src_bundle, dst_bundle):
             active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer, msg.namespace)
             db.session.add(active_t)
             try:
+                _check_modified()
                 db.session.commit()
             except:
                 db.session.rollback()
@@ -634,6 +657,7 @@ def _merge_bundle(src_bundle, dst_bundle):
             db.session.add(active_t)
             db.session.delete(existing_translation)
             try:
+                _check_modified()
                 db.session.commit()
             except:
                 db.session.rollback()
