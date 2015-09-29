@@ -37,15 +37,30 @@ def retrieve_mongodb_contents():
     return { 'bundles' : json.loads(bundles_serialized), 'translation_urls' : json.loads(translations_url_serialized) }
 
 
-def push(self, translation_url, lang, target):
+def push(self, translation_url, lang, target, db_session = None):
     if not flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
         return
 
+    if db_session is None:
+        db_session = db.session
+
     try:
         logger.info("[PUSH] Pushing to %s@%s" % (lang, translation_url))
+        print("[PUSH] Pushing to %s@%s" % (lang, translation_url))
 
-        with flask_app.app_context():
-            translation_bundle = db.session.query(TranslationBundle).filter(TranslationBundle.translation_url_id == TranslationUrl.id, TranslationUrl.url == translation_url, TranslationBundle.language == lang, TranslationBundle.target == target).options(joinedload("translation_url")).first()
+        if self is not None:
+            # Not in a context
+            print ("CREATING CONTEXT")
+            context = flask_app.app_context()
+        else:
+            # We're already in a context
+            context = None
+
+        if context is not None:
+            context.__enter__()
+
+        try:
+            translation_bundle = db_session.query(TranslationBundle).filter(TranslationBundle.translation_url_id == TranslationUrl.id, TranslationUrl.url == translation_url, TranslationBundle.language == lang, TranslationBundle.target == target).options(joinedload("translation_url")).first()
             if translation_bundle is None:
                 return
             payload = {}
@@ -74,12 +89,18 @@ def push(self, translation_url, lang, target):
                 try:
                     mongo_bundles.update({'_id' : bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
                     logger.info("[PUSH]: Updated application bundle %s" % bundle_id)
+                    print("[PUSH]: Updated application bundle %s" % bundle_id)
                 except DuplicateKeyError:
                     logger.info("[PUSH]: Ignoring push for application bundle %s (newer date exists already)" % bundle_id)
+                    print("[PUSH]: Ignoring push for application bundle %s (newer date exists already)" % bundle_id)
 
             return bundle_id, app_bundle_ids
+        finally:
+            if context is not None:
+                context.__exit__(None, None, None)
     except Exception as exc:
         logger.warn("[PUSH]: Exception occurred. Retrying soon.", exc_info = True)
+        print("[PUSH]: Exception occurred. Retrying soon.")
         if self is not None:
             raise self.retry(exc=exc, default_retry_delay=60, max_retries=None)
 

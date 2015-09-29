@@ -131,8 +131,9 @@ def _initialize_modification():
     _THREADLOCAL_VARIABLES.modified = False
 
 def _check_modified():
-    if db.session.is_modified():
-        _THREADLOCAL_VARIABLES.modified = True
+    for obj in db.session.dirty:
+        if db.session.is_modified(obj):
+            _THREADLOCAL_VARIABLES.modified = True
 
 def _was_modified():
     return getattr(_THREADLOCAL_VARIABLES, 'modified', False)
@@ -406,10 +407,10 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
     else:
         # We should be able to use _was_modified, but of course, this depends on whether it was modified by other apps or not
         print "Was modified?", _was_modified(), app_url, translation_url, app_metadata, language, target
-        from appcomposer.translator.mongodb_pusher import push
-        push(translation_url, language, target)
-        # from appcomposer.translator.tasks import push_task
-        # push_task.delay(translation_url, language, target)
+        # from appcomposer.translator.mongodb_pusher import push
+        # push(None, translation_url, language, target, db.session)
+        from appcomposer.translator.tasks import push_task
+        push_task.delay(translation_url, language, target)
     
 def register_app_url(app_url, translation_url, metadata):
     _get_or_create_app(app_url, translation_url, metadata)
