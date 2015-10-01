@@ -34,7 +34,7 @@ from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, get_latest_synchronizations, update_user_status, get_user_status
-from appcomposer.translator.utils import bundle_to_xml, bundle_to_jquery_i18n, bundle_to_json, bundle_to_properties, url_to_filename, messages_to_xml, NO_CATEGORY
+from appcomposer.translator.utils import bundle_to_xml, bundle_to_jquery_i18n, bundle_to_json, bundle_to_graasp_json, bundle_to_properties, url_to_filename, messages_to_xml, NO_CATEGORY
 
 import flask.ext.cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
@@ -729,12 +729,14 @@ FORMAT_OPENSOCIAL = 'opensocial'
 FORMAT_JQUERY_I18N = 'jquery_i18n'
 FORMAT_JSON = 'json'
 FORMAT_PROPERTIES = 'properties'
+FORMAT_GRAASP_JSON = 'graasp_json'
 
 SERIALIZERS = {
     FORMAT_OPENSOCIAL : bundle_to_xml,
     FORMAT_JQUERY_I18N : bundle_to_jquery_i18n,
     FORMAT_PROPERTIES : bundle_to_properties,
     FORMAT_JSON : bundle_to_json,
+    FORMAT_GRAASP_JSON: bundle_to_graasp_json,
 }
 
 MIMETYPES = {
@@ -742,6 +744,7 @@ MIMETYPES = {
     FORMAT_JQUERY_I18N : 'application/json',
     FORMAT_JSON : 'application/json',
     FORMAT_PROPERTIES : 'text/plain; charset=utf-8',
+    FORMAT_GRAASP_JSON: 'application/json',
 }
 
 EXTENSIONS = {
@@ -749,6 +752,7 @@ EXTENSIONS = {
     FORMAT_JQUERY_I18N : 'json',
     FORMAT_JSON : 'json',
     FORMAT_PROPERTIES : 'properties',
+    FORMAT_GRAASP_JSON: 'json',
 }
 
 NAMES = OrderedDict()
@@ -756,6 +760,7 @@ NAMES[FORMAT_OPENSOCIAL] = "OpenSocial"
 NAMES[FORMAT_PROPERTIES] = "Properties file"
 NAMES[FORMAT_JSON] = "JSON"
 NAMES[FORMAT_JQUERY_I18N] = "jQuery i18n plug-in"
+NAMES[FORMAT_GRAASP_JSON] = "Graasp JSON"
 
 
 # 

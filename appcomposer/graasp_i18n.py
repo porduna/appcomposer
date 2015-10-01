@@ -40,14 +40,14 @@ def _parse_contents(contents, dictionary, parent_key = ''):
     for key, value in contents.items():
         if isinstance(value, dict):
             if parent_key:
-                cur_key = '%s_%s' % (parent_key, key)
+                cur_key = '%s::%s' % (parent_key, key)
             else:
                 cur_key = key
 
             _parse_contents(value, dictionary, cur_key)
         else:
             if parent_key:
-                cur_key = '%s.%s' % (parent_key, key)
+                cur_key = '%s::%s' % (parent_key, key)
             else:
                 cur_key = key
 
@@ -64,8 +64,6 @@ def messages_to_xml(messages):
         value = messages[key]
         xml_msg = ET.SubElement(xml_bundle, 'msg')
         xml_msg.attrib['name'] = key
-        if '.' in key:
-            xml_msg.attrib['category'] = key.split('.', 1)[0]
         xml_msg.text = value
     indent(xml_bundle)
     xml_string = ET.tostring(xml_bundle, encoding = 'UTF-8')
