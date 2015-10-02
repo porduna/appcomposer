@@ -4,11 +4,13 @@ angular
 
 
 function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, DTColumnDefBuilder) {
+    var vm = this;
+
     $scope.apps = $resource(APP_DYN_ROOT + "api/apps/repository").query();
-    $scope.dt = {};
 
     $scope.selected = {};
     $scope.selected.app = undefined; // To store the selected app.
+    $scope.dt = {};
 
     $scope.dt.options = DTOptionsBuilder.newOptions()
         .withPaginationType('full_numbers')
@@ -74,7 +76,7 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
      * @param loadedDT
      */
     function dataTableLoadedHandler(evt, loadedDT) {
-        $scope.dt = loadedDT;
+        $scope.dtjq = loadedDT;
     }
 
     /**
@@ -96,7 +98,7 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
     function selectApp(app, index) {
         // Hide the previous selection.
         if ($scope.selected.index !== undefined) {
-            $scope.dt.DataTable.row($scope.selected.index).child().hide();
+            $scope.dtjq.DataTable.row($scope.selected.index).child().hide();
         }
 
         // If we have re-selected the current selection, it is no longer
@@ -110,8 +112,8 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
         $scope.selected.app = app;
         $scope.selected.index = index;
 
-        if ($scope.dt != undefined) {
-            var table = $scope.dt;
+        if ($scope.dtjq != undefined) {
+            var table = $scope.dtjq;
             var row = table.DataTable.row(index);
             var c = row.child($compile("<ac-app-details class='my-disabled-hover' app=selected.app></ac-app-details>")($scope));
             c.show();
@@ -137,9 +139,9 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
      */
     function getGradientColor(percent) {
         var percentColors = [
-            { percent: 0.0, color: { r: 0xff, g: 0x00, b: 0 } },
-            { percent: 0.5, color: { r: 0xff, g: 0xff, b: 0 } },
-            { percent: 1.0, color: { r: 0x00, g: 0xff, b: 0 } } ];
+            {percent: 0.0, color: {r: 0xff, g: 0x00, b: 0}},
+            {percent: 0.5, color: {r: 0xff, g: 0xff, b: 0}},
+            {percent: 1.0, color: {r: 0x00, g: 0xff, b: 0}}];
 
         for (var i = 1; i < percentColors.length - 1; i++) {
             if (percent < percentColors[i].percent) {
@@ -158,8 +160,6 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
             b: Math.floor(lower.color.b * pctLower + upper.color.b * pctUpper)
         };
         var result = 'rgb(' + [color.r, color.g, color.b].join(',') + ')';
-        console.log(percent);
-        console.log(result);
         return result;
     } // !getGradientColor
 
@@ -167,9 +167,9 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
      * Gets the title for the specified badge.
      */
     function getBadgeTitle(langname, lang) {
-        var progress = sprintf("Translation progress: %s", $filter("percentage")(lang.progress, 0) );
+        var progress = sprintf("Translation progress: %s", $filter("percentage")(lang.progress, 0));
 
-        if(lang.original) {
+        if (lang.original) {
             return "This translation is provided by the original developer and will not be applied automatically." + progress;
         } else {
             return "" + progress;

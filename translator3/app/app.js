@@ -17,8 +17,6 @@ angular
     .run(['$log', '$location', initialize]);
 
 function initialize($log, $location) {
-    $log.debug("INITIALIZING...");
-
     var src = window.location.origin + window.location.pathname;
 
     if(src.search("http://localhost:9000") == 0 || src.search("http://localhost:5000") == 0)
@@ -41,7 +39,8 @@ function routeConfig($routeProvider) {
     $routeProvider
         .when('/apps', {
             templateUrl: 'apps/apps.html',
-            controller: 'AppsController'
+            controller: 'AppsController',
+            controllerAs: 'vm'
         })
         .when('/app/:appurl*', {
             templateUrl: 'app/app.html',
