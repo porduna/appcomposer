@@ -390,16 +390,19 @@ def bundle_to_json(db_bundle, category = None):
 
 def bundle_to_graasp_json(db_bundle, category = None):
     # 
-    result = {}
+    result = OrderedDict()
     for message in _get_sorted_messages(db_bundle, category):
-        value = {
-            'value' : message.value
-        }
-        if message.category:
-            value['category'] = message.category
-        if message.namespace:
-            value['namespace'] = message.namespace
-        result[message.key] = value
+        sub_keys = message.key.split('::')
+        key = sub_keys[-1]
+        parents = sub_keys[:-1]
+        current = result
+        for parent in parents:
+            if parent in current:
+                current = current[parent]
+            else:
+                current[parent] = OrderedDict()
+                current = current[parent]
+        current[key] = message.value
     return json.dumps(result, indent = 4)
 
 def bundle_to_jquery_i18n(db_bundle, category = None):
