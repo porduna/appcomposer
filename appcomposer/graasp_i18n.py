@@ -1,4 +1,6 @@
+import json
 import xml.etree.ElementTree as ET
+from collections import OrderedDict
 
 from flask import Blueprint, render_template, make_response
 from appcomposer.translator.utils import get_cached_session, indent
@@ -23,7 +25,9 @@ def get_contents(lang):
     for item in requests.get(SPACE_URL, headers = {'Accept' : 'application/json' }).json()['items']:
         if item['name'] == '%s.json' % lang:
             resource_id = item['_id']
-            return requests.get("http://graasp.eu/resources/{0}/raw".format(resource_id)).json()
+            r = requests.get("http://graasp.eu/resources/{0}/raw".format(resource_id))
+            r.raise_for_status()
+            return json.JSONDecoder(object_pairs_hook=OrderedDict).decode(r.text)
 
     return None
 
@@ -38,19 +42,14 @@ def index():
 
 def _parse_contents(contents, dictionary, parent_key = ''):
     for key, value in contents.items():
-        if isinstance(value, dict):
-            if parent_key:
-                cur_key = '%s::%s' % (parent_key, key)
-            else:
-                cur_key = key
+        if parent_key:
+            cur_key = '%s::%s' % (parent_key, key)
+        else:
+            cur_key = key
 
+        if isinstance(value, dict):
             _parse_contents(value, dictionary, cur_key)
         else:
-            if parent_key:
-                cur_key = '%s::%s' % (parent_key, key)
-            else:
-                cur_key = key
-
             dictionary[cur_key] = value
 
 def messages_to_xml(messages):
@@ -59,8 +58,7 @@ def messages_to_xml(messages):
         'mails' : 'pablo.orduna@deusto.es,alex.wild@epfl.ch',
         'automatic' : 'false'
     })
-    keys = sorted(messages.keys())
-    for key in keys:
+    for key in messages.keys():
         value = messages[key]
         xml_msg = ET.SubElement(xml_bundle, 'msg')
         xml_msg.attrib['name'] = key
@@ -76,7 +74,7 @@ def locale(language):
     contents = get_contents(language)
     if contents is None:
         return "Language not found", 404
-    i18n_contents = {}
+    i18n_contents = OrderedDict()
     _parse_contents(contents, i18n_contents)
     xml_response = messages_to_xml(i18n_contents)
     response = make_response(xml_response)
