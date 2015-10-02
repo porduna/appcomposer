@@ -20,9 +20,11 @@
             <div class="row">
             <div class="alert alert-info col-sm-6 col-sm-offset-3">This is an automatic listing of all the applications stored in the App Composer Translator database.</div>
             </div>
+            {% if not app_url %}
             <div class="row">
             <div><a href="{{ url_for('.translations_app_all_zip') }}" class="btn btn-primary">Download all</a><a class="btn btn-danger" href="{{ url_for('.translation_upload') }}">Upload</a></div>
             </div>
+            {% endif %}
         </div>
     </div>
 
@@ -33,7 +35,11 @@
 {% block tail %}
     <script src="//ajax.googleapis.com/ajax/libs/angularjs/1.2.26/angular.min.js"></script>
     <script>
+        {% if app_url %}
+        var APPS_URL = "{{ url_for('.translations_apps_json', app_url=app_url) }}";
+        {% else %}
         var APPS_URL = "{{ url_for('.translations_apps_json') }}";
+        {% endif %}
         var FORMATS = [
         {% for format_key, name in NAMES.iteritems() %}
             {

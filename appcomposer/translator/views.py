@@ -617,6 +617,19 @@ def translations_apps():
 
     return render_template("translator/translations_apps2.html", angular_js = apps_angular_code, angular_html = apps_angular_html, NAMES = NAMES)
 
+@translator_blueprint.route('/dev/apps/<path:app_url>')
+@public
+def translations_apps_filtered(app_url):
+    app = db.session.query(TranslatedApp).filter_by(url = app_url).first()
+    if app is None:
+        return render_template("translator/error.html", message = "App does not exist"), 404
+
+    # Takes 1ms to load these two files. And putting it here is better for being able to change the code dynamically
+    apps_angular_code = open(os.path.join(SITE_ROOT, "appcomposer/templates/translator/apps_angular_js.js")).read()
+    apps_angular_html = open(os.path.join(SITE_ROOT, "appcomposer/templates/translator/apps_angular_html.html")).read()
+
+    return render_template("translator/translations_apps2.html", angular_js = apps_angular_code, angular_html = apps_angular_html, NAMES = NAMES, app_url = app_url)
+
 @translator_blueprint.route('/dev/apps/failing/')
 @public
 def apps_failing():
@@ -626,6 +639,7 @@ def apps_failing():
 @translator_blueprint.route('/dev/apps/apps.json')
 @public
 def translations_apps_json():
+    requested_app_url = request.args.get('app_url', None)
     global_max_date = db.session.query(func.max(ActiveTranslationMessage.datetime)).first()
     if global_max_date:
         global_max_date = global_max_date[0]
@@ -663,6 +677,9 @@ def translations_apps_json():
         max_date_per_translation_url_id[translation_url_id] = max_date
 
     for app in db.session.query(TranslatedApp).options(joinedload_all('translation_url.bundles')):
+        if requested_app_url is not None and requested_app_url != app.url:
+            continue
+
         if app.url in golab_app_by_url:
             current_apps = golab_apps
         else:
@@ -707,19 +724,21 @@ def translations_apps_json():
         app['last_change'] = app['last_change'].strftime('%Y-%m-%d %H:%M:%SZ')
 
     response = {
-        'apps' : [
-            {
+        'apps' : [],
+    }
+    if golab_apps:
+        response['apps'].append({
                 'appset_id' : 'golab_apps',
                 'name' : 'Go-Lab repository applications',
                 'apps' : golab_apps,
-            },
-            {
+            })
+    if other_apps:
+        response['apps'].append({
                 'appset_id' : 'other_apps',
                 'name' : 'Other applications',
                 'apps' : other_apps,
-            }
-        ],
-    }
+            })
+
     response = Response(json.dumps(response, indent = 0), content_type = 'application/json')
     response.last_modified = global_max_date
     response.headers['Cache-Control'] = 'must-revalidate'
