@@ -48,6 +48,9 @@ function EditMessageController($scope, $log, $resource) {
     $scope.$watch("messageActive", onMessageActive);
     $scope.$watch("item.target", onItemChanged);
 
+    // Just for testing.
+    // $scope.$watch("item.target", function(){ $scope.item.format = "textAngular"});
+
     // --------------
     // Implementations
     // --------------

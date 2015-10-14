@@ -11,7 +11,8 @@ angular
         'selectionModel',
         'ui.bootstrap.modal',
         'ui.gravatar',
-        'percentage'
+        'percentage',
+        'textAngular'
     ])
     .config(['$routeProvider', routeConfig], ['$compileProvider', compileProviderConfig])
     .run(['$log', '$location', initialize]);
