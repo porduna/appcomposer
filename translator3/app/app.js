@@ -39,6 +39,7 @@ function routeConfig($routeProvider) {
     $routeProvider
         .when('/apps', {
             templateUrl: 'apps/apps.html',
+
             controller: 'AppsController',
             controllerAs: 'vm'
         })

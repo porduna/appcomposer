@@ -7,10 +7,12 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
     var vm = this;
 
     $scope.apps = $resource(APP_DYN_ROOT + "api/apps/repository").query();
+    $scope.apps.$promise.then(undefined, onAppsRetrievalRejected);
 
     $scope.selected = {};
     $scope.selected.app = undefined; // To store the selected app.
     $scope.dt = {};
+    $scope.status = {};
 
     $scope.dt.options = DTOptionsBuilder.newOptions()
         .withPaginationType('full_numbers')
@@ -61,6 +63,16 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
     // ------------------------------------
     // IMPLEMENTATIONS
     // ------------------------------------
+
+    /**
+     * Called when an error occurs trying to retrieve apps.
+     */
+    function onAppsRetrievalRejected(error, err, e) {
+        $scope.status.error = {};
+        $scope.status.error.message = "Not available";
+        $scope.status.error.code = "0";
+    } // !onAppsRetrievalRejected
+
 
     /**
      * Extracts an app name. That is, extracts 'en' from 'en_ALL_ALL', for instance.
