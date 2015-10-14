@@ -48,8 +48,9 @@ function EditMessageController($scope, $log, $resource) {
     $scope.$watch("messageActive", onMessageActive);
     $scope.$watch("item.target", onItemChanged);
 
+
     // Just for testing.
-    // $scope.$watch("item.target", function(){ $scope.item.format = "textAngular"});
+    // $scope.$watch("item.target", function(){ $scope.item.format = "textAngular"; $scope.item.can_edit = true; });
 
     // --------------
     // Implementations
@@ -80,6 +81,7 @@ function EditMessageController($scope, $log, $resource) {
         // also be set to false.
         $scope.item.from_default = false;
     } // !confirmTranslation
+
 
     /**
      * Listen for item change events. These will happen when other client edits the translation.

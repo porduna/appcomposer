@@ -171,6 +171,21 @@ label.ac-edit-message-label {
 }
 
 
+/* textAngular editor */
+.ta-editor {
+    min-height: 300px;
+    height: auto;
+    overflow: auto;
+    font-family: inherit;
+    font-size: 100%;
+    margin:20px 0;
+}
+
+.ta-readonly {
+    background-color: #dddddd;
+}
+
+
 .ac-edit-message-input-disabled {
     background-color: rgb(230, 230, 230) !important;
 }
