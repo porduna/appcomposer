@@ -49,8 +49,12 @@
             <!-- Pills to show and choose the category -->
             <div class="ac-category-pills">
                 <ul class="nav nav-pills">
-                    <li ng-class="{ active: currentCategory == 'Category 1' }"><a ng-click="selectCategory('Category 1')" href="">Category 1</a></li>
-                    <li ng-class="{ active: currentCategory == 'Category 2' }" ><a ng-click="selectCategory('Category 2')" href="">Category 2</a></li>
+                    <li ng-repeat="cat in all_apps"
+                        ng-class="{ active: currentCategory == cat.id }">
+                        <a ng-click="selectCategory(cat.id)" href="">
+                            {{ cat.category }}
+                        </a>
+                    </li>
                 </ul>
             </div>
 

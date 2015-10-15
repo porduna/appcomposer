@@ -3,11 +3,12 @@ angular
     .controller("AppsController", AppsController);
 
 
-function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, DTColumnDefBuilder) {
+function AppsController($scope, $resource, $compile, $filter, $log, DTOptionsBuilder, DTColumnDefBuilder) {
     var vm = this;
 
-    $scope.apps = $resource(APP_DYN_ROOT + "api/apps/repository").query();
-    $scope.apps.$promise.then(undefined, onAppsRetrievalRejected);
+    $scope.apps = []; // To hold the apps for the current category.
+    $scope.all_apps = $resource(APP_DYN_ROOT + "api/apps/repository2").query();
+    $scope.all_apps.$promise.then(onAppsRetrievalSucceeded, onAppsRetrievalRejected);
 
     $scope.selected = {};
     $scope.selected.app = undefined; // To store the selected app.
@@ -70,9 +71,46 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
     /**
      * Called to select the displayed category.
      */
-    function selectCategory(categoryNumber) {
-        $scope.currentCategory = categoryNumber;
+    function selectCategory(category) {
+        $scope.currentCategory = category;
+
+        // Find the right apps to display.
+        angular.forEach($scope.all_apps, function(val, ind) {
+            if(val.id == $scope.currentCategory) {
+                $scope.apps = val.items;
+            }
+        });
     } // !selectCategory
+
+    /**
+     * Called when the apps retrieval method succeeds.
+     * @param data
+     */
+    function onAppsRetrievalSucceeded(data) {
+        $log.debug("Apps Retrieval Succeeded");
+
+        $scope.apps = $scope.all_apps;
+
+        //// TODO:
+        //// DEbugging only.
+        //$scope.all_apps =
+        //    [
+        //        {
+        //            id: "my_labs",
+        //            category: "My labs",
+        //            items: $scope.apps
+        //        },
+        //        {
+        //            id: "golab_labs",
+        //            category: "Go-Lab labs",
+        //            items: $scope.apps
+        //        }
+        //    ];
+
+        // Select default category.
+        selectCategory($scope.all_apps[0].id);
+
+    } // !onAppsRetrievalSucceeded
 
     /**
      * Called when an error occurs trying to retrieve apps.
