@@ -14,6 +14,8 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
     $scope.dt = {};
     $scope.status = {};
 
+    $scope.currentCategory = "Category 1"; // For now, category 1 by default. // TODO:
+
     $scope.dt.options = DTOptionsBuilder.newOptions()
         .withPaginationType('full_numbers')
         .withDisplayLength(10)
@@ -54,6 +56,7 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
     $scope.completionToColor = completionToColor;
     $scope.getGradientColor = getGradientColor;
     $scope.getBadgeTitle = getBadgeTitle;
+    $scope.selectCategory = selectCategory;
 
     // -- EVENTS --
 
@@ -63,6 +66,13 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
     // ------------------------------------
     // IMPLEMENTATIONS
     // ------------------------------------
+
+    /**
+     * Called to select the displayed category.
+     */
+    function selectCategory(categoryNumber) {
+        $scope.currentCategory = categoryNumber;
+    } // !selectCategory
 
     /**
      * Called when an error occurs trying to retrieve apps.
