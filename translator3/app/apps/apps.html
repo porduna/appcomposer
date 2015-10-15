@@ -50,7 +50,8 @@
             <div class="ac-category-pills">
                 <ul class="nav nav-pills">
                     <li ng-repeat="cat in all_apps"
-                        ng-class="{ active: currentCategory == cat.id }">
+                        ng-class="{ active: currentCategory == cat.id }"
+                        ng-show="cat.items.length > 0">
                         <a ng-click="selectCategory(cat.id)" href="">
                             {{ cat.category }}
                         </a>

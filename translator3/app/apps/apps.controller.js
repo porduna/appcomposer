@@ -72,6 +72,7 @@ function AppsController($scope, $resource, $compile, $filter, $log, DTOptionsBui
      * Called to select the displayed category.
      */
     function selectCategory(category) {
+
         $scope.currentCategory = category;
 
         // Find the right apps to display.
