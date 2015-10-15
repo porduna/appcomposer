@@ -185,7 +185,9 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
     } // !onMessageEditGoNext
 
 
-    function onGetSuccess() {
+    function onGetSuccess(data) {
+
+
     } // !onThenSuccess
 
     /**
