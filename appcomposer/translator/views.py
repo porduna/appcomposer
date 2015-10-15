@@ -153,17 +153,32 @@ def api_translations():
 @public
 @cross_origin()
 @api
-def api_translations():
+def api_translations2():
     all_applications = []  # With categories
     applications = []
+    laboratories = []
+    others = []
 
     # Add categories
-    one_category = {
-        "id": "apps_and_all",
-        "category": "Apps and all",
+    apps_category = {
+        "id": "apps",
+        "category": "Apps",
         "items": applications
     }
-    all_applications.append(one_category)
+    labs_category = {
+        "id": "labs",
+        "category": "Labs",
+        "items": laboratories
+    }
+    others_category = {
+        "id": "others",
+        "category": "Others",
+        "items": others
+    }
+
+    all_applications.append(apps_category)
+    all_applications.append(labs_category)
+    all_applications.append(others_category)
 
     for repo_app in db.session.query(RepositoryApp).filter_by(translatable = True).all():
         original_languages = repo_app.original_translations.split(',')
@@ -184,7 +199,15 @@ def api_translations():
                 'progress' : progress
             }
 
-        applications.append({
+        # TODO: add Graasp and so on, plus use the retrieval method (e.g., labs/retrieve.json vs. apps/retrieve.json) to know whether it's one thing or the other
+        if repo_app.repository == 'golabz' and (repo_app.app_link.startswith('http://www.golabz.eu/app/') or repo_app.app_link.startswith('http://www.golabz.eu/apps/') or repo_app.app_link.startswith('http://www.golabz.eu/content/')):
+            where = applications
+        elif repo_app.repository == 'golabz' and (repo_app.app_link.startswith('http://www.golabz.eu/lab/') or repo_app.app_link.startswith('http://www.golabz.eu/labs/')):
+            where = laboratories
+        else:
+            where = others
+
+        where.append({
             'original_languages' : original_languages,
             'original_languages_simplified' : original_languages_simplified,
             'translated_languages' : translated_languages,
