@@ -311,8 +311,25 @@ def extract_messages_from_translation(xml_contents):
                 if '.' in name:
                     category = name.split('.')[0]
 
+        # Some people use things like <msg name='foo'>Press <i class=''></i> to ...</msg>
+        # This is invalid XML, but we want to support it too. So:
+        try:
+            # Get whatever is between the <msg name='foo'> and </msg>:
+            raw_msg_message = ET.tostring(xml_msg).split(">", 1)[1].rsplit("<", 1)[0]
+        except IndexError: 
+            # If this ever happens, forget about it
+            raw_msg_message = ""
+        
+        if '<' in raw_msg_message or '>' in raw_msg_message:   
+            xml_text = raw_msg_message
+        else:
+            # However, we also want to support people using &lt;i class=''&gt;, so the 
+            # code above is only used if < or > are present in the text. Otherwise we
+            # trust the XML library
+            xml_text = xml_msg.text or ""
+        
         messages[name] = {
-            'text' : xml_msg.text or "",
+            'text' : xml_text,
             'category' : category,
             'namespace' : namespace,
             'position' : pos,
