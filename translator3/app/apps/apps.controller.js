@@ -78,11 +78,16 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
 
         $scope.currentCategory = category;
 
+        $scope.loadingTable = true;
+
         angular.forEach($scope.all_apps, function(val, ind) {
             if (val.id == $scope.currentCategory) {
                 $scope.apps = val.items;
             }
 
+            $timeout( function() {
+                $scope.loadingTable = false;
+            }, 100 );
         });
 
         ////$timeout( function() {
@@ -94,9 +99,7 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
         //        }
         //    });
         ////
-        //    $timeout( function() {
-        //        $scope.loadingTable = false;
-        //    }, 100 );
+
         //
         //}, 100);
 
