@@ -3,24 +3,30 @@ angular
     .controller("AppsController", AppsController);
 
 
-function AppsController($scope, $resource, $compile, $filter, $log, DTOptionsBuilder, DTColumnDefBuilder) {
+function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DTOptionsBuilder, DTColumnDefBuilder) {
     var vm = this;
 
     $scope.apps = []; // To hold the apps for the current category.
     $scope.all_apps = $resource(APP_DYN_ROOT + "api/apps/repository2").query();
     $scope.all_apps.$promise.then(onAppsRetrievalSucceeded, onAppsRetrievalRejected);
 
+    $scope.loadingTable = false;
+
     $scope.selected = {};
     $scope.selected.app = undefined; // To store the selected app.
+
     $scope.dt = {};
+    $scope.dt.instance = {};
+
     $scope.status = {};
 
-    $scope.currentCategory = "Category 1"; // For now, category 1 by default. // TODO:
+    $scope.currentCategory = "";
 
     $scope.dt.options = DTOptionsBuilder.newOptions()
         .withPaginationType('full_numbers')
         .withDisplayLength(10)
         .withOption("autoWidth", true)
+        .withOption("bRetrieve", false)
         .withOption("language", {
             "search": $filter("translate")("Search:"),
             "processing": $filter("translate")("Processing..."),
@@ -61,9 +67,6 @@ function AppsController($scope, $resource, $compile, $filter, $log, DTOptionsBui
 
     // -- EVENTS --
 
-    $scope.$on('event:dataTableLoaded', dataTableLoadedHandler);
-
-
     // ------------------------------------
     // IMPLEMENTATIONS
     // ------------------------------------
@@ -75,12 +78,29 @@ function AppsController($scope, $resource, $compile, $filter, $log, DTOptionsBui
 
         $scope.currentCategory = category;
 
-        // Find the right apps to display.
         angular.forEach($scope.all_apps, function(val, ind) {
-            if(val.id == $scope.currentCategory) {
+            if (val.id == $scope.currentCategory) {
                 $scope.apps = val.items;
             }
+
         });
+
+        ////$timeout( function() {
+        ////    // Find the right apps to display.
+        //    angular.forEach($scope.all_apps, function(val, ind) {
+        //        if(val.id == $scope.currentCategory) {
+        //            console.log(val.items);
+        //            $scope.apps = val.items;
+        //        }
+        //    });
+        ////
+        //    $timeout( function() {
+        //        $scope.loadingTable = false;
+        //    }, 100 );
+        //
+        //}, 100);
+
+
     } // !selectCategory
 
     /**
@@ -89,8 +109,6 @@ function AppsController($scope, $resource, $compile, $filter, $log, DTOptionsBui
      */
     function onAppsRetrievalSucceeded(data) {
         $log.debug("Apps Retrieval Succeeded");
-
-        $scope.apps = $scope.all_apps;
 
         //// TODO:
         //// DEbugging only.
@@ -132,15 +150,6 @@ function AppsController($scope, $resource, $compile, $filter, $log, DTOptionsBui
 
 
     /**
-     * Get a reference to the jQuery DataTable.
-     * @param evt
-     * @param loadedDT
-     */
-    function dataTableLoadedHandler(evt, loadedDT) {
-        $scope.dtjq = loadedDT;
-    }
-
-    /**
      * Converts a completion percent of a language into an appropriate
      * HTML color string.
      *
@@ -157,9 +166,10 @@ function AppsController($scope, $resource, $compile, $filter, $log, DTOptionsBui
      * @param app: The selected app.
      */
     function selectApp(app, index) {
+
         // Hide the previous selection.
         if ($scope.selected.index !== undefined) {
-            $scope.dtjq.DataTable.row($scope.selected.index).child().hide();
+            $scope.dt.instance.DataTable.row($scope.selected.index).child().hide();
         }
 
         // If we have re-selected the current selection, it is no longer
@@ -173,9 +183,8 @@ function AppsController($scope, $resource, $compile, $filter, $log, DTOptionsBui
         $scope.selected.app = app;
         $scope.selected.index = index;
 
-        if ($scope.dtjq != undefined) {
-            var table = $scope.dtjq;
-            var row = table.DataTable.row(index);
+        if ($scope.dt.instance.DataTable != undefined) {
+            var row = $scope.dt.instance.DataTable.row(index);
             var c = row.child($compile("<ac-app-details class='my-disabled-hover' app=selected.app></ac-app-details>")($scope));
             c.show();
         }
