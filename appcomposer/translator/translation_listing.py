@@ -186,7 +186,7 @@ def _sync_golab_translations(cached_requests, force_reload, single_app_url = Non
             else:
                 if single_app_url is not None and single_app_url != app['app_url']:
                     continue
-                stored_ids.append(external_id)
+                stored_ids.append(unicode(external_id))
                 app = apps_by_id[external_id]
                 _update_existing_app(cached_requests, repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app['app_thumb'], description = app['description'], app_image = app['app_image'], app_link = app['app_golabz_page'], force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']))
         except SQLAlchemyError:
@@ -201,13 +201,16 @@ def _sync_golab_translations(cached_requests, force_reload, single_app_url = Non
         if single_app_url is not None and single_app_url != app['app_url']:
             continue
 
-        if app['id'] not in stored_ids:
+        if unicode(app['id']) not in stored_ids:
             try:
-                _add_new_app(cached_requests, repository = GOLAB_REPO, 
-                            app_url = app['app_url'], title = app['title'], external_id = app['id'],
-                            app_thumb = app['app_thumb'], description = app['description'],
-                            app_image = app['app_image'], app_link = app['app_golabz_page'],
-                            force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']))
+                # Double-check
+                repo_app = db.session.query(RepositoryApp).filter_by(repository = GOLAB_REPO, external_id = app['id']).first()
+                if repo_app is None:
+                    _add_new_app(cached_requests, repository = GOLAB_REPO, 
+                                app_url = app['app_url'], title = app['title'], external_id = app['id'],
+                                app_thumb = app['app_thumb'], description = app['description'],
+                                app_image = app['app_image'], app_link = app['app_golabz_page'],
+                                force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']))
             except SQLAlchemyError:
                 logger.warning("Error adding app %s" % app['app_url'], exc_info = True)
                 continue
