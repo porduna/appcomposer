@@ -3,21 +3,30 @@ angular
     .controller("AppsController", AppsController);
 
 
-function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, DTColumnDefBuilder) {
+function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DTOptionsBuilder, DTColumnDefBuilder) {
     var vm = this;
 
-    $scope.apps = $resource(APP_DYN_ROOT + "api/apps/repository").query();
-    $scope.apps.$promise.then(undefined, onAppsRetrievalRejected);
+    $scope.apps = []; // To hold the apps for the current category.
+    $scope.all_apps = $resource(APP_DYN_ROOT + "api/apps/repository2").query();
+    $scope.all_apps.$promise.then(onAppsRetrievalSucceeded, onAppsRetrievalRejected);
+
+    $scope.loadingTable = false;
 
     $scope.selected = {};
     $scope.selected.app = undefined; // To store the selected app.
+
     $scope.dt = {};
+    $scope.dt.instance = {};
+
     $scope.status = {};
+
+    $scope.currentCategory = "";
 
     $scope.dt.options = DTOptionsBuilder.newOptions()
         .withPaginationType('full_numbers')
         .withDisplayLength(10)
         .withOption("autoWidth", true)
+        .withOption("bRetrieve", false)
         .withOption("language", {
             "search": $filter("translate")("Search:"),
             "processing": $filter("translate")("Processing..."),
@@ -54,15 +63,73 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
     $scope.completionToColor = completionToColor;
     $scope.getGradientColor = getGradientColor;
     $scope.getBadgeTitle = getBadgeTitle;
+    $scope.selectCategory = selectCategory;
 
     // -- EVENTS --
-
-    $scope.$on('event:dataTableLoaded', dataTableLoadedHandler);
-
 
     // ------------------------------------
     // IMPLEMENTATIONS
     // ------------------------------------
+
+    /**
+     * Called to select the displayed category.
+     */
+    function selectCategory(category) {
+
+        $scope.currentCategory = category;
+
+        angular.forEach($scope.all_apps, function(val, ind) {
+            if (val.id == $scope.currentCategory) {
+                $scope.apps = val.items;
+            }
+
+        });
+
+        ////$timeout( function() {
+        ////    // Find the right apps to display.
+        //    angular.forEach($scope.all_apps, function(val, ind) {
+        //        if(val.id == $scope.currentCategory) {
+        //            console.log(val.items);
+        //            $scope.apps = val.items;
+        //        }
+        //    });
+        ////
+        //    $timeout( function() {
+        //        $scope.loadingTable = false;
+        //    }, 100 );
+        //
+        //}, 100);
+
+
+    } // !selectCategory
+
+    /**
+     * Called when the apps retrieval method succeeds.
+     * @param data
+     */
+    function onAppsRetrievalSucceeded(data) {
+        $log.debug("Apps Retrieval Succeeded");
+
+        //// TODO:
+        //// DEbugging only.
+        //$scope.all_apps =
+        //    [
+        //        {
+        //            id: "my_labs",
+        //            category: "My labs",
+        //            items: $scope.apps
+        //        },
+        //        {
+        //            id: "golab_labs",
+        //            category: "Go-Lab labs",
+        //            items: $scope.apps
+        //        }
+        //    ];
+
+        // Select default category.
+        selectCategory($scope.all_apps[0].id);
+
+    } // !onAppsRetrievalSucceeded
 
     /**
      * Called when an error occurs trying to retrieve apps.
@@ -83,15 +150,6 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
 
 
     /**
-     * Get a reference to the jQuery DataTable.
-     * @param evt
-     * @param loadedDT
-     */
-    function dataTableLoadedHandler(evt, loadedDT) {
-        $scope.dtjq = loadedDT;
-    }
-
-    /**
      * Converts a completion percent of a language into an appropriate
      * HTML color string.
      *
@@ -108,9 +166,10 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
      * @param app: The selected app.
      */
     function selectApp(app, index) {
+
         // Hide the previous selection.
         if ($scope.selected.index !== undefined) {
-            $scope.dtjq.DataTable.row($scope.selected.index).child().hide();
+            $scope.dt.instance.DataTable.row($scope.selected.index).child().hide();
         }
 
         // If we have re-selected the current selection, it is no longer
@@ -124,9 +183,8 @@ function AppsController($scope, $resource, $compile, $filter, DTOptionsBuilder, 
         $scope.selected.app = app;
         $scope.selected.index = index;
 
-        if ($scope.dtjq != undefined) {
-            var table = $scope.dtjq;
-            var row = table.DataTable.row(index);
+        if ($scope.dt.instance.DataTable != undefined) {
+            var row = $scope.dt.instance.DataTable.row(index);
             var c = row.child($compile("<ac-app-details class='my-disabled-hover' app=selected.app></ac-app-details>")($scope));
             c.show();
         }

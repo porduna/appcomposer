@@ -265,6 +265,44 @@ label {
 
 
 
+/* CUSTOM GRASP LIKE LOOK FOR BOOTSTRAP PILLS */
+
+.nav-pills>li {
+    margin-right: 4px;
+}
+
+.nav-pills {
+    padding: 5px;
+}
+
+.nav-pills>li>a {
+    background-color: rgba(220, 220, 220, 1);
+    color: black;
+}
+
+.nav-pills>li>a {
+    color: white;
+    font-weight: bold;
+}
+
+.nav-pills>li.active>a {
+    background-color: #51CC66 !important;
+}
+
+.nav-pills>li.active>a:hover {
+    background-color: #51CC66 !important;
+}
+
+.nav-pills>li>a:hover {
+    background-color: rgba(200, 200, 200, 1) !important;
+    color: white;
+}
+
+
+
+
+
+
 /* OVERRIDE OF THE SPECIFIC THEME OF THE TRANSLATOR */
 
 .ac-edit-message-details {

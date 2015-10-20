@@ -111,6 +111,14 @@ GENERAL TYPESETTING
     margin-bottom: 5px;
 }
 
+/*-------------------------
+FOR THE APPS SCREEN
+--------------------------*/
+
+.ac-category-pills {
+    margin-bottom: 15px;
+    margin-top: -10px;
+}
 
 
 /*-------------------------

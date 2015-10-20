@@ -34,19 +34,32 @@
         </div>
 
         <!-- Loading message -->
-        <div ng-show="!status.error && apps.length == 0">
+        <div ng-show="!status.error && (apps.length == 0)">
             <div class="ac-loading">
                 <i class="fa fa-spinner fa-spin"/> Loading, please wait...
             </div>
         </div>
 
         <!-- Loaded content -->
-        <div ng-show="!status.error && apps.length > 0">
+        <div ng-show="!status.error && (apps.length > 0)">
             <p ac-translate-me style="padding-bottom: 15px">
-                Choose an application to translate:
+                Choose a category and an application to translate:
             </p>
 
-            <table datatable="ng" dt-options="dt.options" dt-column-defs="dt.columnDefs" class="table-disable-hover row-border hover">
+            <!-- Pills to show and choose the category -->
+            <div class="ac-category-pills">
+                <ul class="nav nav-pills">
+                    <li ng-repeat="cat in all_apps"
+                        ng-class="{ active: currentCategory == cat.id }"
+                        ng-show="cat.items.length > 0">
+                        <a ng-click="selectCategory(cat.id)" href="">
+                            {{ cat.category }}
+                        </a>
+                    </li>
+                </ul>
+            </div>
+
+            <table datatable="ng" dt-options="dt.options" dt-column-defs="dt.columnDefs" dt-instance="dt.instance" class="table-disable-hover row-border hover">
                 <thead>
                 <tr>
                     <th ac-translate-me>Title</th>
