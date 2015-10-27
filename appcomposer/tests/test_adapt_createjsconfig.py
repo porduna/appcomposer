@@ -5,7 +5,6 @@ import appcomposer.application
 
 from appcomposer.appstorage import api
 from appcomposer.appstorage.api import get_app_by_name
-from appcomposer.composers.translate.bundles import BundleManager
 import re
 
 

@@ -69,7 +69,11 @@ def create_salted_password(password):
 def check_salted_password(password, salted_password):
     random_str = salted_password[:6]
     rest = salted_password[8:]
+    print(random_str)
+    print(rest)
     salted = unicode(new_hash("sha", random_str + password).hexdigest())
+    print(salted)
+    print(rest)
     return rest == salted
 
 
