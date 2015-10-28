@@ -1,11 +1,12 @@
 import re
 import unittest
 
+from appcomposer.tests.utils import ComposerTest
 from appcomposer.utils import inject_absolute_urls
 
 URL = 'http://foobar.com/foo/gadget.xml'
 
-class UtilsTest(unittest.TestCase):
+class UtilsTest(ComposerTest):
     def test_nomatch1(self):
         original = ""
         expected = ""

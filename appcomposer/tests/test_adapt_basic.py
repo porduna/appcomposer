@@ -1,54 +1,20 @@
 import appcomposer
 import appcomposer.application
+from appcomposer.tests.utils import ComposerTest
 
 
-class TestBasicAdaptApp:
+class TestBasicAdaptApp(ComposerTest):
     """
     Test the initial adapt screen.
     """
-    def __init__(self):
-        self.flask_app = None
-        self.tapp = None
-
-    def login(self, username, password):
-        return self.flask_app.post('/login', data=dict(
-            login=username,
-            password=password
-        ), follow_redirects=True)
-
-    def logout(self):
-        return self.flask_app.get('/logout', follow_redirects=True)
-
-    def _cleanup(self):
-        """
-        Does cleanup tasks in case the tests failed before.
-        Can be invoked *before* and *after* the tests.
-        """
-        with self.flask_app:
-            pass
-
-    def setUp(self):
-        appcomposer.app.config['DEBUG'] = True
-        appcomposer.app.config['TESTING'] = True
-        appcomposer.app.config['CSRF_ENABLED'] = False
-        appcomposer.app.config["SECRET_KEY"] = 'secret'
-        self.flask_app = appcomposer.app.test_client()
-        self.flask_app.get("/")
-        rv = self.login("testuser", "password")
-
-        # In case the test failed before, start from a clean state.
-        self._cleanup()
-
-    def tearDown(self):
-        self._cleanup()
-
     def test_adapt_index(self):
         """
         Ensure that the index page is what we expect.
         """
+        self.login()
         # Ensure that the index page is what we expect. The page to choose the URL, etc.
-        rv = self.flask_app.get("/composers/adapt/")
-        assert rv.status_code == 200
+        rv = self.client.get("/composers/adapt/")
         print "DATA: " + rv.data
+        assert rv.status_code == 200
         assert "Choose" in rv.data
         assert "configstore" in rv.data

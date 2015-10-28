@@ -1,9 +1,9 @@
 from mock import patch
 from appcomposer.tests.translator.fake_requests import create_requests_mock
-from appcomposer.tests.translator.utils import BasicTest
+from appcomposer.tests.utils import ComposerTest
 from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper
 
-class TestSync(BasicTest):
+class TestSync(ComposerTest):
     @patch("appcomposer.translator.utils.get_cached_session")
     def test_sync(self, mock):
         mock().get = create_requests_mock()

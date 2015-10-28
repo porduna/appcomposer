@@ -3,61 +3,30 @@ import os
 import appcomposer
 import appcomposer.application
 
+from appcomposer.tests.utils import LoggedInComposerTest
 from appcomposer.appstorage import api
 from appcomposer.appstorage.api import get_app_by_name
 import re
 
 
-class TestAdaptCreateJsConfig:
-    """
-    Test the initial adapt screen.
-    """
-
-    def __init__(self):
-        self.flask_app = None
-        self.tapp = None
-
-    def login(self, username, password):
-        return self.flask_app.post('/login', data=dict(
-            login=username,
-            password=password
-        ), follow_redirects=True)
-
-    def logout(self):
-        return self.flask_app.get('/logout', follow_redirects=True)
-
+class TestAdaptCreateJsConfig(LoggedInComposerTest):
     def _cleanup(self):
         """
         Does cleanup tasks in case the tests failed before.
         Can be invoked *before* and *after* the tests.
         """
-        with self.flask_app:
-            self.flask_app.get("/")
+        with self.client:
+            self.client.get("/")
             app = get_app_by_name("TestApp")
             if app is not None:
                 api.delete_app(app)
-
-    def setUp(self):
-        appcomposer.app.config['DEBUG'] = True
-        appcomposer.app.config['TESTING'] = True
-        appcomposer.app.config['CSRF_ENABLED'] = False
-        appcomposer.app.config["SECRET_KEY"] = 'secret'
-        self.flask_app = appcomposer.app.test_client()
-        self.flask_app.get("/")
-        rv = self.login("testuser", "password")
-
-        # In case the test failed before, start from a clean state.
-        self._cleanup()
-
-    def tearDown(self):
-        self._cleanup()
 
     def test_create_jsconfig_get(self):
         """
         Ensure that the JSCConfig creation page is what we expect.
         """
         # Ensure that the index page is what we expect. The page to choose the URL, etc.
-        rv = self.flask_app.get("/composers/adapt/create/jsconfig/")
+        rv = self.client.get("/composers/adapt/create/jsconfig/")
         assert rv.status_code == 200
         assert "Description" in rv.data
         assert "Name" in rv.data
@@ -67,7 +36,7 @@ class TestAdaptCreateJsConfig:
         """
         Ensure that we can create the JSConfig.
         """
-        rv = self.flask_app.post("/composers/adapt/create/jsconfig/", data=dict(
+        rv = self.client.post("/composers/adapt/create/jsconfig/", data=dict(
             app_name="TestApp",
             adaptor_type="jsconfig",
             app_description=" TestDescription"
@@ -80,7 +49,7 @@ class TestAdaptCreateJsConfig:
         """
         Ensure that we can create *and* edit.
         """
-        rv = self.flask_app.post("/composers/adapt/create/jsconfig/", data=dict(
+        rv = self.client.post("/composers/adapt/create/jsconfig/", data=dict(
             app_name="TestApp",
             adaptor_type="jsconfig",
             app_description=" TestDescription"
@@ -89,7 +58,7 @@ class TestAdaptCreateJsConfig:
         # App created successfully.
         assert rv.status_code == 302
 
-        rv = self.flask_app.post("/composers/adapt/create/jsconfig/", data=dict(
+        rv = self.client.post("/composers/adapt/create/jsconfig/", data=dict(
             app_name="TestApp",
             adaptor_type="jsconfig",
             app_description=" TestDescription"
@@ -104,7 +73,7 @@ class TestAdaptCreateJsConfig:
 
         # Check that we can load that app's adapt screen.
         url = "/composers/adapt/adaptors/jsconfig/edit/%s/" % appid
-        rv = self.flask_app.get(url)
+        rv = self.client.get(url)
 
         print rv.data
 
