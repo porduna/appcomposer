@@ -50,10 +50,10 @@ class LoginForm(Form):
 def login_user(login, name):
     # Store the username in the session object.
     # The session is stored client-side but cryptographically signed.
+
     session["logged_in"] = True
     session["login"] = login
     session["name"] = name
-
 
 def create_salted_password(password):
     alphabet = string.ascii_letters + string.digits

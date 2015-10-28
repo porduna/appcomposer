@@ -13,52 +13,38 @@ class TestAppstoragePersistence(LoggedInComposerTest):
         Does cleanup tasks in case the tests failed before.
         Can be invoked *before* and *after* the tests.
         """
-        with self.client:
-            self.client.get("/")  # Required so that we have a ready session
-            rv = self.login("testuser", "password")
-            app = api.get_app_by_name("UTApp")
-            if app is not None:
-                api.delete_app(app)
-
-    def setUp(self):
-        super(TestAppstoragePersistence, self).setUp()
-
-        try:
-            with self.client:
-                rv = self.login("testuser", "password")
-
-                # import readline # optional, will allow Up/Down/History in the console
-                # import code
-                # vars = globals().copy()
-                # vars.update(locals())
-                # shell = code.InteractiveConsole(vars)
-                # shell.interact()
-
-                # Create an App for the tests.
-                self.tapp = api.create_app("UTApp", "dummy", None, "{}")
-                self.tapp = api.get_app_by_name("UTApp")
-                api.set_var(self.tapp, "TestVar", "TestValue")
-        except:
-            self.tearDown()
-            raise
+        self.client.get("/")  # Required so that we have a ready session
+        rv = self.login("testuser", "password")
+        app = api.get_app_by_name("UTApp")
+        if app is not None:
+            api.delete_app(app)
 
     def test_created_app_persists(self):
-        with self.client:
-            rv = self.login("testuser", "password")
-            app = api.get_app_by_name("UTApp")
+        rv = self.login("testuser", "password")
 
-            assert app is not None
+        # import readline # optional, will allow Up/Down/History in the console
+        # import code
+        # vars = globals().copy()
+        # vars.update(locals())
+        # shell = code.InteractiveConsole(vars)
+        # shell.interact()
 
-            vars = api.get_all_vars(app)
+        # Create an App for the tests.
+        self.tapp = api.create_app("UTApp", "dummy", None, "{}")
+        self.tapp = api.get_app_by_name("UTApp")
+        api.set_var(self.tapp, "TestVar", "TestValue")
 
-            assert len(vars) == 1
+        rv = self.login("testuser", "password")
+        app = api.get_app_by_name("UTApp")
 
-            var = vars[0]
+        assert app is not None
 
-            assert var.name == "TestVar"
-            assert var.value == "TestValue"
+        vars = api.get_all_vars(app)
 
+        assert len(vars) == 1
 
+        var = vars[0]
 
-
+        assert var.name == "TestVar"
+        assert var.value == "TestValue"
 

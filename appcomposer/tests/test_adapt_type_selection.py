@@ -20,11 +20,10 @@ class TestAdaptTypeSelection(LoggedInComposerTest):
         Does cleanup tasks in case the tests failed before.
         Can be invoked *before* and *after* the tests.
         """
-        with self.client:
-            self.client.get("/")
-            app = get_app_by_name("TestApp")
-            if app is not None:
-                api.delete_app(app)
+        self.client.get("/")
+        app = get_app_by_name("TestApp")
+        if app is not None:
+            api.delete_app(app)
 
     def test_base_screen_logged_in(self):
         """

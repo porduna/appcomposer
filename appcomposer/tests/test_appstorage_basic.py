@@ -1,13 +1,13 @@
 import appcomposer
 import appcomposer.application
 
-from appcomposer.tests.utils import ComposerTest
+from appcomposer.tests.utils import LoggedInComposerTest
 from appcomposer.appstorage import api
 from appcomposer.login import current_user
 from appcomposer.models import Spec
 
 
-class TestAppstorageBasic(ComposerTest):
+class TestAppstorageBasic(LoggedInComposerTest):
 
     def _cleanup(self):
         """

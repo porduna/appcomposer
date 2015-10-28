@@ -24,19 +24,25 @@ class ComposerTest(TestCase):
         if hasattr(self, '_cleanup'):
             self._cleanup()
 
+        self.client.__enter__()
+
     def tearDown(self):
         try:
             if hasattr(self, '_cleanup'):
                 self._cleanup()
         finally:
-            db.session.remove()
-            db.drop_all()
+            try:
+                self.client.__exit__(None, None, None)
+            finally:
+                db.session.remove()
+                db.drop_all()
 
-    def login(self, username = 'testuser', password = 'password'):
+
+    def login(self, username = 'testuser', password = 'password', redirect = True):
         return self.client.post('/login', data=dict(
             login=username,
             password=password
-        ), follow_redirects=True)
+        ), follow_redirects=redirect)
 
     def logout(self):
         return self.client.get('/logout', follow_redirects=True)
@@ -52,6 +58,6 @@ class AppCreatedComposerTest(LoggedInComposerTest):
         super(AppCreatedComposerTest, self).setUp()
         try:
             self.tapp = api.create_app("UTApp", "dummy", None, "{}")
-        finally:
+        except:
             self.tearDown()
             raise

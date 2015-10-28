@@ -36,8 +36,8 @@ class TestUser(ComposerTest):
     def test_created_user_login(self):
         user = create_user("utuser", "Unit Test User", "password")
         self.login("utuser", "password")
-
+        print session
         assert session["logged_in"]
-
+    
         rv = self.client.get("/user/")
         assert rv.status_code == 200
