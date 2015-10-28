@@ -12,5 +12,5 @@ SIDE_EFFECT = {
 }
 
 def create_requests_mock():
-    return mock.Mock(side_effect = SIDE_EFFECT)
+    return mock.MagicMock(side_effect = lambda url, *args, **kwargs: SIDE_EFFECT.get(url))
 
