@@ -31,9 +31,11 @@ BASIC_MESSAGE_BUNDLE_ENGLISH = """
   <msg name="message1_{n}">Message1_{n}</msg>
   <msg name="message2_{n}">Message2_{n}</msg>
   <msg name="message3_{n}">Message3_{n}</msg>
+  <msg name="message4_{n}">Message4_{n}</msg>
 </messagebundle>
 """
 
+# Message 4 is missing
 BASIC_MESSAGE_BUNDLE_SPANISH = """
 <messagebundle>
   <msg name="message1_{n}">Mensaje1_{n}</msg>
@@ -83,6 +85,7 @@ LABS = []
 
 
 SIDE_EFFECT_STRINGS = {
+    "http://graasp.eu/users/me": json.dumps(dict(username="Test User", email="appcomposer@go-lab-project.eu")),
     "http://www.golabz.eu/rest/apps/retrieve.json": json.dumps(APPS),
     "http://www.golabz.eu/rest/labs/retrieve.json": json.dumps(LABS),
 }
