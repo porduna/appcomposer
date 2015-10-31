@@ -13,6 +13,28 @@ class TranslatorTest(ComposerTest):
         mongo_translation_urls.remove()
         mongo_bundles.remove()
 
+    def assertApp1(self):
+        resultEngUrl = mongo_translation_urls.find_one({'_id':'en_ALL_ALL::http://url1/languages/en_ALL.xml'})
+        resultEngApp = mongo_bundles.find_one({'_id':'en_ALL_ALL::http://url1/gadget.xml'})
+        self.assertEquals(resultEngUrl['data'], resultEngApp['data'])
+        data = json.loads(resultEngUrl['data'])
+        self.assertEquals('Message1_1', data['message1_1'])
+        self.assertEquals('Message2_1', data['message2_1'])
+        self.assertEquals('Message3_1', data['message3_1'])
+        self.assertEquals('Message4_1', data['message4_1'])
+
+        resultSpaUrl = mongo_translation_urls.find_one({'_id':'es_ALL_ALL::http://url1/languages/en_ALL.xml'})
+        resultSpaApp = mongo_bundles.find_one({'_id':'es_ALL_ALL::http://url1/gadget.xml'})
+        self.assertEquals(resultSpaUrl['data'], resultSpaApp['data'])
+        data = json.loads(resultSpaUrl['data'])
+
+        self.assertEquals('Mensaje1_1', data['message1_1'])
+        self.assertEquals('Mensaje2_1', data['message2_1'])
+        self.assertEquals('Mensaje3_1', data['message3_1'])
+        # This is self-filled by its English version
+        self.assertEquals('Message4_1', data['message4_1'])
+
+
 class TestSync(TranslatorTest):
     @patch("appcomposer.translator.utils.get_cached_session")
     @patch("requests.Session")
@@ -22,10 +44,7 @@ class TestSync(TranslatorTest):
 
         graasp_oauth_login_redirect()
         synchronize_apps_no_cache_wrapper(None)
-        
-        print api_translations2().data
-        print list(mongo_translation_urls.find())
-        print list(mongo_bundles.find())
+        self.assertApp1()
 
 
     @patch("appcomposer.translator.utils.get_cached_session")
