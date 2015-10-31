@@ -65,8 +65,6 @@ class TranslatorTest(ComposerTest):
         
         # There is no translation to French, so it's automatic
         french_results = api_translate('fr_ALL', 'ALL').json
-        french_results = api_translate('fr_ALL', 'ALL').json
-        # TODO: this is a bug!
         self.assertTrue(french_results['automatic'])
         self.assertEquals(french_results['url'], 'http://url1/gadget.xml')
         message1_1 = french_results['translation']['message1_1']
