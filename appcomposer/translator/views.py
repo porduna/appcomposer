@@ -103,11 +103,11 @@ def select_translations():
     languages.sort(lambda x1, x2 : cmp(x1[1], x2[1]))
     return render_template("translator/select_translations.html", targets = targets, languages = languages)
 
-@translator_blueprint.route('/api/apps/repository2')
+@translator_blueprint.route('/api/apps/repository')
 @public
 @cross_origin()
 @api
-def api_translations2():
+def api_translations():
     all_applications = []  # With categories
     applications = []
     laboratories = []
@@ -350,7 +350,8 @@ def api_translate(language, target):
         'translation' : translation,
         'modificationDate': users_status['modificationDate'],
         'modificationDateByOther': users_status['modificationDateByOther'],
-        'automatic': automatic and not from_developer
+        'automatic': automatic and not from_developer,
+        'preview': automatic,
     }
 
     if False:
