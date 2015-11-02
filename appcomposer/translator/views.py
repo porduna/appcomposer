@@ -108,52 +108,6 @@ def select_translations():
 @cross_origin()
 @api
 def api_translations():
-    applications = []
-    for repo_app in db.session.query(RepositoryApp).filter_by(translatable = True).all():
-        original_languages = repo_app.original_translations.split(',')
-        if original_languages == "":
-            original_languages = []
-        original_languages_simplified = [ lang.split('_')[0] for lang in original_languages ]
-        try:
-            translated_languages = json.loads(repo_app.translation_percent) or {}
-        except ValueError:
-            translated_languages = {}
-
-        languages = {}
-        for translated_lang, progress in translated_languages.iteritems():
-            translated_lang_simplified = translated_lang.split('_')[0]
-            translated_lang_country = '_'.join(translated_lang.split('_')[:2])
-            languages[translated_lang_simplified] = {
-                'original' : translated_lang_country in original_languages,
-                'progress' : progress
-            }
-
-        applications.append({
-            'original_languages' : original_languages,
-            'original_languages_simplified' : original_languages_simplified,
-            'translated_languages' : translated_languages,
-            'languages' : languages,
-            'source' : repo_app.repository,
-            'id' : repo_app.external_id,
-            'description': repo_app.description,
-            'app_url' : repo_app.url,
-            'app_thumb' : repo_app.app_thumb,
-            'app_link' : repo_app.app_link,
-            'app_image' : repo_app.app_image,
-            'title' : repo_app.name,
-        })
-    
-    resp = make_response(json.dumps(applications))
-    resp.content_type = 'application/json'
-    return resp
-
-
-
-@translator_blueprint.route('/api/apps/repository2')
-@public
-@cross_origin()
-@api
-def api_translations2():
     all_applications = []  # With categories
     applications = []
     laboratories = []
@@ -396,7 +350,8 @@ def api_translate(language, target):
         'translation' : translation,
         'modificationDate': users_status['modificationDate'],
         'modificationDateByOther': users_status['modificationDateByOther'],
-        'automatic': automatic and not from_developer
+        'automatic': automatic and not from_developer,
+        'preview': automatic,
     }
 
     if False:
