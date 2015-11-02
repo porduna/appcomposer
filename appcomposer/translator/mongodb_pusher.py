@@ -122,8 +122,9 @@ def sync(self, only_recent):
         all_translation_url_ids.append(translation_url_id)
         all_app_ids.extend(app_ids)
     
-    mongo_bundles.remove({"_id": {"$nin": all_app_ids}, "time": {"$lt": start_time}})
-    mongo_translation_urls.remove({"_id": {"$nin": all_translation_url_ids}, "time": {"$lt": start_time}})
+    if not only_recent:
+        mongo_bundles.remove({"_id": {"$nin": all_app_ids}, "time": {"$lt": start_time}})
+        mongo_translation_urls.remove({"_id": {"$nin": all_translation_url_ids}, "time": {"$lt": start_time}})
 
     logger.info("[SYNC]: Sync finished.")
 
