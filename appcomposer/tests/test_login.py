@@ -1,33 +1,11 @@
 from flask import session
 
+from appcomposer.tests.utils import ComposerTest
 import appcomposer
 import appcomposer.application
 
 
-class TestLogin:
-    def __init__(self):
-        self.flask_app = None
-
-    def login(self, username, password, redirect=True):
-        return self.flask_app.post('/login', data=dict(
-            login=username,
-            password=password
-        ), follow_redirects=redirect)
-
-    def logout(self):
-        return self.flask_app.get('/logout', follow_redirects=True)
-
-    def setUp(self):
-        appcomposer.app.config['DEBUG'] = True
-        appcomposer.app.config['TESTING'] = True
-        appcomposer.app.config['CSRF_ENABLED'] = False
-        appcomposer.app.config["SECRET_KEY"] = 'secret'
-        self.flask_app = appcomposer.app.test_client()
-        self.flask_app.__enter__()
-
-    def tearDown(self):
-        self.flask_app.__exit__(None, None, None)
-
+class TestLogin(ComposerTest):
     def test_login_works(self):
         rv = self.login("testuser", "password")
         assert rv.status_code == 200

@@ -59,6 +59,7 @@ function acEditMessage() {
         } // !getCurrentTextValue
 
         function setCurrentTextValue(val) {
+            console.debug("setCurrentTextValue with: " + val);
             input.val(val);
         } // !setCurrentTextValue
 

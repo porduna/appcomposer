@@ -69,15 +69,15 @@ def push(self, translation_url, lang, target):
             
             app_bundle_ids = []
             for application in translation_bundle.translation_url.apps:
-                bundle_id = lang_pack + '::' + application.url
-                app_bundle_ids.append(bundle_id)
-                bundle = { '_id' : bundle_id, 'spec' : application.url,  'bundle' : lang_pack, 'data' : data, 'time' : max_date }
+                app_bundle_id = lang_pack + '::' + application.url
+                app_bundle_ids.append(app_bundle_id)
+                bundle = { '_id' : app_bundle_id, 'spec' : application.url,  'bundle' : lang_pack, 'data' : data, 'time' : max_date }
                 try:
-                    mongo_bundles.update({'_id' : bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
-                    logger.info("[PUSH]: Updated application bundle %s" % bundle_id)
-                    print("[PUSH]: Updated application bundle %s" % bundle_id)
+                    mongo_bundles.update({'_id' : app_bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
+                    logger.info("[PUSH]: Updated application bundle %s" % app_bundle_id)
+                    print("[PUSH]: Updated application bundle %s" % app_bundle_id)
                 except DuplicateKeyError:
-                    print("[PUSH]: Ignoring push for application bundle %s (newer date exists already)" % bundle_id)
+                    print("[PUSH]: Ignoring push for application bundle %s (newer date exists already)" % app_bundle_id)
 
             return bundle_id, app_bundle_ids
     except Exception as exc:

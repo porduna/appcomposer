@@ -50,10 +50,10 @@ class LoginForm(Form):
 def login_user(login, name):
     # Store the username in the session object.
     # The session is stored client-side but cryptographically signed.
+
     session["logged_in"] = True
     session["login"] = login
     session["name"] = name
-
 
 def create_salted_password(password):
     alphabet = string.ascii_letters + string.digits
@@ -221,8 +221,8 @@ def graasp_oauth_login_redirect():
         'Authorization': 'Bearer {}'.format(access_token),
     }
 
-
-    response = requests.get('http://graasp.eu/users/me', headers = headers)
+    requests_session = requests.Session()
+    response = requests_session.get('http://graasp.eu/users/me', headers = headers)
     if response.status_code == 500:
         error_msg = "There has been an error trying to log in with access token: %s and refresh_token %s; attempting to go to %s. Response: %s" % (access_token, refresh_token, next_url, response.text)
         app.logger.error(error_msg)
@@ -243,7 +243,7 @@ def graasp_oauth_login_redirect():
     session['golab_logged_in'] = True
     session['golab_email'] = user_data['email']
 
-    return redirect(requests.utils.unquote(next_url))
+    return redirect(requests.utils.unquote(next_url or ''))
 
 
 def current_golab_user():

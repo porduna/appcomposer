@@ -34,8 +34,6 @@ def relativize_paths(value, path):
 
     return Markup(newvalue)
 
-
-
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(32)
 app.config['SESSION_COOKIE_NAME'] = 'appcompsession'

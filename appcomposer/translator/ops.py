@@ -407,12 +407,14 @@ def register_app_url(app_url, translation_url, metadata):
 def retrieve_stored(translation_url, language, target):
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
     if db_translation_url is None:
-        return {}, False, False
+        # Messages, from_developer, automatic
+        return {}, False, True
 
     bundle = db.session.query(TranslationBundle).filter_by(translation_url = db_translation_url, language = language, target = target).first()
 
     if bundle is None:
-        return {}, False, False
+        # No message, not from developer, automatic = whatever says before
+        return {}, False, db_translation_url.automatic
 
     response = {}
     for message in bundle.active_messages:

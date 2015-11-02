@@ -1,24 +1,13 @@
 import appcomposer
 import appcomposer.application
 
+from appcomposer.tests.utils import LoggedInComposerTest
 from appcomposer.appstorage import api
 from appcomposer.login import current_user
 from appcomposer.models import Spec
 
 
-class TestAppstorageBasic:
-
-    def __init__(self):
-        self.flask_app = None
-
-    def login(self, username, password):
-        return self.flask_app.post('/login', data=dict(
-            login=username,
-            password=password
-        ), follow_redirects=True)
-
-    def logout(self):
-        return self.flask_app.get('/logout', follow_redirects=True)
+class TestAppstorageBasic(LoggedInComposerTest):
 
     def _cleanup(self):
         """
@@ -38,29 +27,6 @@ class TestAppstorageBasic:
             api.db.session.delete(spec)
             api.db.session.commit()
 
-    def setUp(self):
-        appcomposer.app.config['DEBUG'] = True
-        appcomposer.app.config['TESTING'] = True
-        appcomposer.app.config['CSRF_ENABLED'] = False
-        appcomposer.app.config["SECRET_KEY"] = 'secret'
-        self.flask_app = appcomposer.app.test_client()
-        self.flask_app.__enter__()
-
-        rv = self.login("testuser", "password")
-
-        # In case the test failed before, start from a clean state.
-        self._cleanup()
-
-        # import readline # optional, will allow Up/Down/History in the console
-        # import code
-        # vars = globals().copy()
-        # vars.update(locals())
-        # shell = code.InteractiveConsole(vars)
-        # shell.interact()
-
-    def tearDown(self):
-        self._cleanup()
-        self.flask_app.__exit__(None, None, None)
 
     def test_current_user(self):
         cu = current_user()

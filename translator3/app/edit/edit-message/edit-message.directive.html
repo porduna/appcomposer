@@ -11,12 +11,11 @@
         <div ng-show="item.can_edit" class="col-xs-6">
 
             <div ng-show="item.format == 'textAngular'">
-                <text-angular ng-focus="onFocus($event)"
+               <text-angular ng-focus="onFocus($event)"
                               ng-model="currentValue"
                               ng-change="onChange()"
                               class="ac-edit-message-control"
-                              ng-class="{'ac-edit-message-input-from-default': item.from_default}">
-                </text-angular>
+                              ng-class="{'ac-edit-message-input-from-default': item.from_default}"></text-angular>
 
 
             </div>
@@ -41,8 +40,7 @@
 
                 <div ng-show="item.format == 'textAngular'">
                     <text-angular class="ac-edit-message-control" ng-model="currentValue"
-                        ta-disabled="true" ta-toolbar="[]">
-                    </text-angular>
+                        ta-disabled="true" ta-toolbar="[]"></text-angular>
                 </div>
 
                 <input ng-show="!item.format || item.format == 'plain'"

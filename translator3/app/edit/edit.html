@@ -98,18 +98,20 @@
 
             <div ng-if="!status.error">
 
-                <div style="margin-top: 15px" ng-show="translationInfo.automatic == true" class="alert alert-info">
+                <div style="margin-top: 15px" ng-show="translationInfo.preview == true" class="alert alert-info">
                     <h3><span class="fa fa-warning-circle"/>Thank you</h3>
 
                     <p>
                         Thank you for translating this application!
-                        The changes will be applied automatically, though it may take some minutes before
-                        you see them.
+                        <span ng-show="translationInfo.automatic == true">The changes will be applied automatically, though it may take some minutes before
+                        you see them.</span>
+                        <span ng-show="translationInfo.automatic == false">The changes will not be applied automatically and the app developers will need to retrieve the translation and put it in their servers. However, you can see below how it will be shown. If you don't see any change, please wait for a few minutes.</span>
                     </p>
+
 
                     <br>
 
-                    <button ng-show="preview.shown == false" ng-click="previewNow()" class="btn btn-primary btn-small">Preview application now</button>
+                    <button ng-show="preview.shown == false && translationInfo.preview == true" ng-click="previewNow()" class="btn btn-primary btn-small">Preview application now</button>
                     <button ng-show="preview.shown == true" ng-click="refreshPreview()" class="btn btn-primary btn-small">
                         <span class="fa fa-refresh"/> Refresh
                     </button>

@@ -15,7 +15,8 @@ from appcomposer.db import db
 from appcomposer.models import RepositoryApp, TranslatedApp, ActiveTranslationMessage, TranslationBundle, TranslationUrl, TranslationExternalSuggestion
 
 from appcomposer.translator.languages import SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES, OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES
-from appcomposer.translator.utils import get_cached_session, extract_metadata_information
+from appcomposer.translator.utils import extract_metadata_information
+import appcomposer.translator.utils as trutils
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user, start_synchronization, end_synchronization, get_bundles_by_key_namespaces
 
 GOLAB_REPO = u'golabz'
@@ -30,7 +31,7 @@ def synchronize_apps_cache(single_app_url = None):
     This can safely be run every few minutes, since most applications will be in the cache."""
     sync_id = start_synchronization()
     try:
-        cached_requests = get_cached_session()
+        cached_requests = trutils.get_cached_session()
         synced_apps = _sync_golab_translations(cached_requests, force_reload = False, single_app_url = single_app_url)
         _sync_regular_apps(cached_requests, synced_apps, force_reload = False, single_app_url = single_app_url)
     finally:
@@ -40,7 +41,7 @@ def synchronize_apps_no_cache(single_app_url = None):
     """Force obtaining the results and checking everything again to avoid inconsistences. This should be run once a day."""
     sync_id = start_synchronization()
     try:
-        cached_requests = get_cached_session()
+        cached_requests = trutils.get_cached_session()
         synced_apps = _sync_golab_translations(cached_requests, force_reload = True, single_app_url = single_app_url)
         _sync_regular_apps(cached_requests, synced_apps, force_reload = True, single_app_url = single_app_url)
     finally:
@@ -49,7 +50,7 @@ def synchronize_apps_no_cache(single_app_url = None):
 class MetadataTask(threading.Thread):
     def __init__(self, app_url, force_reload):
         threading.Thread.__init__(self)
-        self.cached_requests = get_cached_session()
+        self.cached_requests = trutils.get_cached_session()
         self.app_url = app_url
         self.force_reload = force_reload
         self.finished = False
@@ -436,6 +437,7 @@ def load_all_google_suggestions():
             break
 
 if __name__ == '__main__':
-    from appcomposer import app as my_app
+    from appcomposer import create_app
+    my_app = create_app()
     with my_app.app_context():
         synchronize_apps_cache()
