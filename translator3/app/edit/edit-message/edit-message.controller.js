@@ -19,6 +19,7 @@ function EditMessageController($scope, $log, $resource) {
     $scope.messageActive = false;
 
     $scope.currentValue = $scope.item.target;
+
     $scope.savedValue = $scope.item.target; // Value saved into the server
     $scope.savingValue = $scope.item.target; // Value being saved
 
@@ -143,8 +144,6 @@ function EditMessageController($scope, $log, $resource) {
      * by our sibling directives. We hide our details page if one of our siblings has the focus.
      */
     function onEditMessageFocused(event, args) {
-        $log.debug("[onEditMessageFocused]");
-
         var key = args.key;
         var index = args.index;
 

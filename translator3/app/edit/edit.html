@@ -109,7 +109,7 @@
 
                     <br>
 
-                    <button ng-show="preview.shown == false" ng-click="previewNow()" class="btn btn-primary btn-small">Preview application now</button>
+                    <button ng-show="preview.shown == false && translationInfo.preview" ng-click="previewNow()" class="btn btn-primary btn-small">Preview application now</button>
                     <button ng-show="preview.shown == true" ng-click="refreshPreview()" class="btn btn-primary btn-small">
                         <span class="fa fa-refresh"/> Refresh
                     </button>

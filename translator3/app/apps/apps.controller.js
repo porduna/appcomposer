@@ -7,7 +7,7 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
     var vm = this;
 
     $scope.apps = []; // To hold the apps for the current category.
-    $scope.all_apps = $resource(APP_DYN_ROOT + "api/apps/repository2").query();
+    $scope.all_apps = $resource(APP_DYN_ROOT + "api/apps/repository").query();
     $scope.all_apps.$promise.then(onAppsRetrievalSucceeded, onAppsRetrievalRejected);
 
     $scope.loadingTable = false;

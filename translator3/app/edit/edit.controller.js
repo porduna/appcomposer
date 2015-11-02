@@ -90,7 +90,7 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
         if(result.modificationDateByOther == undefined) {
             // An error occurred, etc.
             // Ignore it for now.
-            $log.error("checkModifications: Unknown error. Result: ");
+            $log.debug("checkModifications: modificationDateByOther is null: doing nothing.");
             $log.debug(result);
             return;
         }
