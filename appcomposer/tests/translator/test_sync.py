@@ -78,6 +78,17 @@ class TranslatorTest(ComposerTest):
         self.assertEquals("Message4_1", message4_1['source'])
         self.assertIsNone(message4_1['target'])
 
+    def assertGraaspApp(self):
+        # Check MongoDB (English and Spanish)
+        resultEngUrl = mongo_translation_urls.find_one({'_id':'en_ALL_ALL::http://composer.golabz.eu/graasp_i18n/languages/en_ALL.xml'})
+        resultEngApp = mongo_bundles.find_one({'_id':'en_ALL_ALL::http://composer.golabz.eu/graasp_i18n/'})
+        self.assertEquals(resultEngUrl['data'], resultEngApp['data'])
+        data = json.loads(resultEngUrl['data'])
+        self.assertEquals("Message1_1", data['message1_1'])
+        self.assertEquals("Message2_1", data['message2_1'])
+        self.assertEquals("Message3_1", data['message3_1'])
+        self.assertEquals("Message4_1", data['message4_1'])
+
     def assertApps(self):
         self.assertApp1()
 
@@ -92,8 +103,10 @@ class TestSync(TranslatorTest):
         graasp_oauth_login_redirect()
         synchronize_apps_no_cache_wrapper(None)
         self.assertApps()
+        self.assertGraaspApp()
         synchronize_apps_no_cache_wrapper(None)
         self.assertApps()
+        self.assertGraaspApp()
 
 
     @patch("appcomposer.translator.utils.get_cached_session")

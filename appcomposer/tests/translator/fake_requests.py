@@ -83,6 +83,18 @@ GADGETS.append({
 
 LABS = []
 
+#############################################################
+# 
+# OTHER APPS
+#
+
+GADGETS.append({
+    'http://composer.golabz.eu/graasp_i18n/' : BASIC_GADGET_XML.format(language="""
+                <Locale messages="languages/en_ALL.xml" />
+                <Locale lang="en" messages="languages/en_ALL.xml" />
+            """),
+    'http://composer.golabz.eu/graasp_i18n/languages/en_ALL.xml' : BASIC_MESSAGE_BUNDLE_ENGLISH.format(n=1),
+})
 
 SIDE_EFFECT_STRINGS = {
     "http://graasp.eu/users/me": json.dumps(dict(username="Test User", email="appcomposer@go-lab-project.eu")),
