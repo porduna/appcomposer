@@ -25,15 +25,17 @@ EXTERNAL_REPO = u'external'
 
 GRAASP = {
     'title': 'Graasp',
-    'id': '-1',
+    'id': '2',
     'description': "Graasp is the ILS platform",
     'app_url': "http://composer.golabz.eu/graasp_i18n/",
     'app_type': "OpenSocial gadget",
     'app_image': "http://composer.golabz.eu/static/img/graasp-logo.png",
     'app_thumb': "http://composer.golabz.eu/static/img/graasp-logo-thumb.png",
     'app_golabz_page': "http://graasp.eu/",
+    'repository': "Go-Lab ecosystem",
 }
-OTHER_APPS = app.config.get('OTHER_APPS', [ GRAASP ])
+OTHER_APPS = app.config.get('OTHER_APPS', [])
+OTHER_APPS.append(GRAASP)
 
 DEBUG = True
 
@@ -45,7 +47,10 @@ def synchronize_apps_cache(single_app_url = None):
     sync_id = start_synchronization()
     try:
         cached_requests = trutils.get_cached_session()
-        synced_apps = _sync_golab_translations(cached_requests, force_reload = False, single_app_url = single_app_url)
+        synced_apps = []
+        golab_apps = _get_golab_translations(cached_requests)
+        _sync_translations(cached_requests, synced_apps, golab_apps, force_reload = False, single_app_url = single_app_url)
+        _sync_translations(cached_requests, synced_apps, OTHER_APPS, force_reload = False, single_app_url = single_app_url)
         _sync_regular_apps(cached_requests, synced_apps, force_reload = False, single_app_url = single_app_url)
     finally:
         end_synchronization(sync_id)
@@ -55,7 +60,10 @@ def synchronize_apps_no_cache(single_app_url = None):
     sync_id = start_synchronization()
     try:
         cached_requests = trutils.get_cached_session()
-        synced_apps = _sync_golab_translations(cached_requests, force_reload = True, single_app_url = single_app_url)
+        synced_apps = []
+        golab_apps = _get_golab_translations(cached_requests)
+        _sync_translations(cached_requests, synced_apps, golab_apps, force_reload = True, single_app_url = single_app_url)
+        _sync_translations(cached_requests, synced_apps, OTHER_APPS, force_reload = True, single_app_url = single_app_url)
         _sync_regular_apps(cached_requests, synced_apps, force_reload = True, single_app_url = single_app_url)
     finally:
         end_synchronization(sync_id)
@@ -121,7 +129,96 @@ class RunInParallel(object):
 
         print "All apps downloaded"
 
-def _sync_golab_translations(cached_requests, force_reload, single_app_url = None):
+def _sync_translations(cached_requests, synced_apps, apps_to_process, force_reload, single_app_url = None):
+    if single_app_url is not None:
+        app_found = None
+        for app in apps_to_process:
+            if app['app_url'] == single_app_url:
+                app_found = app
+                break
+        if app_found is None:
+            return
+
+        apps = [ app_found ]
+    else:
+        apps = apps_to_process
+
+    # Don't consider synced_apps
+    apps = [ app for app in apps if app['app_url'] not in synced_apps ]
+    
+    # 
+    # Now apps is the list of applications (and single_app_url can be forgotten)
+    # 
+    apps_by_repo_id = {
+        # (repository, id): app
+    }
+    for app in apps:
+        apps_by_repo_id[app['repository'], unicode(app['id'])] = app
+
+    apps_by_url = {
+        # url: app
+    }
+    for app in apps:
+        apps_by_repo_id[app['app_url']] = app
+    
+    tasks_list = []
+    tasks_by_app_url = {}
+    for app_url in apps_by_url:
+        task = MetadataTask(app_url, force_reload)
+        tasks_list.append(task)
+        tasks_by_app_url[app_url] = task
+
+    run_in_parallel = RunInParallel(tasks_list)
+    run_in_parallel.run()
+
+
+    stored_apps = db.session.query(RepositoryApp).filter(RepositoryApp.repository != GOLAB_REPO).all()
+    stored_ids = []
+
+    for repo_app in stored_apps:
+        if repo_app.url not in synced_apps:
+            external_id = unicode(repo_app.external_id)
+            try:
+                if (repo_app.repository, external_id) not in apps_by_repo_id:
+                    # Delete old apps (translations are kept, and the app is kept, but not listed in the repository apps)
+                    db.session.delete(repo_app)
+                    try:
+                        db.session.commit()
+                    except:
+                        db.session.rollback()
+                        raise
+                else:
+                    stored_ids.append(unicode(external_id))
+                    app = apps_by_repo_id[repo_app.repository, external_id]
+                    _update_existing_app(cached_requests, repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app['app_thumb'], description = app['description'], app_image = app['app_image'], app_link = app['app_golabz_page'], force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']), repository = app['repository'])
+            except SQLAlchemyError:
+                # One error in one application shouldn't stop the process
+                logger.warning("Error updating or deleting app %s" % app['app_url'], exc_info = True)
+                continue
+
+    # 
+    # Add new apps
+    # 
+    for app in apps:
+        if unicode(app['id']) not in stored_ids:
+            try:
+                # Double-check
+                repo_app = db.session.query(RepositoryApp).filter_by(repository = app['repository'], external_id = app['id']).first()
+                if repo_app is None:
+                    _add_new_app(cached_requests, repository = app['repository'], 
+                                app_url = app['app_url'], title = app['title'], external_id = app['id'],
+                                app_thumb = app['app_thumb'], description = app['description'],
+                                app_image = app['app_image'], app_link = app['app_golabz_page'],
+                                force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']))
+            except SQLAlchemyError:
+                logger.warning("Error adding app %s" % app['app_url'], exc_info = True)
+                continue
+   
+        # Anyway...
+        synced_apps.append(app['app_url'])
+
+
+def _get_golab_translations(cached_requests):
     try:
         apps_response = cached_requests.get("http://www.golabz.eu/rest/apps/retrieve.json")
         apps_response.raise_for_status()
@@ -154,84 +251,13 @@ def _sync_golab_translations(cached_requests, force_reload, single_app_url = Non
             labs_adapted.append(current_lab)
 
     apps.extend(labs_adapted)
-
-    apps_by_url = {}
     for app in apps:
-        apps_by_url[app['app_url']] = app
+        app['repository'] = GOLAB_REPO
 
-    apps_by_id = {}
-    for app in apps:
-        apps_by_id[unicode(app['id'])] = app
+    return apps
+    
 
-    stored_apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).all()
-
-    tasks_list = []
-    tasks_by_app_url = {}
-    for app_url in apps_by_url:
-        if single_app_url is not None and app_url != single_app_url:
-            continue
-        task = MetadataTask(app_url, force_reload)
-        tasks_list.append(task)
-        tasks_by_app_url[app_url] = task
-        
-
-    run_in_parallel = RunInParallel(tasks_list)
-    run_in_parallel.run()
-
-    # 
-    # Update or delete existing apps
-    # 
-    stored_ids = []
-    for repo_app in stored_apps:
-        external_id = unicode(repo_app.external_id)
-        try:
-            if external_id not in apps_by_id:
-                if single_app_url is not None:
-                    # In the single_app_url, do not do these things
-                    continue
-
-                # Delete old apps (translations are kept, and the app is kept, but not listed in the repository apps)
-                db.session.delete(repo_app)
-                try:
-                    db.session.commit()
-                except:
-                    db.session.rollback()
-                    raise
-            else:
-                if single_app_url is not None and single_app_url != app['app_url']:
-                    continue
-                stored_ids.append(unicode(external_id))
-                app = apps_by_id[external_id]
-                _update_existing_app(cached_requests, repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app['app_thumb'], description = app['description'], app_image = app['app_image'], app_link = app['app_golabz_page'], force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']))
-        except SQLAlchemyError:
-            # One error in one application shouldn't stop the process
-            logger.warning("Error updating or deleting app %s" % app['app_url'], exc_info = True)
-            continue
-
-    #
-    # Add new apps
-    #
-    for app in apps:
-        if single_app_url is not None and single_app_url != app['app_url']:
-            continue
-
-        if unicode(app['id']) not in stored_ids:
-            try:
-                # Double-check
-                repo_app = db.session.query(RepositoryApp).filter_by(repository = GOLAB_REPO, external_id = app['id']).first()
-                if repo_app is None:
-                    _add_new_app(cached_requests, repository = GOLAB_REPO, 
-                                app_url = app['app_url'], title = app['title'], external_id = app['id'],
-                                app_thumb = app['app_thumb'], description = app['description'],
-                                app_image = app['app_image'], app_link = app['app_golabz_page'],
-                                force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']))
-            except SQLAlchemyError:
-                logger.warning("Error adding app %s" % app['app_url'], exc_info = True)
-                continue
-
-    return list(apps_by_url)
-
-def _update_existing_app(cached_requests, repo_app, app_url, title, app_thumb, description, app_image, app_link, force_reload, task):
+def _update_existing_app(cached_requests, repo_app, app_url, title, app_thumb, description, app_image, app_link, force_reload, task, repository = None):
     if repo_app.name != title:
         repo_app.name = title
     if repo_app.app_thumb != app_thumb:
@@ -242,6 +268,8 @@ def _update_existing_app(cached_requests, repo_app, app_url, title, app_thumb, d
         repo_app.app_link = app_link
     if repo_app.app_image != app_image:
         repo_app.app_image = app_image
+    if repository is not None and repo_app.repository != repository:
+        repo_app.repository = repository
 
     _add_or_update_app(cached_requests, app_url, force_reload, repo_app, task)
 
@@ -255,30 +283,29 @@ def _add_new_app(cached_requests, repository, app_url, title, external_id, app_t
 
     _add_or_update_app(cached_requests, app_url, force_reload, repo_app, task)
 
-def _sync_regular_apps(cached_requests, already_synchronized_app_urls, force_reload, single_app_url = None):
-    app_urls = db.session.query(TranslatedApp.url).all()
+def _sync_regular_apps(cached_requests, synced_apps, force_reload, single_app_url = None):
+    app_urls = [ app_url for app_url, in db.session.query(TranslatedApp.url).all() ]
     if single_app_url is not None:
-        found = False
-        for app_url, in app_urls:
-            if app_url == single_app_url:
-                found = True
-                break
-        if found:
-            app_urls = [ (single_app_url,) ]
+        if single_app_url in app_urls and single_app_url not in synced_apps:
+            app_urls = [ single_app_url ]
         else:
-            app_urls = []
+            return
+
     tasks_list = []
     tasks_by_app_url = {}
-    for app_url, in app_urls:
-        if app_url not in already_synchronized_app_urls:
+    for app_url in app_urls:
+        if app_url not in synced_apps:
             task = MetadataTask(app_url, force_reload)
             tasks_list.append(task)
             tasks_by_app_url[app_url] = task
 
+    if len(tasks_list) == 0:
+        return
+
     RunInParallel(tasks_list).run()
 
-    for app_url, in app_urls:
-        if app_url not in already_synchronized_app_urls:
+    for app_url in app_urls:
+        if app_url not in synced_apps:
             _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, task = tasks_by_app_url[app_url])
 
 def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, task = None):
