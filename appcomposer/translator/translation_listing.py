@@ -7,6 +7,7 @@ import threading
 import goslate
 import requests
 
+from flask import url_for
 from sqlalchemy.exc import SQLAlchemyError
 from celery.utils.log import get_task_logger
 
@@ -21,6 +22,18 @@ from appcomposer.translator.ops import add_full_translation_to_app, retrieve_tra
 
 GOLAB_REPO = u'golabz'
 EXTERNAL_REPO = u'external'
+
+GRAASP = {
+    'title': 'Graasp',
+    'id': '-1',
+    'description': "Graasp is the ILS platform",
+    'app_url': "http://composer.golabz.eu/graasp_i18n/",
+    'app_type': "OpenSocial gadget",
+    'app_image': "http://composer.golabz.eu/static/img/graasp-logo.png",
+    'app_thumb': "http://composer.golabz.eu/static/img/graasp-logo-thumb.png",
+    'app_golabz_page': "http://graasp.eu/",
+}
+OTHER_APPS = app.config.get('OTHER_APPS', [ GRAASP ])
 
 DEBUG = True
 
