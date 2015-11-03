@@ -44,6 +44,24 @@ BASIC_MESSAGE_BUNDLE_SPANISH = """
 </messagebundle>
 """
 
+NON_AUTOMATIC_BASIC_MESSAGE_BUNDLE_ENGLISH = """
+<messagebundle automatic="false">
+  <msg name="message1_{n}">NonAutomaticMessage1_{n}</msg>
+  <msg name="message2_{n}">NonAutomaticMessage2_{n}</msg>
+  <msg name="message3_{n}">NonAutomaticMessage3_{n}</msg>
+  <msg name="message4_{n}">NonAutomaticMessage4_{n}</msg>
+</messagebundle>
+"""
+
+# Message 4 is missing
+NON_AUTOMATIC_BASIC_MESSAGE_BUNDLE_SPANISH = """
+<messagebundle>
+  <msg name="message1_{n}">NonAutomaticMensaje1_{n}</msg>
+  <msg name="message2_{n}">NonAutomaticMensaje2_{n}</msg>
+  <msg name="message3_{n}">NonAutomaticMensaje3_{n}</msg>
+</messagebundle>
+"""
+
 GADGETS = []
 
 #############################################################
@@ -75,6 +93,17 @@ GADGETS.append({
     'http://url1/languages/en_ALL.xml' : BASIC_MESSAGE_BUNDLE_ENGLISH.format(n=1),
     'http://url1/languages/es_ALL.xml' : BASIC_MESSAGE_BUNDLE_SPANISH.format(n=1),
 })
+
+GADGETS.append({
+    'http://url2/gadget.xml' : BASIC_GADGET_XML.format(language="""
+                <Locale messages="languages/en_ALL.xml" />
+                <Locale lang="en" messages="languages/en_ALL.xml" />
+                <Locale lang="es" messages="languages/es_ALL.xml" />
+            """),
+    'http://url2/languages/en_ALL.xml' : NON_AUTOMATIC_BASIC_MESSAGE_BUNDLE_ENGLISH.format(n=2),
+    'http://url2/languages/es_ALL.xml' : NON_AUTOMATIC_BASIC_MESSAGE_BUNDLE_SPANISH.format(n=2),
+})
+
 
 #############################################################
 # 
