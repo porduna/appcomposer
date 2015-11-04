@@ -78,6 +78,10 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
 
         $scope.currentCategory = category;
 
+        // Clear the current selection
+        $scope.selected = {};
+        $scope.selected.app = undefined;
+
         angular.forEach($scope.all_apps, function(val, ind) {
             if (val.id == $scope.currentCategory) {
                 $scope.apps = val.items;
