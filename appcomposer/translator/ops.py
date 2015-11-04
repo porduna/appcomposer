@@ -402,7 +402,7 @@ def register_app_url(app_url, translation_url, metadata):
     else:
         # Delay the synchronization process
         from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper
-        synchronize_apps_no_cache_wrapper.delay(source="register app", must_sync = False)
+        synchronize_apps_no_cache_wrapper.delay(source="register app", single_app_url = app_url, must_sync = False)
 
 def retrieve_stored(translation_url, language, target):
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
