@@ -556,6 +556,7 @@ class TranslationSyncLog(db.Model):
     source = db.Column(db.Unicode(200))
     cached = db.Column(db.Boolean)
     single_url = db.Column(db.Unicode(255))
+    number_apps = db.Column(db.Integer)
 
     def __init__(self, start_datetime, end_datetime, source, cached, single_url):
         self.start_datetime = start_datetime

@@ -667,11 +667,12 @@ def start_synchronization(source, cached, single_app_url):
     print "Starting synchronization %s" % sync_log.id
     return sync_log.id
 
-def end_synchronization(sync_id):
+def end_synchronization(sync_id, number):
     now = datetime.datetime.utcnow()
     sync_log = db.session.query(TranslationSyncLog).filter_by(id = sync_id).first()
     if sync_log is not None:
         sync_log.end_datetime = now
+        sync_log.number_apps = number
         print "Synchronization %s finished" % sync_log.id
         try:
             db.session.commit()
@@ -689,6 +690,7 @@ def get_latest_synchronizations():
             'source' : sync.source,
             'cached' : sync.cached,
             'single_url' : sync.single_url,
+            'number' : sync.number_apps,
         } for sync in latest_syncs
     ]
 

@@ -39,7 +39,7 @@
                     <td>{{ '%i' % (latest_sync['end'] - latest_sync['start']).total_seconds()}}</td>
                     {% endif %}
                     <td>{% if latest_sync['cached'] %}<i class="glyphicon glyphicon-ok"></i>{% else %}<i class="glyphicon glyphicon-remove"></i>{% endif %}</td>
-                    <td>{% if latest_sync['single_url'] %}<a href="{{ latest_sync['single_url'] }}">Single URL</a>{% else %}All{% endif %}</td>
+                    <td>{% if latest_sync['single_url'] %}<a href="{{ latest_sync['single_url'] }}">Single URL</a>{% else %}{% if latest_sync['number'] %}{{ latest_sync['number'] }} apps{% else %}All{% endif %}{% endif %}</td>
                 </tr>
             {% endfor %}
         </tbody>
