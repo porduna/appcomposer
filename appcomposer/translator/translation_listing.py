@@ -41,29 +41,29 @@ DEBUG = True
 
 logger = get_task_logger(__name__)
 
-def synchronize_apps_cache(single_app_url = None):
+def synchronize_apps_cache(source, single_app_url = None):
     """Force obtaining the results and checking everything again to avoid inconsistences. 
     This can safely be run every few minutes, since most applications will be in the cache."""
-    sync_id = start_synchronization()
+    sync_id = start_synchronization(source = source, cached = True, single_app_url = single_app_url)
     try:
         cached_requests = trutils.get_cached_session()
         synced_apps = []
         golab_apps = _get_golab_translations(cached_requests)
-        _sync_translations(cached_requests, synced_apps, golab_apps, force_reload = False, single_app_url = single_app_url)
-        _sync_translations(cached_requests, synced_apps, OTHER_APPS, force_reload = False, single_app_url = single_app_url)
+        _sync_translations(cached_requests, "Go-Lab apps", synced_apps, golab_apps, force_reload = False, single_app_url = single_app_url)
+        _sync_translations(cached_requests, "Other apps", synced_apps, OTHER_APPS, force_reload = False, single_app_url = single_app_url)
         _sync_regular_apps(cached_requests, synced_apps, force_reload = False, single_app_url = single_app_url)
     finally:
         end_synchronization(sync_id)
     
-def synchronize_apps_no_cache(single_app_url = None):
+def synchronize_apps_no_cache(source, single_app_url = None):
     """Force obtaining the results and checking everything again to avoid inconsistences. This should be run once a day."""
-    sync_id = start_synchronization()
+    sync_id = start_synchronization(source = source, cached = False, single_app_url = single_app_url)
     try:
         cached_requests = trutils.get_cached_session()
         synced_apps = []
         golab_apps = _get_golab_translations(cached_requests)
-        _sync_translations(cached_requests, synced_apps, golab_apps, force_reload = True, single_app_url = single_app_url)
-        _sync_translations(cached_requests, synced_apps, OTHER_APPS, force_reload = True, single_app_url = single_app_url)
+        _sync_translations(cached_requests, "Go-Lab apps", synced_apps, golab_apps, force_reload = True, single_app_url = single_app_url)
+        _sync_translations(cached_requests, "Other apps", synced_apps, OTHER_APPS, force_reload = True, single_app_url = single_app_url)
         _sync_regular_apps(cached_requests, synced_apps, force_reload = True, single_app_url = single_app_url)
     finally:
         end_synchronization(sync_id)
@@ -89,7 +89,8 @@ class MetadataTask(threading.Thread):
         self.finished = True
 
 class RunInParallel(object):
-    def __init__(self, tasks, thread_number = 15):
+    def __init__(self, tag, tasks, thread_number = 15):
+        self.tag = tag
         self.tasks = tasks
         self.thread_number = thread_number
 
@@ -127,9 +128,9 @@ class RunInParallel(object):
         for task in self.tasks:
             task.join()
 
-        print "All apps downloaded"
+        print "All {0} apps of {1} downloaded".format(len(self.tasks), self.tag)
 
-def _sync_translations(cached_requests, synced_apps, apps_to_process, force_reload, single_app_url = None):
+def _sync_translations(cached_requests, tag, synced_apps, apps_to_process, force_reload, single_app_url = None):
     if single_app_url is not None:
         app_found = None
         for app in apps_to_process:
@@ -168,7 +169,7 @@ def _sync_translations(cached_requests, synced_apps, apps_to_process, force_relo
         tasks_list.append(task)
         tasks_by_app_url[app_url] = task
 
-    run_in_parallel = RunInParallel(tasks_list)
+    run_in_parallel = RunInParallel(tag, tasks_list)
     run_in_parallel.run()
 
 
@@ -302,7 +303,7 @@ def _sync_regular_apps(cached_requests, synced_apps, force_reload, single_app_ur
     if len(tasks_list) == 0:
         return
 
-    RunInParallel(tasks_list).run()
+    RunInParallel("Regular apps", tasks_list).run()
 
     for app_url in app_urls:
         if app_url not in synced_apps:

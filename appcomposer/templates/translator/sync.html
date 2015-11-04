@@ -17,15 +17,19 @@
         <thead>
             <tr>
                 <th>Sync id</th>
+                <th>Reason</th>
                 <th>Start date</th>
                 <th>End date</th>
                 <th>Duration (seconds)</th>
+                <th>Cached</th>
+                <th>What</th>
             </tr>
         </thead>
         <tbody>
             {% for latest_sync in latest_synchronizations %}
                 <tr>
                     <td>{{ latest_sync['id'] }}</td>
+                    <td>{{ latest_sync['source'] or 'unknown' }}</td>
                     <td><span data-date="{{ latest_sync['start'].strftime(FORMAT) }}"></span></td>
                     {% if latest_sync['end'] is none %}
                     <td>Not finished</td>
@@ -34,6 +38,8 @@
                     <td><span data-date="{{ latest_sync['end'].strftime(FORMAT) }}"></span></td>
                     <td>{{ '%i' % (latest_sync['end'] - latest_sync['start']).total_seconds()}}</td>
                     {% endif %}
+                    <td>{% if latest_sync['cached'] %}<i class="glyphicon glyphicon-ok"></i>{% else %}<i class="glyphicon glyphicon-remove"></i>{% endif %}</td>
+                    <td>{% if latest_sync['single_url'] %}<a href="{{ latest_sync['single_url'] }}">Single URL</a>{% else %}All{% endif %}</td>
                 </tr>
             {% endfor %}
         </tbody>

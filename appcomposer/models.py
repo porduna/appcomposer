@@ -553,10 +553,16 @@ class TranslationSyncLog(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     start_datetime = db.Column(db.DateTime, index = True)
     end_datetime = db.Column(db.DateTime, index = True)
+    source = db.Column(db.Unicode(200))
+    cached = db.Column(db.Boolean)
+    single_url = db.Column(db.Unicode(255))
 
-    def __init__(self, start_datetime, end_datetime):
+    def __init__(self, start_datetime, end_datetime, source, cached, single_url):
         self.start_datetime = start_datetime
         self.end_datetime = end_datetime
+        self.source = source
+        self.cached = cached
+        self.single_url = single_url
 
 class TranslationCurrentActiveUser(db.Model):
     __tablename__ = 'TranslationCurrentActiveUsers'

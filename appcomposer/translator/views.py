@@ -249,7 +249,7 @@ def bundle_update(language, target):
 
     add_full_translation_to_app(user, app_url, translation_url, metadata, language, target, translated_messages, original_messages, from_developer = False)
     from appcomposer.translator.tasks import synchronize_apps_cache_wrapper
-    synchronize_apps_cache_wrapper.delay(app_url)
+    synchronize_apps_cache_wrapper.delay("update", app_url)
 
 
     return jsonify(**{"result": "success"})
@@ -481,7 +481,7 @@ def translation_upload():
             target = form.target.data
             add_full_translation_to_app(current_golab_user(), app_url, translation_url, metadata, language, target, translated_messages, original_messages, from_developer = False)
             from appcomposer.translator.tasks import synchronize_apps_cache_wrapper
-            synchronize_apps_cache_wrapper.delay()
+            synchronize_apps_cache_wrapper.delay("upload")
             flash("Contents successfully added")
 
     return render_template('translator/translations_upload.html', form=form)
@@ -527,7 +527,7 @@ def sync_translations():
 
     if request.method == 'POST':
         from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper
-        synchronize_apps_no_cache_wrapper.delay()
+        synchronize_apps_no_cache_wrapper.delay("manual sync request")
         submitted = True
         return redirect(url_for('.sync_translations', since = latest_id))
     else:
@@ -543,8 +543,8 @@ def sync_debug():
 
     now = datetime.datetime.utcnow()
     t0 = time.time()
-    from appcomposer.translator.translation_listing import synchronize_apps_no_cache, synchronize_apps_cache
-    synchronize_apps_no_cache()
+    from appcomposer.translator.translation_listing import synchronize_apps_no_cache
+    synchronize_apps_no_cache("sync debug")
     tf = time.time()
     return "<html><body>synchronization process finished (%.2f seconds): %s </body></html>" % (tf - t0, now)
 
