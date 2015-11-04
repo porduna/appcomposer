@@ -35,8 +35,8 @@ function acAppurl($location, $log) {
                 }
             } // !onEnter
 
-            function isValid() {
-                var valid = scope.appurlForm.appurl.$valid;
+            function isValid(form) {
+                var valid = form.appurl.$valid;
                 return valid;
             } // !isValid
 
