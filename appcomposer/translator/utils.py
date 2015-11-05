@@ -152,10 +152,10 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
     
     # XXX TODO: Remove this list
     if absolute_translation_url.startswith('http://go-lab.gw.utwente.nl/production/'):
-        translation_messages_xml = translation_messages_xml.replace("<messagebundle>", '<messagebundle mails="pablo.orduna@deusto.es" namespace="http://go-lab.gw.utwente.nl/production/">')
+        translation_messages_xml = translation_messages_xml.replace("<messagebundle>", '<messagebundle mails="pablo.orduna@deusto.es">')
 
     try:
-        messages, metadata = extract_messages_from_translation(translation_messages_xml)
+        messages, metadata = extract_messages_from_translation(absolute_translation_url, translation_messages_xml)
     except TranslatorError as e:
         logging.warning("Could not load XML contents from %s Reason: %s" % (absolute_translation_url, e), exc_info = True)
         raise TranslatorError("Could not load XML in %s" % absolute_translation_url)
@@ -274,12 +274,13 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
         'default_metadata' : default_metadata,
     }
 
-def extract_messages_from_translation(xml_contents):
+def extract_messages_from_translation(messages_absolute_url, xml_contents):
     contents = fromstring(xml_contents)
     messages = {}
-    default_namespace = None
     if 'namespace' in contents.attrib:
         default_namespace = contents.attrib['namespace']
+    else:
+        default_namespace = None
 
     if 'mails' in contents.attrib:
         mails = [ mail.strip() for mail in contents.attrib['mails'].split(',') ]
@@ -306,10 +307,16 @@ def extract_messages_from_translation(xml_contents):
 
         if not category and namespace:
             category = namespace
-            # TODO: remove this trick
-            if namespace == 'http://go-lab.gw.utwente.nl/production/':
-                if '.' in name:
-                    category = name.split('.')[0]
+
+        same_tool = True
+        if 'toolId' in xml_msg.attrib:
+            tool_id = xml_msg.attrib['toolId']
+            if tool_id:
+                basename = messages_absolute_url.rsplit('/', 1)[1]
+                if not basename.startswith(tool_id):
+                    same_tool = False
+        else:
+            tool_id = None
 
         # Some people use things like <msg name='foo'>Press <i class=''></i> to ...</msg>
         # This is invalid XML, but we want to support it too. So:
@@ -333,6 +340,8 @@ def extract_messages_from_translation(xml_contents):
             'category' : category,
             'namespace' : namespace,
             'position' : pos,
+            'same_tool' : same_tool,
+            'tool_id' : tool_id,
         }
     metadata = {
         'mails' : mails,

@@ -470,7 +470,7 @@ def translation_upload():
         if isinstance(xml_contents, str):
             xml_contents = unicode(xml_contents, 'utf8')
         try:
-            translated_messages, metadata = extract_messages_from_translation(xml_contents)
+            translated_messages, metadata = extract_messages_from_translation(translation_url, xml_contents)
         except Exception as e:
             traceback.print_exc()
             form.opensocial_xml.errors = [unicode(e)]
