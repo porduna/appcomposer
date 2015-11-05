@@ -34,8 +34,22 @@ GRAASP = {
     'app_golabz_page': "http://graasp.eu/",
     'repository': "Go-Lab ecosystem",
 }
+
+TWENTE_COMMONS = {
+    'title': 'Twente commons',
+    'id': '1',
+    'description': "Many tools developed by UTwente share many commons. For your convenience, these terms are centralized in a single translation here.",
+    'app_url': "http://composer.golabz.eu/twente_commons/",
+    'app_type': "OpenSocial gadget",
+    'app_image': "http://composer.golabz.eu/static/img/twente.jpg",
+    'app_thumb': "http://composer.golabz.eu/static/img/twente-thumb.jpg",
+    'app_golabz_page': "http://go-lab.gw.utwente.nl/production/",
+    'repository': "Go-Lab ecosystem",
+}
+
 OTHER_APPS = app.config.get('OTHER_APPS', [])
 OTHER_APPS.append(GRAASP)
+OTHER_APPS.append(TWENTE_COMMONS)
 
 DEBUG = True
 
