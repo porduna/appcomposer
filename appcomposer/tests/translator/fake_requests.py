@@ -66,28 +66,23 @@ NON_AUTOMATIC_BASIC_MESSAGE_BUNDLE_SPANISH = """
 
 TOOL_ID_MESSAGE_BUNDLE_ENGLISH = """
 <messagebundle>
-  <msg toolId='common' name="message1_{n}">Message1_{n}</msg>
-  <msg toolId='common' name="message2_{n}">Message2_{n}</msg>
-  <msg name="message3_{n}">Message3_{n}</msg>
-  <msg name="message4_{n}">Message4_{n}</msg>
+  <msg toolId="common" name="message1_{n}">ToolIdMessage1_{n}</msg>
+  <msg toolId="common" name="message2_{n}">ToolIdMessage2_{n}</msg>
+  <msg toolId="does.not.exist" name="message3_{n}">ToolIdMessage3_{n}</msg>
+  <msg toolId="tool" name="message4_{n}">ToolIdMessage4_{n}</msg>
+  <msg name="message5_{n}">ToolIdMessage5_{n}</msg>
+  <msg name="message6_{n}">ToolIdMessage6_{n}</msg>
 </messagebundle>
 """
 
+# Message 6 is missing
 TOOL_ID_MESSAGE_BUNDLE_SPANISH = """
 <messagebundle>
-  <msg toolId='common' name="message1_{n}">ToolIdMensaje1_{n}</msg>
-  <msg toolId='common' name="message2_{n}">ToolIdMensaje2_{n}</msg>
+  <msg name="message1_{n}">ToolIdMensaje1_{n}</msg>
+  <msg name="message2_{n}">ToolIdMensaje2_{n}</msg>
   <msg name="message3_{n}">ToolIdMensaje3_{n}</msg>
   <msg name="message4_{n}">ToolIdMensaje4_{n}</msg>
-</messagebundle>
-"""
-
-# Message 4 is missing
-BASIC_MESSAGE_BUNDLE_SPANISH = """
-<messagebundle>
-  <msg name="message1_{n}">Mensaje1_{n}</msg>
-  <msg name="message2_{n}">Mensaje2_{n}</msg>
-  <msg name="message3_{n}">Mensaje3_{n}</msg>
+  <msg name="message5_{n}">ToolIdMensaje5_{n}</msg>
 </messagebundle>
 """
 
@@ -137,11 +132,11 @@ GADGETS.append({
 GADGETS.append({
     'http://url3/gadget.xml' : BASIC_GADGET_XML.format(language="""
                 <Locale messages="languages/en_ALL.xml" />
-                <Locale lang="en" messages="languages/en_ALL.xml" />
-                <Locale lang="es" messages="languages/es_ALL.xml" />
+                <Locale lang="en" messages="languages/tool_en_ALL.xml" />
+                <Locale lang="es" messages="languages/tool_es_ALL.xml" />
             """),
-    'http://url3/languages/en_ALL.xml' : TOOL_ID_MESSAGE_BUNDLE_ENGLISH.format(n=2),
-    'http://url3/languages/es_ALL.xml' : TOOL_ID_MESSAGE_BUNDLE_SPANISH.format(n=2),
+    'http://url3/languages/tool_en_ALL.xml' : TOOL_ID_MESSAGE_BUNDLE_ENGLISH.format(n=2),
+    'http://url3/languages/tool_es_ALL.xml' : TOOL_ID_MESSAGE_BUNDLE_SPANISH.format(n=2),
 })
 
 
