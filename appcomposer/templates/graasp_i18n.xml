@@ -1,5 +1,5 @@
 <Module>
- <ModulePrefs title="Graasp" height="720">
+ <ModulePrefs title="{{ title }}" height="720">
     <Require feature="osapi" />
 
     <Locale messages="{{ url_for('.locale', language='en', _external = True) }}"/>

@@ -3,20 +3,23 @@ import xml.etree.ElementTree as ET
 from collections import OrderedDict
 
 from flask import Blueprint, render_template, make_response
-from appcomposer.translator.utils import get_cached_session, indent
+from appcomposer.translator.utils import get_cached_session, indent, get_text_from_response
 
 twente_commons_blueprint = Blueprint('twente_commons', __name__)
 
 def get_languages():
     requests = get_cached_session()
-    return ['en']
+    languages = []
+    for line in requests.get("http://go-lab.gw.utwente.nl/production/commons/languages/list.txt").text.splitlines():
+        languages.append(line.split("_")[1])
+    return languages
 
 @twente_commons_blueprint.route('/')
 @twente_commons_blueprint.route('/app.xml')
 def index():
     requests = get_cached_session()
     languages = get_languages()
-    response = make_response(render_template('graasp_i18n.xml', languages = languages))
+    response = make_response(render_template('graasp_i18n.xml', languages = languages, title = "Twente commons"))
     response.content_type = 'application/xml'
     return response
 
@@ -48,13 +51,15 @@ def messages_to_xml(messages):
     return xml_string
 
 
-@twente_commons_blueprint.route('/locales/twente_commons_<language>_ALL.xml')
+@twente_commons_blueprint.route('/locales/common_<language>_ALL.xml')
 def locale(language):
     requests = get_cached_session()
-    # TODO: For now
+    if language not in get_languages():
+        return "Language not found", 404
+
     # xml_response = requests.get('http://go-lab.gw.utwente.nl/production/commons/commons_en_ALL.xml')
-    xml_response = requests.get('http://go-lab.gw.utwente.nl/production/questioning/build/languages/common_en_ALL.xml')
-    response = make_response(xml_response.text)
+    xml_response = requests.get('http://go-lab.gw.utwente.nl/production/commons/languages/common_{0}_ALL.xml'.format(language))
+    response = make_response(get_text_from_response(xml_response))
     response.content_type = 'application/xml'
     return response
 

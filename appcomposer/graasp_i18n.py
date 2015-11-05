@@ -36,7 +36,7 @@ def get_contents(lang):
 def index():
     requests = get_cached_session()
     languages = get_languages()
-    response = make_response(render_template('graasp_i18n.xml', languages = languages))
+    response = make_response(render_template('graasp_i18n.xml', languages = languages, title = "Graasp"))
     response.content_type = 'application/xml'
     return response
 

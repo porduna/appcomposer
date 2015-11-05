@@ -12,6 +12,7 @@ def _response(contents):
     r._content = contents
     return r
 
+TWENTE_LIST = """common_en_ALL.xml\r\ncommon_es_ALL.xml\r\n"""
 
 
 BASIC_GADGET_XML = """<?xml version="1.0" encoding="UTF-8" ?>
@@ -164,6 +165,7 @@ SIDE_EFFECT_STRINGS = {
     "http://graasp.eu/users/me": json.dumps(dict(username="Test User", email="appcomposer@go-lab-project.eu")),
     "http://www.golabz.eu/rest/apps/retrieve.json": json.dumps(APPS),
     "http://www.golabz.eu/rest/labs/retrieve.json": json.dumps(LABS),
+    "http://go-lab.gw.utwente.nl/production/commons/languages/list.txt": TWENTE_LIST,
 }
 
 for gadget in GADGETS:

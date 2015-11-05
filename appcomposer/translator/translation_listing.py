@@ -263,7 +263,7 @@ def _get_golab_translations(cached_requests):
             current_lab = current_lab.copy()
             current_lab['id'] = '%s-%s' % (lab_id, pos)
             current_lab['app_url'] = internal_lab['app_url']
-            current_lab['app_title'] = internal_lab['app_title']
+            current_lab['title'] = u"{0} - {1}".format(current_lab['title'], internal_lab['app_title'])
             current_lab['app_type'] = internal_lab['app_type']
             labs_adapted.append(current_lab)
 
