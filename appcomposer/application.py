@@ -223,6 +223,9 @@ app.register_blueprint(translator_blueprint, url_prefix='/translator')
 from .graasp_i18n import graasp_i18n_blueprint
 app.register_blueprint(graasp_i18n_blueprint, url_prefix='/graasp_i18n')
 
+from .twente_commons import twente_commons_blueprint
+app.register_blueprint(twente_commons_blueprint, url_prefix='/twente_commons')
+
 from .embed import embed_blueprint
 app.register_blueprint(embed_blueprint, url_prefix='/embed')
 
