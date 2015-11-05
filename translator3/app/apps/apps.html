@@ -59,7 +59,15 @@
                 </ul>
             </div>
 
-            <table datatable="ng" dt-options="dt.options" dt-column-defs="dt.columnDefs" dt-instance="dt.instance" class="table-disable-hover row-border hover">
+            <!-- WARNING: THE FOLLOWING WRAPPER DIV IS REQUIRED -->
+            <!-- It is a workaround around what seems to be an angular-datatables bug: under some circumstances (possibly
+            related to slow loading) a "hideLoadingAndRenderDatatable method will be called, which does a $(table).next().remove().
+            This is probably supposed to delete some kind of 'loading' message, but apparently sometimes that message doesn't
+            exist', and the actual $next element is deleted. By wrapping the table, we ensure there is no next() element, and
+            fortunately jquery doesn't mind operations on empty sets. -->
+            <div>
+            <table datatable="ng" dt-options="vm.dt.options" dt-column-defs="vm.dt.columnDefs" dt-instance="vm.dt.instance"
+                   class="table-disable-hover row-border hover">
                 <thead>
                 <tr>
                     <th ac-translate-me>Title</th>
@@ -98,7 +106,7 @@
                                     ng-class="{'ac-badge-original': lang.original, 'ac-badge-notoriginal': !lang.original,
                                     'ac-badge-complete': lang.progress == 1}">
 
-                                    <span ng-if="lang.original" class="fa fa-shield ac-badge-icon-locked"/> {{ langname }}
+                                    <span ng-show="lang.original" class="fa fa-shield ac-badge-icon-locked"></span> {{ langname }}
 
                                 </span>
                             </a>
@@ -107,6 +115,8 @@
                     </tr>
                 </tbody>
             </table>
+            </div>
+
 
             <ac-appurl appurl="appurl"></ac-appurl>
         </div> <!-- /loaded content -->
