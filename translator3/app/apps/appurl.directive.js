@@ -36,6 +36,8 @@ function acAppurl($location, $log) {
             } // !onEnter
 
             function isValid(form) {
+                if(form == undefined)
+                    return false;
                 var valid = form.appurl.$valid;
                 return valid;
             } // !isValid

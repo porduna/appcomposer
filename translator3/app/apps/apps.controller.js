@@ -15,14 +15,14 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
     $scope.selected = {};
     $scope.selected.app = undefined; // To store the selected app.
 
-    $scope.dt = {};
-    $scope.dt.instance = {};
+    vm.dt = {};
+    vm.dt.instance = {};
 
     $scope.status = {};
 
     $scope.currentCategory = "";
 
-    $scope.dt.options = DTOptionsBuilder.newOptions()
+    vm.dt.options = DTOptionsBuilder.newOptions()
         .withPaginationType('full_numbers')
         .withDisplayLength(10)
         .withOption("autoWidth", true)
@@ -43,7 +43,7 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
             }
         });
 
-    $scope.dt.columnDefs = [
+    vm.dt.columnDefs = [
         DTColumnDefBuilder.newColumnDef(0).notSortable().withOption("width", "30%"),
         DTColumnDefBuilder.newColumnDef(1).notSortable().withOption("width", "40%"),
         DTColumnDefBuilder.newColumnDef(2).notSortable()
@@ -173,7 +173,7 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
 
         // Hide the previous selection.
         if ($scope.selected.index !== undefined) {
-            $scope.dt.instance.DataTable.row($scope.selected.index).child().hide();
+            vm.dt.instance.DataTable.row($scope.selected.index).child().hide();
         }
 
         // If we have re-selected the current selection, it is no longer
@@ -187,8 +187,8 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
         $scope.selected.app = app;
         $scope.selected.index = index;
 
-        if ($scope.dt.instance.DataTable != undefined) {
-            var row = $scope.dt.instance.DataTable.row(index);
+        if (vm.dt.instance.DataTable != undefined) {
+            var row = vm.dt.instance.DataTable.row(index);
             var c = row.child($compile("<ac-app-details class='my-disabled-hover' app=selected.app></ac-app-details>")($scope));
             c.show();
         }
