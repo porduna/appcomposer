@@ -4,8 +4,29 @@ angular
 
 function TranslationsTabController($scope, $log) {
 
+    /////////////////
+    // SCOPE METHODS
+    /////////////////
+
     $scope.translatedPercent = translatedPercent;
     $scope.translatedPercentStr = translatedPercentStr;
+
+    // Just for testing. This must be removed.
+    $scope.testDependencies = [{
+        "title": "Twente Commons",
+        "link": "http://.../",
+        "percent": 85.9999
+    },
+    {
+        "title": "Twente Commons",
+        "link": "http://.../",
+        "percent": 85.9999
+    }];
+
+
+    ////////////////////
+    // IMPLEMENTATIONS
+    ////////////////////
 
 
     function translatedPercentStr(selected) {
@@ -13,7 +34,7 @@ function TranslationsTabController($scope, $log) {
             var data = $scope.appinfo.translations[selected].targets["ALL"];
             var ratio = data.translated / data.items;
             return "" + data.translated + " / " + data.items + " (" + (ratio * 100.0).toFixed(2) + "%)";
-        } catch(err) {
+        } catch (err) {
             return "N/A";
         }
     } // !translatedPercent
@@ -23,7 +44,7 @@ function TranslationsTabController($scope, $log) {
             var data = $scope.appinfo.translations[selected].targets["ALL"];
             var ratio = data.translated / data.items;
             return ratio;
-        } catch(err) {
+        } catch (err) {
             return undefined;
         }
     } // !translatedPercent
