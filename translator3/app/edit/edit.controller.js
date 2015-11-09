@@ -51,6 +51,8 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
     $scope.refreshPreview = refreshPreview;
     $scope.closePreview = closePreview;
 
+    debugger;
+
     /* EVENTS */
 
     // Event to go to the next item.
