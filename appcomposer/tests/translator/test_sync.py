@@ -1,6 +1,7 @@
 import json
 from flask import request
 from mock import patch
+import appcomposer.translator.translation_listing as trlisting
 from appcomposer.login import graasp_oauth_login_redirect
 from appcomposer.tests.translator.fake_requests import create_requests_mock
 from appcomposer.tests.utils import ComposerTest
@@ -10,14 +11,16 @@ from appcomposer.translator.mongodb_pusher import mongo_translation_urls, mongo_
 
 class TranslatorTest(ComposerTest):
     def setUp(self):
+        trlisting.DEBUG_VERBOSE = False
         super(TranslatorTest, self).setUp()
         mongo_translation_urls.remove()
         mongo_bundles.remove()
 
     def assertAppMongoDB(self, language, url, messages, messages_prefix = ''):
-        print '{0}_ALL_ALL::http://{1}/languages/{2}en_ALL.xml'.format(language, url, messages_prefix)
         resultUrl = mongo_translation_urls.find_one({'_id':'{0}_ALL_ALL::http://{1}/languages/{2}en_ALL.xml'.format(language, url, messages_prefix)})
-        resultApp = mongo_bundles.find_one({'_id':'{0}_ALL_ALL::http://{1}/gadget.xml'.format(language, url)})
+        resultApp = mongo_bundles.find_one({'_id':'{0}_ALL_ALL::http://{1}/{2}gadget.xml'.format(language, url, messages_prefix)})
+        self.assertIsNotNone(resultUrl)
+        self.assertIsNotNone(resultApp)
         self.assertEquals(resultUrl['data'], resultApp['data'])
         data = json.loads(resultUrl['data'])
         self.assertEqual(json.dumps(data), json.dumps(messages))
@@ -52,11 +55,13 @@ class TranslatorTest(ComposerTest):
 
         # Check API
         results = api_translate('{0}_ALL'.format(lang), 'ALL').json
+        self.assertIn('automatic', results)
         if automatic:
             self.assertTrue(results['automatic'])
         else:
             self.assertFalse(results['automatic'])
 
+        self.assertIn('preview', results)
         if preview:
             self.assertTrue(results['preview'])
         else:
@@ -112,30 +117,63 @@ class TranslatorTest(ComposerTest):
             'message4_2': dict(can_edit=True, from_default=False, source='NonAutomaticMessage4_2', target=None),
         })
 
-    def assertApp3(self):
+    def assertApp3before(self):
+        # url3 hosts 2 apps, with some shared terms.
+        # messages 1 and 2 are "common". message 3 is of a third tool. message 4 is of tool_. messages 5 and 6 are not of any tool (and therefore, they're of all)
+
+        # First we test the first app (tool_, so messages 4, 5 and 6 apply)
+
         self.assertAppMongoDB("en", "url3", self.build_dict(3, 6, "ToolIdMessage"), 'tool_')
         self.assertAppMongoDB("es", "url3", self.build_dict(3, 6, "ToolIdMensaje", "ToolIdMessage"), 'tool_')
 
         # Check API
-        self.assertApiTranslate('http://url3/gadget.xml', lang = 'en', automatic = False, preview = True, expected_messages = {
+        self.assertApiTranslate('http://url3/tool_gadget.xml', lang = 'en', automatic = False, preview = True, expected_messages = {
             'message4_3': dict(can_edit=False, from_default=False, source='ToolIdMessage4_3', target='ToolIdMessage4_3'),
             'message5_3': dict(can_edit=False, from_default=False, source='ToolIdMessage5_3', target='ToolIdMessage5_3'),
             'message6_3': dict(can_edit=False, from_default=False, source='ToolIdMessage6_3', target='ToolIdMessage6_3'),
         }, unexpected_messages = ('message1_3', 'message2_3', 'message3_3')) # unexpected: those in common or other tools
 
         # In Spanish, the sixth message is special
-        self.assertApiTranslate('http://url3/gadget.xml', lang = 'es', automatic = False, preview = True, expected_messages = {
+        self.assertApiTranslate('http://url3/tool_gadget.xml', lang = 'es', automatic = False, preview = True, expected_messages = {
             'message4_3': dict(can_edit=False, from_default=False, source='ToolIdMessage4_3', target='ToolIdMensaje4_3'),
             'message5_3': dict(can_edit=False, from_default=False, source='ToolIdMessage5_3', target='ToolIdMensaje5_3'),
             'message6_3': dict(can_edit=True,  from_default=True, source='ToolIdMessage6_3', target='ToolIdMessage6_3'),
         }, unexpected_messages = ('message1_3', 'message2_3', 'message3_3')) # unexpected: those in common or other tools
 
         # There is no translation to French, so it's automatic
-        self.assertApiTranslate('http://url3/gadget.xml', lang = 'fr', automatic = True, preview = True, expected_messages = {
+        self.assertApiTranslate('http://url3/tool_gadget.xml', lang = 'fr', automatic = True, preview = True, expected_messages = {
             'message4_3': dict(can_edit=True, from_default=False, source='ToolIdMessage4_3', target=None),
             'message5_3': dict(can_edit=True, from_default=False, source='ToolIdMessage5_3', target=None),
             'message6_3': dict(can_edit=True, from_default=False, source='ToolIdMessage6_3', target=None),
         }, unexpected_messages = ('message1_3', 'message2_3', 'message3_3')) # unexpected: those in common or other tools
+
+        # 
+        # Then we test the second one (common_, so messages 1, 2, 5 and 6 apply)
+        # 
+        self.assertAppMongoDB("en", "url3", self.build_dict(3, 6, "ToolIdMessage"), 'common_')
+        self.assertAppMongoDB("es", "url3", self.build_dict(3, 6, "ToolIdMensaje", "ToolIdMessage"), 'common_')
+
+        self.assertApiTranslate('http://url3/common_gadget.xml', lang = 'en', automatic = False, preview = True, expected_messages = {
+            'message1_3': dict(can_edit=False, from_default=False, source='ToolIdMessage1_3', target='ToolIdMessage1_3'),
+            'message2_3': dict(can_edit=False, from_default=False, source='ToolIdMessage2_3', target='ToolIdMessage2_3'),
+            'message5_3': dict(can_edit=False, from_default=False, source='ToolIdMessage5_3', target='ToolIdMessage5_3'),
+            'message6_3': dict(can_edit=False, from_default=False, source='ToolIdMessage6_3', target='ToolIdMessage6_3'),
+        }, unexpected_messages = ('message3_3', 'message4_3')) # unexpected: those in common or other tools
+
+        self.assertApiTranslate('http://url3/common_gadget.xml', lang = 'es', automatic = False, preview = True, expected_messages = {
+            'message1_3': dict(can_edit=False, from_default=False, source='ToolIdMessage1_3', target='ToolIdMensaje1_3'),
+            'message2_3': dict(can_edit=False, from_default=False, source='ToolIdMessage2_3', target='ToolIdMensaje2_3'),
+            'message5_3': dict(can_edit=False, from_default=False, source='ToolIdMessage5_3', target='ToolIdMensaje5_3'),
+            'message6_3': dict(can_edit=True,  from_default=True,  source='ToolIdMessage6_3', target='ToolIdMessage6_3'),
+        }, unexpected_messages = ('message3_3', 'message4_3')) # unexpected: those in common or other tools
+
+        self.assertApiTranslate('http://url3/common_gadget.xml', lang = 'fr', automatic = True, preview = True, expected_messages = {
+            'message1_3': dict(can_edit=True, from_default=False, source='ToolIdMessage1_3', target=None),
+            'message2_3': dict(can_edit=True, from_default=False, source='ToolIdMessage2_3', target=None),
+            'message5_3': dict(can_edit=True, from_default=False, source='ToolIdMessage5_3', target=None),
+            'message6_3': dict(can_edit=True, from_default=False, source='ToolIdMessage6_3', target=None),
+        }, unexpected_messages = ('message3_3', 'message4_3')) # unexpected: those in common or other tools
+
 
     def assertGraaspApp(self):
         resultEngUrl = mongo_translation_urls.find_one({'_id':'en_ALL_ALL::http://composer.golabz.eu/graasp_i18n/languages/en_ALL.xml'})
@@ -153,10 +191,11 @@ class TranslatorTest(ComposerTest):
         resultEngApp = mongo_bundles.find_one({'_id':'en_ALL_ALL::http://composer.golabz.eu/graasp_i18n/'})
         self.assertIsNone(resultEngApp)
 
-    def assertApps(self):
+    def assertApps(self, before = True):
         self.assertApp1()
         self.assertApp2()
-        self.assertApp3()
+        if before:
+            self.assertApp3before()
 
 
 class TestSync(TranslatorTest):

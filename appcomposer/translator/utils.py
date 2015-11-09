@@ -111,10 +111,15 @@ def get_text_from_response(response):
             response.encoding = 'utf8'
     return response.text
 
+def raise_for_status(url, response):
+    if response is None:
+        raise requests.RequestException("URL: {0}: Expected response, returned None (probably in tests)".format(url))
+    response.raise_for_status()
+
 def _extract_locales(app_url, cached_requests):
     try:
         response = cached_requests.get(app_url, timeout = 30)
-        response.raise_for_status()
+        raise_for_status(app_url, response)
         xml_contents = get_text_from_response(response)
     except requests.RequestException as e:
         logging.warning(u"Could not load this app URL (%s): %s" % (app_url, e), exc_info = True)
@@ -143,7 +148,7 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
 
     try:
         translation_messages_response = cached_requests.get(absolute_translation_url, timeout = 30)
-        translation_messages_response.raise_for_status()
+        raise_for_status(absolute_translation_url, translation_messages_response)
         if only_if_new and translation_messages_response.from_cache:
             return absolute_translation_url, None, {}
         translation_messages_xml = get_text_from_response(translation_messages_response)

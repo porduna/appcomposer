@@ -3,6 +3,7 @@ import time
 import json
 import datetime
 import threading
+import traceback
 
 import goslate
 import requests
@@ -52,6 +53,7 @@ OTHER_APPS.append(GRAASP)
 OTHER_APPS.append(TWENTE_COMMONS)
 
 DEBUG = True
+DEBUG_VERBOSE = False
 
 logger = get_task_logger(__name__)
 
@@ -100,6 +102,9 @@ class MetadataTask(threading.Thread):
             self.metadata_information = extract_metadata_information(self.app_url, self.cached_requests, self.force_reload)
         except Exception:
             logger.warning("Error extracting information from %s" % self.app_url, exc_info = True)
+            if DEBUG_VERBOSE:
+                print("Error extracting information from %s" % self.app_url)
+                traceback.print_exc()
             self.metadata_information = {}
             self.failing = True
         self.finished = True
@@ -162,7 +167,7 @@ def _sync_translations(cached_requests, tag, synced_apps, apps_to_process, force
 
     # Don't consider synced_apps
     apps = [ app for app in apps if app['app_url'] not in synced_apps ]
-    
+
     # 
     # Now apps is the list of applications (and single_app_url can be forgotten)
     # 
@@ -338,6 +343,9 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
         try:
             metadata_information = extract_metadata_information(app_url, cached_requests, force_reload)
         except Exception:
+            if DEBUG_VERBOSE:
+                print("Error on %s" % app_url)
+                traceback.print_exc()
             logger.warning("Error extracting information from %s" % app_url, exc_info = True)
             metadata_information = {}
             failing = True

@@ -110,6 +110,22 @@ for app_id in range(1, 10):
         "app_golabz_page": "http://www.golabz.eu/apps/page%s" % app_id
     })
 
+# With prefix
+for pos, prefix in enumerate(('common_', 'tool_')):
+    app_id = 3
+    APPS.append({
+        "title": "APP%s-%s" % (app_id, pos),
+        "id": "%s-%s" % (app_id, pos),
+        "author": "admin",
+        "description": "DESCRIPTION%s" % app_id,
+        "app_url": "http://url%s/%sgadget.xml" % (app_id, prefix),
+        "app_type": "OpenSocial gadget",
+        "app_image": "http://www.golabz.eu/logo%s.png" % app_id,
+        "app_thumb": "http://www.golabz.eu/logo_thumb%s.png" % app_id,
+        "app_golabz_page": "http://www.golabz.eu/apps/page%s-%s" % (app_id, pos)
+    })
+
+
 GADGETS.append({
     'http://url1/gadget.xml' : BASIC_GADGET_XML.format(language="""
                 <Locale messages="languages/en_ALL.xml" />
@@ -130,14 +146,26 @@ GADGETS.append({
     'http://url2/languages/es_ALL.xml' : NON_AUTOMATIC_BASIC_MESSAGE_BUNDLE_SPANISH.format(n=2),
 })
 
+# Two different apps with shared common code. File 1
 GADGETS.append({
-    'http://url3/gadget.xml' : BASIC_GADGET_XML.format(language="""
+    'http://url3/tool_gadget.xml' : BASIC_GADGET_XML.format(language="""
                 <Locale messages="languages/tool_en_ALL.xml" />
                 <Locale lang="en" messages="languages/tool_en_ALL.xml" />
                 <Locale lang="es" messages="languages/tool_es_ALL.xml" />
             """),
     'http://url3/languages/tool_en_ALL.xml' : TOOL_ID_MESSAGE_BUNDLE_ENGLISH.format(n=3),
     'http://url3/languages/tool_es_ALL.xml' : TOOL_ID_MESSAGE_BUNDLE_SPANISH.format(n=3),
+})
+
+# Two different apps with shared common code. File 2
+GADGETS.append({
+    'http://url3/common_gadget.xml' : BASIC_GADGET_XML.format(language="""
+                <Locale messages="languages/common_en_ALL.xml" />
+                <Locale lang="en" messages="languages/common_en_ALL.xml" />
+                <Locale lang="es" messages="languages/common_es_ALL.xml" />
+            """),
+    'http://url3/languages/common_en_ALL.xml' : TOOL_ID_MESSAGE_BUNDLE_ENGLISH.format(n=3),
+    'http://url3/languages/common_es_ALL.xml' : TOOL_ID_MESSAGE_BUNDLE_SPANISH.format(n=3),
 })
 
 
