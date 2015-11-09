@@ -26,6 +26,18 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
     $scope.preview = {};
     $scope.preview.shown = false;
 
+    // Just for testing. This must be removed.
+    $scope.testDependencies = [{
+        "title": "Twente Commons",
+        "link": "http://.../",
+        "percent": 85.9999
+    },
+    {
+        "title": "Twente Commons",
+        "link": "http://.../",
+        "percent": 85.9999
+    }];
+
     $scope.bundle = {};
     $scope.bundle.appurl = $scope.appurl;
     $scope.bundle.srclang = "all_ALL";

@@ -1,8 +1,8 @@
-
 <div class="well">
 
     <h1>
-        <img class="app-title-thumb img-thumbnail" ng-src="{{ appinfo.app_thumb || 'images/app_placeholder.png' }}"></img>
+        <img class="app-title-thumb img-thumbnail"
+             ng-src="{{ appinfo.app_thumb || 'images/app_placeholder.png' }}"></img>
         <span>{{ appinfo.name || 'Unregistered Application' }} - Edit Translation</span>
 
         <a class="ac-header-right header-button-wrapper" href="#/app/{{ appurl }}">
@@ -12,119 +12,129 @@
 
     </h1>
 
-    <ac-collaborators ng-show="checkModifications.collaborators.length > 0" collaborators="checkModifications.collaborators"></ac-collaborators>
+    <ac-collaborators ng-show="checkModifications.collaborators.length > 0"
+                      collaborators="checkModifications.collaborators"></ac-collaborators>
 
     <p style="padding-bottom: 20px">
 
     </p>
 
-        <div ng-if="status.error" class="ac-translations-tab-error">
-            <div class="alert alert-danger">
-                <h3>Unfortunately, it was not possible to load the specified application or translation.</h3>
+    <div ng-if="status.error" class="ac-translations-tab-error">
+        <div class="alert alert-danger">
+            <h3>Unfortunately, it was not possible to load the specified application or translation.</h3>
 
+            <p>
+                The application might be invalid or not exist, or there could be a server or network error. You
+                may try again later, or translate a different application.
+                <a class="btn btn-primary" href="#/apps">Go back to the Applications List</a>
+            </p>
+            <br>
+
+            <div class="ac-error-description">
                 <p>
-                    The application might be invalid or not exist, or there could be a server or network error. You
-                    may try again later, or translate a different application.
-                    <a class="btn btn-primary" href="#/apps">Go back to the Applications List</a>
+                    <strong>The error is:</strong>
                 </p>
-                <br>
 
-                <div class="ac-error-description">
-                    <p>
-                        <strong>The error is:</strong>
-                    </p>
+                <table style="padding-top: 20px">
+                    <tr>
+                        <td><strong>HTTP code:</strong></td>
+                        <td>{{ status.error.code }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Message:<strong></td>
+                        <td>{{ status.error.message }}</td>
+                    </tr>
+                </table>
+            </div>
 
-                    <table style="padding-top: 20px">
-                        <tr>
-                            <td><strong>HTTP code:</strong></td>
-                            <td>{{ status.error.code }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Message:<strong></td>
-                            <td>{{ status.error.message }}</td>
-                        </tr>
-                    </table>
+        </div>
+    </div>
+
+
+    <!-- Content -->
+    <div ng-if="!status.error">
+
+        <div ng-show="translationInfo.automatic == false" class="alert alert-info">
+            <h3><span class="fa fa-info-circle"/> The translation will not be applied instantly</h3>
+
+            <p>
+                Thank you for translating this application! Please note that though you can translate
+                this application and it will be saved as you go,
+                the translation will need to be applied by the original application
+                developer before the changes take effect, so it may take a while.
+            </p>
+            <br>
+
+        </div>
+
+        <div class="row">
+            <div class="col-lg-12" style="margin-bottom: 10px">
+                <div class="col-lg-5" style="text-align: center">
+                    <h3>{{ all_languages[bundle.srclang] }}</h3>
+
+                    <!-- For now, disable the CHANGE SOURCE LANGUAGE button -->
+                    <!--
+                        <button class="btn btn-subtle ac-btn-left" ng-click="changeSourceLanguage()" class="ac-edit-change-source">Change source language</button>
+                    -->
                 </div>
 
+                <div class="col-lg-7" style="text-align: center">
+                    <h3>{{ all_languages[bundle.targetlang] }}</h3>
+                </div>
             </div>
         </div>
 
 
-        <!-- Content -->
-        <div ng-if="!status.error">
+        <div ng-repeat="(key, translationItem) in translationInfo.translation track by $index" ng-init="index=$index">
+            <ac-edit-message bundle="bundle" key="key" item="translationItem"></ac-edit-message>
+        </div>
 
-            <div ng-show="translationInfo.automatic == false" class="alert alert-info">
-                <h3><span class="fa fa-info-circle"/> The translation will not be applied instantly</h3>
-
-                <p>
-                    Thank you for translating this application! Please note that though you can translate
-                    this application and it will be saved as you go,
-                    the translation will need to be applied by the original application
-                    developer before the changes take effect, so it may take a while.
-                </p>
-                <br>
-
+        <div ng-show="translationInfo.translation == undefined">
+            <div class="ac-loading">
+                <i class="fa fa-spinner fa-spin"/> Loading, please wait...
             </div>
+        </div>
 
-            <div class="row">
-                <div class="col-lg-12" style="margin-bottom: 10px">
-                    <div class="col-lg-5" style="text-align: center">
-                        <h3>{{ all_languages[bundle.srclang] }}</h3>
 
-                        <!-- For now, disable the CHANGE SOURCE LANGUAGE button -->
-                        <!--
-                            <button class="btn btn-subtle ac-btn-left" ng-click="changeSourceLanguage()" class="ac-edit-change-source">Change source language</button>
-                        -->
-                    </div>
+        <div style="margin-top: 15px" ng-show="translationInfo.preview == true" class="alert alert-info">
+            <h3><span class="fa fa-warning-circle"/>Thank you</h3>
 
-                    <div class="col-lg-7" style="text-align: center">
-                        <h3>{{ all_languages[bundle.targetlang] }}</h3>
-                    </div>
-                </div>
+            <p>
+                Thank you for translating this application!
+                    <span ng-show="translationInfo.automatic == true">The changes will be applied automatically, though it may take some minutes before
+                    you see them.</span>
+                <span ng-show="translationInfo.automatic == false">The changes will not be applied automatically and the app developers will need to retrieve the translation and put it in their servers. However, you can see below how it will be shown. If you don't see any change, please wait for a few minutes.</span>
+            </p>
+
+
+            <br>
+
+            <button ng-show="preview.shown == false && translationInfo.preview == true" ng-click="previewNow()"
+                    class="btn btn-primary btn-small">Preview application now
+            </button>
+            <button ng-show="preview.shown == true" ng-click="refreshPreview()" class="btn btn-primary btn-small">
+                <span class="fa fa-refresh"/> Refresh
+            </button>
+            <button ng-show="preview.shown == true" ng-click="closePreview()" class="btn btn-warning btn-small">Close
+                preview
+            </button>
+
+        </div>
+
+        <div ng-if="preview.shown">
+            <ac-preview lang="bundle.targetlang" appurl="translationInfo.url"></ac-preview>
+        </div>
+
+
+        <div class="row">
+            <div class="col-md-4 col-sm-12">
+                <!--<ac-app-dependencies dependencies="appinfo.translations[selected].dependencies"></ac-app-dependencies>-->
+                <ac-app-dependencies dependencies="testDependencies"></ac-app-dependencies>
             </div>
+        </div>
 
 
-
-            <div ng-repeat="(key, translationItem) in translationInfo.translation track by $index" ng-init="index=$index">
-                <ac-edit-message bundle="bundle" key="key" item="translationItem"></ac-edit-message>
-            </div>
-
-            <div ng-show="translationInfo.translation == undefined">
-                <div class="ac-loading">
-                    <i class="fa fa-spinner fa-spin"/> Loading, please wait...
-                </div>
-            </div>
-
-
-            <div ng-if="!status.error">
-
-                <div style="margin-top: 15px" ng-show="translationInfo.preview == true" class="alert alert-info">
-                    <h3><span class="fa fa-warning-circle"/>Thank you</h3>
-
-                    <p>
-                        Thank you for translating this application!
-                        <span ng-show="translationInfo.automatic == true">The changes will be applied automatically, though it may take some minutes before
-                        you see them.</span>
-                        <span ng-show="translationInfo.automatic == false">The changes will not be applied automatically and the app developers will need to retrieve the translation and put it in their servers. However, you can see below how it will be shown. If you don't see any change, please wait for a few minutes.</span>
-                    </p>
-
-
-                    <br>
-
-                    <button ng-show="preview.shown == false && translationInfo.preview == true" ng-click="previewNow()" class="btn btn-primary btn-small">Preview application now</button>
-                    <button ng-show="preview.shown == true" ng-click="refreshPreview()" class="btn btn-primary btn-small">
-                        <span class="fa fa-refresh"/> Refresh
-                    </button>
-                    <button ng-show="preview.shown == true" ng-click="closePreview()" class="btn btn-warning btn-small">Close preview</button>
-
-                </div>
-
-                <div ng-if="preview.shown">
-                    <ac-preview lang="bundle.targetlang" appurl="translationInfo.url"></ac-preview>
-                </div>
-
-            </div>
-
-        </div> <!-- Endof content -->
+    </div>
+    <!-- Endof content -->
 
 </div>
