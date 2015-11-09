@@ -132,12 +132,12 @@ GADGETS.append({
 
 GADGETS.append({
     'http://url3/gadget.xml' : BASIC_GADGET_XML.format(language="""
-                <Locale messages="languages/en_ALL.xml" />
+                <Locale messages="languages/tool_en_ALL.xml" />
                 <Locale lang="en" messages="languages/tool_en_ALL.xml" />
                 <Locale lang="es" messages="languages/tool_es_ALL.xml" />
             """),
-    'http://url3/languages/tool_en_ALL.xml' : TOOL_ID_MESSAGE_BUNDLE_ENGLISH.format(n=2),
-    'http://url3/languages/tool_es_ALL.xml' : TOOL_ID_MESSAGE_BUNDLE_SPANISH.format(n=2),
+    'http://url3/languages/tool_en_ALL.xml' : TOOL_ID_MESSAGE_BUNDLE_ENGLISH.format(n=3),
+    'http://url3/languages/tool_es_ALL.xml' : TOOL_ID_MESSAGE_BUNDLE_SPANISH.format(n=3),
 })
 
 

@@ -5,6 +5,7 @@ import logging
 import calendar
 import datetime
 import StringIO
+import urlparse
 from collections import OrderedDict
 import xml.etree.ElementTree as ET
 from email.utils import formatdate, parsedate, parsedate_tz
@@ -315,6 +316,8 @@ def extract_messages_from_translation(messages_absolute_url, xml_contents):
                 basename = messages_absolute_url.rsplit('/', 1)[1]
                 if not basename.startswith(tool_id):
                     same_tool = False
+                hostname = urlparse.urlparse(messages_absolute_url)
+                namespace = "{0}::{1}".format(hostname.netloc, tool_id)
         else:
             tool_id = None
 

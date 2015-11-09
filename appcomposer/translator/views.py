@@ -312,6 +312,11 @@ def api_translate(language, target):
     stored_translations, from_developer, automatic = retrieve_stored(translation_url, language, target)
     suggestions = retrieve_suggestions(original_messages, language, target, stored_translations)
     for key, original_message_pack in original_messages.iteritems():
+        # We still store the message itself (useful for other things, such as storing and maintaining it
+        # in MongoDB contacted by Shindig). However, we do not display these messages to the final user
+        if not original_message_pack['same_tool']:
+            continue
+
         value = original_message_pack['text']
         stored = stored_translations.get(key, {})
         current_suggestions = list(suggestions.get(key, []))

@@ -200,6 +200,8 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 wrong_history_parent_id = wrong_history.id
                 wrong_message_position = wrong_message.position
                 wrong_message_category = wrong_message.category
+                wrong_message_tool_id = wrong_message.tool_id
+                wrong_message_same_tool = wrong_message.same_tool
 
                 # 1st) Delete the current translation message
                 db.session.delete(wrong_message)
@@ -209,7 +211,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 db.session.add(new_db_history)
 
                 # 3rd) Create a new active translation message
-                new_db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, new_db_history, now, False, wrong_message_position, wrong_message_category, current_from_developer, namespace)
+                new_db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, new_db_history, now, False, wrong_message_position, wrong_message_category, current_from_developer, namespace, wrong_message_tool_id, wrong_message_same_tool)
                 db.session.add(new_db_active_translation_message)
 
     if translated_messages is not None:
@@ -244,7 +246,9 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 position = original_messages[key]['position']
                 category = original_messages[key]['category']
                 namespace = original_messages[key]['namespace']
-                db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False, position, category, from_developer, namespace)
+                tool_id = original_messages[key]['tool_id']
+                same_tool = original_messages[key]['same_tool']
+                db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False, position, category, from_developer, namespace, tool_id, same_tool)
                 db.session.add(db_active_translation_message)
 
                 if original_messages.get(key, {}).get('text', object()) == value:
@@ -272,6 +276,8 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                         wrong_message_position = wrong_message.position
                         wrong_message_category = wrong_message.category
                         wrong_message_bundle = wrong_message.bundle
+                        wrong_message_tool_id = wrong_message.tool_id
+                        wrong_message_same_tool = wrong_message.same_tool
 
                         # 1st) Delete the current translation message
                         db.session.delete(wrong_message)
@@ -281,7 +287,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                         db.session.add(new_db_history)
 
                         # 3rd) Create a new active translation message
-                        new_db_active_translation_message = ActiveTranslationMessage(wrong_message_bundle, key, value, new_db_history, now, False, wrong_message_position, wrong_message_category, from_developer, namespace)
+                        new_db_active_translation_message = ActiveTranslationMessage(wrong_message_bundle, key, value, new_db_history, now, False, wrong_message_position, wrong_message_category, from_developer, namespace, wrong_message_tool_id, wrong_message_same_tool)
                         db.session.add(new_db_active_translation_message)
                 
                 # Create a suggestion based on the key
@@ -338,6 +344,8 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
             position = original_message_pack['position']
             category = original_message_pack['category']
             namespace = original_message_pack['namespace']
+            tool_id = original_message_pack['tool_id']
+            same_tool = original_message_pack['same_tool']
             taken_from_default = True
             
             # If there is a namespace, try to get the value from other namespaces, and override the current value
@@ -355,7 +363,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
             db.session.add(db_history)
             
             # Establish that thew new active message points to this history message
-            db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, taken_from_default = taken_from_default, position = position, category = category, from_developer = current_from_developer, namespace = namespace)
+            db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, taken_from_default = taken_from_default, position = position, category = category, from_developer = current_from_developer, namespace = namespace, tool_id = tool_id, same_tool = same_tool)
             db.session.add(db_active_translation_message)
 
     for existing_key in existing_keys:
@@ -422,6 +430,8 @@ def retrieve_stored(translation_url, language, target):
             'value' : message.value,
             'from_default' : message.taken_from_default,
             'from_developer' : message.from_developer,
+            'same_tool': message.same_tool,
+            'tool_id': message.tool_id,
         }
     return response, bundle.from_developer, db_translation_url.automatic
 
@@ -601,7 +611,7 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
     now = datetime.datetime.utcnow()
     for msg in src_bundle.active_messages:
         history = historic.get(msg.history_id)
-        active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer, msg.namespace)
+        active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer, msg.namespace, msg.tool_id, msg.same_tool)
         db.session.add(active_t)
 
     try:
@@ -619,7 +629,7 @@ def _merge_bundle(src_bundle, dst_bundle):
         if existing_translation is None:
             t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, None, msg.taken_from_default)
             db.session.add(t_history)
-            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer, msg.namespace)
+            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer, msg.namespace, msg.tool_id, msg.same_tool)
             db.session.add(active_t)
             try:
                 db.session.commit()
@@ -630,7 +640,7 @@ def _merge_bundle(src_bundle, dst_bundle):
             # Merge it
             t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, existing_translation.history.id, msg.taken_from_default)
             db.session.add(t_history)
-            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer, msg.namespace)
+            active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer, msg.namespace, msg.tool_id, msg.same_tool)
             db.session.add(active_t)
             db.session.delete(existing_translation)
             try:
