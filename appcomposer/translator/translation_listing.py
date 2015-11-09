@@ -57,6 +57,11 @@ DEBUG_VERBOSE = False
 
 logger = get_task_logger(__name__)
 
+def get_other_apps():
+    if app.config['DEBUG']:
+        TWENTE_COMMONS['app_url'] = 'http://localhost:5000/twente_commons/'
+    return OTHER_APPS
+
 def synchronize_apps_cache(source, single_app_url = None):
     """Force obtaining the results and checking everything again to avoid inconsistences. 
     This can safely be run every few minutes, since most applications will be in the cache."""
@@ -67,7 +72,7 @@ def synchronize_apps_cache(source, single_app_url = None):
         synced_apps = []
         golab_apps = _get_golab_translations(cached_requests)
         number += _sync_translations(cached_requests, "Go-Lab apps", synced_apps, golab_apps, force_reload = False, single_app_url = single_app_url)
-        number += _sync_translations(cached_requests, "Other apps", synced_apps, OTHER_APPS, force_reload = False, single_app_url = single_app_url)
+        number += _sync_translations(cached_requests, "Other apps", synced_apps, get_other_apps(), force_reload = False, single_app_url = single_app_url)
         number += _sync_regular_apps(cached_requests, synced_apps, force_reload = False, single_app_url = single_app_url)
     finally:
         end_synchronization(sync_id, number)
@@ -81,7 +86,7 @@ def synchronize_apps_no_cache(source, single_app_url = None):
         synced_apps = []
         golab_apps = _get_golab_translations(cached_requests)
         number += _sync_translations(cached_requests, "Go-Lab apps", synced_apps, golab_apps, force_reload = True, single_app_url = single_app_url)
-        number += _sync_translations(cached_requests, "Other apps", synced_apps, OTHER_APPS, force_reload = True, single_app_url = single_app_url)
+        number += _sync_translations(cached_requests, "Other apps", synced_apps, get_other_apps(), force_reload = True, single_app_url = single_app_url)
         number += _sync_regular_apps(cached_requests, synced_apps, force_reload = True, single_app_url = single_app_url)
     finally:
         end_synchronization(sync_id, number)
