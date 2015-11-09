@@ -35,7 +35,7 @@
         <ac-lang-target appinfo="appinfo" selected="selected_target" all_languages="all_languages"
                         all_groups="all_groups"></ac-lang-target>
 
-        <div class="col-md-6 col-sm-12">
+        <div class="col-md-5 col-sm-12">
             <h3 ac-translate-me>Details:</h3>
 
             <a ng-href="#/edit/{{ selected_target.lang }}/{{ selected_target.target }}/{{ appurl }}">
@@ -73,6 +73,11 @@
                 </dd>
 
             </dl>
+        </div>
+
+        <div class="col-md-4 col-sm-12">
+            <!--<ac-app-dependencies dependencies="appinfo.translations[selected].dependencies"></ac-app-dependencies>-->
+            <ac-app-dependencies dependencies="testDependencies"></ac-app-dependencies>
         </div>
     </div>
 
