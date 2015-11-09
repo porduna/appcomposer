@@ -158,12 +158,20 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
             existing_active_translation.position = position
 
         category = original_messages.get(key, {}).get('category')
-        if category is not None and existing_active_translation.category != category:
+        if existing_active_translation.category != category:
             existing_active_translation.category = category
 
         namespace = original_messages.get(key, {}).get('namespace')
-        if namespace is not None and existing_active_translation.namespace != namespace:
+        if existing_active_translation.namespace != namespace:
             existing_active_translation.namespace = namespace
+
+        tool_id = original_messages.get(key, {}).get('tool_id')
+        if existing_active_translation.tool_id != tool_id:
+            existing_active_translation.tool_id = tool_id
+
+        same_tool = original_messages.get(key, {}).get('same_tool')
+        if existing_active_translation.same_tool != same_tool:
+            existing_active_translation.same_tool = same_tool
 
         if namespace is not None and existing_active_translation.taken_from_default:
             existing_namespaces.add(namespace)
@@ -512,6 +520,7 @@ def retrieve_translations_stats(translation_url, original_messages):
                 TranslationBundle.from_developer == False, 
 
                 ActiveTranslationMessage.taken_from_default == False,
+                ActiveTranslationMessage.same_tool == True,
 
                 ActiveTranslationMessage.key.in_(list(original_messages)),
                 ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
@@ -526,6 +535,7 @@ def retrieve_translations_stats(translation_url, original_messages):
 
                 ActiveTranslationMessage.key.in_(list(original_messages)),
                 ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
+                ActiveTranslationMessage.same_tool == True, 
                 TranslationBundle.translation_url_id == TranslationUrl.id, 
                 TranslationUrl.url == translation_url,
             ).group_by(TranslationBundle.language, TranslationBundle.target).all()

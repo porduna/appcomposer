@@ -311,8 +311,8 @@ def extract_messages_from_translation(messages_absolute_url, xml_contents):
         else:
             namespace = default_namespace
 
-        if not category and namespace:
-            category = namespace
+        # if not category and namespace:
+        #     category = namespace
 
         same_tool = True
         if 'toolId' in xml_msg.attrib:
@@ -393,7 +393,9 @@ def bundle_to_xml(db_bundle, category = None):
         xml_msg.attrib['name'] = message.key
         if message.category:
             xml_msg.attrib['category'] = message.category
-        if message.namespace:
+        if message.tool_id:
+            xml_msg.attrib['toolId'] = message.tool_id
+        elif message.namespace:
             xml_msg.attrib['namespace'] = message.namespace
         xml_msg.text = message.value
     indent(xml_bundle)
