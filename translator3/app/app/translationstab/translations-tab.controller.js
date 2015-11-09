@@ -11,17 +11,6 @@ function TranslationsTabController($scope, $log) {
     $scope.translatedPercent = translatedPercent;
     $scope.translatedPercentStr = translatedPercentStr;
 
-    // Just for testing. This must be removed.
-    $scope.testDependencies = [{
-        "title": "Twente Commons",
-        "link": "http://.../",
-        "percent": 85.9999
-    },
-    {
-        "title": "Twente Commons",
-        "link": "http://.../",
-        "percent": 85.9999
-    }];
 
 
     ////////////////////
