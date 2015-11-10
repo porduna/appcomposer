@@ -8,7 +8,7 @@
         <div style="padding: 5px">
             <h4><a ng-href="{{ dep.link }}">{{ dep.title }}</a></h4>
 
-            <a ng-href="{{ dep.link }}">
+            <a ng-href="#/edit/{{ dep.lang }}/{{ dep.target }}/{{ dep.app_url }}">
                 <div class="btn btn-success">
                     <i class="fa fa-edit"></i>
                         <span>{{ 'Edit translation' | translate }}</span>
@@ -20,9 +20,9 @@
             <dt translate>Translated:</dt>
             <dd>
                 <progressbar class="ac-translation-percent" animate="false" value="dep.percent" type="success">
-                    <span ng-if="dep.percent > 15">{{ dep.translated }} / {{ dep.items }} ({{dep.percent }}%)</span>
+                    <span ng-if="dep.percent > 15">{{ dep.translated }} / {{ dep.items }} ({{ dep.percent.toFixed(2) }}%)</span>
                 </progressbar>
-                <span ng-if="dep.percent <= 15">{{ dep.translated }} / {{ dep.items }} ({{dep.percent }}%)</span>
+                <span ng-if="dep.percent <= 15">{{ dep.translated }} / {{ dep.items }} ({{ dep.percent.toFixed(2) }}%)</span>
             </dd>
         </div>
 

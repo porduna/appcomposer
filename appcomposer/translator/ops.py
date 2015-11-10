@@ -1,3 +1,4 @@
+import urlparse
 import pprint
 import hashlib
 import datetime
@@ -12,7 +13,7 @@ from appcomposer import db
 from appcomposer.application import app
 from appcomposer.translator.languages import obtain_languages, obtain_groups
 from appcomposer.translator.suggestions import translate_texts
-from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser, TranslationSyncLog, TranslationCurrentActiveUser, TranslationSubscription, TranslationNotificationRecipient
+from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser, TranslationSyncLog, TranslationCurrentActiveUser, TranslationSubscription, TranslationNotificationRecipient, RepositoryApp
 
 DEBUG = False
 
@@ -512,24 +513,14 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
 
     return all_suggestions
 
-def retrieve_translations_stats(translation_url, original_messages):
-    filtered_messages = {}
-    for key, properties in original_messages.items():
-        if properties['same_tool']:
-            filtered_messages[key] = properties
-
-    items = len(filtered_messages)
-
-    if items == 0:
-        return {}
-
+def _get_all_results_from_translation_url(translation_url, keys):
     results_from_users = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
                 TranslationBundle.from_developer == False, 
 
                 ActiveTranslationMessage.taken_from_default == False,
                 ActiveTranslationMessage.same_tool == True,
 
-                ActiveTranslationMessage.key.in_(list(filtered_messages)),
+                ActiveTranslationMessage.key.in_(keys),
                 ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
                 TranslationBundle.translation_url_id == TranslationUrl.id, 
 
@@ -540,7 +531,7 @@ def retrieve_translations_stats(translation_url, original_messages):
                 TranslationBundle.from_developer == True, 
                 or_(ActiveTranslationMessage.from_developer == True, ActiveTranslationMessage.taken_from_default == False),
 
-                ActiveTranslationMessage.key.in_(list(filtered_messages)),
+                ActiveTranslationMessage.key.in_(keys),
                 ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
                 ActiveTranslationMessage.same_tool == True, 
                 TranslationBundle.translation_url_id == TranslationUrl.id, 
@@ -549,6 +540,94 @@ def retrieve_translations_stats(translation_url, original_messages):
 
     results = results_from_users
     results.extend(results_from_developers)
+    return results
+
+
+def retrieve_translations_stats(translation_url, original_messages):
+    filtered_messages = {
+        # key: {
+        #     typical properties (same_tool, tool_id, namespace...)
+        # }
+    }
+    other_tools = {
+        # tool_id : [ key1, key2, key3...],
+    }
+    for key, properties in original_messages.items():
+        if properties['same_tool']:
+            filtered_messages[key] = properties
+        else:
+            if properties['tool_id']:
+                if properties['tool_id'] not in other_tools:
+                    other_tools[properties['tool_id']] = []
+                other_tools[properties['tool_id']].append(key)
+
+    items = len(filtered_messages)
+    results = _get_all_results_from_translation_url(translation_url, list(filtered_messages))
+
+    if items == 0:
+        return {}
+
+    dependencies_data = {
+        # (language, target) : [
+        #      {
+        #           "title": "My title",
+        #           "link": "http://golabz.eu/...",
+        #           "percent": 50,
+        #           "translated": 10,
+        #           "items": 20,
+        #      }
+        # ]
+    }
+    translation_url_parsed = urlparse.urlparse(translation_url)
+    translation_url_base = '{0}://{1}/'.format(translation_url_parsed.scheme, translation_url_parsed.netloc)
+    for tool_used, tool_keys in other_tools.items():
+        tool_translation_urls = db.session.query(TranslationUrl.url).filter(
+            or_(
+                TranslationUrl.url.like('{0}%'.format(translation_url_base)), # Check that it's from the same domain, and not other 'common' in other domain
+                TranslationUrl.url.like('http://localhost:5000/%'),
+            ),
+            TranslationBundle.translation_url_id == TranslationUrl.id,
+            ActiveTranslationMessage.bundle_id == TranslationBundle.id,
+            ActiveTranslationMessage.tool_id == tool_used,
+            ActiveTranslationMessage.same_tool == True,
+        ).group_by(TranslationUrl.url).all()
+        tool_translation_urls = [ url for url, in tool_translation_urls ]
+        if tool_translation_urls:
+            tool_translation_url = tool_translation_urls[0]
+
+            tool_app_url_pack = db.session.query(TranslatedApp.url).filter(
+                    TranslatedApp.translation_url_id == TranslationUrl.id,
+                    TranslationUrl.url == tool_translation_url
+                ).first()
+
+            if tool_app_url_pack is not None:
+                tool_app_url, = tool_app_url_pack
+                repo_contents = db.session.query(RepositoryApp.name, RepositoryApp.app_link).filter(
+                        RepositoryApp.url == TranslatedApp.url,
+                        TranslatedApp.url == tool_app_url
+                    ).first()
+                if repo_contents is not None:
+                    tool_name, tool_link = repo_contents 
+                else:
+                    tool_name = tool_app_url
+                    tool_link = tool_app_url
+
+                tool_results = _get_all_results_from_translation_url(tool_translation_url, tool_keys)
+                
+                for count, modification_date, creation_date, lang, target in tool_results:
+                    if (lang, target) not in dependencies_data:
+                        dependencies_data[lang, target] = []
+
+                    dependencies_data[lang, target].append({
+                        'translated': count,
+                        'items': len(tool_keys),
+                        'percent': 100.0 * count / len(tool_keys),
+                        'link': tool_link,
+                        'title': tool_name,
+                        'app_url': tool_app_url,
+                        'lang': lang,
+                        'target': target,
+                    })
 
     translations = {
         # es_ES : {
@@ -562,7 +641,11 @@ def retrieve_translations_stats(translation_url, original_messages):
         #                "items" : 31,
         #                "dependencies" : [
         #                    {
-        #                        
+        #                        "title": "My dependency",
+        #                        "link": "http://composer.golabz.eu/...",
+        #                        "percent": 50,
+        #                        "translated": 10,
+        #                        "items": 20,
         #                    }
         #                ]
         #           }
@@ -579,6 +662,7 @@ def retrieve_translations_stats(translation_url, original_messages):
 
         mdate = modification_date.strftime("%Y-%m-%d") if modification_date is not None else None
         cdate = creation_date.strftime("%Y-%m-%d") if creation_date is not None else None
+        dependencies = dependencies_data.get((lang, target), [])
 
         translations[lang]['targets'][target] = {
             'modification_date' : mdate,
@@ -586,6 +670,7 @@ def retrieve_translations_stats(translation_url, original_messages):
             'name' : GROUPS.get(target),
             'translated' : count,
             'items' : items,
+            'dependencies': dependencies,
         }
     
     return translations
