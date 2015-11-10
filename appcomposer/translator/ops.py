@@ -628,6 +628,30 @@ def retrieve_translations_stats(translation_url, original_messages):
                         'lang': lang,
                         'target': target,
                     })
+                
+                # After this, make sure we populate the rest of the languages too
+                for count, modification_date, creation_date, lang, target in results:
+                    if (lang, target) not in dependencies_data:
+                        dependencies_data[lang, target] = []
+
+                    all_tools_info = dependencies_data[lang, target]
+                    found = False
+                    for tools_info in all_tools_info:
+                        if tools_info['app_url'] == tool_app_url:
+                            found = True
+                            break
+
+                    if not found:
+                        dependencies_data[lang, target].append({
+                            'translated': 0,
+                            'items': len(tool_keys),
+                            'percent': 0.0,
+                            'link': tool_link,
+                            'title': tool_name,
+                            'app_url': tool_app_url,
+                            'lang': lang,
+                            'target': target,
+                        })
 
     translations = {
         # es_ES : {
