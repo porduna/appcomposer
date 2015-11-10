@@ -20,8 +20,9 @@
             <dt translate>Translated:</dt>
             <dd>
                 <progressbar class="ac-translation-percent" animate="false" value="dep.percent" type="success">
-                    <span>{{ dep.percent }}</span>
+                    <span ng-if="dep.percent > 15">{{ dep.translated }} / {{ dep.items }} ({{dep.percent }}%)</span>
                 </progressbar>
+                <span ng-if="dep.percent <= 15">{{ dep.translated }} / {{ dep.items }} ({{dep.percent }}%)</span>
             </dd>
         </div>
 
