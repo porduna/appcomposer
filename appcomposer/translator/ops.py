@@ -581,17 +581,24 @@ def retrieve_translations_stats(translation_url, original_messages):
     generic_dependencies = []
     translation_url_parsed = urlparse.urlparse(translation_url)
     translation_url_base = '{0}://{1}/'.format(translation_url_parsed.scheme, translation_url_parsed.netloc)
-    for tool_used, tool_keys in other_tools.items():
-        tool_translation_urls = db.session.query(TranslationUrl.url).filter(
-            or_(
+    if translation_url_base == 'http://go-lab.gw.utwente.nl/':
+        tool_domain_condition = or_(
                 TranslationUrl.url.like('{0}%'.format(translation_url_base)), # Check that it's from the same domain, and not other 'common' in other domain
                 TranslationUrl.url.like('http://localhost:5000/%'),
-            ),
+                TranslationUrl.url.like('http://composer.golabz.eu/%'),
+            )
+    else:
+        tool_domain_condition = TranslationUrl.url.like('{0}%'.format(translation_url_base)), # Check that it's from the same domain, and not other 'common' in other domain
+
+    for tool_used, tool_keys in other_tools.items():
+        tool_translation_urls = db.session.query(TranslationUrl.url).filter(
+            tool_domain_condition,
             TranslationBundle.translation_url_id == TranslationUrl.id,
             ActiveTranslationMessage.bundle_id == TranslationBundle.id,
             ActiveTranslationMessage.tool_id == tool_used,
             ActiveTranslationMessage.same_tool == True,
         ).group_by(TranslationUrl.url).all()
+
         tool_translation_urls = [ url for url, in tool_translation_urls ]
         if tool_translation_urls:
             tool_translation_url = tool_translation_urls[0]
