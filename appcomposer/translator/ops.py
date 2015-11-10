@@ -588,7 +588,7 @@ def retrieve_translations_stats(translation_url, original_messages):
                 TranslationUrl.url.like('http://composer.golabz.eu/%'),
             )
     else:
-        tool_domain_condition = TranslationUrl.url.like('{0}%'.format(translation_url_base)), # Check that it's from the same domain, and not other 'common' in other domain
+        tool_domain_condition = TranslationUrl.url.like('{0}%'.format(translation_url_base)) # Check that it's from the same domain, and not other 'common' in other domain
 
     for tool_used, tool_keys in other_tools.items():
         tool_translation_urls = db.session.query(TranslationUrl.url).filter(
