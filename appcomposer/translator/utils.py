@@ -374,8 +374,9 @@ def indent(elem, level=0):
             elem.tail = i
 
 NO_CATEGORY = 'no-category'
+NO_TOOL = 'no-tool'
 
-def _get_sorted_messages(db_bundle, category):
+def _get_sorted_messages(db_bundle, category, tool_id):
     if category is None:
         active_messages = [ am for am in db_bundle.active_messages ]
     elif category == NO_CATEGORY:
@@ -383,12 +384,19 @@ def _get_sorted_messages(db_bundle, category):
     else:
         active_messages = [ am for am in db_bundle.active_messages if am.category == category ]
 
+    if tool_id == NO_TOOL:
+        active_messages = [ am for am in active_messages if am.tool_id == None ]
+    elif tool_id is None:
+        pass
+    else:
+        active_messages = [ am for am in active_messages if am.tool_id == tool_id ]
+
     active_messages.sort(lambda am1, am2 : cmp(am1.position, am2.position))
     return active_messages
 
-def bundle_to_xml(db_bundle, category = None):
+def bundle_to_xml(db_bundle, category = None, tool_id = None):
     xml_bundle = ET.Element("messagebundle")
-    for message in _get_sorted_messages(db_bundle, category):
+    for message in _get_sorted_messages(db_bundle, category, tool_id):
         xml_msg = ET.SubElement(xml_bundle, 'msg')
         xml_msg.attrib['name'] = message.key
         if message.category:
@@ -402,18 +410,18 @@ def bundle_to_xml(db_bundle, category = None):
     xml_string = ET.tostring(xml_bundle, encoding = 'UTF-8')
     return xml_string
 
-def bundle_to_properties(db_bundle, category = None):
+def bundle_to_properties(db_bundle, category = None, tool_id = None):
     properties_file = StringIO.StringIO()
-    for message in _get_sorted_messages(db_bundle, category):
+    for message in _get_sorted_messages(db_bundle, category, tool_id):
         properties_file.write(message.key)
         properties_file.write(" = ")
         properties_file.write(message.value.strip())
         properties_file.write("\n")
     return properties_file.getvalue()
 
-def bundle_to_json(db_bundle, category = None):
+def bundle_to_json(db_bundle, category = None, tool_id = None):
     result = {}
-    for message in _get_sorted_messages(db_bundle, category):
+    for message in _get_sorted_messages(db_bundle, category, tool_id):
         value = {
             'value' : message.value
         }
@@ -424,10 +432,10 @@ def bundle_to_json(db_bundle, category = None):
         result[message.key] = value
     return json.dumps(result, indent = 4)
 
-def bundle_to_graasp_json(db_bundle, category = None):
+def bundle_to_graasp_json(db_bundle, category = None, tool_id = None):
     # 
     result = OrderedDict()
-    for message in _get_sorted_messages(db_bundle, category):
+    for message in _get_sorted_messages(db_bundle, category, tool_id):
         sub_keys = message.key.split('::')
         key = sub_keys[-1]
         parents = sub_keys[:-1]
@@ -441,9 +449,9 @@ def bundle_to_graasp_json(db_bundle, category = None):
         current[key] = message.value
     return json.dumps(result, indent = 4)
 
-def bundle_to_jquery_i18n(db_bundle, category = None):
+def bundle_to_jquery_i18n(db_bundle, category = None, tool_id = None):
     result = OrderedDict()
-    active_messages = _get_sorted_messages(db_bundle, category)
+    active_messages = _get_sorted_messages(db_bundle, category, tool_id)
 
     result["@metadata"] = {
         "locale" : db_bundle.language,

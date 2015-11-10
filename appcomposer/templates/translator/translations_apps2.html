@@ -47,7 +47,9 @@
                 'all_langs_link' : "{{ url_for('.translations_app_url_format_zip', format_key = format_key, app_url = 'URL') }}",
                 'lang_link' : "{{ url_for('.translations_app_format', format_key = format_key, lang='LANGUAGE', target='TARGET', app_url = 'URL') }}",
                 'all_langs_cat_link' : "{{ url_for('.translations_app_url_format_zip', format_key = format_key, app_url = 'URL', category = 'CATEGORY') }}",
-                'lang_cat_link' : "{{ url_for('.translations_app_format', format_key = format_key, lang='LANGUAGE', target='TARGET', app_url = 'URL', category = 'CATEGORY') }}"
+                'lang_cat_link' : "{{ url_for('.translations_app_format', format_key = format_key, lang='LANGUAGE', target='TARGET', app_url = 'URL', category = 'CATEGORY') }}",
+                'all_langs_tool_link' : "{{ url_for('.translations_app_url_format_zip', format_key = format_key, app_url = 'URL', tool_id = 'TOOL') }}",
+                'lang_tool_link' : "{{ url_for('.translations_app_format', format_key = format_key, lang='LANGUAGE', target='TARGET', app_url = 'URL', tool_id = 'TOOL') }}"
             }{% if not loop.last %},{% endif %}
         {% endfor %}
         ];

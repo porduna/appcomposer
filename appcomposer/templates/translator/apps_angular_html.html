@@ -14,6 +14,26 @@
                 </span>
             </div>
 
+            <div ng-if="app.tools.length > 0">
+                <br>
+                <h5>Partial translations by tool:</h5>
+                <br>
+                <div class="col-sm-offset-1" ng-repeat="tool_id in app.tools">
+                <h5>{{ tool_id.name }}</h5>
+                <div>
+                <a class="btn btn-primary" href='{{ fmt.all_langs_tool_link.replace("URL", app.app_url).replace("TOOL", encodeURIComponent(tool_id.name)) }}'>All languages</a>
+
+                <span ng-repeat="translation in app.translations">
+                    <a class='btn {{ translation.from_developer?"btn-default":"btn-info" }}'
+
+                        href='{{ fmt.lang_tool_link.replace("URL", app.app_url).replace("LANGUAGE", translation.lang).replace("TARGET", translation.target).replace("TOOL", encodeURIComponent(tool_id.name)) }}'>
+                        {{ translation.lang }} - {{ translation.target }}
+                    </a>
+                </span>
+                </div>
+                </div>
+            </div>
+
             <div ng-if="app.categories.length > 0">
                 <br>
                 <h5>Partial translations by category:</h5>

@@ -34,7 +34,7 @@ from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, get_latest_synchronizations, update_user_status, get_user_status
-from appcomposer.translator.utils import bundle_to_xml, bundle_to_jquery_i18n, bundle_to_json, bundle_to_graasp_json, bundle_to_properties, url_to_filename, messages_to_xml, NO_CATEGORY
+from appcomposer.translator.utils import bundle_to_xml, bundle_to_jquery_i18n, bundle_to_json, bundle_to_graasp_json, bundle_to_properties, url_to_filename, messages_to_xml, NO_CATEGORY, NO_TOOL
 
 import flask.ext.cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
@@ -648,6 +648,16 @@ def translations_apps_json():
             category = NO_CATEGORY
         categories_per_bundle_id[bundle_id].add(category)
 
+    tools_per_bundle_id = {
+        # bundle_id : set(tool1, tool2)
+    }
+    for tool_id, bundle_id in db.session.query(distinct(ActiveTranslationMessage.tool_id), ActiveTranslationMessage.bundle_id).group_by(ActiveTranslationMessage.tool_id, ActiveTranslationMessage.bundle_id).all():
+        if bundle_id not in tools_per_bundle_id:
+            tools_per_bundle_id[bundle_id] = set()
+        if tool_id is None:
+            tool_id = NO_TOOL
+        tools_per_bundle_id[bundle_id].add(tool_id)
+
     max_date_per_translation_url_id = {}
     for max_date, translation_url_id in (db.session.query(func.max(ActiveTranslationMessage.datetime), TranslationBundle.translation_url_id)
                                             .filter(
@@ -666,6 +676,7 @@ def translations_apps_json():
             current_apps = other_apps
         current_apps[app.url] = {
             'categories' : set(),
+            'tools' : set(),
             'translations' : [],
         }
         if app.translation_url is not None:
@@ -679,15 +690,22 @@ def translations_apps_json():
                 
                 for category in categories_per_bundle_id.get(bundle.id, []):
                     current_apps[app.url]['categories'].add(category)
-        else:
-            # TODO: invalid state
-            pass
+
+                for tool_id in tools_per_bundle_id.get(bundle.id, []):
+                    current_apps[app.url]['tools'].add(tool_id)
 
         current_apps[app.url]['categories'] = sorted(list(current_apps[app.url]['categories']))
         if len(current_apps[app.url]['categories']) == 1 and current_apps[app.url]['categories'][0] is NO_CATEGORY:
             current_apps[app.url]['categories'] = []
 
         current_apps[app.url]['categories'] = [ { 'name' : cat } for cat in current_apps[app.url]['categories'] ]
+
+        current_apps[app.url]['tools'] = sorted(list(current_apps[app.url]['tools']))
+        if len(current_apps[app.url]['tools']) == 1 and current_apps[app.url]['tools'][0] is NO_TOOL:
+            current_apps[app.url]['tools'] = []
+
+        current_apps[app.url]['tools'] = [ { 'name' : tool_id } for tool_id in current_apps[app.url]['tools'] ]
+
 
     golab_apps = _dict2sorted_list(golab_apps, key_name = 'app_url')
     other_apps = _dict2sorted_list(other_apps, key_name = 'app_url')
@@ -858,12 +876,13 @@ def _translations_app_url_zip(app_url, output_format):
         return "Translation App not found in the database", 404
    
     category = request.args.get('category', None)
+    tool_id = request.args.get('tool_id', None)
     sio = StringIO.StringIO()
     zf = zipfile.ZipFile(sio, 'w')
     translated_app_filename = url_to_filename(translated_app.url)
     if translated_app.translation_url:
         for bundle in translated_app.translation_url.bundles:
-            xml_contents = serializer(bundle, category)
+            xml_contents = serializer(bundle, category, tool_id)
             zf.writestr('%s_%s.%s' % (bundle.language, bundle.target, extension), xml_contents)
     zf.close()
 
@@ -883,7 +902,8 @@ def _translate_url(lang, target, url, output_format):
         return "Translation URL found, but no translation for that language or target"
 
     category = request.args.get('category', None)
-    messages_xml = SERIALIZERS[output_format](bundle, category)
+    tool_id = request.args.get('tool_id', None)
+    messages_xml = SERIALIZERS[output_format](bundle, category, tool_id)
     resp = make_response(messages_xml)
     resp.content_type = MIMETYPES[output_format]
     return resp
