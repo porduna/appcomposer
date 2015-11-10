@@ -578,6 +578,7 @@ def retrieve_translations_stats(translation_url, original_messages):
         #      }
         # ]
     }
+    generic_dependencies = []
     translation_url_parsed = urlparse.urlparse(translation_url)
     translation_url_base = '{0}://{1}/'.format(translation_url_parsed.scheme, translation_url_parsed.netloc)
     for tool_used, tool_keys in other_tools.items():
@@ -612,6 +613,15 @@ def retrieve_translations_stats(translation_url, original_messages):
                     tool_name = tool_app_url
                     tool_link = tool_app_url
 
+                generic_dependencies.append({
+                    'translated': 0,
+                    'items': len(tool_keys),
+                    'percent': 0.0,
+                    'link': tool_link,
+                    'title': tool_name,
+                    'app_url': tool_app_url,
+                })
+
                 tool_results = _get_all_results_from_translation_url(tool_translation_url, tool_keys)
                 
                 for count, modification_date, creation_date, lang, target in tool_results:
@@ -631,6 +641,7 @@ def retrieve_translations_stats(translation_url, original_messages):
                 
                 # After this, make sure we populate the rest of the languages too
                 for count, modification_date, creation_date, lang, target in results:
+                    # We don't care about count, modification_date or creation_date
                     if (lang, target) not in dependencies_data:
                         dependencies_data[lang, target] = []
 
@@ -697,7 +708,7 @@ def retrieve_translations_stats(translation_url, original_messages):
             'dependencies': dependencies,
         }
     
-    return translations
+    return translations, generic_dependencies
 
 
 def retrieve_translations_percent(translation_url, original_messages):
@@ -705,7 +716,7 @@ def retrieve_translations_percent(translation_url, original_messages):
         # es_ES_ALL : 0.8
     }
 
-    translations_stats = retrieve_translations_stats(translation_url, original_messages)
+    translations_stats, generic_dependencies = retrieve_translations_stats(translation_url, original_messages)
     for lang, lang_package in translations_stats.iteritems():
         targets = lang_package.get('targets', {})
         for target, target_stats in targets.iteritems():

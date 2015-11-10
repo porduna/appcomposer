@@ -278,7 +278,7 @@ def api_app():
             app_link = repo_app.app_link
 
     translation_url, original_messages, metadata = extract_local_translations_url(app_url, force_local_cache = True)
-    translations = retrieve_translations_stats(translation_url, original_messages)
+    translations, generic_dependencies = retrieve_translations_stats(translation_url, original_messages)
     register_app_url(app_url, translation_url, metadata)
 
     app_data = {
@@ -288,6 +288,7 @@ def api_app():
         'name' : name,
         'desc' : desc,
         'translations' : translations,
+        'generic_dependencies': generic_dependencies,
     }
     return jsonify(**app_data)
 
