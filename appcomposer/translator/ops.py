@@ -513,16 +513,23 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
     return all_suggestions
 
 def retrieve_translations_stats(translation_url, original_messages):
-    if len(original_messages) == 0:
+    filtered_messages = {}
+    for key, properties in original_messages.items():
+        if properties['same_tool']:
+            filtered_messages[key] = properties
+
+    items = len(filtered_messages)
+
+    if items == 0:
         return {}
-    
+
     results_from_users = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
                 TranslationBundle.from_developer == False, 
 
                 ActiveTranslationMessage.taken_from_default == False,
                 ActiveTranslationMessage.same_tool == True,
 
-                ActiveTranslationMessage.key.in_(list(original_messages)),
+                ActiveTranslationMessage.key.in_(list(filtered_messages)),
                 ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
                 TranslationBundle.translation_url_id == TranslationUrl.id, 
 
@@ -533,7 +540,7 @@ def retrieve_translations_stats(translation_url, original_messages):
                 TranslationBundle.from_developer == True, 
                 or_(ActiveTranslationMessage.from_developer == True, ActiveTranslationMessage.taken_from_default == False),
 
-                ActiveTranslationMessage.key.in_(list(original_messages)),
+                ActiveTranslationMessage.key.in_(list(filtered_messages)),
                 ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
                 ActiveTranslationMessage.same_tool == True, 
                 TranslationBundle.translation_url_id == TranslationUrl.id, 
@@ -567,8 +574,6 @@ def retrieve_translations_stats(translation_url, original_messages):
 
         mdate = modification_date.strftime("%Y-%m-%d") if modification_date is not None else None
         cdate = creation_date.strftime("%Y-%m-%d") if creation_date is not None else None
-
-        items = len(original_messages)
 
         translations[lang]['targets'][target] = {
             'modification_date' : mdate,
