@@ -560,6 +560,11 @@ def retrieve_translations_stats(translation_url, original_messages):
         #                "name" : "Adolescens...,
         #                "translated" : 21,
         #                "items" : 31,
+        #                "dependencies" : [
+        #                    {
+        #                        
+        #                    }
+        #                ]
         #           }
         #      }
         # }
