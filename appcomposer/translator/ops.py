@@ -259,8 +259,8 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False, position, category, from_developer, namespace, tool_id, same_tool)
                 db.session.add(db_active_translation_message)
 
-                if original_messages.get(key, {}).get('text', object()) == value:
-                    # If the message in the original language is the same as in the target language, then
+                if original_messages.get(key, {}).get('text', object()) == value or (unicode(original_messages.get(key, {}).get('text', "non.empty.text")).strip() != "" and value.strip() == ""):
+                    # If the message in the original language is the same as in the target language or the value is empty and it shouldn't, then
                     # it can be two things: 
                     # 
                     #   1) that it has been filled with the original language. In this case it should not be later displayed as a suggestion
