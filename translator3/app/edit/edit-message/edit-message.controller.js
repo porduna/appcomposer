@@ -18,6 +18,8 @@ function EditMessageController($scope, $log, $resource) {
 
     $scope.messageActive = false;
 
+    $scope.selected = {};
+
     $scope.values = {
         current: $scope.item.target,
         saved: $scope.item.target, // Value saved into the server
