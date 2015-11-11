@@ -306,6 +306,11 @@ def extract_messages_from_translation(messages_absolute_url, xml_contents):
         else:
             category = None
 
+        if 'format' in xml_msg.attrib:
+            format = xml_msg.attrib['format']
+        else:
+            format = "plain"
+
         if 'namespace' in xml_msg.attrib:
             namespace = xml_msg.attrib['namespace']
         else:
@@ -350,6 +355,7 @@ def extract_messages_from_translation(messages_absolute_url, xml_contents):
             'position' : pos,
             'same_tool' : same_tool,
             'tool_id' : tool_id,
+            'format': format,
         }
     metadata = {
         'mails' : mails,

@@ -2,17 +2,17 @@
 <form name="ac-edit-message-form" class="form-horizontal ac-edit-message-form">
     <div class="form-group has-feedback ac-edit-message-form-group">
 
-        <label ng-if="!item.format || item.format == 'plain'" for="next" class="col-xs-6 control-label ac-edit-message-label" title="{{ key }}">{{ item.source }}</label>
+        <label ng-if="::(!item.format || item.format == 'plain')" for="next" class="col-xs-6 control-label ac-edit-message-label" title="{{ key }}">{{ item.source }}</label>
 
-        <div ng-if="item.format == 'textAngular'" class="col-xs-6">
+        <div ng-if="::(item.format == 'textAngular')" class="col-xs-6">
             <text-angular ta-toolbar="[]" ta-disabled='true' ng-model="item.source"></text-angular>
         </div>
 
-        <div ng-show="item.can_edit" class="col-xs-6">
+        <div ng-if="::item.can_edit" class="col-xs-6">
 
-            <div ng-show="item.format == 'textAngular'">
+            <div ng-if="::(item.format == 'textAngular')">
                <text-angular ng-focus="onFocus($event)"
-                              ng-model="currentValue"
+                              ng-model="values.current"
                               ng-change="onChange()"
                               class="ac-edit-message-control"
                               ng-class="{'ac-edit-message-input-from-default': item.from_default}"></text-angular>
@@ -20,8 +20,10 @@
 
             </div>
 
-            <input ng-show="!item.format || item.format == 'plain'"
-                   ng-focus="onFocus($event)" ng-change="onChange()" ng-model="currentValue"
+            <input ng-if="::(!item.format || item.format == 'plain')"
+                   ng-focus="onFocus($event)" 
+                   ng-model="values.current"
+                   ng-change="onChange()" 
                    ng-model-options="{ updateOn: 'change blur' }"
                    ng-keyup="onKey($event)" name="ac-edit-message-input"
                    ng-class="{'ac-edit-message-input-from-default': item.from_default}" class="form-control ac-edit-message-control ac-edit-message-input"
@@ -35,16 +37,16 @@
                 Could not save the last changes.
             </span>
         </div>
-        <div ng-show="!item.can_edit" class="col-xs-6">
+        <div ng-if="::(!item.can_edit)" class="col-xs-6">
             <div tooltip="This message translation is provided by the App and cannot be modified">
 
-                <div ng-show="item.format == 'textAngular'">
-                    <text-angular class="ac-edit-message-control" ng-model="currentValue"
+                <div ng-if="::(item.format == 'textAngular')">
+                    <text-angular class="ac-edit-message-control" ng-model="values.current"
                         ta-disabled="true" ta-toolbar="[]"></text-angular>
                 </div>
 
-                <input ng-show="!item.format || item.format == 'plain'"
-                        disabled="disabled" ng-model="currentValue" name="ac-edit-message-input"
+                <input ng-if="::(!item.format || item.format == 'plain')"
+                        disabled="disabled" ng-model="values.current" name="ac-edit-message-input"
                        class="form-control ac-edit-message-input ac-edit-message-input-disabled"
                         type="text" placeholder=""
                         >
