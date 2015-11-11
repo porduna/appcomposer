@@ -10,7 +10,7 @@ from hashlib import new as new_hash
 
 from functools import wraps
 
-from flask import session, render_template, flash, request, redirect, url_for
+from flask import session, render_template, flash, request, redirect, url_for, jsonify
 from flask.ext.wtf import TextField, Form, PasswordField, validators
 
 from appcomposer import db
@@ -266,6 +266,20 @@ def requires_golab_login(f):
     def wrapper(*args, **kwargs):
         if current_golab_user() is None:
             return redirect(url_for('graasp_oauth_login', next=request.url))
+        return f(*args, **kwargs)
+
+    return wrapper
+
+def requires_golab_api_login(f):
+    """
+    Require that a particular flask URL requires login. It will require the user to be logged,
+    and if he's not logged he will be redirected there afterwards.
+    """
+
+    @wraps(f)
+    def wrapper(*args, **kwargs):
+        if current_golab_user() is None:
+            return jsonify(error=True, reason="authenticate"), 403
         return f(*args, **kwargs)
 
     return wrapper

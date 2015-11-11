@@ -28,7 +28,7 @@ from wtforms.validators import url, required
 from appcomposer.db import db
 from appcomposer.application import app
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp, GoLabOAuthUser, ActiveTranslationMessage, TranslationMessageHistory
-from appcomposer.login import requires_golab_login, current_golab_user
+from appcomposer.login import requires_golab_login, requires_golab_api_login, current_golab_user
 from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
 from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
@@ -206,7 +206,7 @@ def api_groups():
     return jsonify(**obtain_groups())
 
 @translator_blueprint.route("/api/apps/bundles/<language>/<target>/checkModifications", methods=["GET"])
-@requires_golab_login
+@requires_golab_api_login
 @cross_origin()
 @api
 def check_modifications(language, target):
@@ -234,7 +234,7 @@ def check_modifications(language, target):
 
 
 @translator_blueprint.route("/api/apps/bundles/<language>/<target>/updateMessage", methods=["GET", "PUT", "POST"])
-@requires_golab_login
+@requires_golab_api_login
 @cross_origin()
 @api
 def bundle_update(language, target):
@@ -293,7 +293,7 @@ def api_app():
     return jsonify(**app_data)
 
 @translator_blueprint.route('/api/apps/bundles/<language>/<target>')
-@requires_golab_login
+@requires_golab_api_login
 @cross_origin()
 @api
 def api_translate(language, target):
