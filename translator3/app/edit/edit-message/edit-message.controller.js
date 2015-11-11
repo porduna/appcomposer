@@ -18,10 +18,13 @@ function EditMessageController($scope, $log, $resource) {
 
     $scope.messageActive = false;
 
-    $scope.currentValue = $scope.item.target;
+    $scope.selected = {};
 
-    $scope.savedValue = $scope.item.target; // Value saved into the server
-    $scope.savingValue = $scope.item.target; // Value being saved
+    $scope.values = {
+        current: $scope.item.target,
+        saved: $scope.item.target, // Value saved into the server
+        saving: $scope.item.target // Value being saved
+    };
 
     $scope.status = {};
     $scope.status.saving = false; // Message is being saved (or not)
@@ -62,7 +65,7 @@ function EditMessageController($scope, $log, $resource) {
      * is from_default and at the same time if the message is the original.
      */
     function shouldShowFromDefaultWarning() {
-        return $scope.item.from_default && $scope.getCurrentTextValue() == $scope.savedValue;
+        return $scope.item.from_default && $scope.getCurrentTextValue() == $scope.values.saved;
     } // !shouldShowFromDefaultWarning
 
     /**
@@ -74,7 +77,7 @@ function EditMessageController($scope, $log, $resource) {
         $log.debug("Confirming translation");
 
         // Force a save.
-        $scope.savedValue = "";
+        $scope.values.saved = "";
         onChange();
 
         // Locally change the from_default to indicate that we no longer should show the warning etc.
@@ -90,9 +93,9 @@ function EditMessageController($scope, $log, $resource) {
      * @param oldval
      */
     function onItemChanged(newval, oldval) {
-        if($scope.currentValue != $scope.item.target) {
-            $scope.currentValue = $scope.item.target;
-            $scope.savedValue = $scope.currentValue;
+        if($scope.values.current != $scope.item.target) {
+            $scope.values.current = $scope.item.target;
+            $scope.values.saved = $scope.values.current;
             $scope.flashElement();
         }
     } // !onItemChanged
@@ -122,8 +125,8 @@ function EditMessageController($scope, $log, $resource) {
 
         $log.debug("Selected suggestion: " + $scope.selected.suggestion.target);
 
-        $scope.currentValue = $scope.selected.suggestion.target;
-        // The above currentValue setting should suffice, but in this case we want it to take effect immediately
+        $scope.values.current = $scope.selected.suggestion.target;
+        // The above values.current setting should suffice, but in this case we want it to take effect immediately
         // so that the fake onChange() call can detect it.
         $scope.setCurrentTextValue($scope.selected.suggestion.target);
 
@@ -133,7 +136,7 @@ function EditMessageController($scope, $log, $resource) {
         $scope.selected.suggestion = "";
 
         // Force a save.
-        $scope.savedValue = undefined;
+        $scope.values.saved = undefined;
 
         // Trigger a fake onChange event.
         onChange();
@@ -160,7 +163,7 @@ function EditMessageController($scope, $log, $resource) {
      * True if the form is currently displaying the saved version of the text.
      */
     function isSaved() {
-        return $scope.savedValue == $scope.getCurrentTextValue();
+        return $scope.values.saved == $scope.getCurrentTextValue();
     } // !isSaved
 
     function onFocus(event) {
@@ -187,11 +190,11 @@ function EditMessageController($scope, $log, $resource) {
             }
 
             $scope.status.saving = true;
-            $scope.savingValue = $scope.currentValue;
+            $scope.values.saving = $scope.values.current;
 
             var data = {
                 "key": $scope.key,
-                "value": $scope.savingValue
+                "value": $scope.values.saving
             };
 
             var UpdateMessagePut = $resource(APP_DYN_ROOT + "api/apps/bundles/:language/:target/updateMessage",
@@ -208,12 +211,12 @@ function EditMessageController($scope, $log, $resource) {
                 }
             });
 
-            var result = UpdateMessagePut.update(data, {});
+            var result = UpdateMessagePut.update(data, data);
 
             result.$promise.then(onUpdateSuccess, onUpdateFailure);
         }
 
-        $scope.unchangedValue = $scope.currentValue;
+        $scope.unchangedValue = $scope.values.current;
     } // !onChange
 
 
@@ -221,7 +224,7 @@ function EditMessageController($scope, $log, $resource) {
         $scope.status.error = false;
         $scope.status.saving = false;
         $scope.item.from_default = false; // Will no longer be from_default. We guess.
-        $scope.savedValue = $scope.savingValue;
+        $scope.values.saved = $scope.values.saving;
     } // !onUpdateSuccess
 
 
@@ -237,9 +240,9 @@ function EditMessageController($scope, $log, $resource) {
 
 
     function onKey(event) {
+        // 27 = Escape
         if (event.keyCode == 27) {
             $log.debug("Rolling back to " + $scope.unchangedValue);
-
             this.getModelController().$rollbackViewValue();
         }
     } // !onKey

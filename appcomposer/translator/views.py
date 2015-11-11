@@ -335,7 +335,8 @@ def api_translate(language, target):
             'target' : current_target,
             'from_default' : stored.get('from_default', False),
             'suggestions' : current_suggestions,
-            'can_edit' : can_edit
+            'can_edit' : can_edit,
+            'format': original_message_pack.get('format', 'plain'),
         }
 
     app_thumb = None

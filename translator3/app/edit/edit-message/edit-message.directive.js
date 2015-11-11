@@ -20,7 +20,12 @@ function acEditMessage() {
 
     function acEditMessageLink(scope, elem, attrs, ctrl) {
 
-        var input = elem.find("input.ac-edit-message-input");
+        var input = null;
+        function getCurrentInput() {
+            if (input == null)
+                input = elem.find("input.ac-edit-message-input");
+            return input;
+        }
 
         scope.setCurrentTextValue = setCurrentTextValue;
         scope.getCurrentTextValue = getCurrentTextValue;
@@ -37,7 +42,7 @@ function acEditMessage() {
          * it seems to be much easier than with ngAnimate or similar.
          */
         function flashElement () {
-            var elements = input;
+            var elements = getCurrentInput();
 
             var initialBackground = $(elements).css("background");
             var opacity = 100;
@@ -55,22 +60,22 @@ function acEditMessage() {
         }
 
         function getCurrentTextValue() {
-            return input.val();
+            return getCurrentInput().val();
         } // !getCurrentTextValue
 
         function setCurrentTextValue(val) {
             console.debug("setCurrentTextValue with: " + val);
-            input.val(val);
+            getCurrentInput().val(val);
         } // !setCurrentTextValue
 
 
         function getModelController() {
-            return input.data('$ngModelController');
+            return getCurrentInput().data('$ngModelController');
         } // !getModelController
 
         function focusTextInput() {
-            if ($(input).is(':focus') == false) {
-                input.focus();
+            if ($(getCurrentInput()).is(':focus') == false) {
+                getCurrentInput().focus();
             }
         } // !focusTextInput
 

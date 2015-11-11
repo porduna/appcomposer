@@ -2,17 +2,17 @@
 <form name="ac-edit-message-form" class="form-horizontal ac-edit-message-form">
     <div class="form-group has-feedback ac-edit-message-form-group">
 
-        <label ng-if="!item.format || item.format == 'plain'" for="next" class="col-xs-6 control-label ac-edit-message-label" title="{{ key }}">{{ item.source }}</label>
+        <label ng-if="::(!item.format || item.format == 'plain')" for="next" class="col-xs-6 control-label ac-edit-message-label" title="{{ ::key }}">{{ ::item.source }}</label>
 
-        <div ng-if="item.format == 'textAngular'" class="col-xs-6">
-            <text-angular ta-toolbar="[]" ta-disabled='true' ng-model="item.source"></text-angular>
+        <div ng-if="::(item.format == 'textAngular')" class="col-xs-6">
+            <text-angular ta-toolbar="[]" ta-disabled='true' ng-model="::item.source"></text-angular>
         </div>
 
-        <div ng-show="item.can_edit" class="col-xs-6">
+        <div ng-if="::item.can_edit" class="col-xs-6">
 
-            <div ng-show="item.format == 'textAngular'">
+            <div ng-if="::(item.format == 'textAngular')">
                <text-angular ng-focus="onFocus($event)"
-                              ng-model="currentValue"
+                              ng-model="values.current"
                               ng-change="onChange()"
                               class="ac-edit-message-control"
                               ng-class="{'ac-edit-message-input-from-default': item.from_default}"></text-angular>
@@ -20,8 +20,10 @@
 
             </div>
 
-            <input ng-show="!item.format || item.format == 'plain'"
-                   ng-focus="onFocus($event)" ng-change="onChange()" ng-model="currentValue"
+            <input ng-if="::(!item.format || item.format == 'plain')"
+                   ng-focus="onFocus($event)" 
+                   ng-model="values.current"
+                   ng-change="onChange()" 
                    ng-model-options="{ updateOn: 'change blur' }"
                    ng-keyup="onKey($event)" name="ac-edit-message-input"
                    ng-class="{'ac-edit-message-input-from-default': item.from_default}" class="form-control ac-edit-message-control ac-edit-message-input"
@@ -35,26 +37,26 @@
                 Could not save the last changes.
             </span>
         </div>
-        <div ng-show="!item.can_edit" class="col-xs-6">
+        <div ng-if="::(!item.can_edit)" class="col-xs-6">
             <div tooltip="This message translation is provided by the App and cannot be modified">
 
-                <div ng-show="item.format == 'textAngular'">
-                    <text-angular class="ac-edit-message-control" ng-model="currentValue"
-                        ta-disabled="true" ta-toolbar="[]"></text-angular>
+                <div ng-if="::(item.format == 'textAngular')">
+                    <text-angular 
+                        class="ac-edit-message-control"
+                        ta-disabled="true" ta-toolbar="[]" ng-model="::values.current"></text-angular>
                 </div>
 
-                <input ng-show="!item.format || item.format == 'plain'"
-                        disabled="disabled" ng-model="currentValue" name="ac-edit-message-input"
+                <input ng-if="::(!item.format || item.format == 'plain')"
+                        disabled="disabled" name="ac-edit-message-input"
                        class="form-control ac-edit-message-input ac-edit-message-input-disabled"
-                        type="text" placeholder=""
-                        >
+                        type="text" placeholder="" value="{{ ::values.current }}"/>
                 <span ng-show="!status.saving && isSaved()" title="Original" name="ac-shield-icon"
                   class="fa fa-shield form-control-feedback ac-fa-control-feedback"></span>
             </div>
         </div>
     </div>
 
-    <div ng-show="shouldDisplayDetails()" class="ac-edit-message-details">
+    <div ng-if="shouldDisplayDetails()" class="ac-edit-message-details">
             <div class="form-group">
 
                 <div class="col-xs-12 col-md-6">
@@ -65,15 +67,13 @@
                         will be removed.</span>
                         </p>
                         <p>
-                        <button ng-click="confirmTranslation()" class="btn btn-small btn-success"><span class="fa fa-check"/> {{ 'Confirm current translation' | translate }}</button>
+                        <button ng-click="confirmTranslation()" class="btn btn-small btn-success"><span class="fa fa-check"/> {{ ::('Confirm current translation' | translate) }}</button>
                         </p>
                     </div>
                 </div>
 
                 <div class="col-xs-12 col-md-6">
-                    <label class="control-label">
-                        Suggested automatic translations:
-                    </label>
+                    <label class="control-label" translate>Suggested automatic translations:</label>
                     <select ng-change="suggestionSelected()" ng-click="" class="form-control ac-edit-suggestion-select" size="6" ng-model="selected.suggestion"
                         ng-options="suggestion as suggestion.target for suggestion in item.suggestions | orderBy:'suggestion.weight'"
                         class="form-control">
