@@ -11,7 +11,9 @@ function acAppDependencies() {
         templateUrl: "common/app-dependencies/app-dependencies.directive.html",
         link: appDependenciesLink,
         scope: {
-            dependencies: "="
+            dependencies: "=",
+            lang: "=",
+            target: "="
         }
     };
 

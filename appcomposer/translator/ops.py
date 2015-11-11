@@ -642,8 +642,6 @@ def retrieve_translations_stats(translation_url, original_messages):
                         'link': tool_link,
                         'title': tool_name,
                         'app_url': tool_app_url,
-                        'lang': lang,
-                        'target': target,
                     })
                 
                 # After this, make sure we populate the rest of the languages too
@@ -667,8 +665,6 @@ def retrieve_translations_stats(translation_url, original_messages):
                             'link': tool_link,
                             'title': tool_name,
                             'app_url': tool_app_url,
-                            'lang': lang,
-                            'target': target,
                         })
 
     translations = {
