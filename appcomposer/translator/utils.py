@@ -407,6 +407,8 @@ def bundle_to_xml(db_bundle, category = None, tool_id = None):
         xml_msg.attrib['name'] = message.key
         if message.category:
             xml_msg.attrib['category'] = message.category
+        if message.fmt and message.fmt != 'plain':
+            xml_msg.attrib['format'] = message.fmt
         if message.tool_id:
             xml_msg.attrib['toolId'] = message.tool_id
         elif message.namespace:

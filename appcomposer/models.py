@@ -450,6 +450,7 @@ class ActiveTranslationMessage(db.Model):
     taken_from_default = db.Column(db.Boolean, index = True)
     same_tool = db.Column(db.Boolean, index = True)
     tool_id = db.Column(db.Unicode(255), index = True)
+    fmt = db.Column(db.Unicode(255), index = True)
     position = db.Column(db.Integer, index = True) # position in the XML file, starting by 0
     category = db.Column(db.Unicode(255), index = True) # optional category for each translation
     from_developer = db.Column(db.Boolean, index = True) # a from_developer bundle can contain some messages which are not from the developer
@@ -458,7 +459,7 @@ class ActiveTranslationMessage(db.Model):
     bundle = relation("TranslationBundle", backref="active_messages")
     history = relation("TranslationMessageHistory", backref="active")
 
-    def __init__(self, bundle, key, value, history, datetime, taken_from_default, position, category, from_developer, namespace, tool_id, same_tool):
+    def __init__(self, bundle, key, value, history, datetime, taken_from_default, position, category, from_developer, namespace, tool_id, same_tool, fmt):
         if value is None:
             value = ""
         self.bundle = bundle
@@ -473,6 +474,7 @@ class ActiveTranslationMessage(db.Model):
         self.namespace = namespace
         self.tool_id = tool_id
         self.same_tool = same_tool
+        self.fmt = fmt
         if self.namespace and not self.category:
             self.category = self.namespace
 
