@@ -34,6 +34,7 @@ OTHER_LANGUAGES = [
     'ar', # Arabic
     'zh', # Chinese
     'hi', # Hindi
+    'no' # Norwegian
 ]
 
 ALL_LANGUAGES = OFFICIAL_EUROPEAN_UNION_LANGUAGES + SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
