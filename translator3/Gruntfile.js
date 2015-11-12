@@ -17,6 +17,8 @@ module.exports = function (grunt) {
 
     grunt.loadNpmTasks('grunt-injector');
 
+    grunt.loadNpmTasks('grunt-preprocess');
+
     // Configurable paths for the application
     var config = {
         app: require('./bower.json').appPath || 'app',
