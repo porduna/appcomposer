@@ -36,6 +36,20 @@
     <div ng-view=""></div>
 </div>
 
+<!-- @if NODE_ENV='development' -->
+<script type="text/javascript">
+    console.log("WE ARE IN A DEVELOPMENT ENVIRONMENT");
+</script>
+<!-- @endif -->
+
+<!-- @if NODE_ENV='production' -->
+<script type="text/javascript">
+    console.log("WE ARE IN A PRODUCTION ENVIRONMENT");
+</script>
+<!-- @endif -->
+
+
+
 <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
 <script>
     !function (A, n, g, u, l, a, r) {

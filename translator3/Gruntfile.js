@@ -69,6 +69,10 @@ module.exports = function (grunt) {
                     event: ['added', 'deleted']
                 }
             },
+            indexhtml: {
+                files: ['<%= yeoman.app %>/index.html'],
+                tasks: ['preprocess']
+            },
             gruntfile: {
                 files: ['Gruntfile.js']
             },
@@ -226,7 +230,7 @@ module.exports = function (grunt) {
         // concat, minify and revision files. Creates configurations in memory so
         // additional tasks can operate on them
         useminPrepare: {
-            html: '<%= yeoman.app %>/index.html',
+            html: '.tmp/index.html',
             options: {
                 dest: '<%= yeoman.dist %>',
                 flow: {
@@ -275,6 +279,18 @@ module.exports = function (grunt) {
         // concat: {
         //   dist: {}
         // },
+
+        preprocess: {
+            options: {
+                context: {
+                    DEBUG: true
+                }
+            },
+            html: {
+                src: '<%= yeoman.app %>/index.html',
+                dest: '.tmp/index.html'
+            }
+        },
 
         imagemin: {
             dist: {
@@ -347,7 +363,7 @@ module.exports = function (grunt) {
                     src: [
                         '*.{ico,png,txt}',
                         '.htaccess',
-                        '*.html',
+                        //'*.html',     // We comment this out because we want to use .tmp/*.html (the processed files)
                         '*/**/*.html',
                         'images/{,*/}*.*',
                         'fonts/{,*/}*.*'
@@ -375,6 +391,13 @@ module.exports = function (grunt) {
                 cwd: '<%= yeoman.app %>/styles',
                 dest: '.tmp/styles/',
                 src: '{,*/}*.css'
+            },
+
+            // Copies the preprocessed index.html to the dist folder, for it to be minified etc.
+            preprocessed: {
+                expand: false,
+                src: '.tmp/index.html',
+                dest: '<%= yeoman.dist %>/index.html'
             }
         },
 
@@ -416,6 +439,7 @@ module.exports = function (grunt) {
             'clean:server',
             'injector',
             'wiredep',
+            'preprocess',
             'concurrent:server',
             'autoprefixer',
             'connect:livereload',
@@ -439,12 +463,14 @@ module.exports = function (grunt) {
     grunt.registerTask('build', [
         'clean:dist',
         'wiredep',
+        'preprocess',
         'useminPrepare',
         'concurrent:dist',
         'autoprefixer',
         'concat',
         'ngAnnotate',
         'copy:dist',
+        'copy:preprocessed',
         // Disabled
         //'cdnify',
         'cssmin',
