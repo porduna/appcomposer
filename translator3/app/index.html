@@ -28,6 +28,13 @@
 
 <script type="text/javascript">
     TRANSLATIONS = {};
+    ENV = {};
+
+    if(console == undefined) {
+        console = {};
+        if(console.log == undefined)
+            console.log = function(msg) {};
+    }
 </script>
 
 <body>
@@ -38,19 +45,38 @@
 
 <!-- @if NODE_ENV='development' -->
 <script type="text/javascript">
+    window.ENV.env = "development";
     console.log("WE ARE IN A DEVELOPMENT ENVIRONMENT");
+    console.log("If this is meant to be running in PRODUCTION, please, make sure that the NODE_ENV environment" +
+        " variable is set before building.");
 </script>
 <!-- @endif -->
 
 <!-- @if NODE_ENV='production' -->
 <script type="text/javascript">
+    window.ENV.env = "production";
     console.log("WE ARE IN A PRODUCTION ENVIRONMENT");
 </script>
 <!-- @endif -->
 
 
 
+<!-- @if NODE_ENV='development' -->
 <!-- Google Analytics: change UA-XXXXX-X to be your site's ID -->
+<script>
+    !function (A, n, g, u, l, a, r) {
+        A.GoogleAnalyticsObject = l, A[l] = A[l] || function () {
+            (A[l].q = A[l].q || []).push(arguments)
+        }, A[l].l = +new Date, a = n.createElement(g),
+                r = n.getElementsByTagName(g)[0], a.src = u, r.parentNode.insertBefore(a, r)
+    }(window, document, 'script', '//www.google-analytics.com/analytics_debug.js', 'ga');
+
+    ga('create', 'UA-70019456-1', {'cookieDomain': 'none'});
+    ga('send', 'pageview');
+</script>
+<!-- @endif -->
+
+<!-- @if NODE_ENV='production' -->
 <script>
     !function (A, n, g, u, l, a, r) {
         A.GoogleAnalyticsObject = l, A[l] = A[l] || function () {
@@ -59,9 +85,10 @@
                 r = n.getElementsByTagName(g)[0], a.src = u, r.parentNode.insertBefore(a, r)
     }(window, document, 'script', '//www.google-analytics.com/analytics.js', 'ga');
 
-    ga('create', 'UA-XXXXX-X');
+    ga('create', 'UA-70019456-1');
     ga('send', 'pageview');
 </script>
+<!-- @endif -->
 
 <!-- build:js(.) scripts/vendor.js -->
 <!-- bower:js -->
