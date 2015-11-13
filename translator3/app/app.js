@@ -20,7 +20,7 @@ angular
 function initialize($log, $location) {
     var src = window.location.origin + window.location.pathname;
 
-    if(src.search("http://localhost:9000") == 0 || src.search("http://localhost:8000") || src.search("http://localhost:5000") == 0)
+    if(src.search("http://localhost:9000") == 0 || src.search("http://localhost:8000") == 0 || src.search("http://localhost:5000") == 0)
         window.APP_DYN_ROOT = "http://localhost:5000/translator/";
     else {
 
