@@ -842,7 +842,7 @@ def end_synchronization(sync_id, number):
             raise
 
 def get_latest_synchronizations():
-    latest_syncs = db.session.query(TranslationSyncLog)[-10:]
+    latest_syncs = db.session.query(TranslationSyncLog).order_by(TranslationSyncLog.start_datetime.desc()).limit(10).all()
     return [
         {
             'id' : sync.id,
