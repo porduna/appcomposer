@@ -82,7 +82,7 @@ def synchronize_apps_no_cache(source, single_app_url = None):
     sync_id = start_synchronization(source = source, cached = False, single_app_url = single_app_url)
     number = 0
     try:
-        cached_requests = trutils.get_cached_session()
+        cached_requests = trutils.get_cached_session(caching = False)
         synced_apps = []
         all_golab_apps = _get_golab_translations(cached_requests)
         all_golab_apps.extend(get_other_apps())

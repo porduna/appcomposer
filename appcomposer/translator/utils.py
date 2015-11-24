@@ -84,7 +84,10 @@ class LastModifiedNoDate(LastModified):
     def warning(self, resp):
         return None
 
-def get_cached_session():
+def get_cached_session(caching = True):
+    if not caching:
+        return requests.Session()
+
     CACHE_DIR = 'web_cache'
     return CacheControl(requests.Session(),
                     cache=FileCache(CACHE_DIR), heuristic=LastModifiedNoDate(require_date=False))
@@ -150,7 +153,7 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
     try:
         translation_messages_response = cached_requests.get(absolute_translation_url, timeout = 30)
         raise_for_status(absolute_translation_url, translation_messages_response)
-        if only_if_new and translation_messages_response.from_cache:
+        if only_if_new and hasattr(translation_messages_response, 'from_cache') and translation_messages_response.from_cache:
             return absolute_translation_url, None, {}
         translation_messages_xml = get_text_from_response(translation_messages_response)
     except Exception as e:
@@ -403,7 +406,13 @@ def _get_sorted_messages(db_bundle, category, tool_id):
 
 def bundle_to_xml(db_bundle, category = None, tool_id = None):
     xml_bundle = ET.Element("messagebundle")
+    own_tool_id = None
+    requires = set()
     for message in _get_sorted_messages(db_bundle, category, tool_id):
+        if message.same_tool:
+            own_tool_id = message.tool_id
+        if message.tool_id and not message.same_tool:
+            requires.add(message.tool_id)
         xml_msg = ET.SubElement(xml_bundle, 'msg')
         xml_msg.attrib['name'] = message.key
         if message.category:
@@ -418,6 +427,13 @@ def bundle_to_xml(db_bundle, category = None, tool_id = None):
             xml_msg.append(CDATA(message.value))
         else:            
             xml_msg.text = message.value
+    if own_tool_id:
+        xml_bundle.attrib['toolId'] = own_tool_id
+    if requires:
+        xml_bundle.attrib['requires'] = ','.join(list(requires))
+    subscriptions = db_bundle.translation_url.subscriptions
+    if subscriptions:
+        xml_bundle.attrib['mails'] = ','.join([ subscription.recipient.email for subscription in subscriptions ])
     indent(xml_bundle)
     xml_string = ET.tostring(xml_bundle, encoding = 'UTF-8')
     return xml_string
