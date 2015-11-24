@@ -94,7 +94,7 @@ def synchronize_apps_no_cache(source, single_app_url = None):
 class MetadataTask(threading.Thread):
     def __init__(self, app_url, force_reload):
         threading.Thread.__init__(self)
-        self.cached_requests = trutils.get_cached_session()
+        self.cached_requests = trutils.get_cached_session(caching = not force_reload)
         self.app_url = app_url
         self.force_reload = force_reload
         self.finished = False
