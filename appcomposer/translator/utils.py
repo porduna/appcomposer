@@ -21,6 +21,7 @@ from cachecontrol.heuristics import LastModified, TIME_FMT
 from appcomposer import db
 from appcomposer.models import TranslationFastCache
 from appcomposer.translator.exc import TranslatorError
+from appcomposer.translator.cdata import CDATA
 
 DEBUG = True
 
@@ -413,7 +414,10 @@ def bundle_to_xml(db_bundle, category = None, tool_id = None):
             xml_msg.attrib['toolId'] = message.tool_id
         elif message.namespace:
             xml_msg.attrib['namespace'] = message.namespace
-        xml_msg.text = message.value
+        if '<' in message.value or '>' in message.value or '&' in message.value:
+            xml_msg.append(CDATA(message.value))
+        else:            
+            xml_msg.text = message.value
     indent(xml_bundle)
     xml_string = ET.tostring(xml_bundle, encoding = 'UTF-8')
     return xml_string
