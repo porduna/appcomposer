@@ -1,5 +1,7 @@
 import xml.etree.ElementTree as ET
 
+ET.sorted = lambda x: x
+
 # Code from: 
 # http://stackoverflow.com/questions/1091945/what-characters-do-i-need-to-escape-in-xml-documents
 def CDATA(text=None):

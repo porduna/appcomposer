@@ -405,7 +405,7 @@ def _get_sorted_messages(db_bundle, category, tool_id):
     return active_messages
 
 def bundle_to_xml(db_bundle, category = None, tool_id = None):
-    xml_bundle = ET.Element("messagebundle")
+    xml_bundle = ET.Element("messagebundle", attrib = OrderedDict())
     own_tool_id = None
     requires = set()
     for message in _get_sorted_messages(db_bundle, category, tool_id):
@@ -413,27 +413,30 @@ def bundle_to_xml(db_bundle, category = None, tool_id = None):
             own_tool_id = message.tool_id
         if message.tool_id and not message.same_tool:
             requires.add(message.tool_id)
-        xml_msg = ET.SubElement(xml_bundle, 'msg')
-        xml_msg.attrib['name'] = message.key
-        if message.category:
-            xml_msg.attrib['category'] = message.category
-        if message.fmt and message.fmt != 'plain':
-            xml_msg.attrib['format'] = message.fmt
+
+        attrib = OrderedDict()
         if message.tool_id:
-            xml_msg.attrib['toolId'] = message.tool_id
+            attrib['toolId'] = message.tool_id
         elif message.namespace:
-            xml_msg.attrib['namespace'] = message.namespace
+            attrib['namespace'] = message.namespace
+        attrib['name'] = message.key
+        if message.category:
+            attrib['category'] = message.category
+        if message.fmt and message.fmt != 'plain':
+            attrib['format'] = message.fmt
+        
+        xml_msg = ET.SubElement(xml_bundle, 'msg', attrib = attrib)
         if '<' in message.value or '>' in message.value or '&' in message.value:
             xml_msg.append(CDATA(message.value))
         else:            
             xml_msg.text = message.value
     if own_tool_id:
         xml_bundle.attrib['toolId'] = own_tool_id
-    if requires:
-        xml_bundle.attrib['requires'] = ','.join(list(requires))
     subscriptions = db_bundle.translation_url.subscriptions
     if subscriptions:
         xml_bundle.attrib['mails'] = ','.join([ subscription.recipient.email for subscription in subscriptions ])
+    if requires:
+        xml_bundle.attrib['requires'] = ', '.join(list(requires))
     indent(xml_bundle)
     xml_string = ET.tostring(xml_bundle, encoding = 'UTF-8')
     return xml_string
