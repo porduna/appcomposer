@@ -109,6 +109,10 @@ class MicrosoftTranslator(AbstractTranslator):
             traceback.print_exc()
             app.logger.warn("Error translating using Microsoft Translator API: %s" % e, exc_info = True)
             return {}
+        except ArgumentOutOfRangeException as e:
+            traceback.print_exc()
+            app.logger.warn("Error translating using Microsoft Translator API: %s" % e, exc_info = True)
+            return {}
             
         app.logger.debug("Translated %s sentences using Microsoft Translator API" % len(ms_translations))
         
