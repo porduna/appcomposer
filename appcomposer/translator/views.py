@@ -885,7 +885,7 @@ def _translations_app_url_zip(app_url, output_format):
     if translated_app.translation_url:
         for bundle in translated_app.translation_url.bundles:
             xml_contents = serializer(bundle, category, tool_id)
-            zf.writestr('%s_%s.%s' % (bundle.language, bundle.target, extension), xml_contents)
+            zf.writestr('%s_%s.%s' % (bundle.language, bundle.target, extension), xml_contents.encode('utf8'))
     zf.close()
 
     resp = make_response(sio.getvalue())
