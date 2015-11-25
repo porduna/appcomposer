@@ -9,13 +9,15 @@
         <tr>
             <th>Gravatar</th>
             <th>First name</th>
+            <th>Messages translated</th>
         </tr>
     </thead>
     <tbody>
-        {% for gravatar_id in users_by_gravatar %}
+        {% for user_data in users_by_gravatar|sort(attribute='texts', reverse=True) %}
         <tr>
-            <td><img src="{{ gravatar_id }}"></td>
-            <td>{{ users_by_gravatar[gravatar_id] }}</td>
+            <td><img src="{{ user_data['gravatar_url'] }}"></td>
+            <td>{{ user_data['display_name'] }}</td>
+            <td>{{ user_data['texts']  }}</td>
         </tr>
         {% endfor %}
     </tbody>

@@ -504,11 +504,20 @@ def translations():
 @requires_golab_login
 def translation_users():
     users = db.session.query(GoLabOAuthUser.display_name, GoLabOAuthUser.email).all()
-    users_by_gravatar = OrderedDict()
+    users_by_gravatar = []
+    texts_by_user = {
+        # email: number
+    }
+    for number, email in db.session.query(func.count(ActiveTranslationMessage.id), GoLabOAuthUser.email).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == GoLabOAuthUser.id).group_by(GoLabOAuthUser.email).all():
+        texts_by_user[email] = number
 
     for display_name, email in users:
         gravatar_url = 'http://gravatar.com/avatar/%s?s=40&d=identicon' % hashlib.md5(email).hexdigest()
-        users_by_gravatar[gravatar_url] = display_name.strip().replace('.', ' ').title().split(' ')[0]
+        users_by_gravatar.append({
+            'gravatar_url': gravatar_url,
+            'display_name': display_name.strip().replace('.', ' ').title().split(' ')[0],
+            'texts':  texts_by_user.get(email, 0),
+        })
 
     return render_template('translator/users.html', users_by_gravatar = users_by_gravatar)
 
