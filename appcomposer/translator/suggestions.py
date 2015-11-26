@@ -1,6 +1,6 @@
 import hashlib
 import traceback
-from microsofttranslator import Translator as MSTranslator, TranslateApiException as MSTranslatorApiException
+from microsofttranslator import Translator as MSTranslator, TranslateApiException as MSTranslatorApiException, ArgumentOutOfRangeException
 
 from sqlalchemy.exc import IntegrityError
 
