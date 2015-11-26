@@ -508,7 +508,7 @@ def translation_users():
     texts_by_user = {
         # email: number
     }
-    for number, email in db.session.query(func.count(ActiveTranslationMessage.id), GoLabOAuthUser.email).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == GoLabOAuthUser.id).group_by(GoLabOAuthUser.email).all():
+    for number, email in db.session.query(func.count(ActiveTranslationMessage.id), GoLabOAuthUser.email).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == GoLabOAuthUser.id, ActiveTranslationMessage.taken_from_default == False, ActiveTranslationMessage.from_developer == False).group_by(GoLabOAuthUser.email).all():
         texts_by_user[email] = number
 
     for display_name, email in users:

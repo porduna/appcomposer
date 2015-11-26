@@ -7,6 +7,7 @@
 <table class="table">
     <thead>
         <tr>
+            <th>#</th>
             <th>Gravatar</th>
             <th>First name</th>
             <th>Messages translated</th>
@@ -15,6 +16,7 @@
     <tbody>
         {% for user_data in users_by_gravatar|sort(attribute='texts', reverse=True) %}
         <tr>
+            <td>{{ loop.index }}</td>
             <td><img src="{{ user_data['gravatar_url'] }}"></td>
             <td>{{ user_data['display_name'] }}</td>
             <td>{{ user_data['texts']  }}</td>
