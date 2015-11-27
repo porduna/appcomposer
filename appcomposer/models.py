@@ -334,10 +334,12 @@ class TranslationUrl(db.Model):
     id = db.Column(db.Integer, primary_key = True)
     url = db.Column(db.Unicode(255), unique = True, nullable = False, index = True)
     automatic = db.Column(db.Boolean, index = True)
+    attribs = db.Column(db.UnicodeText)
 
-    def __init__(self, url, automatic = True):
+    def __init__(self, url, automatic = True, attribs = ''):
         self.url = url
         self.automatic = automatic
+        self.attribs = attribs
 
     def __unicode__(self):
         return self.url
