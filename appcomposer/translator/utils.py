@@ -444,6 +444,10 @@ def bundle_to_xml(db_bundle, category = None, tool_id = None):
         except:
             traceback.print_exc()
             attribs = {}
+        # Try to preserve the order
+        for field in 'toolId', 'mails', 'requires':
+            if field in attribs:
+                xml_bundle.attrib[field] = attribs.pop(field)
         xml_bundle.attrib.update(attribs)
 
     indent(xml_bundle)
