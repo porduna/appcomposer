@@ -603,13 +603,14 @@ class EmbedApplication(db.Model):
     name = db.Column(db.Unicode(100), index = True, nullable = False)
     owner_id = db.Column(db.Integer, ForeignKey('GoLabOAuthUsers.id'))
     height = db.Column(db.Integer)
+    scale = db.Column(db.Integer) # value multiplied by 100; 9850 represents 98.5
     identifier = db.Column(db.Unicode(36), index = True, nullable = False, unique = True)
     creation = db.Column(db.DateTime, index = True, nullable = False)
     last_update = db.Column(db.DateTime, index = True, nullable = False)
 
     owner = relation("GoLabOAuthUser", backref="embed_applications")
 
-    def __init__(self, url, name, owner, height = None, identifier = None, creation = None, last_update = None):
+    def __init__(self, url, name, owner, height = None, identifier = None, creation = None, last_update = None, scale = None):
         if creation is None:
             creation = datetime.datetime.utcnow()
         if last_update is None:
@@ -625,14 +626,17 @@ class EmbedApplication(db.Model):
         self.creation = creation
         self.last_update = last_update
         self.height = height
+        self.scale = scale
 
-    def update(self, url = None, name = None, height = None):
+    def update(self, url = None, name = None, height = None, scale = None):
         if url is not None:
             self.url = url
         if name is not None:
             self.name = name
         if height is not None:
             self.height = height
+        if scale is not None:
+            self.scale = scale
         self.last_update = datetime.datetime.utcnow()
 
 class EmbedApplicationTranslation(db.Model):
