@@ -287,6 +287,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
 def extract_messages_from_translation(messages_absolute_url, xml_contents):
     contents = fromstring(xml_contents)
     messages = {}
+    attribs = dict(contents.attrib)
     if 'namespace' in contents.attrib:
         default_namespace = contents.attrib['namespace']
     else:
@@ -364,6 +365,7 @@ def extract_messages_from_translation(messages_absolute_url, xml_contents):
     metadata = {
         'mails' : mails,
         'automatic' : automatic,
+        'attribs' : json.dumps(attribs),
     }
     return messages, metadata
 
@@ -430,13 +432,20 @@ def bundle_to_xml(db_bundle, category = None, tool_id = None):
             xml_msg.append(CDATA(message.value))
         else:            
             xml_msg.text = message.value
-    if own_tool_id:
-        xml_bundle.attrib['toolId'] = own_tool_id
-    subscriptions = db_bundle.translation_url.subscriptions
-    if subscriptions:
-        xml_bundle.attrib['mails'] = ','.join([ subscription.recipient.email for subscription in subscriptions ])
-    if requires:
-        xml_bundle.attrib['requires'] = ', '.join(list(requires))
+
+    if db_bundle.translation_url:
+        root_attribs = db_bundle.translation_url.attribs
+    else:
+        root_attribs = ''
+
+    if root_attribs:
+        try:
+            attribs = json.loads(root_attribs)
+        except:
+            traceback.print_exc()
+            attribs = {}
+        xml_bundle.attrib.update(attribs)
+
     indent(xml_bundle)
     xml_string = ET.tostring(xml_bundle, encoding = 'UTF-8')
     return xml_string

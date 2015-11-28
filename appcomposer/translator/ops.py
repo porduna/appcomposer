@@ -39,13 +39,16 @@ def get_golab_default_user():
 def _get_or_create_app(app_url, translation_url, metadata):
     # Create the translation url if not present
     automatic = metadata.get('automatic', True)
+    attribs = metadata.get('attribs', '')
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
     if not db_translation_url:
-        db_translation_url = TranslationUrl(url = translation_url, automatic = automatic)
+        db_translation_url = TranslationUrl(url = translation_url, automatic = automatic, attribs = attribs)
         db.session.add(db_translation_url)
     else:
         if db_translation_url.automatic != automatic:
             db_translation_url.automatic = automatic
+        if db_translation_url.attribs != attribs:
+            db_translation_url.attribs = attribs
 
     SUBSCRIPTION_MECHANISM = 'translation-url'
     subscribed_emails = set([ email for email, in db.session.query(TranslationNotificationRecipient.email).filter(TranslationSubscription.translation_url == db_translation_url, TranslationSubscription.mechanism == SUBSCRIPTION_MECHANISM, TranslationSubscription.recipient_id == TranslationNotificationRecipient.id).all() ])
