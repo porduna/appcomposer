@@ -92,6 +92,7 @@ class ApplicationForm(Form):
     name = TextField(lazy_gettext("Name:"), validators=[required()], widget = AngularJSTextInput(ng_enter="submitForm()"))
     url = URLField(lazy_gettext("Web:"), validators=[required()], widget = AngularJSURLInput(ng_model='embed.url', ng_enter="submitForm()"))
     height = HiddenField(lazy_gettext("Height:"), validators=[required()], widget = AngularJSHiddenInput(ng_model='embed.height'))
+    scale = HiddenField(lazy_gettext("Scale:"), validators=[required()], widget = AngularJSHiddenInput(ng_model='embed.scale'))
 
 def obtain_formatted_languages(existing_language_codes):
     languages = [ (lang.split('_')[0], name) for lang, name in obtain_languages().items() if lang != 'en_ALL' and name != 'DEFAULT']

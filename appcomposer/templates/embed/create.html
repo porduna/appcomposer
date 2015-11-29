@@ -6,6 +6,12 @@
     {% set initial_height = 900 %}
 {% endif %}
 
+{% if form.scale.data %}
+    {% set initial_scale = form.scale.data %}
+{% else %}
+    {% set initial_scale = 900 %}
+{% endif %}
+
 {% block head %}
     {{ super() }}
     <link href="{{ url_for('static', filename='bootstrap-slider.min.css') }}" rel="stylesheet">
@@ -98,8 +104,10 @@
 
                 <div ng-cloak ng-show="embed.url.length > 0" id="slider_container" style="width: 100%">
                     <h2>{{ gettext("Preview") }}</h2>
-                    <p>{{ gettext("Note: adjust height by moving the slider") }}</p>
-                    <input id="slider" style="width: 100%" data-slider-id='height_slider' type="text" data-slider-min="0" data-slider-max="2000" data-slider-step="10" data-slider-value="{{ initial_height }}"/>
+                    <p>{{ gettext("Adjust height") }}</p>
+                    <input id="slider-height" style="width: 100%" data-slider-id='height_slider' type="text" data-slider-min="0" data-slider-max="2000" data-slider-step="10" data-slider-value="{{ initial_height }}"/>
+                    <p>{{ gettext("Adjust scale") }}</p>
+                    <input id="slider-scale" style="width: 100%" data-slider-id='scale_slider' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="0.1" data-slider-value="{{ initial_height }}"/>
                     <iframe {% raw %}ng-src="{{embed.url|trustAsResourceUrl}}" {% endraw %} frameborder='no' id='iframe' width='100%' height='{{ initial_height }}px'></iframe>
                 </div>
         </div>
@@ -143,6 +151,7 @@
             $scope.embed = {
                 url: "",
                 height: {{ initial_height }},
+                scale: {{ initial_scale }},
                 {% if languages %}
                 languages: {{ existing_languages|tojson }},
                 available_languages: {{ languages|tojson }},
@@ -194,9 +203,11 @@
         }
 
         // jQuery code
+
+        // Height:
         $("input[name='height']").val({{ initial_height }});
 
-        $('#slider').slider({
+        $('#slider-height').slider({
             formatter: function(value) {
                 return 'Current value: ' + value;
             }
@@ -206,6 +217,31 @@
             // TODO: the code above should be necessary
             $("input[name='height']").val(evt.value);
         });
+
+        // Scale
+        $("input[name='scale']").val({{ initial_scale }});
+
+        $('#slider-scale').slider({
+            formatter: function(value) {
+                return 'Current value: ' + value;
+            }
+        }).on("slide", function(evt) {
+            var newScaleValue = evt.value / 100;
+            var newScale = "scale(" + newScaleValue + ")";
+            var newWidth = "" + 100/newScaleValue;
+            $("#iframe").css({
+                "width" : newWidth + "%",
+                "-webkit-transform" : newScale,
+                "-moz-transform"    : newScale,
+                "-ms-transform"     : newScale,
+                "-o-transform"      : newScale,
+                "transform"         : newScale
+            });
+            // $scope.embed.height = evt.value;
+            // TODO: the code above should be necessary
+            $("input[name='scale']").val(evt.value);
+        });
+
 
         $(":input.link_input").click(function(){
             this.select();
