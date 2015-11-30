@@ -29,8 +29,8 @@
     </style>
     </head>
 
-    <div style="width: 100%">
-        <iframe id="app_url" frameborder="0" {% if app.height %}height="{{ app.height }}px"{% else %}height="800px" {% endif %}></iframe>
+    <div style="width: 100%; overflow: hidden">
+        <iframe id="app_url" {% if app.scale != 10000 %}scrolling="no"{% endif %} frameborder="0" {% if app.height %}height="{{ app.height }}px"{% else %}height="800px" {% endif %}></iframe>
     </div>
 
     <script type="text/javascript">
