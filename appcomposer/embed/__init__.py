@@ -102,13 +102,24 @@ def obtain_formatted_languages(existing_language_codes):
 def list_of_languages():
     return { key.split('_')[0] : value for key, value in obtain_languages().items() }
         
+def _get_scale_value(form):
+    if form.scale.data:
+        try:
+            scale = int(100 * float(form.scale.data))
+        except ValueError:
+            pass
+        else:
+            form.scale.data = unicode(scale)
+            return scale
+    return None
 
 @embed_blueprint.route('/create', methods = ['GET', 'POST'])
 @requires_golab_login
 def create():
     form = ApplicationForm()
     if form.validate_on_submit():
-        application = EmbedApplication(url = form.url.data, name = form.name.data, owner = current_golab_user(), height=form.height.data)
+        form_scale = _get_scale_value(form)
+        application = EmbedApplication(url = form.url.data, name = form.name.data, owner = current_golab_user(), height=form.height.data, scale=form_scale)
         db.session.add(application)
         try:
             db.session.commit()
@@ -179,7 +190,9 @@ def edit(identifier):
                 existing_languages.pop(existing_language)
                 db.session.delete(translation)
 
-        application.update(url=form.url.data, name=form.name.data, height=form.height.data)
+        form_scale = _get_scale_value(form)
+        print(form_scale)
+        application.update(url=form.url.data, name=form.name.data, height=form.height.data, scale=form_scale)
         db.session.commit()
 
     # Add the posted languages to the existing ones

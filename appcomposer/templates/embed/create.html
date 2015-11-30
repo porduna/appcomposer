@@ -7,9 +7,9 @@
 {% endif %}
 
 {% if form.scale.data %}
-    {% set initial_scale = form.scale.data %}
+    {% set initial_scale = ((form.scale.data or '10000')|int)/100 %}
 {% else %}
-    {% set initial_scale = 900 %}
+    {% set initial_scale = 100 %}
 {% endif %}
 
 {% block head %}
@@ -107,8 +107,10 @@
                     <p>{{ gettext("Adjust height") }}</p>
                     <input id="slider-height" style="width: 100%" data-slider-id='height_slider' type="text" data-slider-min="0" data-slider-max="2000" data-slider-step="10" data-slider-value="{{ initial_height }}"/>
                     <p>{{ gettext("Adjust scale") }}</p>
-                    <input id="slider-scale" style="width: 100%" data-slider-id='scale_slider' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="0.1" data-slider-value="{{ initial_height }}"/>
-                    <iframe {% raw %}ng-src="{{embed.url|trustAsResourceUrl}}" {% endraw %} frameborder='no' id='iframe' width='100%' height='{{ initial_height }}px'></iframe>
+                    <input id="slider-scale" style="width: 100%" data-slider-id='scale_slider' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="0.1" data-slider-value="{{ initial_scale }}"/>
+                    <div id="iframe-container" style="width: 100%">
+                        <iframe {% raw %}ng-src="{{embed.url|trustAsResourceUrl}}" {% endraw %} frameborder='no' id='iframe' width='100%' height='{{ initial_height }}px'></iframe>
+                    </div>
                 </div>
         </div>
     </div>
@@ -220,16 +222,30 @@
 
         // Scale
         $("input[name='scale']").val({{ initial_scale }});
-
+        updateScale({{ initial_scale }});
+        
         $('#slider-scale').slider({
             formatter: function(value) {
                 return 'Current value: ' + value;
             }
         }).on("slide", function(evt) {
-            var newScaleValue = evt.value / 100;
-            var newScale = "scale(" + newScaleValue + ")";
+            updateScale(evt.value);
+            // $scope.embed.scale = evt.value;
+            // TODO: the code above should be necessary
+            $("input[name='scale']").val(evt.value);
+        });
+
+        function updateScale(scale) {
+            var newScaleValue = scale / 100;
             var newWidth = "" + 100/newScaleValue;
+            var newTranslate = "-" + (100-scale) / 2 + "%";
+            var newScale = "scale(" + newScaleValue + ")"; // translateX(" + newTranslate + ") translateY(" + newTranslate + ")";
             $("#iframe").css({
+                "-webkit-transform-origin" : "top left",
+                "-moz-transform-origin" : "top left",
+                "-ms-transform-origin" : "top left",
+                "-o-transform-origin" : "top left",
+                "transform-origin" : "top left",
                 "width" : newWidth + "%",
                 "-webkit-transform" : newScale,
                 "-moz-transform"    : newScale,
@@ -237,10 +253,7 @@
                 "-o-transform"      : newScale,
                 "transform"         : newScale
             });
-            // $scope.embed.height = evt.value;
-            // TODO: the code above should be necessary
-            $("input[name='scale']").val(evt.value);
-        });
+        }
 
 
         $(":input.link_input").click(function(){
