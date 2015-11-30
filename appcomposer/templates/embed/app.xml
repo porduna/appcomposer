@@ -4,7 +4,27 @@
  </ModulePrefs>
  <Content type="html" view="home,canvas">
  <![CDATA[
-    <iframe id="app_url" width="98.9%" frameborder="0" {% if app.height %}height="{{ app.height }}px"{% else %}height="800px" {% endif %}></iframe>
+    {% if app.scale %}
+    {% set new_scale = "scale(%s)" % (app.scale/100) %}
+    <style>
+        #app_url {
+            -webkit-transform-origin: top left,
+            -moz-transform-origin: top left,
+            -ms-transform-origin: top left,
+            -o-transform-origin: top left,
+            transform-origin: top left,
+            width: {{ 100/(app.scale/100) }}%,
+            -webkit-transform: new_scale,
+            -moz-transform: new_scale,
+            -ms-transform: new_scale,
+            -o-transform: new_scale,
+            transform: new_scale
+        }
+    </style>
+    {% endif %}
+    <div style="width: 100%">
+        <iframe id="app_url" width="98.9%" frameborder="0" {% if app.height %}height="{{ app.height }}px"{% else %}height="800px" {% endif %}></iframe>
+    </div>
 
     <script type="text/javascript">
         function init() {
