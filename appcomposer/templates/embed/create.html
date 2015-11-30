@@ -108,7 +108,7 @@
                     <input id="slider-height" style="width: 100%" data-slider-id='height_slider' type="text" data-slider-min="0" data-slider-max="2000" data-slider-step="10" data-slider-value="{{ initial_height }}"/>
                     <p>{{ gettext("Adjust scale") }}</p>
                     <input id="slider-scale" style="width: 100%" data-slider-id='scale_slider' type="text" data-slider-min="0" data-slider-max="100" data-slider-step="0.1" data-slider-value="{{ initial_scale }}"/>
-                    <div id="iframe-container" style="width: 100%">
+                    <div id="iframe-container" style="width: 910px">
                         <iframe {% raw %}ng-src="{{embed.url|trustAsResourceUrl}}" {% endraw %} frameborder='no' id='iframe' width='100%' height='{{ initial_height }}px'></iframe>
                     </div>
                 </div>
@@ -236,10 +236,10 @@
         });
 
         function updateScale(scale) {
-            var newScaleValue = scale / 100;
-            var newWidth = "" + 100/newScaleValue;
-            var newTranslate = "-" + (100-scale) / 2 + "%";
-            var newScale = "scale(" + newScaleValue + ")"; // translateX(" + newTranslate + ") translateY(" + newTranslate + ")";
+            var maxWidth = 98.9;
+            var newScaleValue = scale / maxWidth;
+            var newWidth = "" + maxWidth/newScaleValue;
+            var newScale = "scale(" + newScaleValue + ")";
             $("#iframe").css({
                 "-webkit-transform-origin" : "top left",
                 "-moz-transform-origin" : "top left",
