@@ -275,6 +275,9 @@ def _get_golab_translations(cached_requests):
             current_lab = current_lab.copy()
             current_lab['id'] = '%s-%s' % (lab_id, pos)
             current_lab['app_url'] = internal_lab['app_url']
+            if current_lab['app_url']:
+                if not current_lab['app_url'].startswith('http://') and not current_lab['app_url'].startswith('https://'):
+                    current_lab['app_url'] = 'http://{0}'.format(current_lab['app_url'])
             if len(lab.get('lab_apps', [])) > 1:
                 current_lab['title'] = u"{0} ({1})".format(lab_title, internal_lab['app_title'])
             current_lab['app_type'] = internal_lab['app_type']
@@ -283,6 +286,10 @@ def _get_golab_translations(cached_requests):
     apps.extend(labs_adapted)
     for app in apps:
         app['repository'] = GOLAB_REPO
+        if app['app_url']:
+            app_url = app['app_url']
+            if not app_url.startswith('http://') and not app_url.startswith('https://'):
+                app['app_url'] = 'http://{0}'.format(app_url)
 
     return apps
     
