@@ -251,6 +251,8 @@ def current_golab_user():
         if app.config.get('DEBUG'):
             if request.referrer and request.referrer.startswith('http://localhost:9000/'):
                 return db.session.query(GoLabOAuthUser).first()
+            if app.config.get('FAKE_OAUTH') and request.referrer and request.referrer.startswith('http://localhost:5000/'):
+                return db.session.query(GoLabOAuthUser).first()
 
         return None
 
