@@ -5,22 +5,25 @@ angular
 function acSafeHtml($sanitize, $filter) {
     return {
         restrict: "A",
-        link: function(scope, element, attr) {
+        link: function (scope, element, attr) {
             // No actual binding.
             var orig = scope.$eval(attr.acSafeHtml);
             var safe = $sanitize(orig);
             var safeWithLinks = createAnchors(safe);
             element.html(safeWithLinks);
         }
-    }
-}
+    };
 
-/**
- * The createAnchors function turns raw http:// links in text into html.
- * It is thus somewhat similar to ngSanitize's linky.
- * @param text
- * @returns {*}
- */
-function createAnchors(text) {
-    return text.replace(/(http[^\s]+)/, '<a href="$1">$1</a>');
-}
+
+    /**
+     * The createAnchors function turns raw http:// links in text into html.
+     * It is thus somewhat similar to ngSanitize's linky.
+     * @param text
+     * @returns {*}
+     */
+    function createAnchors(text) {
+        return text;
+        //return text.replace(/(http[^\s]+)/, '<a href="$1">$1</a>');
+    }
+} // !acSafeHtml
+
