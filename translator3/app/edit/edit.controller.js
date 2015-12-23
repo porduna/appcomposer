@@ -139,7 +139,7 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
         else
             $scope.translationInfo.$get(args);
 
-        $scope.translationInfo.$promise.then(onGetSuccess, onGetError);
+        $scope.translationInfo.$promise.then(onTranslationInfoGetSuccess, onGetError);
     } // !retrieveTranslationInfo
 
     /**
@@ -181,13 +181,20 @@ function EditController($scope, $resource, $routeParams, $log, $modal, $timeout,
      */
     function onEditGoNext(args, item) {
         $log.debug("Broadcasting edit-message-focused from EDIT. We should focus: " + (item.index + 1));
+
+        // Find the index of the next edit-message.
+        // BUGFIX: Previously, the next message was focused, even if can_edit was disabled. Now if can_edit is disabled
+        // it will have no effect. Eventually it might be better to focus the next editable item, but that is harder
+        // and requires some changes.
         $scope.$broadcast("edit-message-focused", {index: item.index + 1})
     } // !onMessageEditGoNext
 
+    function onTranslationInfoGetSuccess(data) {
+        // For debugging purposes only
+        // data.translation.grouped.can_edit = false;
+    } // !onTranslationInfoGetSuccess
 
     function onGetSuccess(data) {
-
-
     } // !onThenSuccess
 
     /**
