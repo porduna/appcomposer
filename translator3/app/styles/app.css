@@ -214,8 +214,10 @@ span[name=ac-saved-icon] {
     color: gray;
 }
 
-span[name=ac-shield-icon] {
+span[name=ac-original-icon] {
     color: gray;
+    position: absolute !important;
+    right: 48px !important;
 }
 
 .ac-edit-message-details {

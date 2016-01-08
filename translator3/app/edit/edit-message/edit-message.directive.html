@@ -8,7 +8,7 @@
             <text-angular ta-toolbar="[]" ta-disabled='true' ng-model="::item.source"></text-angular>
         </div>
 
-        <div ng-if="::item.can_edit" class="col-xs-6">
+        <div class="col-xs-6">
 
             <div ng-if="::(item.format == 'textAngular')">
                <text-angular ng-focus="onFocus($event)"
@@ -28,6 +28,8 @@
                    ng-keyup="onKey($event)" name="ac-edit-message-input"
                    ng-class="{'ac-edit-message-input-from-default': item.from_default}" class="form-control ac-edit-message-control ac-edit-message-input"
                    type="text"/>
+            <span ng-show="(!item.can_edit)" title="{{ ::('The original developer is providing a translation for this message' | translate) }}" name="ac-original-icon"
+                  class="fa fa-anchor form-control-feedback ac-fa-control-feedback"></span>
 
             <span ng-show="!status.saving && isSaved() || status.error" title="Saved" name="ac-saved-icon"
                   ng-class="{'ac-icon-error': status.error}" class="fa fa-save form-control-feedback ac-fa-control-feedback"></span>
@@ -37,23 +39,7 @@
                 Could not save the last changes.
             </span>
         </div>
-        <div ng-if="::(!item.can_edit)" class="col-xs-6">
-            <div tooltip="This message translation is provided by the App and cannot be modified">
 
-                <div ng-if="::(item.format == 'textAngular')">
-                    <text-angular 
-                        class="ac-edit-message-control"
-                        ta-disabled="true" ta-toolbar="[]" ng-model="::values.current"></text-angular>
-                </div>
-
-                <input ng-if="::(!item.format || item.format == 'plain')"
-                        disabled="disabled" name="ac-edit-message-input"
-                       class="form-control ac-edit-message-input ac-edit-message-input-disabled"
-                        type="text" placeholder="" value="{{ ::values.current }}"/>
-                <span ng-show="!status.saving && isSaved()" title="Original" name="ac-shield-icon"
-                  class="fa fa-shield form-control-feedback ac-fa-control-feedback"></span>
-            </div>
-        </div>
     </div>
 
     <div ng-if="shouldDisplayDetails()" class="ac-edit-message-details">
