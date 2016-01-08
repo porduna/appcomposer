@@ -151,8 +151,12 @@ function EditMessageController($scope, $log, $resource) {
         var index = args.index;
 
         if( (key && $scope.key == key) || (index && $scope.$parent.index == index) ) {
-            $scope.messageActive = true;
-            window.lastScope = $scope;
+
+            // If we can't edit we do nothing.
+            if($scope.item.can_edit) {
+                $scope.messageActive = true;
+                window.lastScope = $scope;
+            }
         }
         else {
             $scope.messageActive = false;
