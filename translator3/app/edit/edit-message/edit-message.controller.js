@@ -140,6 +140,16 @@ function EditMessageController($scope, $log, $resource) {
 
         // Trigger a fake onChange event.
         onChange();
+
+        $log.debug("A suggestion was chosen.");
+
+        // Go to the next item; raise a go-next event.
+        $log.debug("Emitting edit-go-next event");
+
+        // We keep the messageActive check just in case.
+        if($scope.messageActive) {
+            $scope.$parent.$emit("edit-go-next", {index: $scope.$parent.index});
+        }
     } // !suggestionSelected
 
     /**
@@ -183,15 +193,6 @@ function EditMessageController($scope, $log, $resource) {
         $log.debug("[EditMessageController/onChange]");
         if (!isSaved()) {
             // We should query a server-side update.
-
-            // Go to the next item; raise a go-next event.
-            $log.debug("Emitting edit-go-next event");
-
-            // If we are saving and apparently we remain the active message, we are done here, so
-            // We want to automatically skip to the next.
-            if($scope.messageActive) {
-                $scope.$parent.$emit("edit-go-next", {index: $scope.$parent.index});
-            }
 
             $scope.status.saving = true;
             $scope.values.saving = $scope.values.current;
@@ -248,6 +249,18 @@ function EditMessageController($scope, $log, $resource) {
         if (event.keyCode == 27) {
             $log.debug("Rolling back to " + $scope.unchangedValue);
             this.getModelController().$rollbackViewValue();
+        }
+
+        if (event.keyCode == 13) {
+            $log.debug("Enter detected. Skipping to next item");
+
+            // Go to the next item; raise a go-next event.
+            $log.debug("Emitting edit-go-next event");
+
+            // We keep the messageActive check just in case.
+            if($scope.messageActive) {
+                $scope.$parent.$emit("edit-go-next", {index: $scope.$parent.index});
+            }
         }
     } // !onKey
 
