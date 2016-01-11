@@ -244,7 +244,7 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
         var progress = sprintf("Translation progress: %s", $filter("percentage")(lang.progress, 0));
 
         if (lang.original) {
-            return "This translation is provided by the original developer and will not be applied automatically." + progress;
+            return "This language is provided by the original developer and your adaptation will not be applied automatically." + progress;
         } else {
             return "" + progress;
         }
