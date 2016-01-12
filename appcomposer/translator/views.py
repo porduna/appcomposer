@@ -29,7 +29,7 @@ from appcomposer.db import db
 from appcomposer.application import app
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp, GoLabOAuthUser, ActiveTranslationMessage, TranslationMessageHistory
 from appcomposer.login import requires_golab_login, requires_golab_api_login, current_golab_user
-from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents
+from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents, retrieve_mongodb_apps, retrieve_mongodb_urls, retrieve_mongodb_app, retrieve_mongodb_translation_url
 from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
@@ -931,70 +931,34 @@ def translations_mongodb():
 @translator_blueprint.route('/dev/mongodb/apps/')
 @public
 def translations_mongodb_apps():
-    apps = {}
-    collections = retrieve_mongodb_contents()
-    for app in collections['bundles']:
-        url = app['spec']
-        bundle = app['bundle']
-        lang, target = bundle.rsplit('_', 1)
-        if url not in apps:
-            apps[url] = []
-
-        apps[url].append({
-            'target' : target,
-            'lang' : lang
-        })
-
+    apps = retrieve_mongodb_apps()
     return render_template("translator/mongodb_listing.html", apps = apps, title = "Apps", xml_method = '.translations_mongodb_apps_xml')
 
 @translator_blueprint.route('/dev/mongodb/urls/')
 @public
 def translations_mongodb_urls():
-    apps = {}
-    collections = retrieve_mongodb_contents()
-    for app in collections['translation_urls']:
-        url = app['url']
-        bundle = app['bundle']
-        lang, target = bundle.rsplit('_', 1)
-        if url not in apps:
-            apps[url] = []
-
-        apps[url].append({
-            'target' : target,
-            'lang' : lang
-        })
-
+    apps = retrieve_mongodb_urls()
     return render_template("translator/mongodb_listing.html", apps = apps, title = "URLs", xml_method = '.translations_mongodb_urls_xml')
 
 @translator_blueprint.route('/dev/mongodb/apps/<lang>/<target>/<path:url>')
 @public
 def translations_mongodb_apps_xml(lang, target, url):
-    apps = {}
-    collections = retrieve_mongodb_contents()
-    for app in collections['bundles']:
-        cur_url = app['spec']
-        cur_bundle = app['bundle']
-        cur_lang, cur_target = cur_bundle.rsplit('_', 1)
-        if cur_url == url and cur_lang == lang and cur_target == target:
-            resp = make_response(messages_to_xml(json.loads(app['data'])))
-            resp.content_type = 'application/xml'
-            return resp
+    data = retrieve_mongodb_app(lang, target, url)
+    if data is not None:
+        resp = make_response(messages_to_xml(json.loads(data)))
+        resp.content_type = 'application/xml'
+        return resp
 
     return "Not found", 404
 
 @translator_blueprint.route('/dev/mongodb/urls/<lang>/<target>/<path:url>')
 @public
 def translations_mongodb_urls_xml(lang, target, url):
-    apps = {}
-    collections = retrieve_mongodb_contents()
-    for app in collections['translation_urls']:
-        cur_url = app['url']
-        cur_bundle = app['bundle']
-        cur_lang, cur_target = cur_bundle.rsplit('_', 1)
-        if cur_url == url and cur_lang == lang and cur_target == target:
-            resp = make_response(messages_to_xml(json.loads(app['data'])))
-            resp.content_type = 'application/xml'
-            return resp
+    data = retrieve_mongodb_translation_url(lang, target, url)
+    if data is not None:
+        resp = make_response(messages_to_xml(json.loads(data)))
+        resp.content_type = 'application/xml'
+        return resp
 
     return "Not found", 404
 
