@@ -36,6 +36,52 @@ def retrieve_mongodb_contents():
 
     return { 'bundles' : json.loads(bundles_serialized), 'translation_urls' : json.loads(translations_url_serialized) }
 
+def retrieve_mongodb_apps():
+    apps = {}
+    for app in mongo_bundles.find({}, {'spec':True, 'bundle':True}):
+        url = app['spec']
+        bundle = app['bundle']
+        lang, target = bundle.rsplit('_', 1)
+        if url not in apps:
+            apps[url] = []
+
+        apps[url].append({
+            'target' : target,
+            'lang' : lang
+        })
+
+    return apps
+
+def retrieve_mongodb_app(lang, target, url):
+    identifier = "{0}_{1}::{2}".format(lang, target, url)
+    result = mongo_bundles.find_one({ '_id': identifier })
+    if result is not None:
+        return result['data']
+    return None
+
+def retrieve_mongodb_translation_url(lang, target, url):
+    identifier = "{0}_{1}::{2}".format(lang, target, url)
+    result = mongo_translation_urls.find_one({ '_id': identifier })
+    if result is not None:
+        return result['data']
+    return None
+
+def retrieve_mongodb_urls():
+    apps = {}
+    for app in mongo_translation_urls.find({}, {'url':True, 'bundle':True}):
+        url = app['url']
+        bundle = app['bundle']
+        lang, target = bundle.rsplit('_', 1)
+        if url not in apps:
+            apps[url] = []
+
+        apps[url].append({
+            'target' : target,
+            'lang' : lang
+        })
+    return apps
+
+
 def push(self, translation_url, lang, target):
     if not flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
         return
