@@ -649,6 +649,10 @@ def translations_revisions(lang, target, app_url):
         #    } }
     }
 
+    past_collaborators = {
+        # email: display_name
+    }
+
     for message in db_messages:
         if message.key not in messages:
             messages[message.key] = {
@@ -667,7 +671,11 @@ def translations_revisions(lang, target, app_url):
             'value' : message.value,
             'from_default': message.taken_from_default
         })
+        past_collaborators[message.user.email] = message.user.display_name
 
+    collaborators = {
+        # email: display_name
+    }
     db_active_messages = db.session.query(ActiveTranslationMessage).filter_by(bundle = bundle).options(joinedload_all('history.user')).order_by('-ActiveTranslationMessages.datetime').all()
     active_messages = []
     for active_message in db_active_messages:
@@ -682,8 +690,12 @@ def translations_revisions(lang, target, app_url):
             'from_default': active_message.taken_from_default,
             'from_developer': active_message.from_developer,
         })
+        collaborators[active_message.history.user.email] = active_message.history.user.display_name
 
-    return render_template("translator/revisions.html", url = app_url, lang = lang, target = target, messages = messages, active_messages = active_messages)
+    for collaborator in collaborators:
+        past_collaborators.pop(collaborator, None)
+
+    return render_template("translator/revisions.html", url = app_url, lang = lang, target = target, messages = messages, active_messages = active_messages, collaborators = collaborators, past_collaborators = past_collaborators)
 
 @translator_blueprint.route('/dev/apps/failing/')
 @public

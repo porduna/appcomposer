@@ -10,6 +10,24 @@
 
 <a name="current"><h2>Current messages</h2></a>
 
+<p>Contributors to the current set of messages:</p>
+<ul>
+    {% for collaborator in collaborators %}
+    <li><a href="mailto:{{ collaborator }}">{{ collaborators[collaborator] }}</a></li>
+    {% endfor %}
+</ul>
+
+{% if past_collaborators %}
+<p>Contributors to previous versions of the messages:</p>
+<ul>
+    {% for collaborator in past_collaborators %}
+    <li><a href="mailto:{{ collaborator }}">{{ past_collaborators[collaborator] }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<p>Click on any message to see the full historic of that message.</p>
+
 <table class="table table-bordered table-hover">
     <thead>
         <th>Key</th>
