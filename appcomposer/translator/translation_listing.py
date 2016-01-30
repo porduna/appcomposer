@@ -459,12 +459,16 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
 
 ORIGIN_LANGUAGE = 'en'
 
-def load_google_suggestions_by_lang(active_messages, language):
+def load_google_suggestions_by_lang(active_messages, language, origin_language = None):
     """ Attempt to translate all the messages to a language """
+    
+    if origin_language is None:
+        origin_language = ORIGIN_LANGUAGE
+
     gs = goslate.Goslate()
     logger.info("Using Google Translator to use %s" % language)
 
-    existing_suggestions = set([ human_key for human_key, in db.session.query(TranslationExternalSuggestion.human_key).filter_by(engine = 'google', language = language, origin_language = ORIGIN_LANGUAGE).all() ])
+    existing_suggestions = set([ human_key for human_key, in db.session.query(TranslationExternalSuggestion.human_key).filter_by(engine = 'google', language = language, origin_language = origin_language).all() ])
 
     missing_suggestions = active_messages - existing_suggestions
     print "Language:", language
@@ -486,7 +490,7 @@ def load_google_suggestions_by_lang(active_messages, language):
             counter += 1
 
         if translated:
-            suggestion = TranslationExternalSuggestion(engine = 'google', human_key = message, language = language, origin_language = ORIGIN_LANGUAGE, value = translated)
+            suggestion = TranslationExternalSuggestion(engine = 'google', human_key = message, language = language, origin_language = origin_language, value = translated)
             db.session.add(suggestion)
             try:
                 db.session.commit()
