@@ -7,7 +7,7 @@ Flask-Login==0.2.2
 Flask-SQLAlchemy==0.16
 Flask-WTF==0.8.3
 Flask-BabelEx==0.9.1
-Flask-DebugToolbar==0.9.0
+Flask-DebugToolbar==0.10.0
 Flask-Testing==0.4.2
 PyMySQL==0.5
 pymysql-sa==1.0
