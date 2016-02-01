@@ -207,7 +207,7 @@ def _sync_translations(cached_requests, tag, synced_apps, apps_to_process, force
             if (repo_app.repository, external_id) in apps_by_repo_id:
                 stored_ids.append(unicode(external_id))
                 app = apps_by_repo_id[repo_app.repository, external_id]
-                _update_existing_app(cached_requests, repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app['app_thumb'], description = app['description'], app_image = app['app_image'], app_link = app['app_golabz_page'], force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']), repository = app['repository'])
+                _update_existing_app(cached_requests, repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app.get('app_thumb'), description = app.get('description'), app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']), repository = app['repository'])
             else:
                 if len(apps) > 1:
                     # Delete old apps (translations are kept, and the app is kept, but not listed in the repository apps)
@@ -234,8 +234,8 @@ def _sync_translations(cached_requests, tag, synced_apps, apps_to_process, force
                 if repo_app is None:
                     _add_new_app(cached_requests, repository = app['repository'], 
                                 app_url = app['app_url'], title = app['title'], external_id = app['id'],
-                                app_thumb = app['app_thumb'], description = app['description'],
-                                app_image = app['app_image'], app_link = app['app_golabz_page'],
+                                app_thumb = app.get('app_thumb'), description = app.get('description'),
+                                app_image = app.get('app_image'), app_link = app.get('app_golabz_page'),
                                 force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']))
             except SQLAlchemyError:
                 logger.warning("Error adding app %s" % app['app_url'], exc_info = True)
