@@ -630,6 +630,8 @@ def translations_revisions(lang, target, app_url):
 
     translation_url = translation_app.translation_url
 
+    supported_languages = db.session.query(TranslationBundle.language, TranslationBundle.target).filter_by(translation_url = translation_url).all()
+
     bundle = db.session.query(TranslationBundle).filter_by(translation_url = translation_url, language = lang, target = target).first()
     if bundle is None:
         return render_template("translator/error.html", message = "App found, but no translation for that language or target"), 404
@@ -695,7 +697,21 @@ def translations_revisions(lang, target, app_url):
     for collaborator in collaborators:
         past_collaborators.pop(collaborator, None)
 
-    return render_template("translator/revisions.html", url = app_url, lang = lang, target = target, messages = messages, active_messages = active_messages, collaborators = collaborators, past_collaborators = past_collaborators)
+    english_bundle = db.session.query(TranslationBundle).filter_by(translation_url = translation_url, language = 'en_ALL', target = 'ALL').first()
+    english_messages = {
+        # key: english_value
+    }
+    if english_bundle is not None:
+        english_translations = db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.value).filter_by(bundle = english_bundle).all()
+        for key, value in english_translations:
+            english_messages[key] = value
+    
+    for am in active_messages:
+        key = am['key']
+        if key not in english_messages:
+            english_messages[key] = "(No English translation available)"
+
+    return render_template("translator/revisions.html", url = app_url, lang = lang, target = target, messages = messages, active_messages = active_messages, collaborators = collaborators, past_collaborators = past_collaborators, supported_languages = supported_languages, app_url = app_url, english_messages = english_messages)
 
 @translator_blueprint.route('/dev/apps/failing/')
 @public

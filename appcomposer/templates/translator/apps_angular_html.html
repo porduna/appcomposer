@@ -1,5 +1,14 @@
 <script type="text/ng-template" id="panelbody.html">
         <div ng-repeat="fmt in APP_FORMATS">
+            <h4>Revisions</h4>
+            <div>
+                <span ng-repeat="translation in app.translations">
+                    <a class="btn btn-info"
+                        href='{{ fmt.revisions.replace("URL", app.app_url).replace("LANGUAGE", translation.lang).replace("TARGET", translation.target) }}'>
+                        {{ translation.lang }} - {{ translation.target }}
+                    </a>
+                </span>
+            </div>
             <hr>
             <h4>Format: {{ fmt.name }}</h4>
             <br>
