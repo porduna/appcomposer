@@ -332,7 +332,8 @@ def extract_messages_from_translation(messages_absolute_url, xml_contents):
                 if not basename.startswith(tool_id):
                     same_tool = False
                 hostname = urlparse.urlparse(messages_absolute_url).netloc
-                if messages_absolute_url in ('http://localhost:5000/twente_commons/', 'http://composer.golabz.eu/twente_commons/'):
+                # We generate the namespace based on the hostname. But localhost:5000 and composer.golabz.eu has a special hostname
+                if messages_absolute_url.startswith(('http://localhost:5000/twente_commons/', 'http://composer.golabz.eu/twente_commons/')):
                     hostname = 'go-lab.gw.utwente.nl'
                 namespace = "{0}::{1}".format(hostname, tool_id)
         else:
