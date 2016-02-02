@@ -539,7 +539,7 @@ def sync_translations():
             break
 
     if latest_synchronizations:
-        latest_id = latest_synchronizations[-1]['id']
+        latest_id = latest_synchronizations[0]['id']
     else:
         latest_id = 0
 
