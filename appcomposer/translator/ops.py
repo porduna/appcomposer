@@ -131,19 +131,45 @@ def get_bundles_by_key_namespaces(pairs):
 
 def add_full_translation_to_app(user, app_url, translation_url, app_metadata, language, target, translated_messages, original_messages, from_developer):
     db_translation_bundle = _get_or_create_bundle(app_url, translation_url, app_metadata, language, target, from_developer)
+    # 
+    # <NO SHIELD NEW BEHAVIOR>
+    # 
+    #     We have recently removed the shields that protected messages to be overriden by users' messages.
+    #     In the past, when a user attempted to update a message which was provided by the developer, we 
+    #     automatically discarded it. Now we enable the user to delete it. Furthermore, if the developer
+    #     changes a piece of text, and developers update it in their servers with a different message, we
+    #     now give a higher priority to that message rather to that from the developer.
+    # 
+
     if from_developer and not db_translation_bundle.from_developer:
         # If this is an existing translation and it comes from a developer, establish that it is from developer
         db_translation_bundle.from_developer = from_developer
 
-    if not from_developer and db_translation_bundle.from_developer:
-        # If this is an existing translation from a developer and it comes from a user (and not a developer)
-        # then it should not be accepted.
-        if translated_messages is not None:
-            translated_messages = translated_messages.copy()
-            for msg in db_translation_bundle.active_messages:
-                if msg.from_developer:
-                    translated_messages.pop(msg.key, None)
-            # Continue with the remaining translated_messages
+        # TODO: if it comes from the developer, now the expected thing is to check if it is different to the current message and, if it is different, check if it 
+        # was different to the last message coming from the developer in the history with developer = True. If it is different (i.e., there has been really a chanage)
+        # then proceed with the change. Otherwise, discard that message.
+        # 
+        # In other words, we have to do the translated_messages.pop() thing with those messages where there is a history and developer = True with the last message being equal
+#        if translated_messages is not None:
+#            translated_messages = translated_messages.copy()
+#            historic_keys_from_developer = db.session.query(TranslationMessageHistory).filter_by(from_developer = True)
+        # </TODO>
+
+    # 
+    # # CODE COMMENTED:
+    # if not from_developer and db_translation_bundle.from_developer:
+    #     # If this is an existing translation from a developer and it comes from a user (and not a developer)
+    #     # then it should not be accepted.
+    #     if translated_messages is not None:
+    #         translated_messages = translated_messages.copy()
+    #         for msg in db_translation_bundle.active_messages:
+    #             if msg.from_developer:
+    #                 translated_messages.pop(msg.key, None)
+    #         # Continue with the remaining translated_messages
+
+    # 
+    # </NO SHIELD NEW BEHAVIOR>
+    # 
 
     if translated_messages is not None and len(translated_messages) == 0:
         translated_messages = None

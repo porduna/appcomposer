@@ -648,6 +648,7 @@ def translations_revisions(lang, target, app_url):
         #         'user': {'display_name': "...", 'email': "..."},
         #         'value': value,
         #         'from_default' : true/false
+        #         'from_developer' : true/false
         #    } }
     }
 
@@ -671,7 +672,8 @@ def translations_revisions(lang, target, app_url):
                 'email' : message.user.email,
             },
             'value' : message.value,
-            'from_default': message.taken_from_default
+            'from_default': message.taken_from_default,
+            'from_developer': message.from_developer
         })
         past_collaborators[message.user.email] = message.user.display_name
 
