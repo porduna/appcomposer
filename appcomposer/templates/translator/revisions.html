@@ -75,7 +75,9 @@
             <th width="50px">Parent id</th>
             <th width="100px">Datetime</th>
             <th width="100px">User</th>
+            <th width="100px">Tool id</th>
             <th width="70px">From default?</th>
+            <th width="70px">From devel?</th>
         </thead>
         <tbody>
             {% for rev in msg['revisions'] %}
@@ -85,7 +87,9 @@
                 <td>{% if rev['parent_id'] %}{{ rev['parent_id'] }}{% else %}<i>original</i>{% endif %}</td>
                 <td>{{ rev['date'] }}</td>
                 <td><a href="mailto:{{ rev['user']['email'] }}">{{ rev['user']['display_name'] }}</a></td>
+                <td>{% if rev['tool_id'] %}{{ rev['tool_id'] }}{% else %}<i>none</i>{% endif %}</td>
                 <td><span class="glyphicon {% if rev['from_default'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
+                <td><span class="glyphicon {% if rev['from_developer'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
             </tr>
             {% endfor %}
         </tbody>

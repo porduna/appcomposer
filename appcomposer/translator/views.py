@@ -673,7 +673,8 @@ def translations_revisions(lang, target, app_url):
             },
             'value' : message.value,
             'from_default': message.taken_from_default,
-            'from_developer': message.from_developer
+            'from_developer': message.from_developer,
+            'tool_id': message.tool_id,
         })
         past_collaborators[message.user.email] = message.user.display_name
 
