@@ -145,15 +145,40 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
         # If this is an existing translation and it comes from a developer, establish that it is from developer
         db_translation_bundle.from_developer = from_developer
 
-        # TODO: if it comes from the developer, now the expected thing is to check if it is different to the current message and, if it is different, check if it 
+        # If it comes from the developer, now the expected thing is to check if it is different to the current message and, if it is different, check if it 
         # was different to the last message coming from the developer in the history with developer = True. If it is different (i.e., there has been really a chanage)
         # then proceed with the change. Otherwise, discard that message.
         # 
         # In other words, we have to do the translated_messages.pop() thing with those messages where there is a history and developer = True with the last message being equal
-#        if translated_messages is not None:
-#            translated_messages = translated_messages.copy()
-#            historic_keys_from_developer = db.session.query(TranslationMessageHistory).filter_by(from_developer = True)
-        # </TODO>
+        if translated_messages is not None:
+            translated_messages = translated_messages.copy()
+            active_msgs = db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle).all()
+            active_msgs_by_key = {  
+                # key: value
+            }
+            for active_msg in active_msgs:
+                active_msgs_by_key[active_msg.key] = active_msg.value
+
+            historic_msgs_from_developer = db.session.query(TranslationMessageHistory).filter_by(from_developer = True, bundle = db_translation_bundle).all()
+            historic_msgs_by_key = {
+                # key: latest message from developer
+            }
+
+            for historic_msg in historic_msgs_from_developer:
+                key = historic_msg.key
+                if key not in historic_msgs_by_key:
+                    historic_msgs_by_key[key] = historic_msg
+                else:
+                    if historic_msg.datetime > historic_msgs_by_key[key]:
+                        historic_msgs_by_key[key] = historic_msg
+
+            for historic_msg in historic_msgs_by_key.itervalues():
+                # If the message is the same as it was in the latest message stored from developer,
+                # and it comes from developer, do not take it into account (since it could be overriding
+                # the user's message)
+                key = historic_msg.key
+                if key in translated_messages and historic_msg.value == translated_messages[key] and translated_messages[key] != active_msgs_by_key.get(key):
+                    translated_messages.pop(key, None)
 
     # 
     # # CODE COMMENTED:
