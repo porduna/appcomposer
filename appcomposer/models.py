@@ -426,11 +426,18 @@ class TranslationMessageHistory(db.Model):
     datetime = db.Column(db.DateTime, index = True)
     parent_translation_id = db.Column(db.Integer, index = True)
     taken_from_default = db.Column(db.Boolean, index = True)
+    same_tool = db.Column(db.Boolean, index = True)
+    tool_id = db.Column(db.Unicode(255), index = True)
+    fmt = db.Column(db.Unicode(255), index = True)
+    position = db.Column(db.Integer, index = True) # position in the XML file, starting by 0
+    category = db.Column(db.Unicode(255), index = True) # optional category for each translation
+    from_developer = db.Column(db.Boolean, index = True) # a from_developer bundle can contain some messages which are not from the developer
+    namespace = db.Column(db.Unicode(255), index = True) # optional namespace for each translation
 
     bundle = relation("TranslationBundle", backref="all_messages")
     user = relation("GoLabOAuthUser", backref = "translation_history")
 
-    def __init__(self, bundle, key, value, user, datetime, parent_translation_id, taken_from_default):
+    def __init__(self, bundle, key, value, user, datetime, parent_translation_id, taken_from_default, same_tool, tool_id, fmt, position, category, from_developer, namespace):
         self.bundle = bundle
         self.key = key
         self.value = value
@@ -438,6 +445,12 @@ class TranslationMessageHistory(db.Model):
         self.datetime = datetime
         self.parent_translation_id = parent_translation_id
         self.taken_from_default = taken_from_default
+        self.tool_id = tool_id
+        self.fmt = fmt
+        self.position = position
+        self.category = category
+        self.from_developer = from_developer
+        self.namespace = namespace
 
 class ActiveTranslationMessage(db.Model):
     __tablename__ = 'ActiveTranslationMessages'
