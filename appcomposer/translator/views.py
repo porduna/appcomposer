@@ -146,6 +146,16 @@ def api_translations():
         except ValueError:
             translated_languages = {}
 
+        # translation_percent sometimes have something like "nl_ALL_ALL" and sometimes "nl_ALL_13-18". We should 
+        # always take the one of _ALL
+        keys_to_remove = []
+        for lang_key in translated_languages:
+            if not lang_key.endswith("_ALL") and (lang_key.rsplit('_', 1)[0] + '_ALL') in translated_languages:
+                keys_to_remove.append(lang_key)
+
+        for key in keys_to_remove:
+            translated_languages.pop(key, None)
+
         languages = {}
         for translated_lang, progress in translated_languages.iteritems():
             translated_lang_simplified = translated_lang.split('_')[0]
