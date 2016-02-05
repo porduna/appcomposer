@@ -1,5 +1,7 @@
 {% extends "translator/base.html" %}
 {% block body %}
+{% set FORMAT = '%Y-%m-%d %H:%M:%SZ' %}
+
 <h1>Revisions for {{ lang }} - {{ target }}</h1>
 <h4>{{ url }}</h4>
 
@@ -50,7 +52,7 @@
         <tr>
             <td rowspan="2"><a name="table-{{ msg['key'] }}"></a><a href="#msg-{{ msg['key'] }}">{{ msg['key'] }}</a></td>
             <td><b>en:</b>{{ english_messages[msg['key']] }}</td>
-            <td rowspan="2">{{ msg['datetime'] }}</td>
+            <td rowspan="2" data-date="{{ msg['datetime'].strftime(FORMAT) }}"></td>
             <td rowspan="2"><a href="mailto:{{ msg['user']['email'] }}">{{ msg['user']['display_name'] }}</a></td>
             <td rowspan="2"><span class="glyphicon {% if msg['from_default'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
             <td rowspan="2"><span class="glyphicon {% if msg['from_developer'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
@@ -85,7 +87,7 @@
                 <td>{{ rev['value'] }}</td>
                 <td>{{ rev['id'] }}</td>
                 <td>{% if rev['parent_id'] %}{{ rev['parent_id'] }}{% else %}<i>original</i>{% endif %}</td>
-                <td>{{ rev['date'] }}</td>
+                <td data-date="{{ rev['date'].strftime(FORMAT) }}"></td>
                 <td><a href="mailto:{{ rev['user']['email'] }}">{{ rev['user']['display_name'] }}</a></td>
                 <td>{% if rev['tool_id'] %}{{ rev['tool_id'] }}{% else %}<i>none</i>{% endif %}</td>
                 <td><span class="glyphicon {% if rev['from_default'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
@@ -97,5 +99,22 @@
     <a href="#table-{{ msg['key'] }}"><span class="glyphicon glyphicon-triangle-top"></span> Back</a>
     <hr>
 {% endfor %}
+
+{% endblock %}
+
+{% block tail %}
+    <script>
+        function zfill(n) {
+            if (n < 10) 
+                return "0" + n;
+            return n;
+        }
+
+        $("[data-date]").each(function (pos, value) {
+            var datestring = $(value).data("date");
+            var d = new Date(datestring.replace(/ /, 'T'));
+            $(value).text(d.getFullYear() + "-" + zfill(d.getMonth() + 1) + "-" + zfill(d.getDate()) + " " + zfill(d.getHours()) + ":" + zfill(d.getMinutes()) + ":" + zfill(d.getSeconds()));
+        });
+    </script>
 
 {% endblock %}
