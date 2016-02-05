@@ -140,11 +140,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
     #     changes a piece of text, and developers update it in their servers with a different message, we
     #     now give a higher priority to that message rather to that from the developer.
     # 
-
-    if from_developer and not db_translation_bundle.from_developer:
-        # If this is an existing translation and it comes from a developer, establish that it is from developer
-        db_translation_bundle.from_developer = from_developer
-
+    if from_developer:
         # If it comes from the developer, now the expected thing is to check if it is different to the current message and, if it is different, check if it 
         # was different to the last message coming from the developer in the history with developer = True. If it is different (i.e., there has been really a chanage)
         # then proceed with the change. Otherwise, discard that message.
@@ -169,7 +165,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 if key not in historic_msgs_by_key:
                     historic_msgs_by_key[key] = historic_msg
                 else:
-                    if historic_msg.datetime > historic_msgs_by_key[key]:
+                    if historic_msg.datetime > historic_msgs_by_key[key].datetime:
                         historic_msgs_by_key[key] = historic_msg
 
             for historic_msg in historic_msgs_by_key.itervalues():
@@ -181,7 +177,15 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                     translated_messages.pop(key, None)
 
     # 
-    # # CODE COMMENTED:
+    # </NO SHIELD NEW BEHAVIOR>
+    # 
+
+    if from_developer and not db_translation_bundle.from_developer:
+        # If this is an existing translation and it comes from a developer, establish that it is from developer
+        db_translation_bundle.from_developer = from_developer
+
+    # 
+    # # CODE COMMENTED as part of the no shield removal:
     # if not from_developer and db_translation_bundle.from_developer:
     #     # If this is an existing translation from a developer and it comes from a user (and not a developer)
     #     # then it should not be accepted.
@@ -191,10 +195,6 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
     #             if msg.from_developer:
     #                 translated_messages.pop(msg.key, None)
     #         # Continue with the remaining translated_messages
-
-    # 
-    # </NO SHIELD NEW BEHAVIOR>
-    # 
 
     if translated_messages is not None and len(translated_messages) == 0:
         translated_messages = None
