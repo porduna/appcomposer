@@ -539,7 +539,7 @@ def sync_translations():
             break
 
     if latest_synchronizations:
-        latest_id = latest_synchronizations[-1]['id']
+        latest_id = latest_synchronizations[0]['id']
     else:
         latest_id = 0
 
@@ -620,6 +620,101 @@ def translations_apps_filtered(app_url):
     apps_angular_html = open(os.path.join(SITE_ROOT, "appcomposer/templates/translator/apps_angular_html.html")).read()
 
     return render_template("translator/translations_apps2.html", angular_js = apps_angular_code, angular_html = apps_angular_html, NAMES = NAMES, app_url = app_url)
+
+@translator_blueprint.route('/dev/apps/revisions/<lang>/<target>/<path:app_url>')
+@public
+def translations_revisions(lang, target, app_url):
+    translation_app = db.session.query(TranslatedApp).filter_by(url = app_url).options(joinedload_all('translation_url')).first()
+    if translation_app is None:
+        return render_template("translator/error.html", message = "App does not exist"), 404
+
+    translation_url = translation_app.translation_url
+
+    supported_languages = db.session.query(TranslationBundle.language, TranslationBundle.target).filter_by(translation_url = translation_url).all()
+
+    bundle = db.session.query(TranslationBundle).filter_by(translation_url = translation_url, language = lang, target = target).first()
+    if bundle is None:
+        return render_template("translator/error.html", message = "App found, but no translation for that language or target"), 404
+
+    db_messages = db.session.query(TranslationMessageHistory).filter_by(bundle = bundle).options(joinedload_all('user')).order_by('-datetime').all()
+
+    messages = {
+        # key: {
+        #    'key' : key,
+        #    'revisions' : {
+        #         'id': <id>,
+        #         'parent_id': <parent_id>,
+        #         'date': datetime,
+        #         'user': {'display_name': "...", 'email': "..."},
+        #         'value': value,
+        #         'from_default' : true/false
+        #         'from_developer' : true/false
+        #    } }
+    }
+
+    past_collaborators = {
+        # email: display_name
+    }
+
+    for message in db_messages:
+        if message.key not in messages:
+            messages[message.key] = {
+                'key' : message.key,
+                'revisions' : []
+            }
+
+        messages[message.key]['revisions'].append({
+            'id' : message.id,
+            'parent_id' : message.parent_translation_id,
+            'date' : message.datetime,
+            'user' : {
+                'display_name' : message.user.display_name,
+                'email' : message.user.email,
+            },
+            'value' : message.value,
+            'from_default': message.taken_from_default,
+            'from_developer': message.from_developer,
+            'tool_id': message.tool_id,
+        })
+        past_collaborators[message.user.email] = message.user.display_name
+
+    collaborators = {
+        # email: display_name
+    }
+    db_active_messages = db.session.query(ActiveTranslationMessage).filter_by(bundle = bundle).options(joinedload_all('history.user')).order_by('-ActiveTranslationMessages.datetime').all()
+    active_messages = []
+    for active_message in db_active_messages:
+        active_messages.append({
+            'key': active_message.key,
+            'value' : active_message.value,
+            'datetime' : active_message.datetime,
+            'user' : {
+                'display_name' : active_message.history.user.display_name,
+                'email' : active_message.history.user.email,
+            },
+            'from_default': active_message.taken_from_default,
+            'from_developer': active_message.from_developer,
+        })
+        collaborators[active_message.history.user.email] = active_message.history.user.display_name
+
+    for collaborator in collaborators:
+        past_collaborators.pop(collaborator, None)
+
+    english_bundle = db.session.query(TranslationBundle).filter_by(translation_url = translation_url, language = 'en_ALL', target = 'ALL').first()
+    english_messages = {
+        # key: english_value
+    }
+    if english_bundle is not None:
+        english_translations = db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.value).filter_by(bundle = english_bundle).all()
+        for key, value in english_translations:
+            english_messages[key] = value
+    
+    for am in active_messages:
+        key = am['key']
+        if key not in english_messages:
+            english_messages[key] = "(No English translation available)"
+
+    return render_template("translator/revisions.html", url = app_url, lang = lang, target = target, messages = messages, active_messages = active_messages, collaborators = collaborators, past_collaborators = past_collaborators, supported_languages = supported_languages, app_url = app_url, english_messages = english_messages)
 
 @translator_blueprint.route('/dev/apps/failing/')
 @public

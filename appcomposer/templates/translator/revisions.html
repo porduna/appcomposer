@@ -1,0 +1,120 @@
+{% extends "translator/base.html" %}
+{% block body %}
+{% set FORMAT = '%Y-%m-%d %H:%M:%SZ' %}
+
+<h1>Revisions for {{ lang }} - {{ target }}</h1>
+<h4>{{ url }}</h4>
+
+<ul>
+    <li><a href="#current">Current messages</a></li>
+    <li><a href="#history">Revision history</a></li>
+</ul>
+
+<div class="row">
+    {% for lang, target in supported_languages %}
+        <div class="col-md-2">
+            <a href="{{ url_for('.translations_revisions', lang=lang, target=target, app_url=app_url) }}" class="btn btn-info" style="margin: 1px">{{ lang }} - {{ target }}</a>
+        </div>
+    {% endfor %}
+</div>
+
+<a name="current"><h2>Current messages</h2></a>
+
+<p>Contributors to the current set of messages:</p>
+<ul>
+    {% for collaborator in collaborators %}
+    <li><a href="mailto:{{ collaborator }}">{{ collaborators[collaborator] }}</a></li>
+    {% endfor %}
+</ul>
+
+{% if past_collaborators %}
+<p>Contributors to previous versions of the messages:</p>
+<ul>
+    {% for collaborator in past_collaborators %}
+    <li><a href="mailto:{{ collaborator }}">{{ past_collaborators[collaborator] }}</a></li>
+    {% endfor %}
+</ul>
+{% endif %}
+
+<p>Click on any message to see the full historic of that message.</p>
+
+<table class="table table-bordered table-hover">
+    <thead>
+        <th>Key</th>
+        <th>Value</th>
+        <th width="100px">Datetime</th>
+        <th width="100px">User</th>
+        <th width="70px">From default?</th>
+        <th width="70px">From devel?</th>
+    </thead>
+    <tbody>
+        {% for msg in active_messages %}
+        <tr>
+            <td rowspan="2"><a name="table-{{ msg['key'] }}"></a><a href="#msg-{{ msg['key'] }}">{{ msg['key'] }}</a></td>
+            <td><b>en:</b>{{ english_messages[msg['key']] }}</td>
+            <td rowspan="2" data-date="{{ msg['datetime'].strftime(FORMAT) }}"></td>
+            <td rowspan="2"><a href="mailto:{{ msg['user']['email'] }}">{{ msg['user']['display_name'] }}</a></td>
+            <td rowspan="2"><span class="glyphicon {% if msg['from_default'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
+            <td rowspan="2"><span class="glyphicon {% if msg['from_developer'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
+        </tr>
+        <tr>
+            <td><b>{{ lang.split('_')[0] }}:</b>{{ msg['value'] }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+
+<a name="history"><h2>Revision history</h2></a>
+
+{% for msg in messages.values() %}
+    <a name="msg-{{ msg['key'] }}"><h3>{{ msg['key'] }}</h3></a>
+    <p>English: <i>{{ english_messages[msg['key']] }}</i></p>
+    <table class="table table-bordered table-hover">
+        <thead>
+            <th>Value</th>
+            <th width="50px">ID</th>
+            <th width="50px">Parent id</th>
+            <th width="100px">Datetime</th>
+            <th width="100px">User</th>
+            <th width="100px">Tool id</th>
+            <th width="70px">From default?</th>
+            <th width="70px">From devel?</th>
+        </thead>
+        <tbody>
+            {% for rev in msg['revisions'] %}
+            <tr>
+                <td>{{ rev['value'] }}</td>
+                <td>{{ rev['id'] }}</td>
+                <td>{% if rev['parent_id'] %}{{ rev['parent_id'] }}{% else %}<i>original</i>{% endif %}</td>
+                <td data-date="{{ rev['date'].strftime(FORMAT) }}"></td>
+                <td><a href="mailto:{{ rev['user']['email'] }}">{{ rev['user']['display_name'] }}</a></td>
+                <td>{% if rev['tool_id'] %}{{ rev['tool_id'] }}{% else %}<i>none</i>{% endif %}</td>
+                <td><span class="glyphicon {% if rev['from_default'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
+                <td><span class="glyphicon {% if rev['from_developer'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    <a href="#table-{{ msg['key'] }}"><span class="glyphicon glyphicon-triangle-top"></span> Back</a>
+    <hr>
+{% endfor %}
+
+{% endblock %}
+
+{% block tail %}
+    <script>
+        function zfill(n) {
+            if (n < 10) 
+                return "0" + n;
+            return n;
+        }
+
+        $("[data-date]").each(function (pos, value) {
+            var datestring = $(value).data("date");
+            var d = new Date(datestring.replace(/ /, 'T'));
+            $(value).text(d.getFullYear() + "-" + zfill(d.getMonth() + 1) + "-" + zfill(d.getDate()) + " " + zfill(d.getHours()) + ":" + zfill(d.getMinutes()) + ":" + zfill(d.getSeconds()));
+        });
+    </script>
+
+{% endblock %}

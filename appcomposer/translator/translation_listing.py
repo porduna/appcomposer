@@ -207,7 +207,7 @@ def _sync_translations(cached_requests, tag, synced_apps, apps_to_process, force
             if (repo_app.repository, external_id) in apps_by_repo_id:
                 stored_ids.append(unicode(external_id))
                 app = apps_by_repo_id[repo_app.repository, external_id]
-                _update_existing_app(cached_requests, repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app['app_thumb'], description = app['description'], app_image = app['app_image'], app_link = app['app_golabz_page'], force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']), repository = app['repository'])
+                _update_existing_app(cached_requests, repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app.get('app_thumb'), description = app.get('description'), app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']), repository = app['repository'])
             else:
                 if len(apps) > 1:
                     # Delete old apps (translations are kept, and the app is kept, but not listed in the repository apps)
@@ -234,8 +234,8 @@ def _sync_translations(cached_requests, tag, synced_apps, apps_to_process, force
                 if repo_app is None:
                     _add_new_app(cached_requests, repository = app['repository'], 
                                 app_url = app['app_url'], title = app['title'], external_id = app['id'],
-                                app_thumb = app['app_thumb'], description = app['description'],
-                                app_image = app['app_image'], app_link = app['app_golabz_page'],
+                                app_thumb = app.get('app_thumb'), description = app.get('description'),
+                                app_image = app.get('app_image'), app_link = app.get('app_golabz_page'),
                                 force_reload = force_reload, task = tasks_by_app_url.get(app['app_url']))
             except SQLAlchemyError:
                 logger.warning("Error adding app %s" % app['app_url'], exc_info = True)
@@ -459,12 +459,16 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
 
 ORIGIN_LANGUAGE = 'en'
 
-def load_google_suggestions_by_lang(active_messages, language):
+def load_google_suggestions_by_lang(active_messages, language, origin_language = None):
     """ Attempt to translate all the messages to a language """
+    
+    if origin_language is None:
+        origin_language = ORIGIN_LANGUAGE
+
     gs = goslate.Goslate()
     logger.info("Using Google Translator to use %s" % language)
 
-    existing_suggestions = set([ human_key for human_key, in db.session.query(TranslationExternalSuggestion.human_key).filter_by(engine = 'google', language = language, origin_language = ORIGIN_LANGUAGE).all() ])
+    existing_suggestions = set([ human_key for human_key, in db.session.query(TranslationExternalSuggestion.human_key).filter_by(engine = 'google', language = language, origin_language = origin_language).all() ])
 
     missing_suggestions = active_messages - existing_suggestions
     print "Language:", language
@@ -486,7 +490,7 @@ def load_google_suggestions_by_lang(active_messages, language):
             counter += 1
 
         if translated:
-            suggestion = TranslationExternalSuggestion(engine = 'google', human_key = message, language = language, origin_language = ORIGIN_LANGUAGE, value = translated)
+            suggestion = TranslationExternalSuggestion(engine = 'google', human_key = message, language = language, origin_language = origin_language, value = translated)
             db.session.add(suggestion)
             try:
                 db.session.commit()

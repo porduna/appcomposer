@@ -44,6 +44,7 @@
         {% for format_key, name in NAMES.iteritems() %}
             {
                 'name' : '{{ name }}',
+                'revisions' : "{{ url_for('.translations_revisions', lang = 'LANGUAGE', target = 'TARGET', app_url = 'URL') }}",
                 'all_langs_link' : "{{ url_for('.translations_app_url_format_zip', format_key = format_key, app_url = 'URL') }}",
                 'lang_link' : "{{ url_for('.translations_app_format', format_key = format_key, lang='LANGUAGE', target='TARGET', app_url = 'URL') }}",
                 'all_langs_cat_link' : "{{ url_for('.translations_app_url_format_zip', format_key = format_key, app_url = 'URL', category = 'CATEGORY') }}",

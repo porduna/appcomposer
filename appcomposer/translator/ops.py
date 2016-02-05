@@ -131,19 +131,70 @@ def get_bundles_by_key_namespaces(pairs):
 
 def add_full_translation_to_app(user, app_url, translation_url, app_metadata, language, target, translated_messages, original_messages, from_developer):
     db_translation_bundle = _get_or_create_bundle(app_url, translation_url, app_metadata, language, target, from_developer)
+    # 
+    # <NO SHIELD NEW BEHAVIOR>
+    # 
+    #     We have recently removed the shields that protected messages to be overriden by users' messages.
+    #     In the past, when a user attempted to update a message which was provided by the developer, we 
+    #     automatically discarded it. Now we enable the user to delete it. Furthermore, if the developer
+    #     changes a piece of text, and developers update it in their servers with a different message, we
+    #     now give a higher priority to that message rather to that from the developer.
+    # 
+    if from_developer:
+        # If it comes from the developer, now the expected thing is to check if it is different to the current message and, if it is different, check if it 
+        # was different to the last message coming from the developer in the history with developer = True. If it is different (i.e., there has been really a chanage)
+        # then proceed with the change. Otherwise, discard that message.
+        # 
+        # In other words, we have to do the translated_messages.pop() thing with those messages where there is a history and developer = True with the last message being equal
+        if translated_messages is not None:
+            translated_messages = translated_messages.copy()
+            active_msgs = db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle).all()
+            active_msgs_by_key = {  
+                # key: value
+            }
+            for active_msg in active_msgs:
+                active_msgs_by_key[active_msg.key] = active_msg.value
+
+            historic_msgs_from_developer = db.session.query(TranslationMessageHistory).filter_by(from_developer = True, bundle = db_translation_bundle).all()
+            historic_msgs_by_key = {
+                # key: latest message from developer
+            }
+
+            for historic_msg in historic_msgs_from_developer:
+                key = historic_msg.key
+                if key not in historic_msgs_by_key:
+                    historic_msgs_by_key[key] = historic_msg
+                else:
+                    if historic_msg.datetime > historic_msgs_by_key[key].datetime:
+                        historic_msgs_by_key[key] = historic_msg
+
+            for historic_msg in historic_msgs_by_key.itervalues():
+                # If the message is the same as it was in the latest message stored from developer,
+                # and it comes from developer, do not take it into account (since it could be overriding
+                # the user's message)
+                key = historic_msg.key
+                if key in translated_messages and historic_msg.value == translated_messages[key] and translated_messages[key] != active_msgs_by_key.get(key):
+                    translated_messages.pop(key, None)
+
+    # 
+    # </NO SHIELD NEW BEHAVIOR>
+    # 
+
     if from_developer and not db_translation_bundle.from_developer:
         # If this is an existing translation and it comes from a developer, establish that it is from developer
         db_translation_bundle.from_developer = from_developer
 
-    if not from_developer and db_translation_bundle.from_developer:
-        # If this is an existing translation from a developer and it comes from a user (and not a developer)
-        # then it should not be accepted.
-        if translated_messages is not None:
-            translated_messages = translated_messages.copy()
-            for msg in db_translation_bundle.active_messages:
-                if msg.from_developer:
-                    translated_messages.pop(msg.key, None)
-            # Continue with the remaining translated_messages
+    # 
+    # # CODE COMMENTED as part of the no shield removal:
+    # if not from_developer and db_translation_bundle.from_developer:
+    #     # If this is an existing translation from a developer and it comes from a user (and not a developer)
+    #     # then it should not be accepted.
+    #     if translated_messages is not None:
+    #         translated_messages = translated_messages.copy()
+    #         for msg in db_translation_bundle.active_messages:
+    #             if msg.from_developer:
+    #                 translated_messages.pop(msg.key, None)
+    #         # Continue with the remaining translated_messages
 
     if translated_messages is not None and len(translated_messages) == 0:
         translated_messages = None
@@ -224,7 +275,9 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 db.session.delete(wrong_message)
 
                 # 2nd) Create a new historic translation message
-                new_db_history = TranslationMessageHistory(db_translation_bundle, key, value, existing_user, now, wrong_history_parent_id, False)
+                new_db_history = TranslationMessageHistory(db_translation_bundle, key, value, existing_user, now, wrong_history_parent_id, 
+                                    taken_from_default = False, same_tool = wrong_message_same_tool, tool_id = wrong_message_tool_id, fmt = wrong_message_fmt, 
+                                    position = wrong_message_position, category = wrong_message_category, from_developer = current_from_developer, namespace = wrong_message.namespace)
                 db.session.add(new_db_history)
 
                 # 3rd) Create a new active translation message
@@ -254,18 +307,20 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 value = ""
 
             if key not in unchanged and key in original_messages:
-                # Create a new history message
-                parent_translation_id = parent_translation_ids.get(key, None)
-                db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, parent_translation_id, False)
-                db.session.add(db_history)
-
-                # Establish that thew new active message points to this history message
                 position = original_messages[key]['position']
                 category = original_messages[key]['category']
                 namespace = original_messages[key]['namespace']
                 tool_id = original_messages[key]['tool_id']
                 same_tool = original_messages[key]['same_tool']
                 fmt = original_messages[key]['format']
+
+                # Create a new history message
+                parent_translation_id = parent_translation_ids.get(key, None)
+                db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, parent_translation_id, taken_from_default = False,
+                                        same_tool = same_tool, tool_id = tool_id, fmt = fmt, position = position, category = category, from_developer = from_developer, namespace = namespace)
+                db.session.add(db_history)
+
+                # Establish that thew new active message points to this history message
                 db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False, position, category, from_developer, namespace, tool_id, same_tool, fmt)
                 db.session.add(db_active_translation_message)
 
@@ -286,7 +341,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                     # out there in other bundles but with same language and target and the same namespace, where they are not from developer
                     # and I copy my translation to them.
                     # 
-                    for wrong_message in db.session.query(ActiveTranslationMessage).filter(ActiveTranslationMessage.key == key, ActiveTranslationMessage.namespace == namespace, ActiveTranslationMessage.value != value, ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == db_translation_bundle.language, TranslationBundle.target == db_translation_bundle.target, TranslationBundle.id != db_translation_bundle.id, ActiveTranslationMessage.from_developer == False).options(joinedload_all('bundle')).all():
+                    for wrong_message in db.session.query(ActiveTranslationMessage).filter(ActiveTranslationMessage.key == key, ActiveTranslationMessage.namespace == namespace, ActiveTranslationMessage.value != value, ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == db_translation_bundle.language, TranslationBundle.target == db_translation_bundle.target, TranslationBundle.id != db_translation_bundle.id).options(joinedload_all('bundle')).all():
                         # wrong_message is a message for same language, target, key and namespace with a different value.
                         # We must update it with the current credentials
                         wrong_history = wrong_message.history
@@ -302,7 +357,10 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                         db.session.delete(wrong_message)
 
                         # 2nd) Create a new historic translation message
-                        new_db_history = TranslationMessageHistory(wrong_message_bundle, key, value, user, now, wrong_history_parent_id, False)
+                        new_db_history = TranslationMessageHistory(wrong_message_bundle, key, value, user, now, wrong_history_parent_id, taken_from_default = False,    
+                                                                    same_tool = wrong_message_same_tool, tool_id = wrong_message_tool_id, fmt = wrong_message_fmt, 
+                                                                    position = wrong_message_position, category = wrong_message_category, from_developer = from_developer, 
+                                                                    namespace = namespace)
                         db.session.add(new_db_history)
 
                         # 3rd) Create a new active translation message
@@ -379,7 +437,9 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                     taken_from_default = False
 
             # Create a new translation establishing that it was generated with the default value (and therefore it should be changed)
-            db_history = TranslationMessageHistory(db_translation_bundle, key, value, existing_user, now, None, taken_from_default = taken_from_default)
+            db_history = TranslationMessageHistory(db_translation_bundle, key, value, existing_user, now, None, taken_from_default = taken_from_default,
+                                                    same_tool = same_tool, tool_id = tool_id, fmt = fmt, position = position, category = category, 
+                                                    from_developer = current_from_developer, namespace = namespace)
             db.session.add(db_history)
             
             # Establish that thew new active message points to this history message
@@ -751,7 +811,10 @@ def _deep_copy_bundle(src_bundle, dst_bundle):
         # old_id : new historic instance
     }
     for msg in src_bundle.all_messages:
-        t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.user, msg.datetime, src_message_ids.get(msg.parent_translation_id), msg.taken_from_default)
+        t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.user, msg.datetime, src_message_ids.get(msg.parent_translation_id), msg.taken_from_default,
+                                                same_tool = msg.same_tool, tool_id = msg.tool_id, fmt = msg.fmt, 
+                                                position = msg.position, category = msg.category, from_developer = msg.from_developer, 
+                                                namespace = msg.namespace)
         db.session.add(t_history)
         try:
             db.session.commit()
@@ -781,7 +844,10 @@ def _merge_bundle(src_bundle, dst_bundle):
     for msg in src_bundle.active_messages:
         existing_translation = db.session.query(ActiveTranslationMessage).filter_by(bundle = dst_bundle, key = msg.key).first()
         if existing_translation is None:
-            t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, None, msg.taken_from_default)
+            t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, None, msg.taken_from_default,
+                                                same_tool = msg.same_tool, tool_id = msg.tool_id, fmt = msg.fmt, 
+                                                position = msg.position, category = msg.category, from_developer = msg.from_developer, 
+                                                namespace = msg.namespace)
             db.session.add(t_history)
             active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer, msg.namespace, msg.tool_id, msg.same_tool, msg.fmt)
             db.session.add(active_t)
@@ -792,7 +858,11 @@ def _merge_bundle(src_bundle, dst_bundle):
                 raise
         elif existing_translation.taken_from_default and not msg.taken_from_default:
             # Merge it
-            t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, existing_translation.history.id, msg.taken_from_default)
+            t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, existing_translation.history.id, msg.taken_from_default,
+                                                same_tool = msg.same_tool, tool_id = msg.tool_id, fmt = msg.fmt, 
+                                                position = msg.position, category = msg.category, from_developer = msg.from_developer, 
+                                                namespace = msg.namespace)
+
             db.session.add(t_history)
             active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer, msg.namespace, msg.tool_id, msg.same_tool, msg.fmt)
             db.session.add(active_t)
