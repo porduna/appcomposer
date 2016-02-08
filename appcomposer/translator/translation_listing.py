@@ -1,6 +1,7 @@
 import sys
 import time
 import json
+import random
 import datetime
 import threading
 import traceback
@@ -475,6 +476,8 @@ def load_google_suggestions_by_lang(active_messages, language, origin_language =
     print list(active_messages)[:10], len(active_messages)
     print list(existing_suggestions)[:10], len(existing_suggestions)
     print "Missing:", len(missing_suggestions)
+    missing_suggestions = list(missing_suggestions)
+    random.shuffle(missing_suggestions)
     counter = 0
 
     for message in missing_suggestions:
@@ -517,12 +520,14 @@ def load_all_google_suggestions():
         total_counter += counter
         if total_counter > 1000:
             logger.info("Stopping the google suggestions API after performing %s queries until the next cycle" % total_counter)
-            break
+            return
 
         if not should_continue:
             logger.info("Stopping the google suggestions API until the next cycle")
             # There was an error: keep in the next iteration ;-)
-            break
+            return
+
+    
 
 if __name__ == '__main__':
     from appcomposer import create_app
