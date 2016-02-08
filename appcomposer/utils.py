@@ -10,11 +10,11 @@ from functools import wraps
 def sendmail(subject, body):
     from appcomposer.application import app
     MAIL_TPL = """From: App Composer <%(sender)s>
-    To: %(recipients)s
-    Subject: %(subject)s
+To: %(recipients)s
+Subject: %(subject)s
 
-    %(body)s
-    """
+%(body)s
+"""
     smtp_server = app.config.get("SMTP_SERVER")
     from_addr = app.config.get("SENDER_ADDR")
     to_addrs = app.config.get("ADMINS")
@@ -25,7 +25,7 @@ def sendmail(subject, body):
 
     server.sendmail(from_addr, to_addrs, MAIL_TPL % {
                 'sender'     : from_addr,
-                'recipients' : to_addrs,
+                'recipients' : ', '.join(to_addrs),
                 'subject'    : subject,
                 'body'       : body.encode('utf8')
         })
