@@ -8,7 +8,7 @@ from appcomposer.utils import report_error
 
 graasp_i18n_blueprint = Blueprint('graasp_i18n', __name__)
 
-SPACE_URL = 'http://aaaaaaaaaaagraasp.eu/spaces/560410b2f0e1b09f6c8116da'
+SPACE_URL = 'http://graasp.eu/spaces/560410b2f0e1b09f6c8116da'
 
 def get_languages():
     requests = get_cached_session()
