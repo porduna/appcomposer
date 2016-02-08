@@ -61,7 +61,7 @@
             <td><b>{{ lang.split('_')[0] }}: </b>{{ msg['value'] }}</td>
         </tr>
         <tr>
-            <td>{% if msg['suggestions'] %}<b>Auto:</b>{{ msg['suggestions'] }}{% else %}<i>(no automatic translation for this message)</i>{% endif %}</td>
+            <td>{% if msg['suggestions'] %}<b>Automatic {{ lang.split('_')[0] }} - en: </b>{{ msg['suggestions'] }}{% else %}<i>(no automatic translation for this message)</i>{% endif %}</td>
         </tr>
         {% endfor %}
     </tbody>
