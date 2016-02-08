@@ -585,7 +585,7 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
     return all_suggestions
 
 def _get_all_results_from_translation_url(translation_url, keys):
-    results_from_users = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
+    results_from_users = db.session.query(func.count(func.distinct(ActiveTranslationMessage.key)), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
                 TranslationBundle.from_developer == False, 
 
                 ActiveTranslationMessage.taken_from_default == False,
@@ -598,7 +598,7 @@ def _get_all_results_from_translation_url(translation_url, keys):
                 TranslationUrl.url == translation_url,
             ).group_by(TranslationBundle.language, TranslationBundle.target).all()
 
-    results_from_developers = db.session.query(func.count(ActiveTranslationMessage.key), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
+    results_from_developers = db.session.query(func.count(func.distinct(ActiveTranslationMessage.key)), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
                 TranslationBundle.from_developer == True, 
                 or_(ActiveTranslationMessage.from_developer == True, ActiveTranslationMessage.taken_from_default == False),
 
