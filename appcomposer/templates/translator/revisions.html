@@ -50,15 +50,18 @@
     <tbody>
         {% for msg in active_messages %}
         <tr>
-            <td rowspan="2"><a name="table-{{ msg['key'] }}"></a><a href="#msg-{{ msg['key'] }}">{{ msg['key'] }}</a></td>
-            <td><b>en:</b>{{ english_messages[msg['key']] }}</td>
-            <td rowspan="2" data-date="{{ msg['datetime'].strftime(FORMAT) }}"></td>
-            <td rowspan="2"><a href="mailto:{{ msg['user']['email'] }}">{{ msg['user']['display_name'] }}</a></td>
-            <td rowspan="2"><span class="glyphicon {% if msg['from_default'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
-            <td rowspan="2"><span class="glyphicon {% if msg['from_developer'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
+            <td rowspan="3"><a name="table-{{ msg['key'] }}"></a><a href="#msg-{{ msg['key'] }}">{{ msg['key'] }}</a></td>
+            <td><b>en: </b>{{ english_messages[msg['key']] }}</td>
+            <td rowspan="3" data-date="{{ msg['datetime'].strftime(FORMAT) }}"></td>
+            <td rowspan="3"><a href="mailto:{{ msg['user']['email'] }}">{{ msg['user']['display_name'] }}</a></td>
+            <td rowspan="3"><span class="glyphicon {% if msg['from_default'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
+            <td rowspan="3"><span class="glyphicon {% if msg['from_developer'] %}glyphicon glyphicon-ok{% else %}glyphicon-remove{% endif %}"></span></td>
         </tr>
         <tr>
-            <td><b>{{ lang.split('_')[0] }}:</b>{{ msg['value'] }}</td>
+            <td><b>{{ lang.split('_')[0] }}: </b>{{ msg['value'] }}</td>
+        </tr>
+        <tr>
+            <td>{% if msg['suggestions'] %}<b>Auto:</b>{{ msg['suggestions'] }}{% else %}<i>(no automatic translation for this message)</i>{% endif %}</td>
         </tr>
         {% endfor %}
     </tbody>

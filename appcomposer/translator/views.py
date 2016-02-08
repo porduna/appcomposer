@@ -35,6 +35,7 @@ from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, get_latest_synchronizations, update_user_status, get_user_status
 from appcomposer.translator.utils import bundle_to_xml, bundle_to_jquery_i18n, bundle_to_json, bundle_to_graasp_json, bundle_to_properties, url_to_filename, messages_to_xml, NO_CATEGORY, NO_TOOL
+from appcomposer.translator.suggestions import translate_texts
 
 import flask.ext.cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
@@ -693,11 +694,18 @@ def translations_revisions(lang, target, app_url):
     }
     db_active_messages = db.session.query(ActiveTranslationMessage).filter_by(bundle = bundle).options(joinedload_all('history.user')).order_by('-ActiveTranslationMessages.datetime').all()
     active_messages = []
+    active_values = [ am.value for am in db_active_messages ]
+
+    suggestions = {}
+    for human_key, suggested_values in translate_texts(active_values, 'en', lang.split('_')[0]).iteritems():
+        suggestions[human_key] = ' / '.join([ key for key, value in sorted(suggested_values.items(), lambda (x1, x2), (y1 ,y2): cmp(x2, y2), reverse = True) ])
+
     for active_message in db_active_messages:
         active_messages.append({
             'key': active_message.key,
             'value' : active_message.value,
             'datetime' : active_message.datetime,
+            'suggestions' : suggestions.get(active_message.value, {}),
             'user' : {
                 'display_name' : active_message.history.user.display_name,
                 'email' : active_message.history.user.email,
