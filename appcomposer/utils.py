@@ -1,9 +1,11 @@
 import re
 import json
+import pprint
 import traceback
 import urlparse
 import smtplib
 from flask import request
+from functools import wraps
 
 def sendmail(subject, body):
     from appcomposer.application import app
@@ -13,8 +15,6 @@ def sendmail(subject, body):
 
     %(body)s
     """
-
-
     smtp_server = app.config.get("SMTP_SERVER")
     from_addr = app.config.get("SENDER_ADDR")
     to_addrs = app.config.get("ADMINS")
@@ -29,6 +29,19 @@ def sendmail(subject, body):
                 'subject'    : subject,
                 'body'       : body.encode('utf8')
         })
+
+def report_error(subject, body = "Error"):
+    def decorator(f):
+        @wraps(f)
+        def wrapper(*args, **kwargs):
+            try:
+                return f(*args, **kwargs)
+            except:
+                environ = pprint.pformat(request.environ)
+                sendmail(subject, '{0}:\n\nFunction: {1}\n\nEnvironment:\n\n{2}\n\nStack trace:\n\n{3}'.format(body, f.__name__, environ, traceback.format_exc()))
+                return 'Error. Administrator contacted'
+        return wrapper
+    return decorator
 
 def extract_base_url(url):
     parsed = urlparse.urlparse(url)

@@ -4,6 +4,7 @@ from collections import OrderedDict
 
 from flask import Blueprint, render_template, make_response
 from appcomposer.translator.utils import get_cached_session, indent, get_text_from_response
+from appcomposer.utils import report_error
 
 twente_commons_blueprint = Blueprint('twente_commons', __name__)
 
@@ -16,6 +17,7 @@ def get_languages():
 
 @twente_commons_blueprint.route('/')
 @twente_commons_blueprint.route('/app.xml')
+@report_error("Error on twente i18n")
 def index():
     requests = get_cached_session()
     languages = get_languages()
@@ -52,6 +54,7 @@ def messages_to_xml(messages):
 
 
 @twente_commons_blueprint.route('/locales/common_<language>_ALL.xml')
+@report_error("Error on twente i18n")
 def locale(language):
     requests = get_cached_session()
     if language not in get_languages():

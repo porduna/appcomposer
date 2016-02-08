@@ -4,10 +4,11 @@ from collections import OrderedDict
 
 from flask import Blueprint, render_template, make_response
 from appcomposer.translator.utils import get_cached_session, indent
+from appcomposer.utils import report_error
 
 graasp_i18n_blueprint = Blueprint('graasp_i18n', __name__)
 
-SPACE_URL = 'http://graasp.eu/spaces/560410b2f0e1b09f6c8116da'
+SPACE_URL = 'http://aaaaaaaaaaagraasp.eu/spaces/560410b2f0e1b09f6c8116da'
 
 def get_languages():
     requests = get_cached_session()
@@ -33,6 +34,7 @@ def get_contents(lang):
 
 @graasp_i18n_blueprint.route('/')
 @graasp_i18n_blueprint.route('/app.xml')
+@report_error("Error on graasp i18n")
 def index():
     requests = get_cached_session()
     languages = get_languages()
@@ -69,6 +71,7 @@ def messages_to_xml(messages):
 
 
 @graasp_i18n_blueprint.route('/locales/graasp_<language>_ALL.xml')
+@report_error("Error on graasp i18n")
 def locale(language):
     requests = get_cached_session()
     contents = get_contents(language)
