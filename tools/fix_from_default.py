@@ -4,18 +4,21 @@ from appcomposer.db import db
 from appcomposer.models import ActiveTranslationMessage, TranslationBundle, TranslationMessageHistory
 from appcomposer.translator.ops import get_golab_default_user
 
+def reason(bundle, msg):
+    pass
+#    if bundle.id == 152:
+#        print(msg)
 
 with app.app_context():
     total = 0
     for bundle in db.session.query(TranslationBundle).all():
         if bundle.language == 'en_ALL':
-            continue
-
-        if not bundle.from_developer:
+            reason(bundle, "lang=en")
             continue
 
         original_bundle = ([ b for b in bundle.translation_url.bundles if b.language == 'en_ALL' and b.target == 'ALL' ] or [None])[0]
         if original_bundle is None:
+            reason(bundle, "Empty original_bundle")
             continue
         
         original_messages = {
@@ -26,6 +29,7 @@ with app.app_context():
         
         for active_message in bundle.active_messages:
             if active_message.value == '{0}':
+                reason(bundle, "value={0}")
                 continue
 
             if not active_message.taken_from_default and active_message.from_developer and active_message.value == original_messages.get(active_message.key, '________this.will.never.be'):
