@@ -84,7 +84,7 @@ class TranslatorTest(ComposerTest):
 
         # Check API
         self.assertApiTranslate('http://url1/gadget.xml', lang = 'en', automatic = False, preview = True, expected_messages = {
-            'message1_1': dict(can_edit=False, from_default=False, source='Message1_1', target='Message1_1'),
+            'message1_1': dict(can_edit=False, from_default=True, source='Message1_1', target='Message1_1'),
         })
         
         # In Spanish, the fourth message is special
@@ -105,7 +105,7 @@ class TranslatorTest(ComposerTest):
 
         # Check API
         self.assertApiTranslate('http://url2/gadget.xml', lang = 'en', automatic = False, preview = False, expected_messages = {
-            'message1_2': dict(can_edit=False, from_default=False, source='NonAutomaticMessage1_2', target='NonAutomaticMessage1_2'),
+            'message1_2': dict(can_edit=False, from_default=True, source='NonAutomaticMessage1_2', target='NonAutomaticMessage1_2'),
         })
             
         # In Spanish, the fourth message is special
@@ -131,9 +131,9 @@ class TranslatorTest(ComposerTest):
 
         # Check API
         self.assertApiTranslate('http://url3/tool_gadget.xml', lang = 'en', automatic = False, preview = True, expected_messages = {
-            'message4_3': dict(can_edit=False, from_default=False, source='ToolIdMessage4_3', target='ToolIdMessage4_3'),
-            'message5_3': dict(can_edit=False, from_default=False, source='ToolIdMessage5_3', target='ToolIdMessage5_3'),
-            'message6_3': dict(can_edit=False, from_default=False, source='ToolIdMessage6_3', target='ToolIdMessage6_3'),
+            'message4_3': dict(can_edit=False, from_default=True, source='ToolIdMessage4_3', target='ToolIdMessage4_3'),
+            'message5_3': dict(can_edit=False, from_default=True, source='ToolIdMessage5_3', target='ToolIdMessage5_3'),
+            'message6_3': dict(can_edit=False, from_default=True, source='ToolIdMessage6_3', target='ToolIdMessage6_3'),
         }, unexpected_messages = ('message1_3', 'message2_3', 'message3_3')) # unexpected: those in common or other tools
 
         # In Spanish, the sixth message is special
@@ -157,10 +157,10 @@ class TranslatorTest(ComposerTest):
         self.assertAppMongoDB("es", "url3", self.build_dict(3, 6, "ToolIdMensaje", "ToolIdMessage"), 'common_')
 
         self.assertApiTranslate('http://url3/common_gadget.xml', lang = 'en', automatic = False, preview = True, expected_messages = {
-            'message1_3': dict(can_edit=False, from_default=False, source='ToolIdMessage1_3', target='ToolIdMessage1_3'),
-            'message2_3': dict(can_edit=False, from_default=False, source='ToolIdMessage2_3', target='ToolIdMessage2_3'),
-            'message5_3': dict(can_edit=False, from_default=False, source='ToolIdMessage5_3', target='ToolIdMessage5_3'),
-            'message6_3': dict(can_edit=False, from_default=False, source='ToolIdMessage6_3', target='ToolIdMessage6_3'),
+            'message1_3': dict(can_edit=False, from_default=True, source='ToolIdMessage1_3', target='ToolIdMessage1_3'),
+            'message2_3': dict(can_edit=False, from_default=True, source='ToolIdMessage2_3', target='ToolIdMessage2_3'),
+            'message5_3': dict(can_edit=False, from_default=True, source='ToolIdMessage5_3', target='ToolIdMessage5_3'),
+            'message6_3': dict(can_edit=False, from_default=True, source='ToolIdMessage6_3', target='ToolIdMessage6_3'),
         }, unexpected_messages = ('message3_3', 'message4_3')) # unexpected: those in common or other tools
 
         self.assertApiTranslate('http://url3/common_gadget.xml', lang = 'es', automatic = False, preview = True, expected_messages = {
@@ -192,9 +192,9 @@ class TranslatorTest(ComposerTest):
 
         # Check API
         self.assertApiTranslate('http://url3/tool_gadget.xml', lang = 'en', automatic = False, preview = True, expected_messages = {
-            'message4_3': dict(can_edit=False, from_default=False, source='ToolIdMessage4_3', target='ToolIdMessage4_3'),
-            'message5_3': dict(can_edit=False, from_default=False, source='ToolIdMessage5_3', target='ToolIdMessage5_3'),
-            'message6_3': dict(can_edit=False, from_default=False, source='ToolIdMessage6_3', target='ToolIdMessage6_3'),
+            'message4_3': dict(can_edit=False, from_default=True, source='ToolIdMessage4_3', target='ToolIdMessage4_3'),
+            'message5_3': dict(can_edit=False, from_default=True, source='ToolIdMessage5_3', target='ToolIdMessage5_3'),
+            'message6_3': dict(can_edit=False, from_default=True, source='ToolIdMessage6_3', target='ToolIdMessage6_3'),
         }, unexpected_messages = ('message1_3', 'message2_3', 'message3_3')) # unexpected: those in common or other tools
 
         # In Spanish, the sixth message is special
@@ -220,10 +220,10 @@ class TranslatorTest(ComposerTest):
         }), 'common_')
 
         self.assertApiTranslate('http://url3/common_gadget.xml', lang = 'en', automatic = False, preview = True, expected_messages = {
-            'message1_3': dict(can_edit=False, from_default=False, source='ToolIdMessage1_3', target='ToolIdMessage1_3'),
-            'message2_3': dict(can_edit=False, from_default=False, source='ToolIdMessage2_3', target='ToolIdMessage2_3'),
-            'message5_3': dict(can_edit=False, from_default=False, source='ToolIdMessage5_3', target='ToolIdMessage5_3'),
-            'message6_3': dict(can_edit=False, from_default=False, source='ToolIdMessage6_3', target='ToolIdMessage6_3'),
+            'message1_3': dict(can_edit=False, from_default=True, source='ToolIdMessage1_3', target='ToolIdMessage1_3'),
+            'message2_3': dict(can_edit=False, from_default=True, source='ToolIdMessage2_3', target='ToolIdMessage2_3'),
+            'message5_3': dict(can_edit=False, from_default=True, source='ToolIdMessage5_3', target='ToolIdMessage5_3'),
+            'message6_3': dict(can_edit=False, from_default=True, source='ToolIdMessage6_3', target='ToolIdMessage6_3'),
         }, unexpected_messages = ('message3_3', 'message4_3')) # unexpected: those in common or other tools
 
         self.assertApiTranslate('http://url3/common_gadget.xml', lang = 'es', automatic = False, preview = True, expected_messages = {
