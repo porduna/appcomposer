@@ -314,17 +314,23 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 same_tool = original_messages[key]['same_tool']
                 fmt = original_messages[key]['format']
 
+                same_text_or_empty_text = original_messages.get(key, {}).get('text', object()) == value or (unicode(original_messages.get(key, {}).get('text', "non.empty.text")).strip() != "" and value.strip() == "")
+                if from_developer and same_text_or_empty_text:
+                    taken_from_default = True
+                else:
+                    taken_from_default = False
+
                 # Create a new history message
                 parent_translation_id = parent_translation_ids.get(key, None)
-                db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, parent_translation_id, taken_from_default = False,
+                db_history = TranslationMessageHistory(db_translation_bundle, key, value, user, now, parent_translation_id, taken_from_default = taken_from_default,
                                         same_tool = same_tool, tool_id = tool_id, fmt = fmt, position = position, category = category, from_developer = from_developer, namespace = namespace)
                 db.session.add(db_history)
 
                 # Establish that thew new active message points to this history message
-                db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, False, position, category, from_developer, namespace, tool_id, same_tool, fmt)
+                db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, taken_from_default, position, category, from_developer, namespace, tool_id, same_tool, fmt)
                 db.session.add(db_active_translation_message)
 
-                if original_messages.get(key, {}).get('text', object()) == value or (unicode(original_messages.get(key, {}).get('text', "non.empty.text")).strip() != "" and value.strip() == ""):
+                if same_text_or_empty_text:
                     # If the message in the original language is the same as in the target language or the value is empty and it shouldn't, then
                     # it can be two things: 
                     # 
