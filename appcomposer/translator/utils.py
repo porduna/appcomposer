@@ -494,7 +494,7 @@ def bundle_to_graasp_json(db_bundle, category = None, tool_id = None):
                 current[parent] = OrderedDict()
                 current = current[parent]
         current[key] = message.value
-    return json.dumps(result, indent = 2)
+    return json.dumps(result, indent = 2, separators=(',', ': '))
 
 def bundle_to_jquery_i18n(db_bundle, category = None, tool_id = None):
     result = OrderedDict()
