@@ -36,7 +36,8 @@ OTHER_LANGUAGES = [
     'hi', # Hindi
     # The following have been selected to be interesting for Go-Lab
     'no', # Norwegian
-    'id' # Indonesian
+    'id', # Indonesian
+    'ja'  # Japanese
 ]
 
 ALL_LANGUAGES = OFFICIAL_EUROPEAN_UNION_LANGUAGES + SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
