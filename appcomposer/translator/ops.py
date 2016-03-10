@@ -771,7 +771,25 @@ def retrieve_translations_stats(translation_url, original_messages):
             'items' : items,
             'dependencies': dependencies,
         }
-    
+
+    # Verify that all the info from the dependencies is displayed
+    for (lang, target), dependencies in dependencies_data.iteritems():
+        if lang not in translations:
+            translations[lang] = {
+                'name' : LANGUAGES.get(lang),
+                'targets' : {}
+            }
+
+        if target not in translations[lang]['targets']:
+            translations[lang]['targets'][target] = {
+                'modification_date' : None,
+                'creation_date' : None,
+                'name' : GROUPS.get(target),
+                'translated' : 0,
+                'items' : items,
+                'dependencies': dependencies,
+            }   
+
     return translations, generic_dependencies
 
 
