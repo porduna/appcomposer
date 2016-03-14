@@ -216,7 +216,7 @@ function EditMessageController($scope, $log, $resource) {
                 }
             });
 
-            var result = UpdateMessagePut.update(data, data);
+            var result = UpdateMessagePut.update({}, data);
 
             result.$promise.then(onUpdateSuccess, onUpdateFailure);
         }
