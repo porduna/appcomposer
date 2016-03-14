@@ -251,7 +251,7 @@ def check_modifications(language, target):
 def bundle_update(language, target):
     app_url = request.values.get('app_url')
     try:
-        request_data = request.get_json(force=True) or {}
+        request_data = request.get_json(force=True, silent=True) or {}
     except ValueError:
         request_data = {}
     key = request_data.get("key")
