@@ -111,15 +111,19 @@ class MicrosoftTranslator(AbstractTranslator):
 
         for text in texts:
             current_slice.append(text)
-            if len(u''.join(current_slice).encode('utf8')) > 5000:
+            if len(u''.join(current_slice).encode('utf8')) > 2000:
                 current_slice = []
                 slices.append(current_slice)
+
+        app.logger.debug("Texts splitted in {} slices".format(len(slices)))
+        for pos, slice in enumerate(slices):
+            app.logger("  slice: {}: {} characters".format(pos, len(''.join(slice).encode('utf8'))))
         
         ms_translations = []
         errors = False
         for current_slice in slices:
             if current_slice:
-                app.logger.debug("Translating %r to %r using Microsoft Translator API" % (texts, language))
+                app.logger.debug("Translating %r to %r using Microsoft Translator API" % (current_slice, language))
                 try:
                     current_ms_translations = self.client.translate_array(texts = current_slice, to_lang = language, from_lang = origin_language)
                 except (MSTranslatorApiException, ArgumentOutOfRangeException, ValueError) as e:
