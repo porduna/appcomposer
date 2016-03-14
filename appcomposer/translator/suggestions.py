@@ -117,7 +117,7 @@ class MicrosoftTranslator(AbstractTranslator):
 
         app.logger.debug("Texts splitted in {} slices".format(len(slices)))
         for pos, slice in enumerate(slices):
-            app.logger("  slice: {}: {} characters".format(pos, len(''.join(slice).encode('utf8'))))
+            app.logger.debug("  slice: {}: {} characters".format(pos, len(''.join(slice).encode('utf8'))))
         
         ms_translations = []
         errors = False
