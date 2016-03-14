@@ -52,6 +52,13 @@ function EditMessageController($scope, $log, $resource) {
     $scope.$watch("messageActive", onMessageActive);
     $scope.$watch("item.target", onItemChanged);
 
+    $scope.$watch("values.current", testOnChanged);
+
+    function testOnChanged(newval, oldval) {
+      // debugger;
+      $log.debug("Newval len: " + newval.length);
+    }
+
 
     // Just for testing.
     // $scope.$watch("item.target", function(){ $scope.item.format = "textAngular"; $scope.item.can_edit = true; });
@@ -78,7 +85,7 @@ function EditMessageController($scope, $log, $resource) {
 
         // Force a save.
         $scope.values.saved = "";
-        onChange();
+        onChange($scope.item.format, "confirmTranslation");
 
         // Locally change the from_default to indicate that we no longer should show the warning etc.
         // The server should have received the update already, so in a refresh from_default will
@@ -139,7 +146,7 @@ function EditMessageController($scope, $log, $resource) {
         $scope.values.saved = undefined;
 
         // Trigger a fake onChange event.
-        onChange();
+        onChange($scope.item.format, "suggestionSelected");
 
         $log.debug("A suggestion was chosen.");
 
@@ -189,8 +196,8 @@ function EditMessageController($scope, $log, $resource) {
         $scope.$parent.$parent.$broadcast("edit-message-focused", {key: $scope.key});
     } // !onFocus
 
-    function onChange() {
-        $log.debug("[EditMessageController/onChange]");
+    function onChange(format, origin, value) {
+        $log.debug("[EditMessageController/onChange]. Called for format: " + format + "; origin: " + origin + "; value: " + value);
         if (!isSaved()) {
             // We should query a server-side update.
 
@@ -215,6 +222,8 @@ function EditMessageController($scope, $log, $resource) {
                     }
                 }
             });
+
+            $log.debug("[DBG]: Updating with value: " + $scope.values.saving);
 
             var result = UpdateMessagePut.update({}, data);
 

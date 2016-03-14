@@ -13,7 +13,7 @@
             <div ng-if="::(item.format == 'textAngular')">
                <text-angular ng-focus="onFocus($event)"
                               ng-model="values.current"
-                              ng-change="onChange()"
+                              ng-change="onChange('textAngular', 'input', values.current)"
                               class="ac-edit-message-control"
                               ng-class="{'ac-edit-message-input-from-default': item.from_default}"></text-angular>
 
@@ -23,7 +23,7 @@
             <input ng-if="::(!item.format || item.format == 'plain')"
                    ng-focus="onFocus($event)"
                    ng-model="values.current"
-                   ng-change="onChange()"
+                   ng-change="onChange('plain', 'input')"
                    ng-model-options="{ updateOn: 'change blur' }"
                    ng-keyup="onKey($event)" name="ac-edit-message-input"
                    ng-class="{'ac-edit-message-input-from-default': item.from_default}" class="form-control ac-edit-message-control ac-edit-message-input"
