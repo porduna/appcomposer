@@ -250,8 +250,9 @@ def check_modifications(language, target):
 @api
 def bundle_update(language, target):
     app_url = request.values.get('app_url')
-    key = request.values.get("key")
-    value = request.values.get("value")
+    request_data = request.get_json(force=True)
+    key = request_data.get("key")
+    value = request_data.get("value")
 
     if key is None or value is None:
         return jsonify(**{"result": "error"})
