@@ -128,7 +128,7 @@ class MicrosoftTranslator(AbstractTranslator):
                     errors = True
                     continue
                 else:
-                    ms_translations.update(current_ms_translations)
+                    ms_translations.extend(list(current_ms_translations))
                     app.logger.debug("Translated %s sentences using Microsoft Translator API" % len(ms_translations))
 
         if errors and not ms_translations:
