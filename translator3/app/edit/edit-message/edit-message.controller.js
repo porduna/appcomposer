@@ -211,7 +211,7 @@ function EditMessageController($scope, $log, $resource) {
                 update: {
                     method: 'POST',
                     headers: {
-                        'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8'
+                        'Content-Type': 'application/json;charset=utf-8'
                     }
                 }
             });
