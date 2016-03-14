@@ -250,7 +250,10 @@ def check_modifications(language, target):
 @api
 def bundle_update(language, target):
     app_url = request.values.get('app_url')
-    request_data = request.get_json(force=True)
+    try:
+        request_data = request.get_json(force=True) or {}
+    except ValueError:
+        request_data = {}
     key = request_data.get("key")
     value = request_data.get("value")
 
