@@ -10,6 +10,7 @@ import hashlib
 import StringIO
 import datetime
 import traceback
+import requests
 from functools import wraps
 
 from collections import OrderedDict
@@ -440,7 +441,32 @@ def widget_js():
         resp.content_type = 'application/javascript'
         return resp
 
-        
+@translator_blueprint.route('/dev/changes.json')
+@public
+@cross_origin()
+def translation_changes():
+    try:
+        r = requests.get("http://www.golabz.eu/rest/labs/retrieve.json")
+        r.raise_for_status()
+        labs = r.json()
+    except:
+        return "Error accessing http://www.golabz.eu/rest/labs/retrieve.json", 500
+
+    from appcomposer.translator.tasks import GOLAB_REPO
+    repository_apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(RepositoryApp.app_link.like('http://www.golabz.eu/lab%'), RepositoryApp.translation_percent != None).all()
+    repository_apps_by_external_id = defaultdict(list) # {
+        # id: [ repository_app1, repository_app2, repository_app3 ... ]
+    # }
+    for repository_app in repository_apps:
+        external_id = repository_app.external_id.split('-')[0]
+        repository_apps_by_external_id[external_id].append(repository_app)
+
+    for lab in labs:
+        external_id = lab.get('id')
+
+    return ":-)"
+
+
 
 TARGET_CHOICES = []
 TARGETS = obtain_groups()

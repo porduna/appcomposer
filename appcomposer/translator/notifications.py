@@ -145,8 +145,12 @@ def run_notifications():
     for translation_app in db.session.query(TranslatedApp).filter(TranslatedApp.translation_url_id.in_(list(all_translation_url_ids))).all():
         translation_apps_by_translation_url_id[translation_app.translation_url_id].append(translation_app.url)
 
+    all_translation_urls = []
+    for translation_apps in translation_apps_by_translation_url_id.values():
+        all_translation_urls.extend([ translation_app.url for translation_app in translation_apps ])
+
     repository_names_by_translation_app = {}
-    for repository_app in db.session.query(RepositoryApp).filter(TranslatedApp.url.in_(list([ translation_app.url for translation_app in translation_apps_by_translation_url_id.values() ]))).all():
+    for repository_app in db.session.query(RepositoryApp).filter(TranslatedApp.url.in_(all_translation_urls)).all():
         repository_names_by_translation_app[repository_app.url] = repository_app.name
 
     for recipient_id, recipient_messages in pending_emails.iteritems():
