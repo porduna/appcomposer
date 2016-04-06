@@ -157,26 +157,35 @@ def run_notifications():
         translation_urls = []
         txt_msg = "Hi,\nThe following changes have been detected in applications on which you're subscribed:\n"
         html_msg = "<p>Hi,</p><p>The following changes have been detected in applications on which you're subscribed:</p><ul>\n"
-        translated_app_urls = set()
-        translated_app_titles = set()
+
+        names_for_subject = set()
         for translation_url_id, translation_url_changes in recipient_messages.iteritems():
             translation_url = translation_urls_by_id[translation_url_id].url
             translation_urls.append(translation_url)
             txt_msg += " - %s \n" % translation_url
             html_msg += "<li>%s<ul>" % translation_url
             translation_apps = translation_apps_by_translation_url_id[translation_url_id]
+
+            current_name_for_subject = None
+            fallback_name_for_subject = set()
             if translation_apps:
                 html_msg += "<li>Applications:<ul>\n"
                 for translation_app in translation_apps:
                     html_msg += "<li>%s</li>" % translation_app
                     # Title if name not found
-                    if translation_url not in repository_names_by_translation_app:
-                        translated_app_urls.add(unicode(translation_app))
+                    if current_name_for_subject is None and translation_app in repository_names_by_translation_app:
+                        current_name_for_subject = repository_names_by_translation_app[translation_app]
+                    else:
+                        fallback_name_for_subject.add(translation_app)
                 html_msg += "</ul></li>"
 
             # Names
-            if translation_url in repository_names_by_translation_app:
-                translated_app_titles.add(repository_names_by_translation_app[translation_url])
+            if current_name_for_subject is None:
+                if fallback_name_for_subject:
+                    current_name_for_subject = '; '.join(fallback_name_for_subject)
+                else:
+                    current_name_for_subject = translation_url
+            names_for_subject.add(current_name_for_subject)
 
             html_msg += "<li>Changes:<ul>\n"
             for language, language_changes in translation_url_changes.iteritems():
@@ -195,19 +204,10 @@ def run_notifications():
         txt_msg += "\nIf you don't want to receive these messages, please reply this e-mail.\n\n--\nThe Go-Lab App Composer team"
         html_msg += "<p>If you don't want to receive these e-mails, please reply this e-mail.</p><p>--<br>The Go-Lab App Composer team<p>"
 
-        human_translated_app_urls = ''
-        if translated_app_titles:
-            human_translated_app_urls += '; '.join(translated_app_titles)
-            if translated_app_urls:
-                human_translated_app_urls += '; '
-
-        if translated_app_urls:
-            human_translated_app_urls += '; '.join(translated_app_urls) 
-
         recipient = recipients_by_id[recipient_id]
 
         try:
-            send_notification(recipient.email, txt_msg, html_msg, human_translated_app_urls)
+            send_notification(recipient.email, txt_msg, html_msg, '; '.join([ name for name in names_for_subject if name))
         except:
             traceback.print_exc()
         else:
