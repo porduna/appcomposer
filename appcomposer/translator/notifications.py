@@ -207,7 +207,7 @@ def run_notifications():
         recipient = recipients_by_id[recipient_id]
 
         try:
-            send_notification(recipient.email, txt_msg, html_msg, '; '.join([ name for name in names_for_subject if name))
+            send_notification(recipient.email, txt_msg, html_msg, '; '.join([ name for name in names_for_subject if name ]))
         except:
             traceback.print_exc()
         else:
