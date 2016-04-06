@@ -147,7 +147,7 @@ def run_notifications():
 
     all_translation_urls = []
     for translation_apps in translation_apps_by_translation_url_id.values():
-        all_translation_urls.extend([ translation_app.url for translation_app in translation_apps ])
+        all_translation_urls.extend([ translation_app for translation_app in translation_apps ])
 
     repository_names_by_translation_app = {}
     for repository_app in db.session.query(RepositoryApp).filter(TranslatedApp.url.in_(all_translation_urls)).all():
