@@ -9,7 +9,7 @@ from sqlalchemy import func
 
 from appcomposer.db import db
 from appcomposer.application import app
-from appcomposer.models import TranslationSubscription, TranslationNotificationRecipient, TranslationUrl, TranslationBundle, ActiveTranslationMessage, GoLabOAuthUser, TranslationMessageHistory, TranslatedApp
+from appcomposer.models import TranslationSubscription, TranslationNotificationRecipient, TranslationUrl, TranslationBundle, ActiveTranslationMessage, GoLabOAuthUser, TranslationMessageHistory, TranslatedApp, RepositoryApp
 
 def run_notifications():
     print "Starting notifications process"
@@ -145,10 +145,16 @@ def run_notifications():
     for translation_app in db.session.query(TranslatedApp).filter(TranslatedApp.translation_url_id.in_(list(all_translation_url_ids))).all():
         translation_apps_by_translation_url_id[translation_app.translation_url_id].append(translation_app.url)
 
+    repository_names_by_translation_app = {}
+    for repository_app in db.session.query(RepositoryApp).filter(TranslatedApp.url.in_(list([ translation_app.url for translation_app in translation_apps_by_translation_url_id.values() ]))).all():
+        repository_names_by_translation_app[repository_app.url] = repository_app.name
+
     for recipient_id, recipient_messages in pending_emails.iteritems():
         translation_urls = []
         txt_msg = "Hi,\nThe following changes have been detected in applications on which you're subscribed:\n"
         html_msg = "<p>Hi,</p><p>The following changes have been detected in applications on which you're subscribed:</p><ul>\n"
+        translated_app_urls = set()
+        translated_app_titles = set()
         for translation_url_id, translation_url_changes in recipient_messages.iteritems():
             translation_url = translation_urls_by_id[translation_url_id].url
             translation_urls.append(translation_url)
@@ -159,7 +165,15 @@ def run_notifications():
                 html_msg += "<li>Applications:<ul>\n"
                 for translation_app in translation_apps:
                     html_msg += "<li>%s</li>" % translation_app
+                    # Title if name not found
+                    if translation_url not in repository_names_by_translation_app:
+                        translated_app_urls.add(unicode(translation_app))
                 html_msg += "</ul></li>"
+
+            # Names
+            if translation_url in repository_names_by_translation_app:
+                translated_app_titles.add(repository_names_by_translation_app[translation_url])
+
             html_msg += "<li>Changes:<ul>\n"
             for language, language_changes in translation_url_changes.iteritems():
                 txt_msg += "   * %s\n" % language
@@ -177,10 +191,19 @@ def run_notifications():
         txt_msg += "\nIf you don't want to receive these messages, please reply this e-mail.\n\n--\nThe Go-Lab App Composer team"
         html_msg += "<p>If you don't want to receive these e-mails, please reply this e-mail.</p><p>--<br>The Go-Lab App Composer team<p>"
 
+        human_translated_app_urls = ''
+        if translated_app_titles:
+            human_translated_app_urls += '; '.join(translated_app_titles)
+            if translated_app_urls:
+                human_translated_app_urls += '; '
+
+        if translated_app_urls:
+            human_translated_app_urls += '; '.join(translated_app_urls) 
+
         recipient = recipients_by_id[recipient_id]
 
         try:
-            send_notification(recipient.email, txt_msg, html_msg)
+            send_notification(recipient.email, txt_msg, html_msg, human_translated_app_urls)
         except:
             traceback.print_exc()
         else:
@@ -188,7 +211,7 @@ def run_notifications():
     print "Finished notification process"
 
 
-def send_notification(recipient, txt_body, html_body):
+def send_notification(recipient, txt_body, html_body, translated_titles):
     ACTIVE = True
     if ACTIVE:
         to_addrs = list(app.config.get('ADMINS', [])) + [ recipient ]
@@ -207,7 +230,7 @@ def send_notification(recipient, txt_body, html_body):
         return
 
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = "[AppComposer] New translations on your applications"
+    msg['Subject'] = "[AppComp] Translations for %s" % translated_titles
     msg['From'] = "App Composer Translator <weblab@deusto.es>"
     msg['To'] = recipient
 
