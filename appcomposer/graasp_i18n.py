@@ -43,7 +43,7 @@ def get_contents(lang):
 
 @graasp_i18n_blueprint.route('/')
 @graasp_i18n_blueprint.route('/app.xml')
-@report_error("Error on graasp i18n")
+@report_error("Error on graasp i18n at the App Composer", additional_recipients = ['alex.wild@epfl.ch'])
 def index():
     requests = get_cached_session()
     languages = get_languages()
@@ -80,7 +80,7 @@ def messages_to_xml(messages):
 
 
 @graasp_i18n_blueprint.route('/locales/graasp_<language>_ALL.xml')
-@report_error("Error on graasp i18n")
+@report_error("Error on graasp i18n", additional_recipients = ['alex.wild@epfl.ch'])
 def locale(language):
     requests = get_cached_session()
     contents = get_contents(language)

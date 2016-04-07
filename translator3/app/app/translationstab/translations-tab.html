@@ -13,17 +13,17 @@
 
             <div class="ac-error-description">
                 <p>
-                    <strong>The error is:</strong>
+                    <strong ac-translate-me>The error is:</strong>
                 </p>
 
                 <table style="padding-top: 20px">
                     <tr>
-                        <td><strong>HTTP code:</strong></td>
+                        <td><strong ac-translate-me>HTTP code:</strong></td>
                         <td>{{ status.error.code }}</td>
                     </tr>
                     <tr>
-                        <td><strong>Message:<strong></td>
-                        <td>{{ status.error.message }}</td>
+                        <td><strong ac-translate-me>Message:<strong></td>
+                        <td>{{ status.error.message.message }}</td>
                     </tr>
                 </table>
             </div>
@@ -39,13 +39,18 @@
             <h3 ac-translate-me>Details:</h3>
 
             <a ng-href="#/edit/{{ selected_target.lang }}/{{ selected_target.target }}/{{ appurl }}">
-                <div ng-disabled="selected_target.lang == undefined" class="btn btn-success">
+                <div ng-disabled="selected_target.lang == undefined || !(appinfo.translations)" class="btn btn-success">
                     <i class="fa fa-edit"></i>
                         <span ng-show="appinfo.translations[selected_target.lang]">{{ 'Edit translation' | translate }}</span>
                         <span ng-show="!appinfo.translations[selected_target.lang]">{{ 'Translate' | translate }}</span>
                 </div>
             </a>
 
+            <!-- Loading message -->
+            <div ng-show="!(appinfo.translations)">
+                <p class="ac-text-warning"><i class="fa fa-spinner fa-spin"/> {{ 'Checking app status...' | translate }}</p>
+            </div>
+            <!-- Choose a language message -->
             <div ng-show="selected_target.lang == undefined">
                 <p class="ac-text-danger">Please, choose a language.</p>
             </div>

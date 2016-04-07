@@ -10,10 +10,12 @@ import hashlib
 import StringIO
 import datetime
 import traceback
+import requests
 from functools import wraps
 
-from collections import OrderedDict
+from collections import OrderedDict, defaultdict
 
+import babel
 from sqlalchemy import distinct, func
 from sqlalchemy.orm import joinedload_all
 
@@ -250,8 +252,12 @@ def check_modifications(language, target):
 @api
 def bundle_update(language, target):
     app_url = request.values.get('app_url')
-    key = request.values.get("key")
-    value = request.values.get("value")
+    try:
+        request_data = request.get_json(force=True, silent=True) or {}
+    except ValueError:
+        request_data = {}
+    key = request_data.get("key")
+    value = request_data.get("value")
 
     if key is None or value is None:
         return jsonify(**{"result": "error"})
@@ -436,7 +442,102 @@ def widget_js():
         resp.content_type = 'application/javascript'
         return resp
 
-        
+# This is a dictionary like { 'English' : 'en', 'French' : 'fr' ...}
+LANGUAGES_PER_NAME = { v: k for k, v in babel.Locale('en').languages.items() }
+LANGUAGE_NAMES_PER_CODE = { k: v for k, v in babel.Locale('en').languages.items() }
+
+# Sometimes in golabz some languages are displayed in a format not supported by babel
+# Here is a translation for those known issues
+WRONG_LANGUAGES = {
+    'Serbo Croatian' : 'Serbo-Croatian',
+    'Luxembourgeois' : 'Luxembourgish',
+    'Slovene': 'Slovenian',
+}
+
+WRONG_LANGUAGES_PER_CORRECT_NAME = { v: k for k, v in WRONG_LANGUAGES.items() }
+
+# Given this percentage, the AppComposer will decide whether to report if an app has been updated or not.
+LANGUAGE_THRESHOLD = 0.8
+
+@translator_blueprint.route('/dev/supported_languages.json')
+@public
+@cross_origin()
+def supported_languages():
+    return jsonify(**LANGUAGES_PER_NAME)
+
+@translator_blueprint.route('/dev/changes.json')
+@public
+@cross_origin()
+def translation_changes():
+    try:
+        r = requests.get("http://www.golabz.eu/rest/labs/retrieve.json")
+        r.raise_for_status()
+        labs = r.json()
+    except:
+        return "Error accessing http://www.golabz.eu/rest/labs/retrieve.json", 500
+
+    from appcomposer.translator.tasks import GOLAB_REPO
+    repository_apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(RepositoryApp.app_link.like('http://www.golabz.eu/lab%'), RepositoryApp.translation_percent != None).all()
+    repository_apps_by_external_id = defaultdict(list) # {
+        # id: [ repository_app1, repository_app2, repository_app3 ... ]
+    # }
+    for repository_app in repository_apps:
+        external_id = repository_app.external_id.split('-')[0]
+        repository_apps_by_external_id[external_id].append(repository_app)
+
+    threshold = request.args.get('threshold', 100 * LANGUAGE_THRESHOLD)
+    try:
+        threshold = float(threshold)
+    except (ValueError, TypeError):
+        threshold = 100 * LANGUAGE_THRESHOLD
+    threshold = threshold / 100.0
+
+    show_names = request.args.get('show_names', 'false').lower() == 'true'
+    show_urls = request.args.get('show_urls', 'false').lower() == 'true'
+
+    changes = {}
+    for lab in labs:
+        external_id = lab.get('id')
+        appcomposer_languages = set()
+        for repo_app in repository_apps_by_external_id.get(external_id, []):
+            translation_percent = json.loads(repo_app.translation_percent)
+            for lang, value in translation_percent.items():
+                if value >= threshold:
+                    # lang should be 'en'; not 'en_ALL_ALL'
+                    lang = lang.split('_')[0]
+                    appcomposer_languages.add(lang)
+
+        lab_languages = lab.get('lab_languages', [])
+        golabz_languages = set()
+        for language in lab_languages:
+            # If the language is in WRONG_LANGUAGES, take it; otherwise keep it
+            language = WRONG_LANGUAGES.get(language, language)
+            if language in LANGUAGES_PER_NAME:
+                lang_code = LANGUAGES_PER_NAME[language]
+                golabz_languages.add(lang_code)
+
+        # If there are changes and there are appcomposer languages
+        if len(appcomposer_languages) > 0:
+            if len(golabz_languages - appcomposer_languages) > 0 or len(appcomposer_languages - golabz_languages) > 0:
+                identifier = external_id
+                if show_urls:
+                    repo_apps = repository_apps_by_external_id.get(external_id, [])
+                    if repo_apps:
+                        identifier = repo_apps[0].app_link
+
+                elif show_names:
+                    repo_apps = repository_apps_by_external_id.get(external_id, [])
+                    if repo_apps:
+                        identifier = repo_apps[0].name
+
+                changes[identifier] = []
+                for lang_code in appcomposer_languages:
+                    display_name = LANGUAGE_NAMES_PER_CODE.get(lang_code, lang_code)
+                    display_name = WRONG_LANGUAGES_PER_CORRECT_NAME.get(display_name, display_name)
+                    changes[identifier].append(display_name)
+    return jsonify(changes=changes)
+
+
 
 TARGET_CHOICES = []
 TARGETS = obtain_groups()

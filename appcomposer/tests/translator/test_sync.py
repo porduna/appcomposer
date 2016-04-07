@@ -285,7 +285,7 @@ class TestSync(TranslatorTest):
         self.assertGraaspApp()
 
         # Add to commons one term which should be applied to tools too.
-        request.values = {
+        request._cached_json = request.values = {
             'app_url': "http://url3/common_gadget.xml",
             'key': 'message1_3',
             'value': 'TESTING_MESSAGE1',
@@ -293,7 +293,7 @@ class TestSync(TranslatorTest):
         bundle_update('fr_ALL', 'ALL')
 
         # Add to tool_ one term which should not be applied to common.
-        request.values = {
+        request._cached_json = request.values = {
             'app_url': "http://url3/tool_gadget.xml",
             'key': 'message5_3',
             'value': 'TESTING_MESSAGE5',

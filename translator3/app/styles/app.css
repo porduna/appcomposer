@@ -101,6 +101,10 @@ GENERAL TYPESETTING
     color: #AA3333;
 }
 
+.ac-text-warning {
+
+}
+
 /* To contain errors. */
 .ac-error-box {
     border: 1px solid #AA3333;

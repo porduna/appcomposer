@@ -102,23 +102,41 @@ class MicrosoftTranslator(AbstractTranslator):
         if language not in self.languages:
             return {}
         
-        app.logger.debug("Translating %r to %r using Microsoft Translator API" % (texts, language))
-        try:
-            ms_translations = self.client.translate_array(texts = texts, to_lang = language, from_lang = origin_language)
-        except MSTranslatorApiException as e:
-            traceback.print_exc()
-            app.logger.warn("Error translating using Microsoft Translator API: %s" % e, exc_info = True)
+        slices = [
+            # the size of a slice can't be over 10k characters in theory (we try to keep them under 5k in practice)
+            # [ element1, element2, element3 ...]
+            [],
+        ]
+        current_slice = slices[0]
+
+        for text in texts:
+            current_slice.append(text)
+            if len(u''.join(current_slice).encode('utf8')) > 2000:
+                current_slice = []
+                slices.append(current_slice)
+
+        app.logger.debug("Texts splitted in {} slices".format(len(slices)))
+        for pos, slice in enumerate(slices):
+            app.logger.debug("  slice: {}: {} characters".format(pos, len(''.join(slice).encode('utf8'))))
+        
+        ms_translations = []
+        errors = False
+        for current_slice in slices:
+            if current_slice:
+                app.logger.debug("Translating %r to %r using Microsoft Translator API" % (current_slice, language))
+                try:
+                    current_ms_translations = self.client.translate_array(texts = current_slice, to_lang = language, from_lang = origin_language)
+                except (MSTranslatorApiException, ArgumentOutOfRangeException, ValueError) as e:
+                    traceback.print_exc()
+                    app.logger.warn("Error translating using Microsoft Translator API: %s" % e, exc_info = True)
+                    errors = True
+                    continue
+                else:
+                    ms_translations.extend(list(current_ms_translations))
+                    app.logger.debug("Translated %s sentences using Microsoft Translator API" % len(current_ms_translations))
+
+        if errors and not ms_translations:
             return {}
-        except ArgumentOutOfRangeException as e:
-            traceback.print_exc()
-            app.logger.warn("Error translating using Microsoft Translator API: %s" % e, exc_info = True)
-            return {}
-        except ValueError as e: # JSON sometimes generates this error
-            traceback.print_exc()
-            app.logger.warn("Error translating using Microsoft Translator API: %s" % e, exc_info = True)
-            return {}
-           
-        app.logger.debug("Translated %s sentences using Microsoft Translator API" % len(ms_translations))
         
         translations = {}
         for text, translation in zip(texts, ms_translations):

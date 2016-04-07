@@ -192,7 +192,7 @@ def extract_local_translations_url(app_url, force_local_cache = False):
 
     locales_without_lang = [ locale for locale in locales if 'lang' not in locale.attrib or locale.attrib['lang'].lower() == 'all' ]
     if not locales_without_lang:
-        raise TranslatorError("No default Locale found")
+        raise TranslatorError("That application does not provide any default locale. The application has probably not been adopted to be translated.")
 
     relative_translation_url = locales_without_lang[0].attrib.get('messages')
     if not relative_translation_url:
