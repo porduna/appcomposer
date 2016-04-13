@@ -8,7 +8,7 @@
             <p>When adding a new language, please check that the name is exactly like this one. If it is not, please report it to the App Composer maintainers. Additionally, if you look for a name which has the symbol <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> instead of <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> and it should be supported in Go-Lab, please contact us so we can change it.</p>
             <p>Thank you</p>
         </div>
-        <table class="table table-border table-hover">
+        <table class="table table-bordered table-hover">
             <thead>
                 <tr>
                     <th>Name</th>
@@ -19,7 +19,7 @@
             </thead>
             <tbody>
                 {% for language, code in languages %}
-                    <tr>
+                    <tr {% if code in visible_languages %}class="success"{% endif %}>
                         <td><b>{{ language }}</b></td>
                         <td>
                         {% if code in visible_languages %}

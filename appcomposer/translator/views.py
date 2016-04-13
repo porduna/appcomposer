@@ -493,7 +493,7 @@ def supported_languages():
 @public
 @cross_origin()
 def supported_languages_human():
-    languages = sorted([ (name, code) for name, code in LANGUAGES_PER_NAME.items() ], lambda (name1, code1), (name2, code2) : cmp(name1, name2))
+    languages = sorted([ (name, code) for name, code in LANGUAGES_PER_NAME.items() if not '_' in code ], lambda (name1, code1), (name2, code2) : cmp(name1, name2))
     visible_languages = [ key.split('_')[0] for key in obtain_languages().keys() ]
     return render_template("translator/supported_languages.html", languages=languages, wrong=WRONG_LANGUAGES_PER_CORRECT_NAME, visible_languages=visible_languages)
 
