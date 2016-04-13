@@ -55,7 +55,7 @@
                             ng-class="{ active: currentCategory == cat.id }"
                             ng-show="cat.items.length > 0"
                             class="ac-category-pill">
-                            <a ng-click="selectCategory(cat.id)" href="">
+                            <a ng-click="refreshCategory(cat.id)" href="">
                                 {{ cat.category }}
                             </a>
                         </li>
@@ -74,8 +74,9 @@
                     </div>
                     <div class="form-group">
                         <select ng-disabled="!filteringEnabled" class="form-control" style="min-width: 300px" id="filteringLang"
-                                ng-options="lang as lang.name for lang in getLanguagesList() track by lang.code"
-                                ng-model="filteringLang"></select>
+                                ng-options="lang as lang.name for lang in languagesList track by lang.code"
+                                ng-model="filteringLang"
+                                ng-change="onFilterChanged()"></select>
                     </div>
                 </form>
 
@@ -100,7 +101,7 @@
                         <!--<span class="fa fa-info-circle"/>-->
                     </th>
                 </tr>
-                </thead>http://localhost:9000/#/apps
+                </thead>
                 <tbody>
                 <tr ng-repeat="app in apps" ng-click="selectApp(app, $index)"
                     ng-class="{'my-row-highlight': isSelected(app)}">
