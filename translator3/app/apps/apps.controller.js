@@ -108,7 +108,7 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
 
         return ret;
     } // !getFilteredApps
-    
+
 
     /**
      * Called to select the displayed category. If necessary, this will also

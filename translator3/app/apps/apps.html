@@ -69,7 +69,7 @@
                 <form class="form-inline">
                     <div class="checkbox">
                         <label>
-                            <input type="checkbox" ng-model="filteringEnabled"> Filter by not-complete lang:
+                            <input type="checkbox" ng-model="filteringEnabled" ng-change="onFilterChanged()"> Find incomplete translations for:
                         </label>
                     </div>
                     <div class="form-group">
