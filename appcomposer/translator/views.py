@@ -216,14 +216,19 @@ def api_languages():
 @cross_origin()
 @api
 def api_languages_default():
-    ordered_dict = OrderedDict()
     languages = list(obtain_languages().iteritems())
     languages.sort(lambda x1, x2 : cmp(x1[1], x2[1]))
+    list_of_languages = []
     for lang_code, lang_name in languages:
-        ordered_dict[lang_code] = lang_name
+        if lang_code.startswith('all'):
+            continue
+        list_of_languages.append({
+            'name': lang_name,
+            'code': lang_code.split('_')[0]
+        })
     contents = {
-        'default': _guess_default_language(),
-        'languages': ordered_dict,
+        'default': (_guess_default_language() or 'en').split('_')[0],
+        'languages': list_of_languages,
     }
     resp = make_response(json.dumps(contents, indent = 4))
     resp.content_type = 'application/json'
