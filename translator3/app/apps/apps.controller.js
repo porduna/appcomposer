@@ -22,9 +22,10 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
 
     $scope.currentCategory = "";
 
-    $scope.filteringLang = "en";
+    $scope.filteringLang = undefined;
     $scope.filteringEnabled = false;
-    $scope.languagesList = getLanguagesList();
+    $scope.languages = $resource(APP_DYN_ROOT + "api/info/languages_default").get();
+    $scope.languages.$promise.then(onLanguagesRetrievalSucceeded, onLanguagesRetrievalRejected);
 
     vm.dt.options = DTOptionsBuilder.newOptions()
         .withPaginationType('full_numbers')
@@ -68,7 +69,6 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
     $scope.getGradientColor = getGradientColor;
     $scope.getBadgeTitle = getBadgeTitle;
     $scope.refreshCategory = refreshCategory;
-    $scope.getLanguagesList = getLanguagesList;
     $scope.getFilteredApps = getFilteredApps;
     $scope.onFilterChanged = onFilterChanged;
 
@@ -108,18 +108,7 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
 
         return ret;
     } // !getFilteredApps
-
-    /**
-     * Gets the list of languages that will be used to filter the visible apps.
-     */
-    function getLanguagesList() {
-        return [
-            {'id': 1, 'code': 'en', 'name': "English"},
-            {'id': 2, 'code': 'es', 'name': "Spanish"},
-            {'id': 3, 'code': 'fr', 'name': "French"},
-            {'id': 4, 'code': 'de', 'name': "German"}
-        ];
-    } // !getLanguagesList
+    
 
     /**
      * Called to select the displayed category. If necessary, this will also
@@ -183,6 +172,27 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
         $scope.status.error.code = "0";
     } // !onAppsRetrievalRejected
 
+
+    /**
+     * Notified when the languages_default API returns a result successfully.
+     * @param data
+     */
+    function onLanguagesRetrievalSucceeded(data) {
+        // We need to set the default.
+        $scope.filteringLang = _.find(data.languages, function(lang) {
+            return lang.code == data.default;
+        });
+    } // !onLanguagesRetrievalSucceeded
+
+
+    /**
+     * Notified when the languages_default API cant be reached or fails.
+     */
+    function onLanguagesRetrievalRejected(error, err, e) {
+        $scope.status.error = {};
+        $scope.status.error.message = "Failed to retrieve languages list";
+        $scope.status.error.code = "1";
+    } //! onLanguagesRetrievalRejected
 
     /**
      * Extracts an app name. That is, extracts 'en' from 'en_ALL_ALL', for instance.
