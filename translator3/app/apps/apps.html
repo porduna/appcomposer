@@ -1,73 +1,96 @@
+<div class="col-xs-12 well">
 
-    <div class="col-xs-12 well">
+    <h1 ac-translate-me><i class="fa fa-table fa-2x" style="vertical-align: middle"></i> Applications List</h1>
 
-        <h1 ac-translate-me><i class="fa fa-table fa-2x" style="vertical-align: middle"></i> Applications List</h1>
+    <div ng-if="status.error" class="ac-translations-tab-error">
+        <div class="alert alert-danger">
+            <h3>Unfortunately, it was not possible to load the applications list.</h3>
 
-        <div ng-if="status.error" class="ac-translations-tab-error">
-            <div class="alert alert-danger">
-                <h3>Unfortunately, it was not possible to load the applications list.</h3>
-
-                <p>
-                    There could be a server or network error. You
-                    may try again later.
-                </p>
-                <br>
-
-                <div class="ac-error-description">
-                    <p>
-                        <strong>The error is:</strong>
-                    </p>
-
-                    <table style="padding-top: 20px">
-                        <tr>
-                            <td><strong>HTTP code:</strong></td>
-                            <td>{{ status.error.code }}</td>
-                        </tr>
-                        <tr>
-                            <td><strong>Message:<strong></td>
-                            <td>{{ status.error.message }}</td>
-                        </tr>
-                    </table>
-                </div>
-
-            </div>
-        </div>
-
-        <!-- Loading message -->
-        <div ng-show="!status.error && (apps.length == 0)">
-            <div class="ac-loading">
-                <i class="fa fa-spinner fa-spin"/> Loading, please wait...
-            </div>
-        </div>
-
-        <!-- Loaded content -->
-        <div ng-show="!status.error && (apps.length > 0)">
-            <p ac-translate-me style="padding-bottom: 15px">
-                Choose a category and an application to translate:
+            <p>
+                There could be a server or network error. You
+                may try again later.
             </p>
+            <br>
 
-            <!-- Pills to show and choose the category -->
-            <div class="ac-category-pills">
-                <ul class="nav nav-pills">
-                    <li ng-repeat="cat in all_apps"
-                        ng-class="{ active: currentCategory == cat.id }"
-                        ng-show="cat.items.length > 0"
-                        class="ac-category-pill">
-                        <a ng-click="selectCategory(cat.id)" href="">
-                            {{ cat.category }}
-                        </a>
-                    </li>
-                </ul>
+            <div class="ac-error-description">
+                <p>
+                    <strong>The error is:</strong>
+                </p>
+
+                <table style="padding-top: 20px">
+                    <tr>
+                        <td><strong>HTTP code:</strong></td>
+                        <td>{{ status.error.code }}</td>
+                    </tr>
+                    <tr>
+                        <td><strong>Message:<strong></td>
+                        <td>{{ status.error.message }}</td>
+                    </tr>
+                </table>
             </div>
 
-            <!-- WARNING: THE FOLLOWING WRAPPER DIV IS REQUIRED -->
-            <!-- It is a workaround around what seems to be an angular-datatables bug: under some circumstances (possibly
-            related to slow loading) a "hideLoadingAndRenderDatatable method will be called, which does a $(table).next().remove().
-            This is probably supposed to delete some kind of 'loading' message, but apparently sometimes that message doesn't
-            exist', and the actual $next element is deleted. By wrapping the table, we ensure there is no next() element, and
-            fortunately jquery doesn't mind operations on empty sets. -->
-            <div>
-            <table datatable="ng" dt-options="vm.dt.options" dt-column-defs="vm.dt.columnDefs" dt-instance="vm.dt.instance"
+        </div>
+    </div>
+
+    <!-- Loading message -->
+    <div ng-show="!status.error && (apps.length == 0)">
+        <div class="ac-loading">
+            <i class="fa fa-spinner fa-spin"/> Loading, please wait...
+        </div>
+    </div>
+
+    <!-- Loaded content -->
+    <div ng-show="!status.error && (apps.length > 0)">
+        <p ac-translate-me style="padding-bottom: 15px">
+            Choose a category and an application to translate:
+        </p>
+
+        <div class="row">
+            <!-- Category selection to the left -->
+            <div class="col-xs-6">
+                <!-- Pills to show and choose the category -->
+                <div class="ac-category-pills">
+                    <ul class="nav nav-pills">
+                        <li ng-repeat="cat in all_apps"
+                            ng-class="{ active: currentCategory == cat.id }"
+                            ng-show="cat.items.length > 0"
+                            class="ac-category-pill">
+                            <a ng-click="selectCategory(cat.id)" href="">
+                                {{ cat.category }}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Filter to the right -->
+            <div class="col-xs-6">
+
+                <form class="form-inline">
+                    <div class="checkbox">
+                        <label>
+                            <input type="checkbox" ng-model="filteringEnabled"> Filter by not-complete lang:
+                        </label>
+                    </div>
+                    <div class="form-group">
+                        <select ng-disabled="!filteringEnabled" class="form-control" style="min-width: 300px" id="filteringLang"
+                                ng-options="lang as lang.name for lang in getLanguagesList() track by lang.code"
+                                ng-model="filteringLang"></select>
+                    </div>
+                </form>
+
+            </div>
+        </div> <!-- !row -->
+
+        <!-- WARNING: THE FOLLOWING WRAPPER DIV IS REQUIRED -->
+        <!-- It is a workaround around what seems to be an angular-datatables bug: under some circumstances (possibly
+        related to slow loading) a "hideLoadingAndRenderDatatable method will be called, which does a $(table).next().remove().
+        This is probably supposed to delete some kind of 'loading' message, but apparently sometimes that message doesn't
+        exist', and the actual $next element is deleted. By wrapping the table, we ensure there is no next() element, and
+        fortunately jquery doesn't mind operations on empty sets. -->
+        <div>
+            <table datatable="ng" dt-options="vm.dt.options" dt-column-defs="vm.dt.columnDefs"
+                   dt-instance="vm.dt.instance"
                    class="table-disable-hover row-border hover">
                 <thead>
                 <tr>
@@ -77,49 +100,51 @@
                         <!--<span class="fa fa-info-circle"/>-->
                     </th>
                 </tr>
-                </thead>
+                </thead>http://localhost:9000/#/apps
                 <tbody>
-                    <tr ng-repeat="app in apps" ng-click="selectApp(app, $index)" ng-class="{'my-row-highlight': isSelected(app)}" >
-                        <td class="noselect">
-                            <div class="my-thumbnail-wrapper">
-                                <a href="#/app/{{ app.app_url }}" class="my-app-thumbnail">
-                                    <img class="my-app-thumbnail-img" ng-src="{{ app.app_thumb }}" alt="...">
-                                </a>
+                <tr ng-repeat="app in apps" ng-click="selectApp(app, $index)"
+                    ng-class="{'my-row-highlight': isSelected(app)}">
+                    <td class="noselect">
+                        <div class="my-thumbnail-wrapper">
+                            <a href="#/app/{{ app.app_url }}" class="my-app-thumbnail">
+                                <img class="my-app-thumbnail-img" ng-src="{{ app.app_thumb }}" alt="...">
+                            </a>
                                 <span>
                                 {{ app.title }}
                                 </span>
-                            </div>
-                        </td>
-                        <td style="text-overflow: ellipsis">
+                        </div>
+                    </td>
+                    <td style="text-overflow: ellipsis">
                             <span tooltip-html-unsafe="{{ app.description }}">
                                 {{ app.description | plaintext | descriptionFilter | characters:60 }}
                             </span>
-                        </td>
-                        <td>
+                    </td>
+                    <td>
 
-                            <!-- Display each badge for each language -->
-                            <a ng-repeat="(langname, lang) in app.languages"
-                                    ng-href="#/edit/{{ langname }}_ALL/ALL/{{ app.app_url }}">
+                        <!-- Display each badge for each language -->
+                        <a ng-repeat="(langname, lang) in app.languages"
+                           ng-href="#/edit/{{ langname }}_ALL/ALL/{{ app.app_url }}">
 
                                 <span tooltip="{{ getBadgeTitle(langname, lang) }}"
                                       class="badge ac-lang-badge"
-                                    ng-style="{'background-color': getGradientColor(lang.progress)}"
-                                    ng-class="{'ac-badge-original': lang.original, 'ac-badge-notoriginal': !lang.original,
+                                      ng-style="{'background-color': getGradientColor(lang.progress)}"
+                                      ng-class="{'ac-badge-original': lang.original, 'ac-badge-notoriginal': !lang.original,
                                     'ac-badge-complete': lang.progress == 1}">
 
-                                    <span ng-show="lang.original" class="fa fa-shield ac-badge-icon-locked"></span> {{ langname }}
+                                    <span ng-show="lang.original"
+                                          class="fa fa-shield ac-badge-icon-locked"></span> {{ langname }}
 
                                 </span>
-                            </a>
+                        </a>
 
-                        </td>
-                    </tr>
+                    </td>
+                </tr>
                 </tbody>
             </table>
-            </div>
+        </div>
 
 
-            <ac-appurl appurl="appurl"></ac-appurl>
-        </div> <!-- /loaded content -->
+        <ac-appurl appurl="appurl"></ac-appurl>
+    </div> <!-- /loaded content -->
 
-    </div>
+</div>
