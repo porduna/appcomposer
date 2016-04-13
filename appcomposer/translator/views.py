@@ -487,7 +487,9 @@ LANGUAGE_THRESHOLD = 0.8
 @public
 @cross_origin()
 def supported_languages():
-    return jsonify(**LANGUAGES_PER_NAME)
+    languages = sorted([ (name, code) for name, code in LANGUAGES_PER_NAME.items() if not '_' in code ], lambda (name1, code1), (name2, code2) : cmp(name1, name2))
+    visible_languages = [ key.split('_')[0] for key in obtain_languages().keys() ]
+    return jsonify(languages=languages, golab_languages=visible_languages, mappings=WRONG_LANGUAGES_PER_CORRECT_NAME)
 
 @translator_blueprint.route('/dev/supported_languages.html')
 @public
