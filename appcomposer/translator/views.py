@@ -16,7 +16,7 @@ from functools import wraps
 from collections import OrderedDict, defaultdict
 
 import babel
-from sqlalchemy import distinct, func
+from sqlalchemy import distinct, func, or_
 from sqlalchemy.orm import joinedload_all
 
 from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify, Response, send_file
@@ -516,7 +516,7 @@ def translation_changes():
         return "Error accessing http://www.golabz.eu/rest/labs/retrieve.json", 500
 
     from appcomposer.translator.tasks import GOLAB_REPO
-    repository_apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(RepositoryApp.app_link.like('http://www.golabz.eu/lab%'), RepositoryApp.translation_percent != None).all()
+    repository_apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(RepositoryApp.app_link.like('http://www.golabz.eu/lab%'), or_(RepositoryApp.translation_percent != None, RepositoryApp.original_translations != None)).all()
     repository_apps_by_external_id = defaultdict(list) # {
         # id: [ repository_app1, repository_app2, repository_app3 ... ]
     # }
@@ -539,10 +539,14 @@ def translation_changes():
         external_id = lab.get('id')
         appcomposer_languages = set()
         for repo_app in repository_apps_by_external_id.get(external_id, []):
-            translation_percent = json.loads(repo_app.translation_percent)
+            translation_percent = json.loads(repo_app.translation_percent or "{}")
             for lang, value in translation_percent.items():
                 if value >= threshold:
                     # lang should be 'en'; not 'en_ALL_ALL'
+                    lang = lang.split('_')[0]
+                    appcomposer_languages.add(lang)
+            for lang in (repo_app.original_translations or '').split(','):
+                if lang:
                     lang = lang.split('_')[0]
                     appcomposer_languages.add(lang)
 

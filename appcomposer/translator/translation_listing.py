@@ -53,6 +53,19 @@ OTHER_APPS = app.config.get('OTHER_APPS', [])
 OTHER_APPS.append(GRAASP)
 OTHER_APPS.append(TWENTE_COMMONS)
 
+if False: # ONLY FOR TESTING
+    OTHER_APPS.append({
+        'title' : 'Testing',
+        'id' : '3',
+        'description' : "Foo",
+        'app_url' : 'http://localhost:5000/embed/apps/b19200d2-965b-4b74-8e4a-1642fbc721c5/app.xml',
+        'app_type': "OpenSocial gadget",
+        'app_image': "http://composer.golabz.eu/static/img/twente.jpg",
+        'app_thumb': "http://composer.golabz.eu/static/img/twente-thumb.jpg",
+        'app_golabz_page': "http://go-lab.gw.utwente.nl/production/",
+        'repository': "Go-Lab ecosystem",
+    })
+
 DEBUG = True
 DEBUG_VERBOSE = False
 
@@ -372,7 +385,11 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
         failing = task.failing
 
     if repo_app is not None:
-        repo_app.translatable = metadata_information.get('translatable', False)
+        if metadata_information.get('translatable') and len(metadata_information.get('default_translations', [])) > 0:
+            repo_app.translatable = True
+        else:
+            # If it is translatable but there is no default translation; don't take it into account
+            repo_app.translatable = False
         repo_app.adaptable = metadata_information.get('adaptable', False)
         repo_app.original_translations = u','.join(metadata_information.get('original_translations', {}).keys())
         repo_app.last_change = now

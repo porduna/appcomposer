@@ -626,7 +626,7 @@ def retrieve_translations_stats(translation_url, original_messages):
     results = _get_all_results_from_translation_url(translation_url, list(filtered_messages))
 
     if items == 0:
-        return {}
+        return {}, []
 
     dependencies_data = {
         # (language, target) : [
@@ -699,7 +699,7 @@ def retrieve_translations_stats(translation_url, original_messages):
                     dependencies_data[lang, target].append({
                         'translated': count,
                         'items': len(tool_keys),
-                        'percent': 100.0 * count / len(tool_keys),
+                        'percent': (100.0 * count / len(tool_keys)) if len(tool_keys) > 0 else 1.0,
                         'link': tool_link,
                         'title': tool_name,
                         'app_url': tool_app_url,
@@ -804,7 +804,7 @@ def retrieve_translations_percent(translation_url, original_messages):
         for target, target_stats in targets.iteritems():
             translated = target_stats['translated']
             total_items = target_stats['items']
-            percent['%s_%s' % (lang, target)] = 1.0 * translated / total_items
+            percent['%s_%s' % (lang, target)] = (1.0 * translated / total_items) if total_items > 0 else 1.0
 
     return percent
 

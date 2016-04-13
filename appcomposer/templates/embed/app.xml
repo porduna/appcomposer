@@ -2,7 +2,10 @@
  <ModulePrefs title="{{ app.name }}" height="{{ app.height + 20 }}">
     <Require feature="osapi" />
     {% if languages|length > 1 %}
-    <AppComposerLanguages list="{{ ','.join(languages) }}"/>
+        <Locale messages="{{ url_for('static', filename="empty.xml", _external=True) }}"/>
+        {% for language in languages %}
+            <Locale lang="{{ language }}" messages="{{ url_for('static', filename="empty.xml", _external=True) }}"/>
+        {% endfor %}
     {% endif %}
  </ModulePrefs>
  <Content type="html" view="home,canvas">
