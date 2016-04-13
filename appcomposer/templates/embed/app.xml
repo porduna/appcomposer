@@ -1,6 +1,9 @@
 <Module>
  <ModulePrefs title="{{ app.name }}" height="{{ app.height + 20 }}">
     <Require feature="osapi" />
+    {% if languages|length > 1 %}
+    <AppComposerLanguages list="{{ ','.join(languages) }}"/>
+    {% endif %}
  </ModulePrefs>
  <Content type="html" view="home,canvas">
  <![CDATA[
