@@ -211,6 +211,25 @@ def api_languages():
     resp.content_type = 'application/json'
     return resp
 
+@translator_blueprint.route('/api/info/languages_default')
+@public
+@cross_origin()
+@api
+def api_languages_default():
+    ordered_dict = OrderedDict()
+    languages = list(obtain_languages().iteritems())
+    languages.sort(lambda x1, x2 : cmp(x1[1], x2[1]))
+    for lang_code, lang_name in languages:
+        ordered_dict[lang_code] = lang_name
+    contents = {
+        'default': _guess_default_language(),
+        'languages': ordered_dict,
+    }
+    resp = make_response(json.dumps(contents, indent = 4))
+    resp.content_type = 'application/json'
+    return resp
+
+
 @translator_blueprint.route('/api/info/groups')
 @public
 @cross_origin()
