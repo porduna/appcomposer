@@ -1,0 +1,47 @@
+{% extends "translator/base.html" %}
+{% block body %}
+
+<div class="container">
+    <div class="row">
+        <h2>List of AppComposer supported language names</h2>
+        <div class="alert alert-warning col-xs-6 col-xs-offset-3">
+            <p>When adding a new language, please check that the name is exactly like this one. If it is not, please report it to the App Composer maintainers. Additionally, if you look for a name which has the symbol <span class="glyphicon glyphicon-remove" aria-hidden="true"></span> instead of <span class="glyphicon glyphicon-ok" aria-hidden="true"></span> and it should be supported in Go-Lab, please contact us so we can change it.</p>
+            <p>Thank you</p>
+            <p><b>Developers:</b> all this information is available in JSON format <a href="{{ url_for('.supported_languages') }}">here</a>.</p>
+        </div>
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th>Name</th>
+                    <th>Used in the App Composer?</th>
+                    <th>Other supported names</th>
+                    <th>Internal code</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for language, code in languages %}
+                    <tr {% if code in visible_languages %}class="success"{% endif %}>
+                        <td><b>{{ language }}</b></td>
+                        <td>
+                        {% if code in visible_languages %}
+                            <span class="glyphicon glyphicon-ok" aria-hidden="true"></span>
+                        {% else %}
+                            <span class="glyphicon glyphicon-remove" aria-hidden="true"></span>
+                        {% endif %}
+                        </td>
+                        <td>
+                        {% if language in wrong %}
+                            {{ ', '.join(wrong[language]) }}
+                        {% else %}
+                            <i>(none)</i>
+                        {% endif %}
+                        </td>
+                        <td>{{ code }}</td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

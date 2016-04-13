@@ -93,6 +93,15 @@ if not app.debug and app.config.get("ADMINS") is not None and app.config.get("SM
                 # This on production will raise an "out of request context" error. We ignore it.
                 # TODO: Check if there is some way to detect that we are outside, rather than rely on an exception.
                 return False
+            try:
+                from appcomposer.login import current_golab_user
+                user = current_golab_user()
+                if user is None:
+                    record.user = 'User not logged in'
+                else:
+                    record.user = user.email
+            except:
+                record.user = 'Error checking user'
             return True
 
     app.logger.addFilter(MailLoggingFilter())
@@ -111,6 +120,8 @@ if not app.debug and app.config.get("ADMINS") is not None and app.config.get("SM
         Module:             %(module)s
         Function:           %(funcName)s
         Time:               %(asctime)s
+
+        User: %(user)s
 
         Message:
 

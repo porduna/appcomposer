@@ -211,6 +211,25 @@ def api_languages():
     resp.content_type = 'application/json'
     return resp
 
+@translator_blueprint.route('/api/info/languages_default')
+@public
+@cross_origin()
+@api
+def api_languages_default():
+    ordered_dict = OrderedDict()
+    languages = list(obtain_languages().iteritems())
+    languages.sort(lambda x1, x2 : cmp(x1[1], x2[1]))
+    for lang_code, lang_name in languages:
+        ordered_dict[lang_code] = lang_name
+    contents = {
+        'default': _guess_default_language(),
+        'languages': ordered_dict,
+    }
+    resp = make_response(json.dumps(contents, indent = 4))
+    resp.content_type = 'application/json'
+    return resp
+
+
 @translator_blueprint.route('/api/info/groups')
 @public
 @cross_origin()
@@ -454,7 +473,12 @@ WRONG_LANGUAGES = {
     'Slovene': 'Slovenian',
 }
 
-WRONG_LANGUAGES_PER_CORRECT_NAME = { v: k for k, v in WRONG_LANGUAGES.items() }
+WRONG_LANGUAGES_PER_CORRECT_NAME = {}
+for wrong_name, correct_name in WRONG_LANGUAGES.items():
+    if correct_name in WRONG_LANGUAGES_PER_CORRECT_NAME:
+        WRONG_LANGUAGES_PER_CORRECT_NAME[correct_name].append(wrong_name)
+    else:
+        WRONG_LANGUAGES_PER_CORRECT_NAME[correct_name] = [ wrong_name ]
 
 # Given this percentage, the AppComposer will decide whether to report if an app has been updated or not.
 LANGUAGE_THRESHOLD = 0.8
@@ -463,7 +487,17 @@ LANGUAGE_THRESHOLD = 0.8
 @public
 @cross_origin()
 def supported_languages():
-    return jsonify(**LANGUAGES_PER_NAME)
+    languages = sorted([ (name, code) for name, code in LANGUAGES_PER_NAME.items() if not '_' in code ], lambda (name1, code1), (name2, code2) : cmp(name1, name2))
+    visible_languages = [ key.split('_')[0] for key in obtain_languages().keys() ]
+    return jsonify(languages=languages, golab_languages=visible_languages, mappings=WRONG_LANGUAGES_PER_CORRECT_NAME)
+
+@translator_blueprint.route('/dev/supported_languages.html')
+@public
+@cross_origin()
+def supported_languages_human():
+    languages = sorted([ (name, code) for name, code in LANGUAGES_PER_NAME.items() if not '_' in code ], lambda (name1, code1), (name2, code2) : cmp(name1, name2))
+    visible_languages = [ key.split('_')[0] for key in obtain_languages().keys() ]
+    return render_template("translator/supported_languages.html", languages=languages, wrong=WRONG_LANGUAGES_PER_CORRECT_NAME, visible_languages=visible_languages)
 
 @translator_blueprint.route('/dev/changes.json')
 @public
@@ -533,7 +567,7 @@ def translation_changes():
                 changes[identifier] = []
                 for lang_code in appcomposer_languages:
                     display_name = LANGUAGE_NAMES_PER_CODE.get(lang_code, lang_code)
-                    display_name = WRONG_LANGUAGES_PER_CORRECT_NAME.get(display_name, display_name)
+                    display_name = WRONG_LANGUAGES_PER_CORRECT_NAME.get(display_name, [ display_name ])[0]
                     changes[identifier].append(display_name)
     return jsonify(changes=changes)
 
