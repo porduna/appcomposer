@@ -22,6 +22,10 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
 
     $scope.currentCategory = "";
 
+    $scope.filteringLang = "en";
+    $scope.filteringEnabled = false;
+    $scope.languagesList = getLanguagesList();
+
     vm.dt.options = DTOptionsBuilder.newOptions()
         .withPaginationType('full_numbers')
         .withDisplayLength(10)
@@ -63,7 +67,10 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
     $scope.completionToColor = completionToColor;
     $scope.getGradientColor = getGradientColor;
     $scope.getBadgeTitle = getBadgeTitle;
-    $scope.selectCategory = selectCategory;
+    $scope.refreshCategory = refreshCategory;
+    $scope.getLanguagesList = getLanguagesList;
+    $scope.getFilteredApps = getFilteredApps;
+    $scope.onFilterChanged = onFilterChanged;
 
     // -- EVENTS --
 
@@ -71,10 +78,55 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
     // IMPLEMENTATIONS
     // ------------------------------------
 
+
     /**
-     * Called to select the displayed category.
+     * Gets notified when the filter's value is changed,
+     * and will thus trigger a refresh of the apps shown.
      */
-    function selectCategory(category) {
+    function onFilterChanged() {
+        refreshCategory($scope.currentCategory);
+    } // !onFilterChanged
+
+
+    /**
+     * Gets the apps list, but filtered. If the filtering is not enabled this function will
+     * just return the apps as is.
+     *
+     * @param apps: The 'items' field from the JSON call.
+     */
+    function getFilteredApps(apps) {
+
+        if(!$scope.filteringEnabled)
+            return apps;
+
+        var ret = _.filter(apps, function (app) {
+            var filteredLang = app.languages[$scope.filteringLang.code];
+
+            // If the language is not present or if it is not 100% then we have to show this app.
+            return (filteredLang === undefined || filteredLang.progress !== 1);
+        });
+
+        return ret;
+    } // !getFilteredApps
+
+    /**
+     * Gets the list of languages that will be used to filter the visible apps.
+     */
+    function getLanguagesList() {
+        return [
+            {'id': 1, 'code': 'en', 'name': "English"},
+            {'id': 2, 'code': 'es', 'name': "Spanish"},
+            {'id': 3, 'code': 'fr', 'name': "French"},
+            {'id': 4, 'code': 'de', 'name': "German"}
+        ];
+    } // !getLanguagesList
+
+    /**
+     * Called to select the displayed category. If necessary, this will also
+     * apply any filter over the apps that is set, and it will refresh the shown
+     * apps.
+     */
+    function refreshCategory(category) {
 
         $scope.currentCategory = category;
 
@@ -82,30 +134,17 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
         $scope.selected = {};
         $scope.selected.app = undefined;
 
-        angular.forEach($scope.all_apps, function(val, ind) {
-            if (val.id == $scope.currentCategory) {
-                $scope.apps = val.items;
-            }
+        angular.forEach($scope.all_apps, function (val, ind) {
 
+            if (val.id == $scope.currentCategory) {
+
+                // Apply the filter (if we must).
+                $scope.apps = getFilteredApps(val.items);
+            }
         });
 
-        ////$timeout( function() {
-        ////    // Find the right apps to display.
-        //    angular.forEach($scope.all_apps, function(val, ind) {
-        //        if(val.id == $scope.currentCategory) {
-        //            console.log(val.items);
-        //            $scope.apps = val.items;
-        //        }
-        //    });
-        ////
-        //    $timeout( function() {
-        //        $scope.loadingTable = false;
-        //    }, 100 );
-        //
-        //}, 100);
 
-
-    } // !selectCategory
+    } // !refreshCategory
 
     /**
      * Called when the apps retrieval method succeeds.
@@ -131,7 +170,7 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
         //    ];
 
         // Select default category.
-        selectCategory($scope.all_apps[0].id);
+        refreshCategory($scope.all_apps[0].id);
 
     } // !onAppsRetrievalSucceeded
 
