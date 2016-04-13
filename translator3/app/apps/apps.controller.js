@@ -69,7 +69,6 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
     $scope.getGradientColor = getGradientColor;
     $scope.getBadgeTitle = getBadgeTitle;
     $scope.refreshCategory = refreshCategory;
-    $scope.getLanguagesList = getLanguagesList;
     $scope.getFilteredApps = getFilteredApps;
     $scope.onFilterChanged = onFilterChanged;
 
@@ -109,18 +108,7 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
 
         return ret;
     } // !getFilteredApps
-
-    /**
-     * Gets the list of languages that will be used to filter the visible apps.
-     */
-    function getLanguagesList() {
-        return [
-            {'id': 1, 'code': 'en', 'name': "English"},
-            {'id': 2, 'code': 'es', 'name': "Spanish"},
-            {'id': 3, 'code': 'fr', 'name': "French"},
-            {'id': 4, 'code': 'de', 'name': "German"}
-        ];
-    } // !getLanguagesList
+    
 
     /**
      * Called to select the displayed category. If necessary, this will also
