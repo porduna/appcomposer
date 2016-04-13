@@ -473,7 +473,12 @@ WRONG_LANGUAGES = {
     'Slovene': 'Slovenian',
 }
 
-WRONG_LANGUAGES_PER_CORRECT_NAME = { v: k for k, v in WRONG_LANGUAGES.items() }
+WRONG_LANGUAGES_PER_CORRECT_NAME = {}
+for wrong_name, correct_name in WRONG_LANGUAGES.items():
+    if correct_name in WRONG_LANGUAGES_PER_CORRECT_NAME:
+        WRONG_LANGUAGES_PER_CORRECT_NAME[correct_name].append(wrong_name)
+    else:
+        WRONG_LANGUAGES_PER_CORRECT_NAME[correct_name] = [ wrong_name ]
 
 # Given this percentage, the AppComposer will decide whether to report if an app has been updated or not.
 LANGUAGE_THRESHOLD = 0.8
@@ -483,6 +488,14 @@ LANGUAGE_THRESHOLD = 0.8
 @cross_origin()
 def supported_languages():
     return jsonify(**LANGUAGES_PER_NAME)
+
+@translator_blueprint.route('/dev/supported_languages.html')
+@public
+@cross_origin()
+def supported_languages_human():
+    languages = sorted([ (name, code) for name, code in LANGUAGES_PER_NAME.items() ], lambda (name1, code1), (name2, code2) : cmp(name1, name2))
+    visible_languages = [ key.split('_')[0] for key in obtain_languages().keys() ]
+    return render_template("translator/supported_languages.html", languages=languages, wrong=WRONG_LANGUAGES_PER_CORRECT_NAME, visible_languages=visible_languages)
 
 @translator_blueprint.route('/dev/changes.json')
 @public
@@ -552,7 +565,7 @@ def translation_changes():
                 changes[identifier] = []
                 for lang_code in appcomposer_languages:
                     display_name = LANGUAGE_NAMES_PER_CODE.get(lang_code, lang_code)
-                    display_name = WRONG_LANGUAGES_PER_CORRECT_NAME.get(display_name, display_name)
+                    display_name = WRONG_LANGUAGES_PER_CORRECT_NAME.get(display_name, [ display_name ])[0]
                     changes[identifier].append(display_name)
     return jsonify(changes=changes)
 
