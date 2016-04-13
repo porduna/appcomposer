@@ -74,7 +74,7 @@
                     </div>
                     <div class="form-group">
                         <select ng-disabled="!filteringEnabled" class="form-control" style="min-width: 300px" id="filteringLang"
-                                ng-options="lang as lang.name for lang in languagesList track by lang.code"
+                                ng-options="lang as lang.name for lang in languages.languages track by lang.code"
                                 ng-model="filteringLang"
                                 ng-change="onFilterChanged()"></select>
                     </div>
