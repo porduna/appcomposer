@@ -550,6 +550,7 @@ def translation_changes():
         #     'subtractions' : [lang3, lang4]
         # }
     }
+    visible_languages = [ key.split('_')[0] for key in obtain_languages().keys() ]
     for lab in labs:
         external_id = lab.get('id')
         appcomposer_languages = set()
@@ -566,7 +567,8 @@ def translation_changes():
             for lang in (repo_app.original_translations or '').split(','):
                 if lang:
                     lang = lang.split('_')[0]
-                    appcomposer_languages.add(lang)
+                    if lang in visible_languages:
+                        appcomposer_languages.add(lang)
 
         lab_languages = lab.get('lab_languages', [])
         golabz_languages = set()
