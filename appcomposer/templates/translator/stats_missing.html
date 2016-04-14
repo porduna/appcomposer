@@ -1,0 +1,54 @@
+{% extends "translator/base.html" %}
+{% block body %}
+
+<div class="container">
+    <div class="row">
+        <h2>List of translations provided to the AppComposer and not applied by the application owner</h2>
+
+        <div class="alert alert-warning col-xs-6 col-xs-offset-3">
+            <p>Most Go-Lab applications rely on OpenSocial. This way, for those texts translated in the AppComposer, users automatically see them translated. However, some applications (e.g., Graasp, automated labs, etc.) do not support this, and the lab owner must manually take the translations and put them in their servers.</p>
+            <p>While the owners always receive an e-mail stating that they have to apply some changes, unfortunately some of them forget. This page lists what applications have changes that have not been applied.</p>
+        </div>
+    </div>
+
+    <div class="row">
+        <table class="table table-bordered table-hover">
+            <thead>
+                <tr>
+                    <th></th>
+                    <th>Name</th>
+                    <th>Contact</th>
+                    <th>Languages added</th>
+                    <th>Languages modified</th>
+                    <th>Translations</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in missing_translations%}
+                    <tr>
+                        <td><a target="_blank" href="{{ record['repo_app'].app_link }}"><img width="50px" src="{{ record['repo_app'].app_thumb }}"></img></a></td>
+                        <td><a target="_blank" href="{{ record['repo_app'].app_link }}">{{ record['repo_app'].name }}</a></td>
+                        <td>{% if record['contact'] %}
+                            <ul>
+                            {% for contact in record['contact'] %}
+                                <li>{{ contact }}</li>
+                            {% endfor %}
+                            </ul>
+                        {% else %}
+                            N/A
+                        {% endif %}</td>
+                        <td><ul>
+                            {% for (lang, target), percent in record['additions'].items() %}
+                                <li><a href="{{ url_for('.translator_index') + 'web/index.html#/edit/' + lang + '/' + target + '/' + record['repo_app'].url }}">{{ lang }} ({{ '%.2f' % (100 * percent) }}%)</a></li>
+                            {% endfor %}
+                        </ul></td>
+                        <td>(not implemented yet)</td>
+                        <td><a href="{{ url_for('.translations_apps_filtered', app_url = record['repo_app'].url) }}">Link</a></td>
+                    </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+{% endblock %}

@@ -610,6 +610,48 @@ def translation_changes():
         response['total_changes'] = total_changes
     return jsonify(**response)
 
+@translator_blueprint.route('/stats/missing')
+@public
+@cross_origin()
+def stats_missing():
+    threshold = request.args.get('threshold', 100 * LANGUAGE_THRESHOLD)
+    try:
+        threshold = float(threshold)
+    except (ValueError, TypeError):
+        threshold = 100 * LANGUAGE_THRESHOLD
+    threshold = threshold / 100.0
+
+    non_automatic_translation_urls = db.session.query(TranslationUrl, TranslatedApp, RepositoryApp).filter(TranslationUrl.automatic == False, TranslationUrl.id == TranslatedApp.translation_url_id, TranslatedApp.url == RepositoryApp.url, RepositoryApp.translation_percent != None, RepositoryApp.translation_percent != "").all()
+
+    missing_translations = []
+    for translation_url, translated_app, repository_app in non_automatic_translation_urls:
+        original_translations = (repository_app.original_translations or '').split(',')
+        if len(original_translations) == 1 and original_translations[0] == '':
+            original_translations = []
+        original_translations = set([ lang.split('_')[0] for lang in original_translations ])
+
+        translation_percent = json.loads(repository_app.translation_percent or "{}")
+        additions = {}
+        modifications = {}
+        for lang, value in translation_percent.items():
+            if value >= threshold:
+                if lang.split('_')[0] not in original_translations:
+                    additions[tuple(lang.rsplit('_', 1))] = value
+                else:
+                    pass
+                    # TODO: if it is in the original_translations, compare. If there was any change, it must also be reported.
+                    # We can't use from_default or from_developer; we need a new variable
+
+        current_record = {
+                'repo_app' : repository_app,
+                'additions' : additions,
+                'modifications' : modifications,
+                'contact' : [ subscription.recipient.email for subscription in translation_url.subscriptions ],
+            }
+        if modifications or additions:
+            missing_translations.append(current_record)
+
+    return render_template("translator/stats_missing.html", missing_translations=missing_translations)
 
 
 TARGET_CHOICES = []
@@ -968,6 +1010,9 @@ def translations_apps_json():
         if requested_app_url is not None and requested_app_url != app.url:
             continue
 
+        if app.translation_url is not None and max_date_per_translation_url_id.get(app.translation_url_id) is None:
+            continue
+
         if app.url in golab_app_by_url:
             current_apps = golab_apps
         else:
@@ -1003,7 +1048,6 @@ def translations_apps_json():
             current_apps[app.url]['tools'] = []
 
         current_apps[app.url]['tools'] = [ { 'name' : tool_id } for tool_id in current_apps[app.url]['tools'] ]
-
 
     golab_apps = _dict2sorted_list(golab_apps, key_name = 'app_url')
     other_apps = _dict2sorted_list(other_apps, key_name = 'app_url')
