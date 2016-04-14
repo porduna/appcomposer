@@ -1,5 +1,5 @@
 <Module>
- <ModulePrefs title="{{ app.name }}" height="{{ app.height + 20 }}">
+ <ModulePrefs title="{{ app.name }}" height="{{ app.height + 20 }}" author="{{ author }}" author_email="{{ author_email }}">
     <Require feature="osapi" />
     {% if languages|length > 1 %}
         <Locale messages="{{ url_for('static', filename="empty.xml", _external=True) }}"/>

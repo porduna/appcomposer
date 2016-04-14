@@ -76,7 +76,10 @@ def app_xml(identifier):
         apps_per_language[translation.language] = translation.url
         languages.append(translation.language)
 
-    response = make_response(render_template("embed/app.xml", app = application, languages=languages, apps_per_language = apps_per_language, title = gettext("Application {name}").format(name=application.name)))
+    author = application.owner.display_name
+    author_email = application.owner.email
+
+    response = make_response(render_template("embed/app.xml", author = author, author_email = author_email, app = application, languages=languages, apps_per_language = apps_per_language, title = gettext("Application {name}").format(name=application.name)))
     response.content_type = 'application/xml'
     return response
 
