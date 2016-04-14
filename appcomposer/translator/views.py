@@ -517,6 +517,10 @@ def translation_changes():
 
     from appcomposer.translator.tasks import GOLAB_REPO
     repository_apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(RepositoryApp.app_link.like('http://www.golabz.eu/lab%'), or_(RepositoryApp.translation_percent != None, RepositoryApp.original_translations != None)).all()
+    automatic_urls = {}
+    for translated_app in db.session.query(TranslatedApp).filter(TranslatedApp.url.in_([ repo_app.url for repo_app in repository_apps ])).all():
+        automatic_urls[translated_app.url] = translated_app.translation_url.automatic
+
     repository_apps_by_external_id = defaultdict(list) # {
         # id: [ repository_app1, repository_app2, repository_app3 ... ]
     # }
@@ -550,12 +554,15 @@ def translation_changes():
         external_id = lab.get('id')
         appcomposer_languages = set()
         for repo_app in repository_apps_by_external_id.get(external_id, []):
-            translation_percent = json.loads(repo_app.translation_percent or "{}")
-            for lang, value in translation_percent.items():
-                if value >= threshold:
-                    # lang should be 'en'; not 'en_ALL_ALL'
-                    lang = lang.split('_')[0]
-                    appcomposer_languages.add(lang)
+            # If it is not automatic we should not count it (only the original translations)
+            if automatic_urls.get(repo_app.url, True):
+                translation_percent = json.loads(repo_app.translation_percent or "{}")
+                for lang, value in translation_percent.items():
+                    if value >= threshold:
+                        # lang should be 'en'; not 'en_ALL_ALL'
+                        lang = lang.split('_')[0]
+                        appcomposer_languages.add(lang)
+
             for lang in (repo_app.original_translations or '').split(','):
                 if lang:
                     lang = lang.split('_')[0]
