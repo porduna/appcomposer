@@ -533,8 +533,19 @@ def translation_changes():
 
     show_names = request.args.get('show_names', 'false').lower() == 'true'
     show_urls = request.args.get('show_urls', 'false').lower() == 'true'
+    show_total = request.args.get('show_total', 'false').lower() == 'true'
 
-    changes = {}
+    changes = {
+        # If there is a change (removal, addition), it lists it like this:
+        # identifier: [ lang1, lang2, lang3 ] 
+    }
+    total_changes = {
+        # If there is an addition, it lists it like this:
+        # identifier: {
+        #     'additions' : [lang1, lang2]
+        #     'subtractions' : [lang3, lang4]
+        # }
+    }
     for lab in labs:
         external_id = lab.get('id')
         appcomposer_languages = set()
@@ -561,7 +572,9 @@ def translation_changes():
 
         # If there are changes and there are appcomposer languages
         if len(appcomposer_languages) > 0:
-            if len(golabz_languages - appcomposer_languages) > 0 or len(appcomposer_languages - golabz_languages) > 0:
+            additions = appcomposer_languages - golabz_languages
+            subtractions = golabz_languages - appcomposer_languages
+            if subtractions or additions:
                 identifier = external_id
                 if show_urls:
                     repo_apps = repository_apps_by_external_id.get(external_id, [])
@@ -572,13 +585,21 @@ def translation_changes():
                     repo_apps = repository_apps_by_external_id.get(external_id, [])
                     if repo_apps:
                         identifier = repo_apps[0].name
-
+                
+                total_changes[identifier] = {}
+                if subtractions:
+                    total_changes[identifier]['subtractions'] = list(subtractions)
+                if additions:
+                    total_changes[identifier]['additions'] = list(additions)
                 changes[identifier] = []
                 for lang_code in appcomposer_languages:
                     display_name = LANGUAGE_NAMES_PER_CODE.get(lang_code, lang_code)
                     display_name = WRONG_LANGUAGES_PER_CORRECT_NAME.get(display_name, [ display_name ])[0]
                     changes[identifier].append(display_name)
-    return jsonify(changes=changes)
+    response = dict(changes=changes)
+    if show_total:
+        response['total_changes'] = total_changes
+    return jsonify(**response)
 
 
 
