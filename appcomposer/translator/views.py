@@ -610,6 +610,12 @@ def translation_changes():
         response['total_changes'] = total_changes
     return jsonify(**response)
 
+@translator_blueprint.route('/stats/')
+@public
+@cross_origin()
+def stats():
+    return render_template("translator/stats.html")
+
 @translator_blueprint.route('/stats/missing')
 @public
 @cross_origin()

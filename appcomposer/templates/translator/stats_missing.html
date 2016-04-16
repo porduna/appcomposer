@@ -35,7 +35,7 @@
                             {% endfor %}
                             </ul>
                         {% else %}
-                            N/A
+                            (Not available. Check owners <a href="{{ record['repo_app'].app_link }}">here</a>)
                         {% endif %}</td>
                         <td><ul>
                             {% for (lang, target), percent in record['additions'].items() %}

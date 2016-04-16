@@ -1,0 +1,18 @@
+{% extends "translator/base.html" %}
+{% block body %}
+
+<br>
+<h1>Statistics</h1>
+
+<div class="row">
+<div class="alert alert-info col-md-6 col-md-offset-3">
+    <p>This page contains some statistics of the App Composer. If you found other statistics interesting, just contact the AppComposer developers.</p>
+</div>
+</div>
+
+<ul>
+    <li><a href="{{ url_for('.stats_missing') }}">Missing:</a> list of applications that have been translated in the App Composer but which have not been applied. In most of the apps this is an automatic process. However, in some apps, the developer must retrieve the translations from the App Composer and manually apply them in their laboratory.</li>
+    <!-- TODO -->
+</ul>
+
+{% endblock %}
