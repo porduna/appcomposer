@@ -616,6 +616,12 @@ def translation_changes():
 def stats():
     return render_template("translator/stats.html")
 
+@translator_blueprint.route('/stats/status')
+@public
+@cross_origin()
+def stats_status():
+    return render_template("translator/status.html")
+
 @translator_blueprint.route('/stats/missing')
 @public
 @cross_origin()

@@ -12,7 +12,7 @@
 
 <ul>
     <li><a href="{{ url_for('.stats_missing') }}">Missing:</a> list of applications that have been translated in the App Composer but which have not been applied. In most of the apps this is an automatic process. However, in some apps, the developer must retrieve the translations from the App Composer and manually apply them in their laboratory.</li>
-    <!-- TODO -->
+    <li><a href="{{ url_for('.stats_status') }}">Status:</a> what applications have not yet been translated, what languages are performing better, etc.</li>
 </ul>
 
 {% endblock %}
