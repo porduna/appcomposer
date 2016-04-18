@@ -95,9 +95,9 @@ def sort_languages(languages):
     new_languages = []
     # sorted as suggested in Wikipedia
     for lang in LANGUAGES_ORDER:
-        result = old_languages.pop(lang, None)
-        if result:
-            new_languages.append(result)
+        if lang in old_languages:
+            old_languages.remove(lang)
+            new_languages.append(lang)
 
     new_languages.extend(sorted(old_languages))
 
