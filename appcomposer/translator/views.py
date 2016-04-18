@@ -452,7 +452,7 @@ def widget_js():
 
         html_url = url_for('.static', filename="index.html", _external = True)
         link = '%s#/app/%s' % (html_url, repo_app.url)
-        str_translations = u', '.join(human_translations)
+        str_translations = u', '.join(sorted(human_translations))
 
         if str_translations and link:
             resp = make_response(render_template("translator/lib.js", translations = str_translations, link = link))
