@@ -73,6 +73,35 @@ def api(func):
 def translator_index():
     return redirect(url_for('.static', filename='index.html'))
 
+LANGUAGES_ORDER = (
+                # Official languages
+                ['English', 'German', 'French', 'Italian', 'Spanish', 'Polish', 'Romanian', 'Dutch', 'Hungarian', 'Portuguese', 'Greek', 'Swedish', 'Czech', 'Bulgarian', 'Slovak', 'Danish', 'Finnish', 'Lithuanian', 'Slovene', 'Slovenian', 'Estonian', 'Croatian', 'Irish', 'Latvian', 'Maltese'] 
+                # Semi-official languages
+                + ['Catalan', 'Galician', 'Basque', 'Scottish Gaelic', 'Luxembourgish', 'Luxembourgeois', 'Welsh'] 
+                # + Most used foreign languages
+                + ['Russian', 'Arabic', 'Turkish', 'Tamil', 'Chinese', 'Japanese', 'Korean', 'Hindi', 'Urdu']
+        )
+
+def sort_languages(languages):
+    """
+    Given a list of languages in English; e.g.: [ 'Spanish', 'Welsh', 'English']
+    sort the list of languages by population speaking it according to:
+
+    https://en.wikipedia.org/wiki/Languages_of_the_European_Union#Knowledge
+
+    and return such list.
+    """
+    old_languages = list(languages)
+    new_languages = []
+    # sorted as suggested in Wikipedia
+    for lang in LANGUAGES_ORDER:
+        result = old_languages.pop(lang, None)
+        if result:
+            new_languages.append(result)
+
+    new_languages.extend(sorted(old_languages))
+
+    return new_languages
 
 @translator_blueprint.route("/api/user/authenticate")
 @public
@@ -452,7 +481,7 @@ def widget_js():
 
         html_url = url_for('.static', filename="index.html", _external = True)
         link = '%s#/app/%s' % (html_url, repo_app.url)
-        str_translations = u', '.join(sorted(human_translations))
+        str_translations = u', '.join(sort_languages(human_translations))
 
         if str_translations and link:
             resp = make_response(render_template("translator/lib.js", translations = str_translations, link = link))
@@ -605,6 +634,7 @@ def translation_changes():
                     display_name = LANGUAGE_NAMES_PER_CODE.get(lang_code, lang_code)
                     display_name = WRONG_LANGUAGES_PER_CORRECT_NAME.get(display_name, [ display_name ])[0]
                     changes[identifier].append(display_name)
+                changes[identifier] = sort_languages(changes[identifier])
     response = dict(changes=changes)
     if show_total:
         response['total_changes'] = total_changes
