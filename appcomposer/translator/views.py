@@ -436,7 +436,7 @@ def widget_js():
         except ValueError:
             translation_percent = {}
         for language, percent in translation_percent.iteritems():
-            if percent >= 0.5:
+            if percent >= LANGUAGE_THRESHOLD:
                 lang_code = language.split("_")[0]
                 if lang_code not in translations:
                     translations.append(lang_code)
