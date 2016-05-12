@@ -1,0 +1,87 @@
+{% extends "translator/base.html" %}
+{% block body %}
+
+<br>
+<h1>Statistics: Go-Lab Repository</h1>
+
+<div class="row">
+    <h3>Summary</h3>
+
+    <div class="col-lg-6">
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>What?</th>
+                <th>How many?</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td>Total labs</td>
+                <td>{{ total_labs }}</td>
+            </tr>
+            <tr>
+                <td>Smart Gateway</td>
+                <td>{{ len_sg_labs }} ({{ '%.2f' % (100.0*len_sg_labs/total_labs) }}%)</td>
+            </tr>
+            <tr>
+                <td>App Composer</td>
+                <td>{{ len_ac_labs }} ({{ '%.2f' % (100.0*len_ac_labs/total_labs) }}%)</td>
+            </tr>
+            <tr>
+                <td>App Composer + Smart Gateway</td>
+                <td>{{ len_ac_labs + len_sg_labs }} ({{ '%.2f' % (100.0*(len_ac_labs+len_sg_labs)/total_labs) }}%)</td>
+            </tr>
+        </tbody>
+    </table>
+    </div>
+</div>
+
+
+<div class="row">
+    <h3>Full list</h3>
+
+    {% for name, cur_labs in [ ('Smart Gateway', sg_labs), ('App Composer', ac_labs) ] %}
+    <h4>{{ name }}</h4>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <td>#</td>
+                <td>Logo</td>
+                <td>Name</td>
+                <td>Links</td>
+            </tr>
+        </thead>
+        <tbody>
+            {% for cur_lab in cur_labs %}
+            <tr>
+                <td>
+                    {{ loop.index }}
+                </td>
+                <td>
+                    <a href="{{ cur_lab['lab_golabz_page'] }}"><img width="32" alt="{{ cur_lab['title'] }}" src="{{ cur_lab['lab_thumb'] }}"></a>
+                </td>
+                <td>
+                    <a href="{{ cur_lab['lab_golabz_page'] }}">{{ cur_lab['title'] }}</a>
+                </td>
+                <td>
+                    {% if cur_lab['lab_apps']|length == 1 %}
+                        <a href="cur_lab['lab_apps'][0]['app_url']">{{ cur_lab['lab_apps'][0]['app_title'] }}</a>
+                    {% else %}
+                        <ul>
+                            {% for lab_app in cur_lab['lab_apps'] %}
+                                <li><a href="lab_app['app_url']">{{ lab_app['app_title'] }}</a></li>
+                            {% endfor %}
+                        </ul>
+                    {% endif %}
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    {% endfor %}
+    
+</div>
+{% endblock %}

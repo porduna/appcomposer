@@ -652,6 +652,36 @@ def stats():
 def stats_status():
     return render_template("translator/status.html")
 
+@translator_blueprint.route('/stats/golabz')
+@public
+@cross_origin()
+def stats_golabz():
+    try:
+        labs = requests.get('http://www.golabz.eu/rest/labs/retrieve.json', timeout = (30, 30)).json()
+    except:
+        return "Error accessing www.golabz.eu"
+
+    total_labs = len(labs)
+
+    sg_labs = []
+    ac_labs = []
+
+    for lab in labs:
+        for lab_app in lab['lab_apps']:
+            app_url = lab_app['app_url']
+            if app_url.startswith('http://composer.golabz.eu/'):
+                ac_labs.append(lab)
+                break
+            elif app_url.startswith('http://gateway.golabz.eu/'):
+                sg_labs.append(lab)
+                break
+            elif 'weblab.deusto.es/golab/labmanager' in app_url:
+                sg_labs.append(lab)
+                break
+
+    return render_template("translator/stats_golabz.html", total_labs = total_labs, sg_labs = sg_labs, ac_labs = ac_labs, len_sg_labs = len(sg_labs), len_ac_labs = len(ac_labs))
+
+
 @translator_blueprint.route('/stats/missing')
 @public
 @cross_origin()
@@ -770,6 +800,10 @@ def translations():
     return render_template("translator/translations.html")
 
 @translator_blueprint.route('/dev/users')
+def translation_users_old():
+    return redirect(url_for('.translation_users'))
+
+@translator_blueprint.route('/stats/users')
 @requires_golab_login
 def translation_users():
     users = db.session.query(GoLabOAuthUser.display_name, GoLabOAuthUser.email).all()
