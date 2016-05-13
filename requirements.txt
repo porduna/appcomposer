@@ -21,8 +21,8 @@ CacheControl==0.11.2
 selenium==2.44.0
 microsofttranslator==0.7
 lockfile==0.10.2
-celery==3.1.9
+celery==3.1.23
 pymongo==3.0.3
 goslate==1.4.0
-redis==2.9.1
+redis==2.10.5
 coverage==4.0.2
