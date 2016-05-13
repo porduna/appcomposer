@@ -15,6 +15,9 @@ from alembic import op
 import sqlalchemy as sa
 import sqlalchemy.sql as sql
 
+import sys
+sys.path.append('.')
+
 from appcomposer.db import db
 from appcomposer.application import app
 

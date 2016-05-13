@@ -384,7 +384,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
 
                 # Create a suggestion based on the value
                 if original_messages is not None and key in original_messages:
-                    human_key = original_messages[key]['text']
+                    human_key = original_messages[key]['text'][:255]
 
                     db_existing_human_key_suggestion = db.session.query(TranslationValueSuggestion).filter_by(human_key = human_key, value = value, language = language, target = target).first()
                     if db_existing_human_key_suggestion:
@@ -551,7 +551,7 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
 
     # Second, value suggestions
     value_suggestions_by_key = defaultdict(list)
-    for value_suggestion in db.session.query(TranslationValueSuggestion).filter_by(language = language, target = target).filter(TranslationValueSuggestion.human_key.in_(original_values)).all():
+    for value_suggestion in db.session.query(TranslationValueSuggestion).filter_by(language = language, target = target).filter(TranslationValueSuggestion.human_key.in_([ orig_value[:255] for orig_value in original_values ])).all():
         for key in original_keys_by_value.get(value_suggestion.human_key, []):
             value_suggestions_by_key[key].append({
                 'target' : value_suggestion.value,
