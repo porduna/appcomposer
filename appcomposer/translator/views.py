@@ -650,7 +650,51 @@ def stats():
 @public
 @cross_origin()
 def stats_status():
-    return render_template("translator/status.html")
+    translations_per_languages = db.session.query(
+            func.count(ActiveTranslationMessage.id),
+            TranslationBundle.language
+        ).filter(
+                ActiveTranslationMessage.taken_from_default == False, 
+                ActiveTranslationMessage.from_developer == False,
+                ActiveTranslationMessage.bundle_id == TranslationBundle.id,
+                ActiveTranslationMessage.same_tool.in_([True, None])
+            ).group_by(TranslationBundle.language).all()
+    translations_per_languages = list(translations_per_languages)
+    translations_per_languages.sort(lambda (n1, lang1), (n2, lang2):  cmp(n1, n2), reverse=True)
+
+    total = sum([ count for count, lang in translations_per_languages ])
+
+    lang_codes = [ lang + '_ALL' for count, lang in translations_per_languages ]
+
+    translations_per_languages = [(count, LANGUAGE_NAMES_PER_CODE[lang.split('_')[0]] ) for count, lang in translations_per_languages ]
+
+    data_per_language = defaultdict(list)
+        # language: [
+        #     {
+        #         'name' : "Name of app",
+        #         'thumb' : "link to thumb",
+        #         'percent': 0.5
+        #     }
+        # ]
+    
+
+    for repository_app in db.session.query(RepositoryApp).filter_by(translatable = True).all():
+        percent = json.loads(repository_app.translation_percent)
+        for lang_code in lang_codes:
+            lang_name = LANGUAGE_NAMES_PER_CODE[lang_code.split('_')[0]]
+            cur_percent = percent.get(lang_code, 0.0)
+            data_per_language[lang_name].append({
+                'name': repository_app.name,
+                'url': repository_app.url,
+                'thumb': repository_app.app_thumb,
+                'percent': 100 * cur_percent,
+                'link': 'http://composer.golabz.eu/translator/web/index.html#/edit/{}/ALL/{}'.format(lang_code.rsplit('_', 1)[0], repository_app.url),
+            })
+
+    for lang_data in data_per_language.values():
+        lang_data.sort(lambda x, y: cmp(x['percent'], y['percent']), reverse=True)
+
+    return render_template("translator/status.html", translations_per_languages = translations_per_languages, total = total, data_per_language = data_per_language)
 
 @translator_blueprint.route('/stats/golabz')
 @public
@@ -811,7 +855,7 @@ def translation_users():
     texts_by_user = {
         # email: number
     }
-    for number, email in db.session.query(func.count(ActiveTranslationMessage.id), GoLabOAuthUser.email).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == GoLabOAuthUser.id, ActiveTranslationMessage.taken_from_default == False, ActiveTranslationMessage.from_developer == False).group_by(GoLabOAuthUser.email).all():
+    for number, email in db.session.query(func.count(ActiveTranslationMessage.id), GoLabOAuthUser.email).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == GoLabOAuthUser.id, ActiveTranslationMessage.taken_from_default == False, ActiveTranslationMessage.from_developer == False, ActiveTranslationMessage.same_tool.in_([True, None])).group_by(GoLabOAuthUser.email).all():
         texts_by_user[email] = number
 
     for display_name, email in users:
