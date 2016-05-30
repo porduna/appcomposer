@@ -92,6 +92,8 @@ class MicrosoftTranslator(AbstractTranslator):
             self._languages = self.client.get_languages()
         except MSTranslatorApiException:
             return []
+        except Exception:
+            return []
         return self._languages
 
     def _translate(self, texts, language, origin_language = 'en'):
@@ -126,7 +128,7 @@ class MicrosoftTranslator(AbstractTranslator):
                 app.logger.debug("Translating %r to %r using Microsoft Translator API" % (current_slice, language))
                 try:
                     current_ms_translations = self.client.translate_array(texts = current_slice, to_lang = language, from_lang = origin_language)
-                except (MSTranslatorApiException, ArgumentOutOfRangeException, ValueError) as e:
+                except (MSTranslatorApiException, ArgumentOutOfRangeException, ValueError, Exception) as e:
                     traceback.print_exc()
                     app.logger.warn("Error translating using Microsoft Translator API: %s" % e, exc_info = True)
                     errors = True
