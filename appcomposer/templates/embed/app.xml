@@ -60,7 +60,14 @@
             if (!url) 
                 url = default_url;
             document.getElementById("app_url").src = url;
-            reportStarted({{ app.name|tojson }}, "{{ url_for('.app_xml', identifier=identifier, _external=True) }}", generateUUID());
+
+            var uniqueSession = generateUUID();
+            {% if request.args.get('debug') %}
+            if (console && console.log) {
+                console.log("Reporting started: " + {{ app.name|tojson }} + "{{ url_for('.app_xml', identifier=identifier, _external=True) }}" + "  ; unique session: " + uniqueSession);
+            }
+            {% endif %}
+            reportStarted({{ app.name|tojson }}, "{{ url_for('.app_xml', identifier=identifier, _external=True) }}", uniqueSession);
         }
 
         gadgets.util.registerOnLoadHandler(init);
