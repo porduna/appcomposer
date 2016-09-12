@@ -1,10 +1,7 @@
-var SG_PRODUCTION = true;
+var APP_PRODUCTION = true;
 
 function reportStarted(labName, labURL, labSessionId) {
-    var initialMetadata, labResourceType;
-    labResourceType = "labResource";
-
-    initialMetadata = {
+    var initialMetadata = {
         "id": "",
         "published": "",
         "actor": {
@@ -13,7 +10,7 @@ function reportStarted(labName, labURL, labSessionId) {
             "displayName": "unknown"
         },
         "target": {
-            "objectType": labResourceType,
+            "objectType": "appComposerEmbed",
             "id": labSessionId,
             "displayName": "unnamed"
         },
@@ -37,7 +34,7 @@ function reportStarted(labName, labURL, labSessionId) {
     // replace with ".GoLabMetadataHandler" in production context
     var currentMetadataHandlerClass;
     var loggingTarget;
-    if (SG_PRODUCTION) {
+    if (APP_PRODUCTION) {
         currentMetadataHandlerClass = window.golab.ils.metadata.GoLabMetadataHandler;
         loggingTarget = "opensocial";
     } else {
