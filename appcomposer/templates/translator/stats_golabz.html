@@ -41,7 +41,13 @@
 <div class="row">
     <h3>Full list</h3>
 
+    <ul>
+        <li><a href="#SmartGateway">Smart Gateway</a></li>
+        <li><a href="#AppComposer">App Composer</a></li>
+    </ul>
+
     {% for name, cur_labs in [ ('Smart Gateway', sg_labs), ('App Composer', ac_labs) ] %}
+    <a name="{{ name.replace(' ', '') }}"></a>
     <h4>{{ name }}</h4>
 
     <table class="table table-bordered">
