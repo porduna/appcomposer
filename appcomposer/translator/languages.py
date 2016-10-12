@@ -34,15 +34,16 @@ OTHER_LANGUAGES = [
     'ar', # Arabic
     'zh', # Chinese
     'hi', # Hindi
-    # The following have been selected to be interesting for Go-Lab
-    'no', # Norwegian
-    'id', # Indonesian
-    'ja',  # Japanese
     # The following were available in the Go-Lab portal
     'bs', # Bosnian
     'sh', # Serbo-Croatian,
     'lb', # Luxembourgish,
     'se', # Northern Sami
+    # The following have been selected to be interesting for Go-Lab
+    'no', # Norwegian
+    'id', # Indonesian
+    'ja', # Japanese
+    'my', # Burmese
 ]
 
 ALL_LANGUAGES = OFFICIAL_EUROPEAN_UNION_LANGUAGES + SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
