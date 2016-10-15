@@ -206,6 +206,10 @@ label.ac-edit-message-label {
     background-color: rgb(240, 230, 230) !important;
 }
 
+.ac-edit-message-input-from-default div.ta-bind {
+    background-color: rgb(240, 230, 230) !important;
+}
+
 .ac-icon-error {
     color: rgb(180, 20, 20) !important;
 }
@@ -325,6 +329,8 @@ img.ac-gravatar-img {
 
 .ac-preview-iframe {
     width: 100%;
+    height: 800px;
+    overflow: scroll;
 }
 
 

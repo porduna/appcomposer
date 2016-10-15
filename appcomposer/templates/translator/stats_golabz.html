@@ -41,7 +41,13 @@
 <div class="row">
     <h3>Full list</h3>
 
+    <ul>
+        <li><a href="#SmartGateway">Smart Gateway</a></li>
+        <li><a href="#AppComposer">App Composer</a></li>
+    </ul>
+
     {% for name, cur_labs in [ ('Smart Gateway', sg_labs), ('App Composer', ac_labs) ] %}
+    <a name="{{ name.replace(' ', '') }}"></a>
     <h4>{{ name }}</h4>
 
     <table class="table table-bordered">
@@ -67,11 +73,11 @@
                 </td>
                 <td>
                     {% if cur_lab['lab_apps']|length == 1 %}
-                        <a href="cur_lab['lab_apps'][0]['app_url']">{{ cur_lab['lab_apps'][0]['app_title'] }}</a>
+                        <a href="{{ cur_lab['lab_apps'][0]['app_url'] }}">{{ cur_lab['lab_apps'][0]['app_title'] }}</a>
                     {% else %}
                         <ul>
                             {% for lab_app in cur_lab['lab_apps'] %}
-                                <li><a href="lab_app['app_url']">{{ lab_app['app_title'] }}</a></li>
+                                <li><a href="{{ lab_app['app_url'] }}">{{ lab_app['app_title'] }}</a></li>
                             {% endfor %}
                         </ul>
                     {% endif %}
