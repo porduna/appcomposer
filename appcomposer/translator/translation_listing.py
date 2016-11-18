@@ -126,6 +126,8 @@ class MetadataTask(threading.Thread):
                 traceback.print_exc()
             self.metadata_information = {}
             self.failing = True
+        else:
+            self.failing = self.metadata_information.get('failing', False)
         self.finished = True
 
 class RunInParallel(object):

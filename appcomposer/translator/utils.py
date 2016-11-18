@@ -140,6 +140,23 @@ def _extract_locales(app_url, cached_requests):
     if not module_prefs:
         raise TranslatorError("ModulePrefs not found in App URL")
 
+    if app_url.startswith('http://composer.golabz.eu/embed/apps/') and app_url.endswith('app.xml'):
+        new_url = app_url.replace('app.xml', 'app.json')
+        response = cached_requests.get(new_url)
+        raise_for_status(app_url, response)
+        try:
+            response.json()
+        except:
+            raise TranslatorError("Invalid JSON document: %s" % new_url)
+
+        results = response.get('results')
+        if results is None:
+            raise TranslatorError("JSON results is None: %s" % new_url)
+
+        for final_url in results.values():
+            response = cached_requests.get(final_url, timeout=30)
+            raise_for_status(final_url, response)
+
     locales = module_prefs[0].findall('Locale')
     return locales, xml_contents
 

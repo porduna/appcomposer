@@ -1,5 +1,5 @@
 import traceback
-from flask import Blueprint, render_template, make_response, redirect, url_for, request
+from flask import Blueprint, render_template, make_response, redirect, url_for, request, jsonify
 
 from appcomposer import db
 from appcomposer.babel import gettext, lazy_gettext
@@ -83,6 +83,19 @@ def app_xml(identifier):
     response.content_type = 'application/xml'
     return response
 
+@embed_blueprint.route('/apps/<identifier>/app.json')
+def app_json(identifier):
+    application = db.session.query(EmbedApplication).filter_by(identifier = identifier).first()
+    if application is None:
+        return jsonify(error=True, message="App not found")
+
+    apps_per_language = {
+        'en': application.url,
+    }
+    for translation in application.translations:
+        apps_per_language[translation.language] = translation.url
+
+    return jsonify(error=False, results=apps_per_language)
 # 
 # Management URLs
 # 
