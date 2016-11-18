@@ -145,11 +145,11 @@ def _extract_locales(app_url, cached_requests):
         response = cached_requests.get(new_url)
         raise_for_status(app_url, response)
         try:
-            response.json()
+            response_json = response.json()
         except:
             raise TranslatorError("Invalid JSON document: %s" % new_url)
 
-        results = response.get('results')
+        results = response_json.get('results')
         if results is None:
             raise TranslatorError("JSON results is None: %s" % new_url)
 
