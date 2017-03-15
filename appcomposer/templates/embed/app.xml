@@ -36,8 +36,8 @@
         {% else %}
             width: {{ max_width / 100 }}%;
         {% endif %}
-        {% endif %}
         }
+        {% endif %}
     </style>
     </head>
 
