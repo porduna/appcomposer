@@ -29,7 +29,6 @@ def get_contents(lang):
         r = requests.get(request_url)
         r.raise_for_status()
         try:
-            raise ValueError("foo bar")
             return json.JSONDecoder(object_pairs_hook=OrderedDict).decode(r.text)
         except ValueError as ve:
             if len(r.text) == 0:
