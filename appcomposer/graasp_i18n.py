@@ -25,9 +25,21 @@ def get_contents(lang):
     if lang == 'en':
         resource_id = '560410f1f0e1b09f6c8117ec'
         requests = get_cached_session()
-        r = requests.get("http://graasp.eu/resources/{0}/raw".format(resource_id))
+        request_url = "http://graasp.eu/resources/{0}/raw".format(resource_id)
+        r = requests.get(request_url)
         r.raise_for_status()
-        return json.JSONDecoder(object_pairs_hook=OrderedDict).decode(r.text)
+        try:
+            raise ValueError("foo bar")
+            return json.JSONDecoder(object_pairs_hook=OrderedDict).decode(r.text)
+        except ValueError as ve:
+            if len(r.text) == 0:
+                raise ValueError("{}: {} returned empty result!".format(ve, request_url))
+                
+            if len(r.text) >= 20:
+                response = '{!r}...'.format(r.text[:20])
+            else:
+                response = r.text
+            raise ValueError("{}: {}: {!r}".format(ve, request_url, response))
     else:
         return None
 #     requests = get_cached_session()

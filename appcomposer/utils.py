@@ -4,7 +4,7 @@ import pprint
 import traceback
 import urlparse
 import smtplib
-from flask import request
+from flask import request, current_app
 from functools import wraps
 
 def sendmail(subject, body, additional_recipients = None):
@@ -42,7 +42,10 @@ def report_error(subject, body = "Error", additional_recipients = None):
                 return f(*args, **kwargs)
             except:
                 environ = pprint.pformat(request.environ)
-                sendmail(subject, '{0}:\n\nFunction: {1}\n\nEnvironment:\n\n{2}\n\nStack trace:\n\n{3}'.format(body, f.__name__, environ, traceback.format_exc()), additional_recipients = additional_recipients)
+                message = '{0}:\n\nFunction: {1}\n\nEnvironment:\n\n{2}\n\nStack trace:\n\n{3}'.format(body, f.__name__, environ, traceback.format_exc())
+                sendmail(subject, message, additional_recipients = additional_recipients)
+                if current_app.debug:
+                    print(message)
                 return 'Error. Administrator contacted'
         return wrapper
     return decorator
