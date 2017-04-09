@@ -1,7 +1,7 @@
 from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
 
-from flask import Flask, request, render_template
+from flask import Flask, request, render_template, jsonify
 from flask import escape
 
 import logging
@@ -252,6 +252,19 @@ def site_map():
     ret = "<br>".join(lines)
     return ret
 
+@app.route("/export-embed.json")
+def export_embed():
+    from appcomposer.db import db
+    from appcomposer.models import GoLabOAuthUser, EmbedApplication, EmbedApplicationTranslation
+    users = []
+    for user in db.session.query(GoLabOAuthUser).all():
+        users.append({
+            'display_name' : user.display_name,
+            'email': user.email,
+        })
+    apps = []
+
+    return jsonify(users=users, apps=apps)
 
 
 @app.route("/error")
