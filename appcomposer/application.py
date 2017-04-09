@@ -4,6 +4,7 @@ import os
 from flask import Flask, request, render_template, jsonify
 from flask import escape
 
+import datetime
 import logging
 import pprint
 from markupsafe import Markup
@@ -263,6 +264,26 @@ def export_embed():
             'email': user.email,
         })
     apps = []
+    FORMAT = '%Y-%m-%dT%H:%M:%S'
+    for app in db.session.query(EmbedApplication).all():
+        app_data = {
+            'owner_mail': app.owner.email,
+            'url': app.url,
+            'name': app.name,
+            'height': app.height,
+            'scale': app.scale,
+            'identifier': app.identifier,
+            'creation': app.creation.strftime(FORMAT),
+            'last_update': app.last_update.strftime(FORMAT),
+            'translations': []
+        }
+        apps.append(app_data)
+
+        for translation in app.translations:
+            app_data['translations'].append({
+                'url': translation.url,
+                'language': translation.language,
+            })
 
     return jsonify(users=users, apps=apps)
 
