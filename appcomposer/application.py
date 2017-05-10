@@ -209,25 +209,15 @@ from .user.user_application import initialize_user_component
 initialize_user_component(app)
 
 
-# Admin component
-from .admin.admin_application import initialize_admin_component
-
-initialize_admin_component(app)
-
-
 #####
 # Composers
 #####
 from .composers.adapt import adapt_blueprint, adaptors_blueprints, load_plugins
-from .composers.expert import expert_blueprint
-from .composers.dummy import dummy_blueprint
 
 app.register_blueprint(adapt_blueprint, url_prefix='/composers/adapt')
 load_plugins()
 for adaptor_blueprint in adaptors_blueprints:
     app.register_blueprint(adaptor_blueprint)
-app.register_blueprint(expert_blueprint, url_prefix='/composers/expert')
-app.register_blueprint(dummy_blueprint, url_prefix=dummy_info["url"])
 
 from .translator import translator_blueprint
 app.register_blueprint(translator_blueprint, url_prefix='/translator')

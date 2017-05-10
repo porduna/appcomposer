@@ -24,7 +24,6 @@
           <span class="brand">App Composer</span>
           <ul class="nav">
               <li {% if link == 'home'    %}class="active"{% endif %}><a href="{{ url_for('index')       }}">{{ gettext('Home') }}</a></li>
-              <li                                                    ><a href="{{ url_for('admin.index') }}">{{ gettext('Admin') }}</a></li>
               <li {% if link == 'about'   %}class="active"{% endif %}><a href="{{ url_for('about')       }}">{{ gettext('About') }}</a></li>
               <li {% if link == 'contact' %}class="active"{% endif %}><a href="{{ url_for('contact')     }}">{{ gettext('Contact') }}</a></li>
           </ul>
