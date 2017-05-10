@@ -1,6 +1,5 @@
 import re
 import json
-import urllib2
 import traceback
 from xml.dom import minidom
 
@@ -9,6 +8,7 @@ from flask import render_template, url_for, Response, Blueprint
 from appcomposer import db
 from appcomposer.models import App
 from appcomposer.utils import inject_absolute_urls, inject_original_url_in_xmldoc, inject_absolute_locales_in_xmldoc
+from appcomposer.translator.utils import get_cached_session
 
 old_adapt_jsconfig = Blueprint(__name__, 'adapt')
 
@@ -29,7 +29,7 @@ def app_xml(app_id):
             return "App deprecated", 404
 
         url = data['url']
-        contents = urllib2.urlopen(url).read()
+        contents = get_cached_session().get(url).text
 
         # If the user hasn't clicked on "Save" yet, do not replace configuration script
         if data.get('configuration_name'):
