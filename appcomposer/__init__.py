@@ -2,18 +2,9 @@ import os
 import sys
 import optparse
 
-
-class ComposerRegister(object):
-    def __init__(self, url):
-        self.url = url
-
-
 registry = []
 
 from .application import app
-from .login import current_user
-
-assert current_user is not None  # ignore pyflakes
 from .db import db, upgrader
 
 assert db is not None  # ignore pyflakes

@@ -12,29 +12,6 @@ from markupsafe import Markup
 import re
 
 
-def relativize_paths(value, path):
-    """
-    THIS IS A FILTER.
-    It should be moved somewhere else.
-    It prepends the specified path to all src paths in the specified blocks so that the path can be relative
-    to the static directory of the App (or to an arbitrary directory).
-    :return:
-    """
-    expr = """(href|src)=["'](.+?)["']"""
-
-    def repl(matchobj):
-        """
-        Function to be called in every match for replacing.
-        :return: Replaced URI.
-        """
-        oldurl = matchobj.group(2)
-        newurl = '%s="%s"' % (matchobj.group(1), os.path.join(path, oldurl))
-        return newurl
-
-    newvalue = re.sub(expr, repl, value)
-
-    return Markup(newvalue)
-
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(32)
 app.config['SESSION_COOKIE_NAME'] = 'appcompsession'
@@ -44,24 +21,6 @@ app.config.from_object('config')
 
 # Add an extension to jinja2
 app.jinja_env.add_extension("jinja2.ext.i18n")
-
-# Add custom filter to jinja2
-app.jinja_env.filters['relativize_paths'] = relativize_paths
-
-@app.template_filter('hash')
-def hash_filter(url):
-    return hash(url)
-
-# Support old deployments
-if not app.config.get('SQLALCHEMY_DATABASE_URI', False):
-    if app.config.get('SQLALCHEMY_ENGINE_STR', False):
-        app.config['SQLALCHEMY_DATABASE_URI'] = app.config['SQLALCHEMY_ENGINE_STR']
-
-
-# Support CORS
-# from flask.ext.cors import CORS
-# cors = CORS(app)
-
 
 from appcomposer.babel import Babel
 
@@ -164,14 +123,6 @@ app.logger.setLevel(logging_level)
 
 
 
-
-###
-# Composers info
-###
-
-ACTIVATE_TRANSLATOR = app.config.get('ACTIVATE_TRANSLATOR', False)
-
-ACTIVATE_TRANSLATOR2 = app.config.get('ACTIVATE_TRANSLATOR2', False)
 
 #####
 # Main components
