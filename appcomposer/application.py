@@ -203,12 +203,6 @@ app.config['COMPOSERS'] = COMPOSERS
 # Initialize administration panels
 #
 
-# User component
-from .user.user_application import initialize_user_component
-
-initialize_user_component(app)
-
-
 #####
 # Composers
 #####
