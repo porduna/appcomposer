@@ -228,9 +228,6 @@ app.register_blueprint(graasp_i18n_blueprint, url_prefix='/graasp_i18n')
 from .twente_commons import twente_commons_blueprint
 app.register_blueprint(twente_commons_blueprint, url_prefix='/twente_commons')
 
-from .embed import embed_blueprint
-app.register_blueprint(embed_blueprint, url_prefix='/embed')
-
 # Mostly for debugging purposes, this snippet will print the site-map so that we can check
 # which methods we are routing.
 @app.route("/site-map")
@@ -242,46 +239,6 @@ def site_map():
 
     ret = "<br>".join(lines)
     return ret
-
-@app.route("/export-embed.json")
-def export_embed():
-    from appcomposer.db import db
-    from appcomposer.models import GoLabOAuthUser, EmbedApplication, EmbedApplicationTranslation
-    users = []
-    for user in db.session.query(GoLabOAuthUser).all():
-        users.append({
-            'display_name' : user.display_name,
-            'email': user.email,
-        })
-    apps = []
-    FORMAT = '%Y-%m-%dT%H:%M:%S'
-    for app in db.session.query(EmbedApplication).all():
-        app_data = {
-            'owner_mail': app.owner.email,
-            'url': app.url,
-            'name': app.name,
-            'height': app.height,
-            'scale': app.scale,
-            'identifier': app.identifier,
-            'creation': app.creation.strftime(FORMAT),
-            'last_update': app.last_update.strftime(FORMAT),
-            'translations': []
-        }
-        apps.append(app_data)
-
-        for translation in app.translations:
-            app_data['translations'].append({
-                'url': translation.url,
-                'language': translation.language,
-            })
-
-    return jsonify(users=users, apps=apps)
-
-
-@app.route("/error")
-def error():
-    a = 2/0
-    return "ERROR", 404
 
 @app.errorhandler(500)
 def error500(err):
