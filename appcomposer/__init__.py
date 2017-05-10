@@ -33,7 +33,7 @@ def contact():
     return render_template('contact.html')
 
 import appcomposer.old_adapt_jsconfig as oaj
-app.register_blueprint(oaj.old_adapt_jsconfig, url_prefix='/2composers/adapt/adaptors/jsconfig')
+app.register_blueprint(oaj.old_adapt_jsconfig, url_prefix='/composers/adapt/adaptors/jsconfig')
 
 def run():
     if not upgrader.check():

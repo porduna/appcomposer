@@ -173,38 +173,9 @@ ACTIVATE_TRANSLATOR = app.config.get('ACTIVATE_TRANSLATOR', False)
 
 ACTIVATE_TRANSLATOR2 = app.config.get('ACTIVATE_TRANSLATOR2', False)
 
-from .composers.adapt import info as adapt_info
-
-COMPOSERS = [adapt_info]
-
-# So that we can have access to all the info from the Users component.
-# It is important that this is done early. Otherwise, it will be accessed by the
-# user component before it is ready.
-
-COMPOSERS_DICT = {info["blueprint"]: info for info in COMPOSERS}
-
-app.config['COMPOSERS'] = COMPOSERS
-
-# TODO: The COMPOSERS_DICT thing is not very pretty. Find a work-around.
-
-
 #####
 # Main components
 #####
-
-#
-# Initialize administration panels
-#
-
-#####
-# Composers
-#####
-from .composers.adapt import adapt_blueprint, adaptors_blueprints, load_plugins
-
-app.register_blueprint(adapt_blueprint, url_prefix='/composers/adapt')
-load_plugins()
-for adaptor_blueprint in adaptors_blueprints:
-    app.register_blueprint(adaptor_blueprint)
 
 from .translator import translator_blueprint
 app.register_blueprint(translator_blueprint, url_prefix='/translator')
@@ -229,13 +200,6 @@ def site_map():
 
 @app.errorhandler(500)
 def error500(err):
-    return render_template("composers/errors.html", message="An internal error occurred. You may try a different action, or contact the administrators."), 500
-
-
-
+    return "An internal error occurred. You may try a different action, or contact the administrators.", 500
 
 app.logger.info("Flask App object is ready")
-
-
-# app.run(debug=False, port=8000)
-

@@ -34,10 +34,6 @@ MONGODB_PUSHES_URI = "mongodb://localhost"
 # Note that this is an expensive operation.
 MONGODB_SYNC_PERIOD = 3600
 
-# Adaptor plug-ins (the defaults are loaded by default)
-ADAPT_PLUGINS = []
-
-
 # Where will the notification mails come from.
 SENDER_ADDR = "APPCOMPOSER@no-reply.com"
 
