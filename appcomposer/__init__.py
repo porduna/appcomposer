@@ -10,7 +10,7 @@ class ComposerRegister(object):
 
 registry = []
 
-from .application import app, register_dummy
+from .application import app
 from .login import current_user
 
 assert current_user is not None  # ignore pyflakes
@@ -52,8 +52,6 @@ def run():
     parser.add_option('--release', dest='release', help="Enter in a release mode", default=False, action="store_true")
 
     args, _ = parser.parse_args()
-
-    register_dummy()
 
     if args.testing:
         app.config['TESTING'] = True

@@ -173,7 +173,6 @@ ACTIVATE_TRANSLATOR = app.config.get('ACTIVATE_TRANSLATOR', False)
 
 ACTIVATE_TRANSLATOR2 = app.config.get('ACTIVATE_TRANSLATOR2', False)
 
-from .composers.dummy import info as dummy_info
 from .composers.adapt import info as adapt_info
 
 COMPOSERS = [adapt_info]
@@ -183,12 +182,6 @@ COMPOSERS = [adapt_info]
 # user component before it is ready.
 
 COMPOSERS_DICT = {info["blueprint"]: info for info in COMPOSERS}
-COMPOSERS_DICT[dummy_info['blueprint']] = dummy_info
-
-
-def register_dummy():
-    COMPOSERS.insert(0, dummy_info)
-
 
 app.config['COMPOSERS'] = COMPOSERS
 
