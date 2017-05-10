@@ -20,7 +20,6 @@ assert db is not None  # ignore pyflakes
 
 from flask import render_template
 
-
 @app.route("/")
 def index():
     return render_template('index.html')
@@ -33,7 +32,8 @@ def about():
 def contact():
     return render_template('contact.html')
 
-
+import appcomposer.old_adapt_jsconfig as oaj
+app.register_blueprint(oaj.old_adapt_jsconfig, url_prefix='/2composers/adapt/adaptors/jsconfig')
 
 def run():
     if not upgrader.check():
