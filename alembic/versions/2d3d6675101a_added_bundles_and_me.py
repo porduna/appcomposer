@@ -9,7 +9,6 @@ Create Date: 2014-11-19 16:54:49.694432
 # revision identifiers, used by Alembic.
 import json
 import traceback
-from appcomposer.models import Bundle
 from sqlalchemy import text
 
 revision = '2d3d6675101a'
