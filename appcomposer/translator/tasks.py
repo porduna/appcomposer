@@ -1,9 +1,7 @@
 import os
 import sys
-import json
 import datetime
 from celery.schedules import crontab
-from celery.utils.log import get_task_logger
 
 from celery import Celery
 from celery.utils.log import get_task_logger

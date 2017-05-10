@@ -1,14 +1,14 @@
 import time
 import json
-import codecs
 import logging
 import calendar
 import datetime
 import StringIO
 import urlparse
+import traceback
 from collections import OrderedDict
 import xml.etree.ElementTree as ET
-from email.utils import formatdate, parsedate, parsedate_tz
+from email.utils import parsedate, parsedate_tz
 
 from sqlalchemy.exc import SQLAlchemyError
 import requests

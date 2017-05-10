@@ -1,16 +1,11 @@
 from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
 
-from flask import Flask, request, render_template, jsonify
+from flask import Flask, request
 from flask import escape
 
-import datetime
 import logging
 import pprint
-from markupsafe import Markup
-
-import re
-
 
 app = Flask(__name__)
 app.config["SECRET_KEY"] = os.urandom(32)

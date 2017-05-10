@@ -1,8 +1,6 @@
 import urlparse
-import pprint
 import hashlib
 import datetime
-import threading
 from collections import defaultdict
 
 from sqlalchemy import func, or_
@@ -405,7 +403,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
     now = datetime.datetime.utcnow()
     existing_keys = [ key for key, in db.session.query(ActiveTranslationMessage.key).filter_by(bundle = db_translation_bundle).all() ]
 
-    namespaces = [ value['namespace'] for key, value in original_messages.iteritems() if key not in existing_keys and value['namespace'] ]
+    namespaces = [ val['namespace'] for key, val in original_messages.iteritems() if key not in existing_keys and value['namespace'] ]
     if namespaces:
         existing_namespaces = {}
         _user_ids = set()

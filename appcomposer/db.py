@@ -5,7 +5,6 @@ reduce the number of dependencies.
 """
 
 import os
-import hashlib
 
 from sqlalchemy import create_engine
 
@@ -21,8 +20,6 @@ def init_db(drop=False):
     # import all modules here that might define models so that
     # they will be registered properly on the metadata.  Otherwise
     # you will have to import them first before calling init_db()
-    from .models import User
-
     if drop:
         print "Dropping Database"
         db.session.drop_all(app=app)

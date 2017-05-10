@@ -1,4 +1,3 @@
-import uuid
 import hashlib
 import datetime
 
@@ -8,11 +7,6 @@ from sqlalchemy import sql, UniqueConstraint, ForeignKey
 from sqlalchemy.orm import relation, backref
 
 from appcomposer.db import db
-
-import base64
-
-import json
-
 
 class User(db.Model, UserMixin):
     __tablename__ = 'Users'
@@ -77,9 +71,6 @@ class App(db.Model):
     # TODO: Find out why these relationships seems to not work sometimes.
     owner_id = db.Column(db.Integer, ForeignKey("Users.id"), nullable=False, index=True)
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
-
-    def __repr__(self):
-        return self.to_json()
 
 class RepositoryApp(db.Model):
     __tablename__ = 'RepositoryApps'

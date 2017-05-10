@@ -1,6 +1,5 @@
 import re
 import json
-import pprint
 import traceback
 import urlparse
 from xml.dom import minidom

@@ -1,6 +1,4 @@
-import json
 import xml.etree.ElementTree as ET
-from collections import OrderedDict
 
 from flask import Blueprint, render_template, make_response
 from appcomposer.translator.utils import get_cached_session, indent, get_text_from_response
@@ -19,7 +17,6 @@ def get_languages():
 @twente_commons_blueprint.route('/app.xml')
 @report_error("Error on twente i18n")
 def index():
-    requests = get_cached_session()
     languages = get_languages()
     response = make_response(render_template('graasp_i18n.xml', languages = languages, title = "Twente commons"))
     response.content_type = 'application/xml'

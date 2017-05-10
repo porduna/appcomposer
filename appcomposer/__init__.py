@@ -61,7 +61,7 @@ def run():
         from flask_debugtoolbar import DebugToolbarExtension
         app.config['DEBUG_TB_INTERCEPT_REDIRECTS'] = False
         app.config['DEBUG_TB_PROFILER_ENABLED'] = False
-        toolbar = DebugToolbarExtension(app)
+        DebugToolbarExtension(app)
 
     port = int(os.environ.get('PORT', args.port))
     #print app.url_map

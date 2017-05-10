@@ -1,24 +1,15 @@
-import json
-import string
-import random
-import datetime
-import urllib2
 import requests
 import logging
 
-from hashlib import new as new_hash
-
 from functools import wraps
 
-from flask import session, render_template, flash, request, redirect, url_for, jsonify
-from flask.ext.wtf import TextField, Form, PasswordField, validators
+from flask import session, render_template, request, redirect, url_for, jsonify
 
 from appcomposer import db
 from .models import GoLabOAuthUser
 
 from .application import app
 from .utils import sendmail
-from .babel import gettext, lazy_gettext
 
 @app.route('/logout', methods=["GET", "POST"])
 def logout():
@@ -51,7 +42,7 @@ def graasp_oauth_login():
 def graasp_oauth_login_redirect():
     access_token = request.args.get('access_token')
     refresh_token = request.args.get('refresh_token')
-    timeout = request.args.get('expires_in')
+    # timeout = request.args.get('expires_in')
     next_url = session.get('oauth_next')
 
     headers = {

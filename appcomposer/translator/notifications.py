@@ -13,9 +13,9 @@ from appcomposer.models import TranslationSubscription, TranslationNotificationR
 
 def run_notifications():
     print "Starting notifications process"
-    MIN_INTERVAL = 30 # minutes
+    # MIN_INTERVAL = 30 # minutes
     STILL_WORKING = 5 # minutes 
-    last_period = datetime.datetime.utcnow() - datetime.timedelta(minutes = MIN_INTERVAL)
+    # last_period = datetime.datetime.utcnow() - datetime.timedelta(minutes = MIN_INTERVAL)
     still_working_period = datetime.datetime.utcnow() - datetime.timedelta(minutes = STILL_WORKING)
 
     default_email = app.config.get('TRANSLATOR_DEFAULT_EMAIL', 'weblab+appcomposer@deusto.es')
@@ -32,7 +32,7 @@ def run_notifications():
         return
     
     # When was the oldest last notification?
-    min_last_check = min([ sub.last_check for sub in subscriptions ])
+    # min_last_check = min([ sub.last_check for sub in subscriptions ])
 
     # Now, get the list of translation_url_ids
     translation_url_ids = [ translation_url_id for subscription_id, translation_url_id, last_check, recipient_id in subscriptions ]
@@ -223,12 +223,6 @@ def send_notification(recipient, txt_body, html_body, translated_titles):
         to_addrs = list(app.config.get('ADMINS', [])) # + [ recipient ]
     from_addr = 'weblab@deusto.es'
 
-    MAIL_TPL = """From: App Composer Translator <%(sender)s>
-    To: %(recipients)s
-    Subject: %(subject)s
-
-    %(body)s
-    """
     smtp_server = app.config.get("SMTP_SERVER")
     if not smtp_server or not from_addr or not to_addrs:
         return

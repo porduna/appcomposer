@@ -19,7 +19,7 @@ import babel
 from sqlalchemy import distinct, func, or_
 from sqlalchemy.orm import joinedload_all
 
-from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify, Response, send_file
+from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify, Response
 from flask.ext.wtf import Form
 from flask.ext.wtf.file import FileField
 from flask.ext.admin.form import Select2Field

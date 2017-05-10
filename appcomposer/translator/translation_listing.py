@@ -1,4 +1,3 @@
-import sys
 import time
 import json
 import random
@@ -9,7 +8,6 @@ import traceback
 import goslate
 import requests
 
-from flask import url_for
 from sqlalchemy.exc import SQLAlchemyError
 from celery.utils.log import get_task_logger
 
@@ -143,7 +141,6 @@ class RunInParallel(object):
         return True
 
     def run(self):
-        counter = 0
         waiting_tasks = self.tasks[:]
         running_tasks = []
         while not self.all_finished():

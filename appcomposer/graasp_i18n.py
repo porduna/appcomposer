@@ -12,14 +12,6 @@ SPACE_URL = 'http://graasp.eu/spaces/560410b2f0e1b09f6c8116da'
 
 def get_languages():
     return ['en']
-#     requests = get_cached_session()
-#     languages = []
-#     for item in requests.get(SPACE_URL, headers = {'Accept' : 'application/json' }).json()['items']:
-#         if item['name'].endswith('.json'):
-#             lang_name = item['name'].rsplit('.json', 1)[0]
-#             if len(lang_name) == 2:
-#                 languages.append(lang_name)
-#     return languages
 
 def get_contents(lang):
     if lang == 'en':
@@ -41,22 +33,11 @@ def get_contents(lang):
             raise ValueError("{}: {}: {!r}".format(ve, request_url, response))
     else:
         return None
-#     requests = get_cached_session()
-#     languages = []
-#     for item in requests.get(SPACE_URL, headers = {'Accept' : 'application/json' }).json()['items']:
-#         if item['name'] == '%s.json' % lang:
-#             resource_id = item['_id']
-#             r = requests.get("http://graasp.eu/resources/{0}/raw".format(resource_id))
-#             r.raise_for_status()
-#             return json.JSONDecoder(object_pairs_hook=OrderedDict).decode(r.text)
-# 
-#     return None
 
 @graasp_i18n_blueprint.route('/')
 @graasp_i18n_blueprint.route('/app.xml')
 @report_error("Error on graasp i18n at the App Composer", additional_recipients = ['alex.wild@epfl.ch'])
 def index():
-    requests = get_cached_session()
     languages = get_languages()
     response = make_response(render_template('graasp_i18n.xml', languages = languages, title = "Graasp"))
     response.content_type = 'application/xml'
@@ -93,7 +74,6 @@ def messages_to_xml(messages):
 @graasp_i18n_blueprint.route('/locales/graasp_<language>_ALL.xml')
 @report_error("Error on graasp i18n", additional_recipients = ['alex.wild@epfl.ch'])
 def locale(language):
-    requests = get_cached_session()
     contents = get_contents(language)
     if contents is None:
         return "Language not found", 404

@@ -1,8 +1,6 @@
 from datetime import timedelta, datetime
 import json
-import os
 
-from celery import Celery
 from celery.utils.log import get_task_logger
 from bson import json_util
 from pymongo import MongoClient

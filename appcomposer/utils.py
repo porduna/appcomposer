@@ -1,8 +1,5 @@
-import re
-import json
 import pprint
 import traceback
-import urlparse
 import smtplib
 from flask import request, current_app
 from functools import wraps
