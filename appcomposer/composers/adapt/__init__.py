@@ -37,7 +37,6 @@ ADAPTORS = {
     # }
 }
 
-import view_type_selection
 import view_create_app
 import view_duplicate
 import view_edit
