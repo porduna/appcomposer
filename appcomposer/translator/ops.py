@@ -403,7 +403,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
     now = datetime.datetime.utcnow()
     existing_keys = [ key for key, in db.session.query(ActiveTranslationMessage.key).filter_by(bundle = db_translation_bundle).all() ]
 
-    namespaces = [ val['namespace'] for key, val in original_messages.iteritems() if key not in existing_keys and value['namespace'] ]
+    namespaces = [ v['namespace'] for k, v in original_messages.iteritems() if k not in existing_keys and v['namespace'] ]
     if namespaces:
         existing_namespaces = {}
         _user_ids = set()
