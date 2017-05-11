@@ -74,7 +74,7 @@ def app_xml(app_id):
             return "App deprecated", 404
 
         url = data['url']
-        contents = get_cached_session().get(url).text
+        contents = get_cached_session().get(url.strip()).text
 
         # If the user hasn't clicked on "Save" yet, do not replace configuration script
         if data.get('configuration_name'):
