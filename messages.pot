@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-05-10 18:59-0500\n"
+"POT-Creation-Date: 2017-05-10 19:04-0500\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,10 +17,6 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
-
-#: appcomposer/templates/_mng_common.html:29
-msgid "Advanced mode:"
-msgstr ""
 
 #: appcomposer/templates/about.html:10 appcomposer/templates/master.html:27
 msgid "About"
@@ -75,92 +71,6 @@ msgstr ""
 #: appcomposer/templates/translator/base.html:46
 #, python-format
 msgid "the %(link)s application creator for teachers"
-msgstr ""
-
-#: appcomposer/templates/login/errors.html:7
-msgid "Error"
-msgstr ""
-
-#: appcomposer/templates/login/errors.html:10
-#: appcomposer/templates/login/login.html:111
-msgid "Back"
-msgstr ""
-
-#: appcomposer/templates/login/graasp.html:6
-msgid "Login through Graasp"
-msgstr ""
-
-#: appcomposer/templates/login/graasp.html:15
-msgid "Create an app in your Graasp space"
-msgstr ""
-
-#: appcomposer/templates/login/graasp.html:19
-msgid "Warning"
-msgstr ""
-
-#: appcomposer/templates/login/graasp.html:20
-msgid ""
-"This message is only for administrators. If you see this message, the App"
-" composer is wrongly configured. Contact your administrator"
-msgstr ""
-
-#: appcomposer/templates/login/graasp.html:23
-msgid "Take the following URL:"
-msgstr ""
-
-#: appcomposer/templates/login/graasp.html:27
-msgid ""
-"And paste it in your Space in Graasp Home Space by clicking on \"New "
-"application\". Then, click on \"URL\" in Graasp, and set a URL name. Take"
-" the URL generated (e.g., http://graasp.epfl.ch/#url=yourname), and put "
-"it in the GRAASP_LOGIN_APP variable of the appcomposer config.py."
-msgstr ""
-
-#: appcomposer/templates/login/graasp.html:35
-msgid "Go to the login app widget"
-msgstr ""
-
-#: appcomposer/templates/login/graasp.html:39
-msgid "Go to the login app in Graasp"
-msgstr ""
-
-#: appcomposer/templates/login/graasp.html:42
-#, python-format
-msgid "%(variable)s not configured"
-msgstr ""
-
-#: appcomposer/templates/login/graasp.html:43
-msgid "Follow the steps described on this page and restart the app composer."
-msgstr ""
-
-#: appcomposer/templates/login/login.html:4
-msgid "Sign in"
-msgstr ""
-
-#: appcomposer/templates/login/login.html:51
-msgid "Welcome to the App Composer!"
-msgstr ""
-
-#: appcomposer/templates/login/login.html:58
-msgid "Use Graasp"
-msgstr ""
-
-#: appcomposer/templates/login/login.html:61
-#: appcomposer/templates/login/login.html:64
-#: appcomposer/templates/login/login.html:100
-msgid "Log in"
-msgstr ""
-
-#: appcomposer/templates/login/login.html:72
-msgid "Local users"
-msgstr ""
-
-#: appcomposer/templates/login/login.html:85
-msgid "Username"
-msgstr ""
-
-#: appcomposer/templates/login/login.html:86
-msgid "Password"
 msgstr ""
 
 #: appcomposer/translator/languages.py:19

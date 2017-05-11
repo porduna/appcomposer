@@ -9,7 +9,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: appcomposer VERSION\n"
 "Report-Msgid-Bugs-To: EMAIL@ADDRESS\n"
-"POT-Creation-Date: 2017-05-10 18:59-0500\n"
+"POT-Creation-Date: 2017-05-10 19:04-0500\n"
 "PO-Revision-Date: 2013-12-16 17:02+0100\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: es <LL@li.org>\n"
@@ -18,10 +18,6 @@ msgstr ""
 "Content-Type: text/plain; charset=utf-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Generated-By: Babel 1.3\n"
-
-#: appcomposer/templates/_mng_common.html:29
-msgid "Advanced mode:"
-msgstr "Modo Avanzado:"
 
 #: appcomposer/templates/about.html:10 appcomposer/templates/master.html:27
 msgid "About"
@@ -81,103 +77,6 @@ msgstr "Inicio"
 #, python-format
 msgid "the %(link)s application creator for teachers"
 msgstr "el sistema de creación de aplicaciones para profesores de %(link)s"
-
-#: appcomposer/templates/login/errors.html:7
-msgid "Error"
-msgstr "Error"
-
-#: appcomposer/templates/login/errors.html:10
-#: appcomposer/templates/login/login.html:111
-msgid "Back"
-msgstr "Atrás"
-
-#: appcomposer/templates/login/graasp.html:6
-msgid "Login through Graasp"
-msgstr "Autenticación mediante Graasp"
-
-#: appcomposer/templates/login/graasp.html:15
-msgid "Create an app in your Graasp space"
-msgstr "Crea un aplicación en tu spacio de Graasp"
-
-#: appcomposer/templates/login/graasp.html:19
-msgid "Warning"
-msgstr "Aviso"
-
-#: appcomposer/templates/login/graasp.html:20
-msgid ""
-"This message is only for administrators. If you see this message, the App"
-" composer is wrongly configured. Contact your administrator"
-msgstr ""
-"Este mensaje es sólo para administradores. Si ves este mensajes, el "
-"sistema de creación de aplicaciones está mal configurado. Contacta con el"
-" administrador"
-
-#: appcomposer/templates/login/graasp.html:23
-msgid "Take the following URL:"
-msgstr "Utiliza la siguiente URL:"
-
-#: appcomposer/templates/login/graasp.html:27
-msgid ""
-"And paste it in your Space in Graasp Home Space by clicking on \"New "
-"application\". Then, click on \"URL\" in Graasp, and set a URL name. Take"
-" the URL generated (e.g., http://graasp.epfl.ch/#url=yourname), and put "
-"it in the GRAASP_LOGIN_APP variable of the appcomposer config.py."
-msgstr ""
-"Y pégalo en tu espacio de Graasp haciendo click on \"Nueva aplicación\".A"
-" continuación, haz click en \"URL\" de Graasp y establece el nombre de la"
-" URL.Coge la URL generada (por ejemplo, "
-"http://graasp.epfl.ch/#url=yourname) y ponlaen la variable "
-"GRAASP_LOGIN_APP del fichero config.py del sistema de creación de "
-"aplicaciones."
-
-#: appcomposer/templates/login/graasp.html:35
-msgid "Go to the login app widget"
-msgstr "Ir a la aplicación widget de login"
-
-#: appcomposer/templates/login/graasp.html:39
-msgid "Go to the login app in Graasp"
-msgstr "Ir a la aplicación de login de Graasp"
-
-#: appcomposer/templates/login/graasp.html:42
-#, python-format
-msgid "%(variable)s not configured"
-msgstr "%(variable)s no configurada"
-
-#: appcomposer/templates/login/graasp.html:43
-msgid "Follow the steps described on this page and restart the app composer."
-msgstr ""
-"Sigue los pasos descritos en esta página y reinicia el sistema de "
-"creación de aplicaciones."
-
-#: appcomposer/templates/login/login.html:4
-msgid "Sign in"
-msgstr "Entrar"
-
-#: appcomposer/templates/login/login.html:51
-msgid "Welcome to the App Composer!"
-msgstr "¡Bienvenido al App Composer!"
-
-#: appcomposer/templates/login/login.html:58
-msgid "Use Graasp"
-msgstr "Usar Graasp"
-
-#: appcomposer/templates/login/login.html:61
-#: appcomposer/templates/login/login.html:64
-#: appcomposer/templates/login/login.html:100
-msgid "Log in"
-msgstr "Entrar"
-
-#: appcomposer/templates/login/login.html:72
-msgid "Local users"
-msgstr "Usuarios locales"
-
-#: appcomposer/templates/login/login.html:85
-msgid "Username"
-msgstr "Usuario"
-
-#: appcomposer/templates/login/login.html:86
-msgid "Password"
-msgstr "Contraseña"
 
 #: appcomposer/translator/languages.py:19
 msgid "Preadolescence (age 10-13)"
