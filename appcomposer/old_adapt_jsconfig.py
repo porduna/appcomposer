@@ -73,8 +73,8 @@ def app_xml(app_id):
         if data['adaptor_type'] != 'jsconfig':
             return "App deprecated", 404
 
-        url = data['url']
-        contents = get_cached_session().get(url.strip()).text
+        url = data['url'].strip()
+        contents = get_cached_session().get(url).text
 
         # If the user hasn't clicked on "Save" yet, do not replace configuration script
         if data.get('configuration_name'):
