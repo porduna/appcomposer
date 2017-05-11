@@ -713,7 +713,7 @@ def stats_golabz():
     for lab in labs:
         for lab_app in lab['lab_apps']:
             app_url = lab_app['app_url']
-            if app_url.startswith('http://composer.golabz.eu/'):
+            if app_url.startswith('http://gateway.golabz.eu/embed/'):
                 ac_labs.append(lab)
                 break
             elif app_url.startswith('http://gateway.golabz.eu/'):
