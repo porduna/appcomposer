@@ -21,15 +21,19 @@
                 <td>{{ total_labs }}</td>
             </tr>
             <tr>
-                <td>Smart Gateway</td>
+                <td>Smart Gateway Plug-ins</td>
                 <td>{{ len_sg_labs }} ({{ '%.2f' % (100.0*len_sg_labs/total_labs) }}%)</td>
             </tr>
             <tr>
                 <td>App Composer</td>
+                <td>0</td>
+            </tr>
+            <tr>
+                <td>Smart Gateway Embedder</td>
                 <td>{{ len_ac_labs }} ({{ '%.2f' % (100.0*len_ac_labs/total_labs) }}%)</td>
             </tr>
             <tr>
-                <td>App Composer + Smart Gateway</td>
+                <td>Smart Gateway (Plug-ins + Embedder)</td>
                 <td>{{ len_ac_labs + len_sg_labs }} ({{ '%.2f' % (100.0*(len_ac_labs+len_sg_labs)/total_labs) }}%)</td>
             </tr>
         </tbody>
@@ -42,8 +46,8 @@
     <h3>Full list</h3>
 
     <ul>
-        <li><a href="#SmartGateway">Smart Gateway</a></li>
-        <li><a href="#AppComposer">App Composer</a></li>
+        <li><a href="#SmartGateway">Smart Gateway Plug-ins</a></li>
+        <li><a href="#AppComposer">Smart Gateway Embedder</a></li>
     </ul>
 
     {% for name, cur_labs in [ ('Smart Gateway', sg_labs), ('App Composer', ac_labs) ] %}
