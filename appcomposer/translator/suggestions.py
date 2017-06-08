@@ -1,3 +1,4 @@
+import sys
 import hashlib
 import traceback
 from microsofttranslator import Translator as MSTranslator, TranslateApiException as MSTranslatorApiException, ArgumentOutOfRangeException
@@ -142,10 +143,18 @@ class MicrosoftTranslator(AbstractTranslator):
         
         translations = {}
         for text, translation in zip(texts, ms_translations):
-            translated_text = translation.get('TranslatedText')
-            if translated_text:
-                translations[text] = translated_text
-        
+            try:
+                translated_text = translation.get('TranslatedText')
+            except:
+                import traceback
+                print(translation)
+                traceback.print_exc()
+                continue
+            else:
+                if translated_text:
+                    translations[text] = translated_text
+        sys.stdout.flush()
+        sys.stderr.flush()
         return translations
 
 class GoogleTranslator(AbstractTranslator):
