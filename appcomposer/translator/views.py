@@ -7,6 +7,7 @@ import time
 import json
 import zipfile
 import hashlib
+import operator
 import StringIO
 import datetime
 import traceback
@@ -17,7 +18,7 @@ from collections import OrderedDict, defaultdict
 
 import babel
 from sqlalchemy import distinct, func, or_
-from sqlalchemy.orm import joinedload_all
+from sqlalchemy.orm import joinedload_all, joinedload
 
 from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify, Response
 from flask.ext.wtf import Form
@@ -850,8 +851,9 @@ def translation_users_old():
 @translator_blueprint.route('/stats/users')
 @requires_golab_login
 def translation_users():
-    users = db.session.query(GoLabOAuthUser.display_name, GoLabOAuthUser.email).all()
+    users = db.session.query(GoLabOAuthUser.display_name, GoLabOAuthUser.email, GoLabOAuthUser.id).all()
     users_by_gravatar = []
+
     texts_by_user = {
         # email: number
     }
@@ -868,23 +870,145 @@ def translation_users():
     for number, email in db.session.query(func.count(func.distinct(TranslationBundle.translation_url_id)), GoLabOAuthUser.email).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == GoLabOAuthUser.id, ActiveTranslationMessage.taken_from_default == False, ActiveTranslationMessage.from_developer == False, ActiveTranslationMessage.same_tool.in_([True, None])).group_by(GoLabOAuthUser.email).all():
         apps_by_user[email] = number
 
-    for language, email in db.session.query(func.distinct(TranslationBundle.language), GoLabOAuthUser.email).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == GoLabOAuthUser.id, ActiveTranslationMessage.taken_from_default == False, ActiveTranslationMessage.from_developer == False, ActiveTranslationMessage.same_tool.in_([True, None])).group_by(GoLabOAuthUser.email).all():
+    for language, email in db.session.query(TranslationBundle.language, GoLabOAuthUser.email).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == GoLabOAuthUser.id, ActiveTranslationMessage.taken_from_default == False, ActiveTranslationMessage.from_developer == False, ActiveTranslationMessage.same_tool.in_([True, None])).group_by(TranslationBundle.language, GoLabOAuthUser.email).all():
         if email not in langs_by_user:
-            langs_by_user[email] = [ language ]
+            langs_by_user[email] = [ language.split('_')[0] ]
         else:
-            langs_by_user[email].append(language)
+            langs_by_user[email].append(language.split('_')[0])
 
-    for display_name, email in users:
+    for display_name, email, user_id in users:
         gravatar_url = 'http://gravatar.com/avatar/%s?s=40&d=identicon' % hashlib.md5(email).hexdigest()
+        languages = langs_by_user.get(email, [])
         users_by_gravatar.append({
             'gravatar_url': gravatar_url,
-            'display_name': display_name.strip().replace('.', ' ').title().split(' ')[0],
+            # 'display_name': display_name.strip().replace('.', ' ').title().split(' ')[0],
+            'display_name': display_name.strip(),
+            'email': email,
             'texts':  texts_by_user.get(email, 0),
             'apps': apps_by_user.get(email, 0),
-            'langs': ','.join(langs_by_user.get(email, [])),
+            'langs': '{}: {}'.format(len(languages), ', '.join(languages)),
+            'user_id': user_id,
         })
 
     return render_template('translator/users.html', users_by_gravatar = users_by_gravatar)
+
+@translator_blueprint.route('/stats/users/<int:user_id>')
+@requires_golab_login
+def translation_user(user_id):
+    user = db.session.query(GoLabOAuthUser).filter_by(id=user_id).first()
+    if not user:
+        return "User not found", 404
+
+    translation_dates = db.session.query(func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime)).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == user.id, ActiveTranslationMessage.taken_from_default == False, ActiveTranslationMessage.from_developer == False, ActiveTranslationMessage.same_tool.in_([True, None])).first()
+    if translation_dates is None:
+        return "User has no translation"
+
+    last_translation, first_translation = translation_dates
+
+    user_translations = db.session.query(func.count(ActiveTranslationMessage.id), TranslationBundle).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == user_id, ActiveTranslationMessage.taken_from_default == False, ActiveTranslationMessage.from_developer == False, ActiveTranslationMessage.same_tool.in_([True, None])).group_by(TranslationBundle.id).options(joinedload('translation_url')).all()
+
+    translation_bundles_by_id = { tr_bundle.id: tr_bundle for (count, tr_bundle) in user_translations }
+
+    translation_urls = [ bundle.translation_url_id for bundle in translation_bundles_by_id.values() ]
+    translation_apps_by_url = { tr_app.translation_url.url : tr_app for tr_app in db.session.query(TranslatedApp).filter(TranslatedApp.translation_url_id.in_(translation_urls)).options(joinedload('translation_url')).all() }
+    repository_app_by_url = { repo.url: repo for repo in db.session.query(RepositoryApp).filter(RepositoryApp.url.in_([tr_app.url for tr_app in translation_apps_by_url.values()])).all() }
+    
+    translation_app_info = {
+        # translation_app_url: {
+            # translations: {
+            #      language: count,
+            # }
+            # golabz: {
+            #     'name': name,
+            #     'thumb': thumb
+            #     'link': link to golabz
+            # }
+        # }
+    }
+
+    translation_url_info = {
+        # translation_url: {
+        #    language: count
+        # }
+    }
+
+    per_lang = {
+        # lang: count
+    }
+
+    total = 0
+
+    for count, tr_bundle in user_translations:
+        tr_url = tr_bundle.translation_url.url
+        tr_app = translation_apps_by_url.get(tr_url)
+        lang = tr_bundle.language.split('_')[0]
+        if lang not in per_lang:
+            per_lang[lang] = 0
+        per_lang[lang] += count
+        total += count
+
+        if tr_app:
+            if tr_app.url not in translation_app_info:
+                translation_app_info[tr_app.url] = {
+                    'url': tr_app.url,
+                    'translations': {}
+                }
+
+            if lang in translation_app_info[tr_app.url]['translations']:
+                # Should never happen, but there were suspcious of corrupted data in the database
+                sys.stderr.write("WARNING: REPEATED URL\n")
+                sys.stderr.flush()
+                
+            translation_app_info[tr_app.url]['translations'][lang] = count
+            if not 'golabz' in translation_app_info[tr_app.url]:
+                repo_app = repository_app_by_url.get(tr_app.url)
+                if repo_app:
+                    translation_app_info[tr_app.url]['golabz'] = {
+                        'name': repo_app.name,
+                        'thumb': repo_app.app_thumb,
+                        'link': repo_app.app_link,
+                    }
+        else:
+            if tr_url not in translation_url_info:
+                translation_url_info[tr_url] = {}
+    
+            if lang in translation_url_info[tr_url]:
+                # Should never happen, but there were suspcious of corrupted data in the database
+                sys.stderr.write("WARNING: REPEATED URL\n")
+                sys.stderr.flush()
+
+            translation_url_info[tr_url][lang] = count
+
+    # Sorting
+    per_lang_sorted = sorted([ { 'lang': lang, 'count' : count } for (lang, count) in per_lang.items() ], lambda x, y: cmp(y['count'], x['count']))
+
+    golabz_apps = sorted(
+        [
+            tr_app_info
+            for tr_app_info in translation_app_info.values()
+            if 'golabz' in tr_app_info
+        ], 
+            lambda x, y: cmp(
+                reduce(operator.add, y['translations'].values()), 
+                reduce(operator.add, x['translations'].values())
+             ))
+
+    non_golabz_apps = sorted(
+        [
+            tr_app_info
+            for tr_app_info in translation_app_info.values()
+            if 'golabz' not in tr_app_info
+        ], 
+            lambda x, y: cmp(
+                reduce(operator.add, y['translations'].values()), 
+                reduce(operator.add, x['translations'].values())
+             ))
+
+    gravatar_url = 'http://gravatar.com/avatar/%s?s=150&d=identicon' % hashlib.md5(user.email).hexdigest()
+
+    lang_link = lambda lang, app_url: url_for('.translations_revisions', lang=lang + '_ALL', target='ALL', app_url=app_url)
+
+    return render_template("translator/user.html", last_translation = last_translation, first_translation = first_translation, gravatar_url=gravatar_url, per_lang = per_lang_sorted, user=user, total=total, golabz_apps=golabz_apps, non_golabz_apps=non_golabz_apps, non_apps=translation_url_info, lang_link=lang_link)
 
 @translator_blueprint.route('/dev/sync/', methods = ['GET', 'POST'])
 @requires_golab_login

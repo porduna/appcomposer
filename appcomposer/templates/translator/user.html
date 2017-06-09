@@ -1,0 +1,128 @@
+{% extends "translator/base.html" %}
+{% block body %}
+
+<br>
+<h1>Translations of {{ user.display_name }}</h1>
+
+<div class="row">
+
+    <div class="col-sm-4 text-center">
+        <img src="{{ gravatar_url }}" height="150px">
+    </div>
+
+    <div class="col-sm-4">
+        <table class="table table-bordered text-center">
+            <tr>
+                <th>First translation:</th>
+                <td>{{ first_translation.strftime("%d-%m-%Y") }}</td>
+            </tr>
+            <tr>
+                <th>Latest translation:</th>
+                <td>{{ last_translation.strftime("%d-%m-%Y") }}</td>
+            </tr>
+            <tr>
+                <th>Total translations:</th>
+                <td>{{ total }}</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="col-sm-4">
+        <table class="table table-bordered">
+            <thead>
+                <tr>
+                    <th>Language</th>
+                    <th>Count</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for lang_item in per_lang %}
+                <tr>
+                    <td>{{ lang_item['lang'] }}</td>
+                    <td>{{ lang_item['count'] }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+
+<hr>
+<h2>Details</h2>
+
+{% if golabz_apps %}
+<h3>Go-Lab apps and labs</h3>
+
+<table class="table table-bordered">
+    <tbody>
+        {% for golabz_app in golabz_apps %}
+        {% set translations = golabz_app['translations'].items() %}
+        <tr>
+            <td rowspan="{{ golabz_app['translations']|length }}"><img src="{{ golabz_app['golabz']['thumb'] }}" width="50px"></td>
+            <td rowspan="{{ golabz_app['translations']|length }}"><a href="{{ golabz_app['golabz']['link'] }}">{{ golabz_app['golabz']['name'] }}</a></td>
+            <td>
+                {% set first_translation = translations[0] %}
+                <a href="{{ lang_link(first_translation[0], golabz_app['url']) }}">{{ first_translation[0] }}: {{ first_translation[1] }}</a>
+            </td>
+        </tr>
+        {% for lang, count in translations[1:] %}
+        <tr>
+            <td><a href="{{ lang_link(lang, golabz_app['url']) }}">{{ lang }}: {{ count }}</a></td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endif %}
+
+{% if non_golabz_apps %}
+<h3>Apps and labs not in golabz</h3>
+
+<table class="table table-bordered">
+    <tbody>
+        {% for non_golabz_app in non_golabz_apps %}
+        {% set translations = non_golabz_app['translations'].items() %}
+        <tr>
+            <td rowspan="{{ non_golabz_app['translations']|length }}">{{ non_golabz_app['url'] }}</td>
+            <td>
+                {% set first_translation = translations[0] %}
+                <a href="{{ lang_link(first_translation[0], non_golabz_app['url']) }}">{{ first_translation[0] }}: {{ first_translation[1] }}</a>
+            </td>
+        </tr>
+        {% for lang, count in translations[1:] %}
+        <tr>
+            <td><a href="{{ lang_link(lang, non_golabz_app['url']) }}">{{ lang }}: {{ count }}</a></td>
+        </tr>
+        {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endif %}
+
+{% if non_apps %}
+<h3>Translation URLs without app</h3>
+
+<table class="table table-bordered">
+    <tbody>
+        {% for translation_url, lang_data in non_apps.items() %}
+            <tr>
+                <td rowspan="{{ lang_data|length }}">{{ translation_url }}</td>
+                <td>
+                    {{ lang_data.items()[0][0] }}: {{ lang_data.items()[0][1] }}
+                </td>
+            </tr>
+            {% for lang, count in lang_data.items()[1:] %}
+            <tr>
+                <td>{{ lang }}: {{ count }}</td>
+            </tr>
+            {% endfor %}
+        {% endfor %}
+    </tbody>
+</table>
+
+{% endif %}
+
+{% endblock %}
