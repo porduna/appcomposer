@@ -11,6 +11,8 @@
             <th>Gravatar</th>
             <th>First name</th>
             <th>Messages translated</th>
+            <th>Apps translated</th>
+            <th>Languages used</th>
         </tr>
     </thead>
     <tbody>
@@ -20,6 +22,8 @@
             <td><img src="{{ user_data['gravatar_url'] }}"></td>
             <td>{{ user_data['display_name'] }}</td>
             <td>{{ user_data['texts']  }}</td>
+            <td>{{ user_data['apps']  }}</td>
+            <td>{{ user_data['langs']  }}</td>
         </tr>
         {% endfor %}
     </tbody>

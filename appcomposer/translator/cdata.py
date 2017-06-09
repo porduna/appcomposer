@@ -12,15 +12,17 @@ def CDATA(text=None):
 ET._original_serialize_xml = ET._serialize_xml
 if ET._serialize_xml.func_code.co_argcount == 5:
     # Python 2
-    def _serialize_xml(write, elem, encoding, qnames, namespaces):
+    def _serialize_xml_py2(write, elem, encoding, qnames, namespaces):
         if elem.tag == '![CDATA[':
             write((u"<%s%s]]>" % (elem.tag, elem.text)).encode(encoding))
             return
         return ET._original_serialize_xml(
             write, elem, encoding, qnames, namespaces)
+
+    ET._serialize_xml = ET._serialize['xml'] = _serialize_xml_py2
 else:
     # Python 3
-    def _serialize_xml(write, elem, qnames, namespaces):
+    def _serialize_xml_py3(write, elem, qnames, namespaces):
         if elem.tag == '![CDATA[':
             write("<%s%s]]>" % (
                     elem.tag, elem.text))
@@ -28,5 +30,5 @@ else:
         return ET._original_serialize_xml(
             write, elem, qnames, namespaces)
 
-ET._serialize_xml = ET._serialize['xml'] = _serialize_xml
+    ET._serialize_xml = ET._serialize['xml'] = _serialize_xml_py3
 

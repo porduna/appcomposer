@@ -217,7 +217,6 @@ def existing_translations(texts, language, origin_language = 'en'):
     return translations, remaining_texts
 
 if __name__ == '__main__':
-    from appcomposer import app
     with app.app_context():
         print existing_translations(["Hello", "Bye", "Good morning", "This was never stored"], 'es')
         print translate_texts(["Hello", "Bye", "Good morning"], 'es')

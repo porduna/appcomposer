@@ -1,5 +1,8 @@
 logfile.log
 appcomposer.sql
+appcomposer*.sql
+appcomposer*.sql.bz2
+restore*.sh
 
 # Appcomposer
 dump

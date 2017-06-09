@@ -855,8 +855,24 @@ def translation_users():
     texts_by_user = {
         # email: number
     }
+    apps_by_user = {
+        # email: number
+    }
+    langs_by_user = {
+        # email: lang_list
+    }
+
     for number, email in db.session.query(func.count(ActiveTranslationMessage.id), GoLabOAuthUser.email).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == GoLabOAuthUser.id, ActiveTranslationMessage.taken_from_default == False, ActiveTranslationMessage.from_developer == False, ActiveTranslationMessage.same_tool.in_([True, None])).group_by(GoLabOAuthUser.email).all():
         texts_by_user[email] = number
+
+    for number, email in db.session.query(func.count(func.distinct(TranslationBundle.translation_url_id)), GoLabOAuthUser.email).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == GoLabOAuthUser.id, ActiveTranslationMessage.taken_from_default == False, ActiveTranslationMessage.from_developer == False, ActiveTranslationMessage.same_tool.in_([True, None])).group_by(GoLabOAuthUser.email).all():
+        apps_by_user[email] = number
+
+    for language, email in db.session.query(func.distinct(TranslationBundle.language), GoLabOAuthUser.email).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, ActiveTranslationMessage.history_id == TranslationMessageHistory.id, TranslationMessageHistory.user_id == GoLabOAuthUser.id, ActiveTranslationMessage.taken_from_default == False, ActiveTranslationMessage.from_developer == False, ActiveTranslationMessage.same_tool.in_([True, None])).group_by(GoLabOAuthUser.email).all():
+        if email not in langs_by_user:
+            langs_by_user[email] = [ language ]
+        else:
+            langs_by_user[email].append(language)
 
     for display_name, email in users:
         gravatar_url = 'http://gravatar.com/avatar/%s?s=40&d=identicon' % hashlib.md5(email).hexdigest()
@@ -864,6 +880,8 @@ def translation_users():
             'gravatar_url': gravatar_url,
             'display_name': display_name.strip().replace('.', ' ').title().split(' ')[0],
             'texts':  texts_by_user.get(email, 0),
+            'apps': apps_by_user.get(email, 0),
+            'langs': ','.join(langs_by_user.get(email, [])),
         })
 
     return render_template('translator/users.html', users_by_gravatar = users_by_gravatar)
