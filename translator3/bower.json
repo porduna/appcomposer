@@ -20,7 +20,7 @@
     "angular-gravatar": "~0.3.1",
     "angular-percentage-filter": "~1.0.2",
     "sprintfjs": "~1.1.9",
-    "textAngular": "https://github.com/porduna/textAngular.git#c06cde19d0bfe0ecdf3e61c5ac61a0f3d1e7c236",
+    "textAngular": "~1.5.16",
     "underscore": "^1.8.3"
   },
   "resolutions": {
