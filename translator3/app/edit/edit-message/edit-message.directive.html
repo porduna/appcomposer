@@ -14,6 +14,7 @@
                <text-angular ng-focus="onFocus($event)"
                               ng-model="values.current"
                               ng-change="onChange('textAngular', 'input', values.current)"
+                              ta-paste="onPaste($html)"
                               class="ac-edit-message-control"
                               ng-class="{'ac-edit-message-input-from-default': item.from_default}"></text-angular>
 

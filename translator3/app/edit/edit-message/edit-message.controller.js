@@ -37,6 +37,7 @@ function EditMessageController($scope, $log, $resource) {
     $scope.shouldShowFromDefaultWarning = shouldShowFromDefaultWarning;
     $scope.onFocus = onFocus;
     $scope.onChange = onChange;
+    $scope.onPaste = onPaste;
     $scope.onKey = onKey;
     $scope.isSaved = isSaved;
     $scope.shouldDisplayDetails = shouldDisplayDetails;
@@ -195,6 +196,18 @@ function EditMessageController($scope, $log, $resource) {
         // selected.
         $scope.$parent.$parent.$broadcast("edit-message-focused", {key: $scope.key});
     } // !onFocus
+
+    function onPaste($html) {
+        console.log("ON PASTE");
+        console.log($html);
+        $after = $html;
+        $after = $after.replace(/(style="([^"]*)")/gi, '');
+        $after = $after.replace(/<span[^\>]*>/gi, '');
+        $after = $after.replace(/<\/span>/gi, '')
+        console.log("After:")
+        console.log($after);
+        return $after;
+    }
 
     function onChange(format, origin, value) {
         $log.debug("[EditMessageController/onChange]. Called for format: " + format + "; origin: " + origin + "; value: " + value);
