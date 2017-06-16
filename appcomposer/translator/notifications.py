@@ -37,7 +37,7 @@ def run_notifications():
     # Now, get the list of translation_url_ids
     translation_url_ids = [ translation_url_id for subscription_id, translation_url_id, last_check, recipient_id in subscriptions ]
 
-    if not translation_urls_ids:
+    if not translation_url_ids:
         print "Finish: no translation_url_id means no active message"
         return
 
