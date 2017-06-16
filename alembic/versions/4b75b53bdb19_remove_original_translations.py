@@ -28,7 +28,10 @@ def upgrade():
     sa.ForeignKeyConstraint(['language_id'], ['Languages.id'], ),
     sa.ForeignKeyConstraint(['repository_app_id'], ['RepositoryApps.id'], )
     )
-    op.drop_column(u'RepositoryApps', u'original_translations')
+    try:
+        op.drop_column(u'RepositoryApps', u'original_translations')
+    except:
+        print("No alter in SQLAlchemy")
     ### end Alembic commands ###
 
 
