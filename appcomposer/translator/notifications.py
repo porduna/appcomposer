@@ -37,6 +37,10 @@ def run_notifications():
     # Now, get the list of translation_url_ids
     translation_url_ids = [ translation_url_id for subscription_id, translation_url_id, last_check, recipient_id in subscriptions ]
 
+    if not translation_urls_ids:
+        print "Finish: no translation_url_id means no active message"
+        return
+
     # And retrieve all the active messages which have been updated at least some minutes ago (otherwise it seems that somebody is still working),
     active_messages = (db.session.query(func.max(ActiveTranslationMessage.datetime), TranslationBundle.id, TranslationBundle.translation_url_id)
                         .filter(
@@ -134,24 +138,28 @@ def run_notifications():
         users_by_id[user.id] = user
 
     recipients_by_id = {}
-    for recipient in db.session.query(TranslationNotificationRecipient).filter(TranslationNotificationRecipient.id.in_(list(all_recipient_ids))).all():
-        recipients_by_id[recipient.id] = recipient
+    if all_recipient_ids:
+        for recipient in db.session.query(TranslationNotificationRecipient).filter(TranslationNotificationRecipient.id.in_(list(all_recipient_ids))).all():
+            recipients_by_id[recipient.id] = recipient
 
     translation_urls_by_id = {}
-    for translation_url in db.session.query(TranslationUrl).filter(TranslationUrl.id.in_(list(all_translation_url_ids))).all():
-        translation_urls_by_id[translation_url.id] = translation_url
+    if all_translation_url_ids:
+        for translation_url in db.session.query(TranslationUrl).filter(TranslationUrl.id.in_(list(all_translation_url_ids))).all():
+            translation_urls_by_id[translation_url.id] = translation_url
     
     translation_apps_by_translation_url_id = defaultdict(list)
-    for translation_app in db.session.query(TranslatedApp).filter(TranslatedApp.translation_url_id.in_(list(all_translation_url_ids))).all():
-        translation_apps_by_translation_url_id[translation_app.translation_url_id].append(translation_app.url)
+    if all_translation_url_ids:
+        for translation_app in db.session.query(TranslatedApp).filter(TranslatedApp.translation_url_id.in_(list(all_translation_url_ids))).all():
+            translation_apps_by_translation_url_id[translation_app.translation_url_id].append(translation_app.url)
 
     all_translation_urls = []
     for translation_apps in translation_apps_by_translation_url_id.values():
         all_translation_urls.extend([ translation_app for translation_app in translation_apps ])
 
     repository_names_by_translation_app = {}
-    for repository_app in db.session.query(RepositoryApp).filter(TranslatedApp.url.in_(all_translation_urls)).all():
-        repository_names_by_translation_app[repository_app.url] = repository_app.name
+    if all_translation_urls:
+        for repository_app in db.session.query(RepositoryApp).filter(TranslatedApp.url.in_(all_translation_urls)).all():
+            repository_names_by_translation_app[repository_app.url] = repository_app.name
 
     for recipient_id, recipient_messages in pending_emails.iteritems():
         translation_urls = []

@@ -55,8 +55,11 @@ class AbstractTranslator(object):
 
         language = language.split('_')[0]
         hashed_texts = [ hashlib.md5(text.encode('utf8')).hexdigest() for text in texts ]
-
-        suggestions = db.session.query(TranslationExternalSuggestion).filter(TranslationExternalSuggestion.engine == self.name, TranslationExternalSuggestion.human_key_hash.in_(hashed_texts), TranslationExternalSuggestion.language == language, TranslationExternalSuggestion.origin_language == origin_language).all()
+        
+        if hashed_texts:
+            suggestions = db.session.query(TranslationExternalSuggestion).filter(TranslationExternalSuggestion.engine == self.name, TranslationExternalSuggestion.human_key_hash.in_(hashed_texts), TranslationExternalSuggestion.language == language, TranslationExternalSuggestion.origin_language == origin_language).all()
+        else:
+            suggestions = []
 
         remaining_texts = texts[:]
         existing_suggestions = {}

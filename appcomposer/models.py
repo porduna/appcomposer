@@ -72,6 +72,21 @@ class App(db.Model):
     owner_id = db.Column(db.Integer, ForeignKey("Users.id"), nullable=False, index=True)
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
 
+repo_app2languages = db.Table('RepositoryApp2languages',
+    db.Column('repository_app_id',  db.Integer, db.ForeignKey('RepositoryApps.id')),
+    db.Column('language_id', db.Integer, db.ForeignKey('Languages.id'))
+)
+
+
+class Language(db.Model):
+    __tablename__ = 'Languages'
+
+    id = db.Column(db.Integer, primary_key=True)
+    language = db.Column(db.Unicode(10), index=True, unique=True)
+
+    def __init__(self, language):
+        self.language = language
+
 class RepositoryApp(db.Model):
     __tablename__ = 'RepositoryApps'
 
@@ -90,7 +105,10 @@ class RepositoryApp(db.Model):
     adaptable = db.Column(db.Boolean, index = True)
     translatable = db.Column(db.Boolean, index = True)
 
-    original_translations = db.Column(db.Unicode(255))
+    original_translation_entities = db.relationship("Language",
+                        secondary=repo_app2languages,
+                        backref="repository_apps")
+
     translation_percent = db.Column(db.UnicodeText) # JSON document containing which bundles have been translated how much
 
     last_check = db.Column(db.DateTime, index = True)
@@ -109,13 +127,38 @@ class RepositoryApp(db.Model):
 
         self.adaptable = False
         self.translatable = False
-        self.original_translations = ""
 
         self.last_check = None
         self.last_change = None
         
         self.failing = False
         self.failing_since = None
+
+    @property
+    def original_translations(self):
+        return ','.join([ ote.language for ote in self.original_translation_entities ])
+
+    @original_translations.setter
+    def original_translations(self, attr):
+        if not attr:
+            return
+
+        languages = list(attr.split(','))
+        if not languages:
+            return
+
+        for orig_lang in self.original_translations:
+            if orig_lang in languages:
+                languages.remove(orig_lang)
+
+        for lang_db in db.session.query(Language).filter(Language.language.in_(languages)).all():
+            self.original_translation_entities.append(lang_db)
+            languages.remove(lang_db.language)
+
+        for language in languages:
+            lang_db = Language(language)
+            self.original_translation_entities.append(lang_db)
+            
 
 class GoLabOAuthUser(db.Model):
     __tablename__ = 'GoLabOAuthUsers'

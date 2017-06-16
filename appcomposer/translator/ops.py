@@ -100,10 +100,11 @@ def get_bundles_by_key_namespaces(pairs):
 
     pairs_found = {}
 
-    for key, namespace, bundle_id in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace, ActiveTranslationMessage.bundle_id).filter(ActiveTranslationMessage.key.in_(keys), ActiveTranslationMessage.namespace.in_(namespaces), ActiveTranslationMessage.taken_from_default == False).all():
-        if (key, namespace) not in pairs_found:
-            pairs_found[key, namespace] = set()
-        pairs_found[key, namespace].add(bundle_id)
+    if keys and namespaces:
+        for key, namespace, bundle_id in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace, ActiveTranslationMessage.bundle_id).filter(ActiveTranslationMessage.key.in_(keys), ActiveTranslationMessage.namespace.in_(namespaces), ActiveTranslationMessage.taken_from_default == False).all():
+            if (key, namespace) not in pairs_found:
+                pairs_found[key, namespace] = set()
+            pairs_found[key, namespace].add(bundle_id)
 
     bundle_ids = set()
 
@@ -245,9 +246,10 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
         existing_namespace_translations = {}
         _user_ids = set()
 
-        for key, namespace, value, current_from_developer, existing_user_id in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace, ActiveTranslationMessage.value, ActiveTranslationMessage.from_developer, TranslationMessageHistory.user_id).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, ActiveTranslationMessage.key.in_(list(existing_namespace_keys)), ActiveTranslationMessage.namespace.in_(list(existing_namespaces)), ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == db_translation_bundle.language, TranslationBundle.target == db_translation_bundle.target, ActiveTranslationMessage.bundle_id != db_translation_bundle.id, ActiveTranslationMessage.taken_from_default == False).all():
-            existing_namespace_translations[key, namespace] = (value, current_from_developer, existing_user_id)
-            _user_ids.add(existing_user_id)
+        if existing_namespace_keys:
+            for key, namespace, value, current_from_developer, existing_user_id in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace, ActiveTranslationMessage.value, ActiveTranslationMessage.from_developer, TranslationMessageHistory.user_id).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, ActiveTranslationMessage.key.in_(list(existing_namespace_keys)), ActiveTranslationMessage.namespace.in_(list(existing_namespaces)), ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == db_translation_bundle.language, TranslationBundle.target == db_translation_bundle.target, ActiveTranslationMessage.bundle_id != db_translation_bundle.id, ActiveTranslationMessage.taken_from_default == False).all():
+                existing_namespace_translations[key, namespace] = (value, current_from_developer, existing_user_id)
+                _user_ids.add(existing_user_id)
 
         existing_users = {}
         if _user_ids:
@@ -407,9 +409,10 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
     if namespaces:
         existing_namespaces = {}
         _user_ids = set()
-        for key, namespace, value, current_from_developer, existing_user_id in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace, ActiveTranslationMessage.value, ActiveTranslationMessage.from_developer, TranslationMessageHistory.user_id).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, ActiveTranslationMessage.key.in_(original_messages.keys()), ActiveTranslationMessage.namespace.in_(list(namespaces)), ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == db_translation_bundle.language, TranslationBundle.target == db_translation_bundle.target, ActiveTranslationMessage.taken_from_default == False).all():
-            existing_namespaces[key, namespace] = (value, current_from_developer, existing_user_id)
-            _user_ids.add(existing_user_id)
+        if original_messages and namespaces:
+            for key, namespace, value, current_from_developer, existing_user_id in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace, ActiveTranslationMessage.value, ActiveTranslationMessage.from_developer, TranslationMessageHistory.user_id).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, ActiveTranslationMessage.key.in_(original_messages.keys()), ActiveTranslationMessage.namespace.in_(list(namespaces)), ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == db_translation_bundle.language, TranslationBundle.target == db_translation_bundle.target, ActiveTranslationMessage.taken_from_default == False).all():
+                existing_namespaces[key, namespace] = (value, current_from_developer, existing_user_id)
+                _user_ids.add(existing_user_id)
 
         existing_users = {}
         if _user_ids:
@@ -540,21 +543,24 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
 
     # First, key suggestions
     key_suggestions_by_key = defaultdict(list)
-    for key_suggestion in db.session.query(TranslationKeySuggestion).filter_by(language = language, target = target).filter(TranslationKeySuggestion.key.in_(original_keys)).all():
-        key_suggestions_by_key[key_suggestion.key].append({
-            'target' : key_suggestion.value,
-            'number' : key_suggestion.number,
-        })
+    if original_keys:
+        for key_suggestion in db.session.query(TranslationKeySuggestion).filter_by(language = language, target = target).filter(TranslationKeySuggestion.key.in_(original_keys)).all():
+            key_suggestions_by_key[key_suggestion.key].append({
+                'target' : key_suggestion.value,
+                'number' : key_suggestion.number,
+            })
     current_suggestions.append(key_suggestions_by_key)
 
     # Second, value suggestions
     value_suggestions_by_key = defaultdict(list)
-    for value_suggestion in db.session.query(TranslationValueSuggestion).filter_by(language = language, target = target).filter(TranslationValueSuggestion.human_key.in_([ orig_value[:255] for orig_value in original_values ])).all():
-        for key in original_keys_by_value.get(value_suggestion.human_key, []):
-            value_suggestions_by_key[key].append({
-                'target' : value_suggestion.value,
-                'number' : value_suggestion.number,
-            })
+    orig_values = [ orig_value[:255] for orig_value in original_values ]
+    if orig_values:
+        for value_suggestion in db.session.query(TranslationValueSuggestion).filter_by(language = language, target = target).filter(TranslationValueSuggestion.human_key.in_(orig_values)).all():
+            for key in original_keys_by_value.get(value_suggestion.human_key, []):
+                value_suggestions_by_key[key].append({
+                    'target' : value_suggestion.value,
+                    'number' : value_suggestion.number,
+                })
 
     for human_key, suggested_values in translate_texts(original_values, language).iteritems():
         for key in original_keys_by_value.get(human_key, []):
@@ -589,6 +595,8 @@ def retrieve_suggestions(original_messages, language, target, stored_translation
     return all_suggestions
 
 def _get_all_results_from_translation_url(translation_url, keys):
+    if not keys:
+        return []
     results = db.session.query(func.count(func.distinct(ActiveTranslationMessage.key)), func.max(ActiveTranslationMessage.datetime), func.min(ActiveTranslationMessage.datetime), TranslationBundle.language, TranslationBundle.target).filter(
                 ActiveTranslationMessage.taken_from_default == False,
                 ActiveTranslationMessage.same_tool == True,

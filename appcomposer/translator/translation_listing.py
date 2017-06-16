@@ -84,8 +84,11 @@ def synchronize_apps_cache(source, single_app_url = None):
         synced_apps = []
         all_golab_apps = _get_golab_translations(cached_requests)
         all_golab_apps.extend(get_other_apps())
+        print("Before Go-Lab apps: ", number) 
         number += _sync_translations(cached_requests, "Go-Lab apps", synced_apps, all_golab_apps, force_reload = False, single_app_url = single_app_url)
+        print("After Go-Lab apps: ", number) 
         number += _sync_regular_apps(cached_requests, synced_apps, force_reload = False, single_app_url = single_app_url)
+        print("After other apps: ", number) 
     finally:
         end_synchronization(sync_id, number)
     
@@ -141,6 +144,7 @@ class RunInParallel(object):
         return True
 
     def run(self):
+        print "Starting downloading {0} apps of {1}".format(len(self.tasks), self.tag)
         waiting_tasks = self.tasks[:]
         running_tasks = []
         while not self.all_finished():
