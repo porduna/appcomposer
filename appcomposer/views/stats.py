@@ -303,7 +303,7 @@ def translation_user(user_id):
 
     gravatar_url = 'http://gravatar.com/avatar/%s?s=150&d=identicon' % hashlib.md5(user.email).hexdigest()
 
-    lang_link = lambda lang, app_url: url_for('translator.translations_revisions', lang=lang + '_ALL', target='ALL', app_url=app_url)
+    lang_link = lambda lang, app_url: url_for('translator_dev.translations_revisions', lang=lang + '_ALL', target='ALL', app_url=app_url)
 
     return render_template("translator/user.html", last_translation = last_translation, first_translation = first_translation, gravatar_url=gravatar_url, per_lang = per_lang_sorted, user=user, total=total, golabz_apps=golabz_apps, non_golabz_apps=non_golabz_apps, non_apps=translation_url_info, lang_link=lang_link)
 

@@ -1,6 +1,6 @@
 {% extends "translator/base.html" %}
 {% block head %}
-<link href="{{ url_for('admin.static', filename='select2/select2.css') }}" rel="stylesheet">
+<link href="{{ url_for('static', filename='select2/select2.css') }}" rel="stylesheet">
 {% endblock %}
 
 {% block body %}
@@ -59,7 +59,7 @@
 {% endblock %}
 
 {% block tail %}
-    <script src="{{ url_for('admin.static', filename='select2/select2.min.js') }}"></script>
+    <script src="{{ url_for('static', filename='select2/select2.min.js') }}"></script>
     <script>
         $(document).ready(function() { 
             $("#language").select2();

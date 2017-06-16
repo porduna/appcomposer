@@ -43,7 +43,7 @@
                             {% endfor %}
                         </ul></td>
                         <td>(not implemented yet)</td>
-                        <td><a href="{{ url_for('translator.translations_apps_filtered', app_url = record['repo_app'].url) }}">Link</a></td>
+                        <td><a href="{{ url_for('translator_dev.translations_apps_filtered', app_url = record['repo_app'].url) }}">Link</a></td>
                     </tr>
                 {% endfor %}
             </tbody>
