@@ -11,7 +11,7 @@ from appcomposer.db import db
 from appcomposer.application import app
 from appcomposer.models import RepositoryApp
 from appcomposer.login import requires_golab_api_login, current_golab_user
-from appcomposer.translator.exc import TranslatorError
+from appcomposer.exceptions import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, update_user_status, get_user_status
