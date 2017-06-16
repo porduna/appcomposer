@@ -79,7 +79,7 @@ def synchronize_apps_cache_wrapper(self, source = None, single_app_url = None):
 
     with my_app.app_context():
         result = synchronize_apps_cache(source = source, single_app_url = single_app_url)
-    sync(self, True)
+    sync(self, only_recent=True)
     return result
 
 @cel.task(name='synchronize_apps_no_cache', bind=True)
@@ -89,16 +89,16 @@ def synchronize_apps_no_cache_wrapper(self, source = None, single_app_url = None
     with my_app.app_context():
         result = synchronize_apps_no_cache(source = source, single_app_url = single_app_url)
     if must_sync:
-        sync(self, False)
+        sync(self, only_recent=False)
     return result
 
 @cel.task(name="sync", bind=True)
 def sync_wrapper(self):
-    return sync(self, True)
+    return sync(self, only_recent=True)
 
 @cel.task(name="sync_no_cache", bind=True)
 def sync_no_cache_wrapper(self):
-    return sync(self, False)
+    return sync(self, only_recent=False)
 
 @cel.task(name='load_google_suggestions', bind=True)
 def load_google_suggestions(self):
