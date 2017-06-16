@@ -17,7 +17,7 @@ app.config.from_object('config')
 # Add an extension to jinja2
 app.jinja_env.add_extension("jinja2.ext.i18n")
 
-from appcomposer.babel import Babel
+from appcomposer.i18n import Babel
 
 if Babel is None:
     print "Not using Babel. Everything will be in English"

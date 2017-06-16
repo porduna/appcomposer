@@ -12,11 +12,12 @@ from appcomposer.application import app
 from appcomposer.models import RepositoryApp
 from appcomposer.login import requires_golab_api_login, current_golab_user
 from appcomposer.exceptions import TranslatorError
-from appcomposer.translator.languages import obtain_groups, obtain_languages
+from appcomposer.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, update_user_status, get_user_status
 
-from appcomposer.views.utils import public,_guess_default_language
+from appcomposer.utils import public
+from appcomposer.languages import guess_default_language
 
 import flask.ext.cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
@@ -60,8 +61,8 @@ def check_authn():
 @public
 @cross_origin()
 @api
-def guess_default_language():
-    return jsonify(language = _guess_default_language())
+def guess_default_language_view():
+    return jsonify(language = guess_default_language())
 
 @translator_api_blueprint.route('/apps/repository')
 @public
@@ -182,7 +183,7 @@ def api_languages_default():
             'code': lang_code.split('_')[0]
         })
     contents = {
-        'default': (_guess_default_language() or 'en').split('_')[0],
+        'default': (guess_default_language() or 'en').split('_')[0],
         'languages': list_of_languages,
     }
     resp = make_response(json.dumps(contents, indent = 4))

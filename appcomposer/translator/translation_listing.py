@@ -15,7 +15,7 @@ from appcomposer.application import app
 from appcomposer.db import db
 from appcomposer.models import RepositoryApp, TranslatedApp, ActiveTranslationMessage, TranslationBundle, TranslationUrl, TranslationExternalSuggestion
 
-from appcomposer.translator.languages import SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES, OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES
+from appcomposer.languages import SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES, OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES
 from appcomposer.translator.utils import extract_metadata_information
 import appcomposer.translator.utils as trutils
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user, start_synchronization, end_synchronization, get_bundles_by_key_namespaces

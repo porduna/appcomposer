@@ -21,7 +21,7 @@ from cachecontrol.heuristics import LastModified, TIME_FMT
 from appcomposer import db
 from appcomposer.models import TranslationFastCache
 from appcomposer.exceptions import TranslatorError
-from appcomposer.translator.cdata import CDATA
+from appcomposer.cdata import CDATA
 
 DEBUG = True
 

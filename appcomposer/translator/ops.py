@@ -9,7 +9,7 @@ from sqlalchemy.orm import joinedload_all
 
 from appcomposer import db
 from appcomposer.application import app
-from appcomposer.translator.languages import obtain_languages, obtain_groups
+from appcomposer.languages import obtain_languages, obtain_groups
 from appcomposer.translator.suggestions import translate_texts
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser, TranslationSyncLog, TranslationCurrentActiveUser, TranslationSubscription, TranslationNotificationRecipient, RepositoryApp
 

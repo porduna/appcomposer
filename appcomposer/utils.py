@@ -4,6 +4,14 @@ import smtplib
 from flask import request, current_app
 from functools import wraps
 
+#
+# Use @public to mark that a method is intentionally public
+# 
+def public(func): 
+    return func
+
+
+
 def sendmail(subject, body, additional_recipients = None):
     from appcomposer.application import app
     MAIL_TPL = """From: App Composer <%(sender)s>

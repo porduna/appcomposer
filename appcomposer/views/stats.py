@@ -15,7 +15,8 @@ from appcomposer.db import db
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp, GoLabOAuthUser, ActiveTranslationMessage, TranslationMessageHistory
 from appcomposer.login import requires_golab_login
 
-from appcomposer.views.utils import public, LANGUAGE_NAMES_PER_CODE, LANGUAGE_THRESHOLD
+from appcomposer.utils import public
+from appcomposer.languages import LANGUAGE_NAMES_PER_CODE, LANGUAGE_THRESHOLD
 
 translator_stats_blueprint = Blueprint('translator_stats', __name__, static_folder = '../../translator3/dist/', static_url_path = '/web')
 

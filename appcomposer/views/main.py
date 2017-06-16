@@ -7,9 +7,10 @@ from flask.ext.cors import cross_origin
 from appcomposer.db import db
 from appcomposer.models import RepositoryApp
 from appcomposer.login import requires_golab_login
-from appcomposer.translator.languages import obtain_groups, obtain_languages
+from appcomposer.languages import obtain_groups, obtain_languages
 
-from appcomposer.views.utils import public, LANGUAGES, LANGUAGE_THRESHOLD, sort_languages
+from appcomposer.utils import public
+from appcomposer.languages import LANGUAGES, LANGUAGE_THRESHOLD, sort_languages
 
 import flask.ext.cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
