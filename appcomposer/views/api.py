@@ -1,32 +1,28 @@
-"""
-New translator
-"""
-
 import json
 import traceback
 from functools import wraps
 
 from collections import OrderedDict
 
-from flask import Blueprint, make_response, render_template, request, redirect, url_for, jsonify
+from flask import Blueprint, make_response, request, url_for, jsonify
 from flask.ext.cors import cross_origin
 
 from appcomposer.db import db
 from appcomposer.application import app
 from appcomposer.models import RepositoryApp
-from appcomposer.login import requires_golab_login, requires_golab_api_login, current_golab_user
+from appcomposer.login import requires_golab_api_login, current_golab_user
 from appcomposer.translator.exc import TranslatorError
 from appcomposer.translator.languages import obtain_groups, obtain_languages
 from appcomposer.translator.utils import extract_local_translations_url
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, update_user_status, get_user_status
 
-from appcomposer.views.utils import public, LANGUAGES, LANGUAGE_THRESHOLD, sort_languages, _guess_default_language
+from appcomposer.views.utils import public,_guess_default_language
 
 import flask.ext.cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
 
 
-translator_blueprint = Blueprint('translator', __name__, static_folder = '../../translator3/dist/', static_url_path = '/web')
+translator_api_blueprint = Blueprint('translator_api', __name__, static_folder = '../../translator3/dist/', static_url_path = '/web')
 
 
 def api(func):
@@ -48,12 +44,7 @@ def api(func):
             return make_response(json.dumps({ 'result' : 'error', 'message' : e.args[0] }), 500)
     return wrapper
 
-@translator_blueprint.route('/')
-@requires_golab_login
-def translator_index():
-    return redirect(url_for('.static', filename='index.html'))
-
-@translator_blueprint.route("/api/user/authenticate")
+@translator_api_blueprint.route("/user/authenticate")
 @public
 @cross_origin()
 @api
@@ -65,29 +56,14 @@ def check_authn():
     else:
         return jsonify(**{ "result" : "fail", "redirect" : url_for('graasp_oauth_login', next = cur_url, _external = True) })
 
-@translator_blueprint.route("/api/user/default_language")
+@translator_api_blueprint.route("/user/default_language")
 @public
 @cross_origin()
 @api
 def guess_default_language():
     return jsonify(language = _guess_default_language())
 
-@translator_blueprint.route('/select')
-@public
-def select_translations():
-    app_url = request.args.get('app_url')
-    language = request.args.get('lang')
-    target = request.args.get('target')
-
-    if app_url and language and target:
-        return redirect(url_for('.api_translate', app_url = app_url, lang = language, target = target))
-
-    targets = obtain_groups()
-    languages = list(obtain_languages().iteritems())
-    languages.sort(lambda x1, x2 : cmp(x1[1], x2[1]))
-    return render_template("translator/select_translations.html", targets = targets, languages = languages)
-
-@translator_blueprint.route('/api/apps/repository')
+@translator_api_blueprint.route('/apps/repository')
 @public
 @cross_origin()
 @api
@@ -176,7 +152,7 @@ def api_translations():
 
 
 
-@translator_blueprint.route('/api/info/languages')
+@translator_api_blueprint.route('/info/languages')
 @public
 @cross_origin()
 @api
@@ -190,7 +166,7 @@ def api_languages():
     resp.content_type = 'application/json'
     return resp
 
-@translator_blueprint.route('/api/info/languages_default')
+@translator_api_blueprint.route('/info/languages_default')
 @public
 @cross_origin()
 @api
@@ -214,14 +190,14 @@ def api_languages_default():
     return resp
 
 
-@translator_blueprint.route('/api/info/groups')
+@translator_api_blueprint.route('/info/groups')
 @public
 @cross_origin()
 @api
 def api_groups():
     return jsonify(**obtain_groups())
 
-@translator_blueprint.route("/api/apps/bundles/<language>/<target>/checkModifications", methods=["GET"])
+@translator_api_blueprint.route("/apps/bundles/<language>/<target>/checkModifications", methods=["GET"])
 @requires_golab_api_login
 @cross_origin()
 @api
@@ -249,7 +225,7 @@ def check_modifications(language, target):
     return jsonify(**data)
 
 
-@translator_blueprint.route("/api/apps/bundles/<language>/<target>/updateMessage", methods=["GET", "PUT", "POST"])
+@translator_api_blueprint.route("/apps/bundles/<language>/<target>/updateMessage", methods=["GET", "PUT", "POST"])
 @requires_golab_api_login
 @cross_origin()
 @api
@@ -276,7 +252,7 @@ def bundle_update(language, target):
 
     return jsonify(**{"result": "success"})
 
-@translator_blueprint.route('/api/apps')
+@translator_api_blueprint.route('/apps')
 @public
 @cross_origin()
 @api
@@ -312,7 +288,7 @@ def api_app():
     }
     return jsonify(**app_data)
 
-@translator_blueprint.route('/api/apps/bundles/<language>/<target>')
+@translator_api_blueprint.route('/apps/bundles/<language>/<target>')
 @requires_golab_api_login
 @cross_origin()
 @api
@@ -387,63 +363,5 @@ def api_translate(language, target):
         response = json.dumps(response, indent = 4)
         return "<html><body>%s</body></html>" % response
     return jsonify(**response)
-
-@translator_blueprint.route('/lib.js')
-@public
-@cross_origin()
-def widget_js():
-    # You can play with this app by running $("body").append("<script src='http://localhost:5000/translator/lib.js'></script>");
-    # In the console of the golabz app
-    try:
-        repo_app = db.session.query(RepositoryApp).filter_by(app_link = request.referrer).first()
-        if repo_app is None:
-            resp = make_response("// Repository application not found")
-            resp.content_type = 'application/javascript'
-            return resp
-        if not repo_app.translatable:
-            resp = make_response("// Repository application found; not translatable")
-            resp.content_type = 'application/javascript'
-            return resp
-
-        translations = (repo_app.original_translations or '').split(',')
-        translations = [ t.split('_')[0] for t in translations ]
-        # By default, translatable apps are in English
-        if 'en' not in translations:
-            translations.insert(0, 'en')
-        try:
-            translation_percent = json.loads(repo_app.translation_percent or '{}')
-        except ValueError:
-            translation_percent = {}
-        for language, percent in translation_percent.iteritems():
-            if percent >= LANGUAGE_THRESHOLD:
-                lang_code = language.split("_")[0]
-                if lang_code not in translations:
-                    translations.append(lang_code)
-        
-        human_translations = []
-        for lang_code in translations:
-            if lang_code in LANGUAGES:
-                human_translations.append(LANGUAGES[lang_code])
-            elif u'%s_ALL' % lang_code in LANGUAGES:
-                human_translations.append(LANGUAGES[u'%s_ALL' % lang_code])
-            else:
-                human_translations.append(lang_code)
-
-        html_url = url_for('.static', filename="index.html", _external = True)
-        link = '%s#/app/%s' % (html_url, repo_app.url)
-        str_translations = u', '.join(sort_languages(human_translations))
-
-        if str_translations and link:
-            resp = make_response(render_template("translator/lib.js", translations = str_translations, link = link))
-        else:
-            resp = make_response("// App found and transtable, but no translation found")
-        resp.content_type = 'application/javascript'
-        return resp
-    except Exception as e:
-        traceback.print_exc()
-        resp = make_response("""// Error: %s """ % repr(e))
-        resp.content_type = 'application/javascript'
-        return resp
-
 
 

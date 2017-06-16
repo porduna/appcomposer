@@ -123,8 +123,11 @@ app.logger.setLevel(logging_level)
 # Main components
 #####
 
-from .translator import translator_blueprint
+from .views.main import translator_blueprint
 app.register_blueprint(translator_blueprint, url_prefix='/translator')
+
+from .views.api import translator_api_blueprint
+app.register_blueprint(translator_api_blueprint, url_prefix='/translator/api')
 
 from .views.stats import translator_stats_blueprint
 app.register_blueprint(translator_stats_blueprint, url_prefix='/translator/stats')
