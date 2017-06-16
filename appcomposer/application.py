@@ -126,6 +126,9 @@ app.logger.setLevel(logging_level)
 from .translator import translator_blueprint
 app.register_blueprint(translator_blueprint, url_prefix='/translator')
 
+from .views.stats import translator_stats_blueprint
+app.register_blueprint(translator_stats_blueprint, url_prefix='/translator/stats')
+
 from .graasp_i18n import graasp_i18n_blueprint
 app.register_blueprint(graasp_i18n_blueprint, url_prefix='/graasp_i18n')
 
