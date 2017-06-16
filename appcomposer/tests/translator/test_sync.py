@@ -6,7 +6,7 @@ from appcomposer.login import graasp_oauth_login_redirect
 from appcomposer.tests.translator.fake_requests import create_requests_mock
 from appcomposer.tests.utils import ComposerTest
 from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper
-from appcomposer.translator.views import api_translate, bundle_update
+from appcomposer.views.api import api_translate, bundle_update
 from appcomposer.translator.mongodb_pusher import mongo_translation_urls, mongo_bundles, sync
 
 class TranslatorTest(ComposerTest):
