@@ -3,7 +3,7 @@ import hashlib
 import datetime
 from collections import defaultdict
 
-from sqlalchemy import func, or_
+from sqlalchemy import func, or_, and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload_all
 
@@ -154,25 +154,43 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
             for active_msg in active_msgs:
                 active_msgs_by_key[active_msg.key] = active_msg.value
 
-            historic_msgs_from_developer = db.session.query(TranslationMessageHistory).filter_by(from_developer = True, bundle = db_translation_bundle).all()
-            historic_msgs_by_key = {
-                # key: latest message from developer
-            }
+            # select atm.`key`, atm.value from TranslationMessageHistory atm 
+            #         inner join (select max(datetime) as max_date, `key` from TranslationMessageHistory where from_developer = true and bundle_id = 953 group by bundle_id, `key`) atm2 
+            #         on atm.datetime = atm2.max_date and atm.`key` = atm2.`key` where from_developer = true and bundle_id = 953;
+            # 
+            tmh_subquery = db.session.query(
+                                    func.max(TranslationMessageHistory.datetime).label('tmh_date'), 
+                                    TranslationMessageHistory.key.label('tmh_key')
+                                ).filter_by(
+                                    from_developer=True, 
+                                    bundle=db_translation_bundle
+                                ).group_by(
+                                    TranslationMessageHistory.bundle_id, TranslationMessageHistory.key
+                                ).subquery()
 
-            for historic_msg in historic_msgs_from_developer:
-                key = historic_msg.key
-                if key not in historic_msgs_by_key:
-                    historic_msgs_by_key[key] = historic_msg
-                else:
-                    if historic_msg.datetime > historic_msgs_by_key[key].datetime:
-                        historic_msgs_by_key[key] = historic_msg
+            latest_message_history = db.session.query(
+                                TranslationMessageHistory.key, 
+                                TranslationMessageHistory.value
+                            ).join(
+                                tmh_subquery, 
+                                and_(
+                                    tmh_subquery.c.tmh_date == TranslationMessageHistory.datetime, 
+                                    tmh_subquery.c.tmh_key == TranslationMessageHistory.key
+                                )
+                            ).filter(
+                                TranslationMessageHistory.from_developer == True, 
+                                TranslationMessageHistory.bundle == db_translation_bundle
+                            )
 
-            for historic_msg in historic_msgs_by_key.itervalues():
+            historic_msgs_by_key = dict(latest_message_history.all())
+                 # key: latest value from developer
+            # }
+
+            for key, value in historic_msgs_by_key.iteritems():
                 # If the message is the same as it was in the latest message stored from developer,
                 # and it comes from developer, do not take it into account (since it could be overriding
                 # the user's message)
-                key = historic_msg.key
-                if key in translated_messages and historic_msg.value == translated_messages[key] and translated_messages[key] != active_msgs_by_key.get(key):
+                if key in translated_messages and value == translated_messages[key] and translated_messages[key] != active_msgs_by_key.get(key):
                     translated_messages.pop(key, None)
 
     # 
