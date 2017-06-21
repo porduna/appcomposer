@@ -87,7 +87,8 @@ def synchronize_apps_cache(source, single_app_url = None):
         print("Before Go-Lab apps: ", number) 
         number += _sync_translations(cached_requests, "Go-Lab apps", synced_apps, all_golab_apps, force_reload = False, single_app_url = single_app_url)
         print("After Go-Lab apps: ", number) 
-        number += _sync_regular_apps(cached_requests, synced_apps, force_reload = False, single_app_url = single_app_url)
+        # When on cache (typical): no regular apps
+        # number += _sync_regular_apps(cached_requests, synced_apps, force_reload = False, single_app_url = single_app_url)
         print("After other apps: ", number) 
     finally:
         end_synchronization(sync_id, number)
@@ -102,8 +103,8 @@ def synchronize_apps_no_cache(source, single_app_url = None):
         all_golab_apps = _get_golab_translations(cached_requests)
         all_golab_apps.extend(get_other_apps())
         number += _sync_translations(cached_requests, "Go-Lab apps", synced_apps, all_golab_apps, force_reload = True, single_app_url = single_app_url)
-        # No cache: no regular apps
-        # number += _sync_regular_apps(cached_requests, synced_apps, force_reload = True, single_app_url = single_app_url)
+        No cache: no regular apps
+        number += _sync_regular_apps(cached_requests, synced_apps, force_reload = True, single_app_url = single_app_url)
     finally:
         end_synchronization(sync_id, number)
 
