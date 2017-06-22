@@ -265,6 +265,117 @@ class TranslationBundle(db.Model):
         self.translation_url = translation_url
         self.from_developer = from_developer
 
+class Format(db.Model):
+    __tablename__ = 'Formats'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Unicode(255), index=True, unique=True)
+
+    def __init__(self, name):
+        self.name = name
+
+    @staticmethod
+    def find_or_create(name, add=True):
+        fmt_db = db.session.query(Format).filter_by(name=name).first()
+        if fmt_db:
+            return fmt_db
+            
+        fmt_db = Format(name)
+        if add:
+            db.session.add(fmt_db)
+        return fmt_db
+
+class TranslationKey(db.Model):
+    __tablename__ = 'TranslationKeys'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Unicode(255), index=True, unique=True)
+
+    def __init__(self, name):
+        self.name = name
+
+    @staticmethod
+    def find_or_create(name, add=True):
+        key_db = db.session.query(TranslationKey).filter_by(name=name).first()
+        if key_db:
+            return key_db
+            
+        key_db = TranslationKey(name)
+        if add:
+            db.session.add(key_db)
+        return key_db
+
+class TranslationValue(db.Model):
+    __tablename__ = 'TranslationValues'
+    __table_args__ = (UniqueConstraint('hash_value', 'short_value'), )
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    short_value = db.Column(db.Unicode(255), index=True)
+    hash_value = db.Column(db.Unicode(255), index=True)
+    value = db.Column(db.UnicodeText())
+
+    def __init__(self, value):
+        self.hash_value = hashlib.sha512(value.encode('utf8')).hexdigest()
+        self.short_value = value[:255]
+        self.value = value
+
+    @staticmethod
+    def find_or_create(value, add=True):
+        hash_value = hashlib.sha512(value.encode('utf8')).hexdigest()
+        short_value = value[:255]
+
+        value_db = db.session.query(TranslationValue).filter_by(short_value=short_value, hash=hash_value).first()
+        if value_db:
+            return value_db
+            
+        value_db = TranslationValue(value)
+        if add:
+            db.session.add(value_db)
+        return value_db
+
+
+class ToolId(db.Model):
+    __tablename__ = 'ToolIds'
+
+    id = db.Column(db.Integer, primary_key=True)
+    tool_id = db.Column(db.Unicode(255), index=True, unique=True)
+
+    def __init__(self, tool_id):
+        self.tool_id = tool_id
+
+    @staticmethod
+    def find_or_create(tool_id, add=True):
+        tool_id_db = db.session.query(ToolId).filter_by(tool_id=tool_id).first()
+        if tool_id_db:
+            return tool_id_db
+            
+        tool_id_db = ToolId(tool_id)
+        if add:
+            db.session.add(tool_id_db)
+        return tool_id_db
+
+class Namespace(db.Model):
+    __tablename__ = 'Namespaces'
+
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.Unicode(255), index=True, unique=True)
+
+    def __init__(self, name):
+        self.name = name
+
+    @staticmethod
+    def find_or_create(name, add=True):
+        name_db = db.session.query(Namespace).filter_by(name=name).first()
+        if name_db:
+            return name_db
+            
+        name_db = Namespace(name)
+        if add:
+            db.session.add(name_db)
+        return name_db
+
+
 class TranslationMessageHistory(db.Model):
     __tablename__ = 'TranslationMessageHistory'
 
@@ -272,20 +383,30 @@ class TranslationMessageHistory(db.Model):
     bundle_id = db.Column(db.Integer, ForeignKey('TranslationBundles.id'))
     user_id = db.Column(db.Integer, ForeignKey('GoLabOAuthUsers.id'))
     key = db.Column(db.Unicode(255), index = True)
+    key_id = db.Column(db.Integer, ForeignKey('TranslationKeys.id'), index=True)
     value = db.Column(db.UnicodeText)
+    value_id = db.Column(db.Integer, ForeignKey('TranslationValues.id'), index=True)
     datetime = db.Column(db.DateTime, index = True)
     parent_translation_id = db.Column(db.Integer, index = True)
     taken_from_default = db.Column(db.Boolean, index = True)
     same_tool = db.Column(db.Boolean, index = True)
     tool_id = db.Column(db.Unicode(255), index = True)
+    tool_id_id = db.Column(db.Integer, ForeignKey('ToolIds.id'), index = True)
     fmt = db.Column(db.Unicode(255), index = True)
+    fmt_id = db.Column(db.Integer, ForeignKey('Formats.id'), index = True)
     position = db.Column(db.Integer, index = True) # position in the XML file, starting by 0
     category = db.Column(db.Unicode(255), index = True) # optional category for each translation
     from_developer = db.Column(db.Boolean, index = True) # a from_developer bundle can contain some messages which are not from the developer
     namespace = db.Column(db.Unicode(255), index = True) # optional namespace for each translation
+    namespace_id = db.Column(db.Integer, ForeignKey('Namespaces.id'), index=True)
 
     bundle = relation("TranslationBundle", backref="all_messages")
     user = relation("GoLabOAuthUser", backref = "translation_history")
+    new_fmt = relation("Format", backref="all_messages")
+    new_key = relation("TranslationKey", backref="all_messages")
+    new_tool_id = relation("ToolIds", backref="all_messages")
+    new_value = relation("TranslationValue", backref="all_messages")
+    new_namespace = relation("Namespace", backref="all_messages")
 
     def __init__(self, bundle, key, value, user, datetime, parent_translation_id, taken_from_default, same_tool, tool_id, fmt, position, category, from_developer, namespace):
         self.bundle = bundle
