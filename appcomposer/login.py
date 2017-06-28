@@ -1,3 +1,5 @@
+import os
+import base64
 import requests
 import logging
 
@@ -48,14 +50,14 @@ def graasp_oauth_login():
 
 @app.route('/graasp/oauth/redirect/')
 def graasp_oauth_login_redirect():
-    authorization_code = request.args.get('code', '')
+    code = request.args.get('code', '')
     state = request.args.get('state', '')
     if state != session.get('state'):
         return "Invalid ?state= value"
 
     rsession = requests.Session()
 
-    request_data = dict(code=code, grant_type=authorization_code, client_id=PUBLIC_APPCOMPOSER_ID, client_secret=current_app.config.get('APPCOMPOSER_SECRET'))
+    request_data = dict(code=code, grant_type='authorization_code', client_id=PUBLIC_APPCOMPOSER_ID, client_secret=current_app.config.get('APPCOMPOSER_SECRET'))
     r = rsession.post('http://graasp.eu/token', json=request_data)
     result = r.json()
 
