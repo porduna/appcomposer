@@ -46,7 +46,7 @@ def graasp_oauth_login():
     redirect_back_url = url_for('graasp_oauth_login_redirect', _external = True)
     state = token_urlsafe()
     session['state'] = state
-    return redirect('http://graasp.eu/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&state={state}'.format(client_id=PUBLIC_APPCOMPOSER_ID, redirect_uri=requests.utils.quote(redirect_back_url, ''), state=state))
+    return redirect('https://graasp.eu/authorize?client_id={client_id}&redirect_uri={redirect_uri}&response_type=code&state={state}'.format(client_id=PUBLIC_APPCOMPOSER_ID, redirect_uri=requests.utils.quote(redirect_back_url, ''), state=state))
 
 @app.route('/graasp/oauth/redirect/')
 def graasp_oauth_login_redirect():
@@ -61,7 +61,7 @@ def graasp_oauth_login_redirect():
     rsession = requests.Session()
 
     request_data = dict(code=code, grant_type='authorization_code', client_id=PUBLIC_APPCOMPOSER_ID, client_secret=current_app.config.get('APPCOMPOSER_SECRET'))
-    r = rsession.post('http://graasp.eu/token', json=request_data)
+    r = rsession.post('https://graasp.eu/token', json=request_data)
     result = r.json()
 
     access_token = result.get('access_token')
