@@ -3,7 +3,7 @@ import logging
 
 from functools import wraps
 
-from flask import session, render_template, request, redirect, url_for, jsonify
+from flask import session, render_template, request, redirect, url_for, jsonify, current_app
 
 from appcomposer import db
 from .models import GoLabOAuthUser
