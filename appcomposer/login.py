@@ -53,7 +53,10 @@ def graasp_oauth_login_redirect():
     code = request.args.get('code', '')
     state = request.args.get('state', '')
     if state != session.get('state'):
-        return "Invalid ?state= value"
+        if not current_app.debug:
+            # TODO should be testing...
+            return "Invalid ?state= value"
+
 
     rsession = requests.Session()
 

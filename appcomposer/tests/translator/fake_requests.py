@@ -192,6 +192,7 @@ def generate_side_effects():
     })
 
     SIDE_EFFECT_STRINGS = {
+        "http://graasp.eu/token": json.dumps({'access_token': 'foo', 'refresh_token': 'bar'}),
         "http://graasp.eu/users/me": json.dumps(dict(username="Test User", email="appcomposer@go-lab-project.eu")),
         "http://www.golabz.eu/rest/apps/retrieve.json": json.dumps(APPS),
         "http://www.golabz.eu/rest/labs/retrieve.json": json.dumps(LABS),
