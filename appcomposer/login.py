@@ -65,7 +65,7 @@ def graasp_oauth_login_redirect():
         r = rsession.post('https://graasp.eu/token', json=request_data)
         result = r.json()
     except:
-        raise Exception("Invalid json: {}".format(r.text)
+        raise Exception("Invalid json: {}".format(r.text))
 
     access_token = result.get('access_token')
     refresh_token = result.get('refresh_token')
