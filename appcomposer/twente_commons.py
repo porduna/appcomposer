@@ -7,6 +7,7 @@ from appcomposer.utils import report_error
 twente_commons_blueprint = Blueprint('twente_commons', __name__)
 
 def get_languages():
+    return ['en']
     requests = get_cached_session()
     languages = []
     for line in requests.get("http://go-lab.gw.utwente.nl/production/commons/languages/list.txt").text.splitlines():
