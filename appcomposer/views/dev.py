@@ -12,7 +12,7 @@ from collections import OrderedDict, defaultdict
 from sqlalchemy import distinct, func, or_
 from sqlalchemy.orm import joinedload_all
 
-from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify, Response
+from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify, Response, current_app
 from flask.ext.wtf import Form
 from flask.ext.wtf.file import FileField
 from flask.ext.admin.form import Select2Field
@@ -21,7 +21,6 @@ from wtforms.fields.html5 import URLField
 from wtforms.validators import url, required
 
 from appcomposer.db import db
-from appcomposer.application import app
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp, ActiveTranslationMessage, TranslationMessageHistory
 from appcomposer.login import requires_golab_login, current_golab_user
 from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents, retrieve_mongodb_apps, retrieve_mongodb_urls, retrieve_mongodb_app, retrieve_mongodb_translation_url
@@ -263,7 +262,7 @@ def sync_translations():
 @translator_dev_blueprint.route('/sync/debug/')
 def sync_debug():
     # Just in case the debug value changes during the load of modules
-    if not app.config['DEBUG']:
+    if not current_app.debug:
         return "Not in debug mode!"
 
     now = datetime.datetime.utcnow()

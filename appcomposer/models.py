@@ -72,12 +72,6 @@ class App(db.Model):
     owner_id = db.Column(db.Integer, ForeignKey("Users.id"), nullable=False, index=True)
     owner = relation("User", backref=backref("own_apps", order_by=id, cascade='all,delete'))
 
-repo_app2languages = db.Table('RepositoryApp2languages',
-    db.Column('repository_app_id',  db.Integer, db.ForeignKey('RepositoryApps.id')),
-    db.Column('language_id', db.Integer, db.ForeignKey('Languages.id'))
-)
-
-
 class Language(db.Model):
     __tablename__ = 'Languages'
 
@@ -105,16 +99,16 @@ class RepositoryApp(db.Model):
     adaptable = db.Column(db.Boolean, index = True)
     translatable = db.Column(db.Boolean, index = True)
 
-    original_translation_entities = db.relationship("Language",
-                        secondary=repo_app2languages,
-                        backref="repository_apps")
-
     translation_percent = db.Column(db.UnicodeText) # JSON document containing which bundles have been translated how much
 
     last_check = db.Column(db.DateTime, index = True)
     last_change = db.Column(db.DateTime, index = True)
     failing = db.Column(db.Boolean, index = True)
     failing_since = db.Column(db.DateTime, index = True)
+
+    downloaded_hash = db.Column(db.Unicode(255), index=True)
+    last_processed_hash = db.Column(db.Unicode(255), index=True)
+    last_processed_time = db.Column(db.DateTime, index=True)
 
     def __init__(self, name, url, repository, external_id = None):
         self.name = name
@@ -136,29 +130,26 @@ class RepositoryApp(db.Model):
 
     @property
     def original_translations(self):
-        return ','.join([ ote.language for ote in self.original_translation_entities ])
+        return ','.join([ ote.language for ote in self.languages ])
 
-    @original_translations.setter
-    def original_translations(self, attr):
-        if not attr:
-            return
 
-        languages = list(attr.split(','))
-        if not languages:
-            return
+class RepositoryAppLanguage(db.Model):
 
-        for orig_lang in self.original_translations:
-            if orig_lang in languages:
-                languages.remove(orig_lang)
+    __tablename__ = 'RepositoryApp2languages'
+    __table_args__ = (UniqueConstraint('repository_app_id', 'language_id'), )
+    
+    id = db.Column(db.Integer, primary_key=True)
+    repository_app_id = db.Column(db.Integer, db.ForeignKey('RepositoryApps.id'))
+    language_id = db.Column(db.Integer, db.ForeignKey('Languages.id'))
 
-        for lang_db in db.session.query(Language).filter(Language.language.in_(languages)).all():
-            self.original_translation_entities.append(lang_db)
-            languages.remove(lang_db.language)
+    downloaded_hash = db.Column(db.Unicode(255), index=True)
+    error = db.Column(db.Boolean, index=True)
+    last_processed_hash = db.Column(db.Unicode(255), index=True)
+    last_processed_time = db.Column(db.DateTime, index=True)
 
-        for language in languages:
-            lang_db = Language(language)
-            self.original_translation_entities.append(lang_db)
-            
+    language = db.relation("Language", backref="repository_apps")
+    repository_app = db.relation("RepositoryApp", backref="languages")
+
 
 class GoLabOAuthUser(db.Model):
     __tablename__ = 'GoLabOAuthUsers'
@@ -399,24 +390,6 @@ class TranslationExternalSuggestion(db.Model):
         self.origin_language = origin_language
         self.value = value
 
-
-class TranslationFastCache(db.Model):
-    """ This cache is used in methods where a quick update is desired (such as each time a user translates a word) """
-    __tablename__ = 'TranslationFastCaches'
-
-    id = db.Column(db.Integer, primary_key = True)
-    app_url = db.Column(db.Unicode(255), unique = True, index = True)
-    translation_url = db.Column(db.Unicode(255))
-    original_messages = db.Column(db.UnicodeText)
-    app_metadata = db.Column(db.UnicodeText)
-    datetime = db.Column(db.DateTime, index = True)
-    
-    def __init__(self, app_url, translation_url, original_messages, datetime, app_metadata):
-        self.app_url = app_url
-        self.translation_url = translation_url
-        self.original_messages = original_messages
-        self.datetime = datetime
-        self.app_metadata = app_metadata
 
 class TranslationSyncLog(db.Model):
     __tablename__ = 'TranslationSyncLogs'

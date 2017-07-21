@@ -4,8 +4,14 @@ import optparse
 
 registry = []
 
+from flask_redis import FlaskRedis
+
+redis_store = FlaskRedis()
+
 from .application import app
 from .db import db, upgrader
+
+redis_store.init_app(app)
 
 assert db is not None  # ignore pyflakes
 

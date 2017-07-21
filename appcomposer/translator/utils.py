@@ -2,7 +2,6 @@ import time
 import json
 import logging
 import calendar
-import datetime
 import StringIO
 import urlparse
 import traceback
@@ -10,7 +9,6 @@ from collections import OrderedDict
 import xml.etree.ElementTree as ET
 from email.utils import parsedate, parsedate_tz
 
-from sqlalchemy.exc import SQLAlchemyError
 import requests
 import requests.packages.urllib3 as urllib3
 urllib3.disable_warnings()
@@ -18,8 +16,7 @@ from cachecontrol import CacheControl
 from cachecontrol.caches import FileCache
 from cachecontrol.heuristics import LastModified, TIME_FMT
 
-from appcomposer import db
-from appcomposer.models import TranslationFastCache
+from appcomposer import redis_store
 from appcomposer.exceptions import TranslatorError
 from appcomposer.cdata import CDATA
 
@@ -160,7 +157,7 @@ def _extract_locales(app_url, cached_requests):
     locales = module_prefs[0].findall('Locale')
     return locales, xml_contents
 
-def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = False):
+def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests):
     if messages_url.startswith(('http://', 'https://', '//')):
         absolute_translation_url = messages_url
     else:
@@ -170,8 +167,6 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
     try:
         translation_messages_response = cached_requests.get(absolute_translation_url, timeout = 30)
         raise_for_status(absolute_translation_url, translation_messages_response)
-        if only_if_new and hasattr(translation_messages_response, 'from_cache') and translation_messages_response.from_cache:
-            return absolute_translation_url, None, {}
         translation_messages_xml = get_text_from_response(translation_messages_response)
     except Exception as e:
         logging.warning("Could not reach locale URL: %s  Reason: %s" % (absolute_translation_url, e), exc_info = True)
@@ -190,14 +185,15 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests,
     return absolute_translation_url, messages, metadata
 
 def extract_local_translations_url(app_url, force_local_cache = False):
+    redis_key = 'appcomposer:fast-cache:{}'.format(app_url)
+
     if force_local_cache:
         # Under some situations (e.g., updating a single message), it is better to have a cache
         # than contacting the foreign server. Only if requested, this method will try to check
-        # in a local cache in the database.
-        last_hour = datetime.datetime.utcnow() - datetime.timedelta(hours = 1)
-        cached = db.session.query(TranslationFastCache.translation_url, TranslationFastCache.original_messages, TranslationFastCache.app_metadata).filter(TranslationFastCache.app_url == app_url, TranslationFastCache.datetime > last_hour).first()
-        if cached is not None:
-            translation_url, original_messages, metadata = cached
+        # in a local cache in Redis.
+        cached = redis_store.get(redis_key)
+        if cached:
+            translation_url, original_messages, metadata = json.loads(cached)
             if metadata is not None:
                 original_messages_loaded = json.loads(original_messages)
                 metadata_loaded = json.loads(metadata)
@@ -217,19 +213,12 @@ def extract_local_translations_url(app_url, force_local_cache = False):
 
     absolute_translation_url, messages, metadata = _retrieve_messages_from_relative_url(app_url, relative_translation_url, cached_requests)
 
-    try:
-        db.session.query(TranslationFastCache).filter_by(app_url = app_url).delete()
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        logging.warning("Error deleting existing caches: %s" % e, exc_info = True)
-
-    cache = TranslationFastCache(app_url = app_url, translation_url =  absolute_translation_url, original_messages = json.dumps(messages), datetime = datetime.datetime.utcnow(), app_metadata = json.dumps(metadata))
-    db.session.add(cache)
-    try:
-        db.session.commit()
-    except SQLAlchemyError as e:
-        db.session.rollback()
-        logging.warning("Could not add element to cache: %s" % e, exc_info = True)
+    redis_value = json.dumps([
+        absolute_translation_url,
+        json.dumps(messages),
+        json.dumps(metadata)
+    ])
+    redis_store.setex(redis_key, redis_value, time=3600)
     return absolute_translation_url, messages, metadata
 
 def extract_metadata_information(app_url, cached_requests = None, force_reload = False):

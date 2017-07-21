@@ -4,11 +4,10 @@ from functools import wraps
 
 from collections import OrderedDict
 
-from flask import Blueprint, make_response, request, url_for, jsonify
+from flask import Blueprint, make_response, request, url_for, jsonify, current_app
 from flask.ext.cors import cross_origin
 
 from appcomposer.db import db
-from appcomposer.application import app
 from appcomposer.models import RepositoryApp
 from appcomposer.login import requires_golab_api_login, current_golab_user
 from appcomposer.exceptions import TranslatorError
@@ -34,12 +33,12 @@ def api(func):
             return func(*args, **kwargs)
         except TranslatorError as e:
             if e.code == 500:
-                app.logger.error("Error processing request: %s" % e, exc_info = True)
+                current_app.logger.error("Error processing request: %s" % e, exc_info = True)
                 print("Error processing request: %s" % e)
             traceback.print_exc()
             return make_response(json.dumps({ 'result' : 'error', 'message' : e.args[0] }), e.code)
         except Exception as e:
-            app.logger.error("Unknown error processing request: %s" % e, exc_info = True)
+            current_app.logger.error("Unknown error processing request: %s" % e, exc_info = True)
             print("Unknown error processing request: %s" % e)
             traceback.print_exc()
             return make_response(json.dumps({ 'result' : 'error', 'message' : e.args[0] }), 500)
