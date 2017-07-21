@@ -1,5 +1,6 @@
 import time
 import json
+import zlib
 import logging
 import calendar
 import StringIO
@@ -22,7 +23,7 @@ from appcomposer.cdata import CDATA
 
 DEBUG = True
 
-class LastModifiedNoDate(LastModified):
+class _LastModifiedNoDate(LastModified):
     """ This takes the original LastModified implementation of 
     cachecontrol, but defaults the date in case it is not provided.
     """
@@ -68,7 +69,9 @@ class LastModifiedNoDate(LastModified):
         now = time.time()
         current_age = max(0, now - date)
         delta = date - calendar.timegm(last_modified)
-        freshness_lifetime = max(0, min(delta * self.error_margin, 24 * 3600))
+        # So, by default, if it has a last-modified, don't check in the next 5 minutes. (not 1 day as it was previously defined)
+        MAX_TIME = 300 # seconds
+        freshness_lifetime = max(0, min(delta * self.error_margin, MAX_TIME)) # max so as to avoid negative numbers
         if freshness_lifetime <= current_age:
             return {}
 
@@ -87,7 +90,7 @@ def get_cached_session(caching = True):
 
     CACHE_DIR = 'web_cache'
     return CacheControl(requests.Session(),
-                    cache=FileCache(CACHE_DIR), heuristic=LastModifiedNoDate(require_date=False))
+                    cache=FileCache(CACHE_DIR), heuristic=_LastModifiedNoDate(require_date=False))
 
 def fromstring(xml_contents):
     try:
@@ -112,15 +115,16 @@ def get_text_from_response(response):
             response.encoding = 'utf8'
     return response.text
 
-def raise_for_status(url, response):
+def _raise_for_status(url, response):
     if response is None:
         raise requests.RequestException("URL: {0}: Expected response, returned None (probably in tests)".format(url))
     response.raise_for_status()
 
 def _extract_locales(app_url, cached_requests):
+    
     try:
         response = cached_requests.get(app_url, timeout = 30)
-        raise_for_status(app_url, response)
+        _raise_for_status(app_url, response)
         xml_contents = get_text_from_response(response)
     except requests.RequestException as e:
         logging.warning(u"Could not load this app URL (%s): %s" % (app_url, e), exc_info = True)
@@ -137,22 +141,10 @@ def _extract_locales(app_url, cached_requests):
     if not module_prefs:
         raise TranslatorError("ModulePrefs not found in App URL")
 
-    if app_url.startswith('http://composer.golabz.eu/embed/apps/') and app_url.endswith('app.xml'):
-        new_url = app_url.replace('app.xml', 'app.json')
-        response = cached_requests.get(new_url)
-        raise_for_status(app_url, response)
-        try:
-            response_json = response.json()
-        except:
-            raise TranslatorError("Invalid JSON document: %s" % new_url)
-
-        results = response_json.get('results')
-        if results is None:
-            raise TranslatorError("JSON results is None: %s" % new_url)
-
-        for final_url in results.values():
-            response = cached_requests.get(final_url, timeout=30)
-            raise_for_status(final_url, response)
+    # TODO: here we should do more things:
+    # - check if it's Smart Gateway or Embedder, if it mentions other URLs, check them
+    # - check SSL
+    # etc.
 
     locales = module_prefs[0].findall('Locale')
     return locales, xml_contents
@@ -166,7 +158,7 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests)
 
     try:
         translation_messages_response = cached_requests.get(absolute_translation_url, timeout = 30)
-        raise_for_status(absolute_translation_url, translation_messages_response)
+        _raise_for_status(absolute_translation_url, translation_messages_response)
         translation_messages_xml = get_text_from_response(translation_messages_response)
     except Exception as e:
         logging.warning("Could not reach locale URL: %s  Reason: %s" % (absolute_translation_url, e), exc_info = True)
@@ -182,7 +174,7 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests)
         logging.warning("Could not load XML contents from %s Reason: %s" % (absolute_translation_url, e), exc_info = True)
         raise TranslatorError("Could not load XML in %s" % absolute_translation_url)
 
-    return absolute_translation_url, messages, metadata
+    return absolute_translation_url, messages, metadata, translation_messages_xml
 
 def extract_local_translations_url(app_url, force_local_cache = False):
     redis_key = 'appcomposer:fast-cache:{}'.format(app_url)
@@ -211,14 +203,14 @@ def extract_local_translations_url(app_url, force_local_cache = False):
     if not relative_translation_url:
         raise TranslatorError("Default Locale not provided message attribute")
 
-    absolute_translation_url, messages, metadata = _retrieve_messages_from_relative_url(app_url, relative_translation_url, cached_requests)
+    absolute_translation_url, messages, metadata, contents = _retrieve_messages_from_relative_url(app_url, relative_translation_url, cached_requests)
 
     redis_value = json.dumps([
         absolute_translation_url,
         json.dumps(messages),
         json.dumps(metadata)
     ])
-    redis_store.setex(redis_key, redis_value, time=3600)
+    redis_store.setex(redis_key, redis_value, time=600) # For 10 minutes
     return absolute_translation_url, messages, metadata
 
 def extract_metadata_information(app_url, cached_requests = None, force_reload = False):
@@ -231,6 +223,9 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
     default_translations = {}
     default_translation_url = None
     default_metadata = {}
+
+    total_hash = zlib.crc32(body.encode('utf8'))
+
     if len(locales) == 0:
         translatable = False
     else:
@@ -244,11 +239,12 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
                     lang = u'%s_ALL' % lang
                 only_if_new = not force_reload
                 try:
-                    absolute_url, messages, metadata = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = only_if_new)
+                    absolute_url, messages, metadata, locale_contents = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests)
                 except TranslatorError as e:
                     logging.warning(u"Could not load %s translation for app URL: %s Reason: %s" % (lang, app_url, e), exc_info = True)
                     continue
                 else:
+                    total_hash += zlib.crc32(locale_contents.encode('utf8'))
                     new_messages = {}
                     if messages:
                         for key, value in messages.iteritems():
@@ -262,7 +258,8 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
 
         if default_locale is not None:
             messages_url = default_locale.attrib.get('messages')
-            absolute_url, messages, metadata = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests, only_if_new = False)
+            absolute_url, messages, metadata, locale_contents = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests)
+            total_hash += zlib.crc32(locale_contents.encode('utf8'))
             default_translations = messages
             default_translation_url = absolute_url
             default_metadata = metadata
@@ -281,6 +278,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
     adaptable = ' data-configuration ' in body and ' data-configuration-definition ' in body
 
     return {
+        'hash': unicode(total_hash),
         'translatable' : translatable,
         'adaptable' : adaptable,
         'original_translations' : original_translations,

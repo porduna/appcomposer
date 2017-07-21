@@ -6,20 +6,12 @@ There are two different processes related to the apps:
 
 The files to be downloaded might be big, so might not be very good for storing in the database.
 
-For this reason, we need a file-system mechanism to download (and store) the contents. The format is the following:
-
-    folder/<repository_app_id>/content.xml (empty if 404)
-
-And optionally, if they exist:
-
-    folder/<repository_app_id>/en.xml
-    folder/<repository_app_id>/es.xml
-    folder/<repository_app_id>/fr.xml
-
-To keep proper track of the contents, we use the database.
+For this reason, we need a storage mechanism and we use redis for that.
 """
 import zlib
 import time
+import json
+import datetime
 import threading
 import traceback
 
@@ -30,6 +22,7 @@ from flask import current_app
 
 from appcomposer import db, redis_store
 from appcomposer.models import RepositoryApp
+import appcomposer.translator.utils as trutils
 
 from celery.utils.log import get_task_logger
 
@@ -112,7 +105,60 @@ def download_repository_apps():
     Then, other methods can check on the RepositoryApp table to see if anything has changed since the last time it was checked. 
     Often, this will be "no", so no further database request will be needed.
     """
-    pass
+    
+    repo_apps_by_id = {}
+    tasks = []
+    
+    redis_key = 'appcomposer:repository:cache'
+
+    stored_ids_in_redis = list(redis_store.hkeys(redis_key))
+
+    for repo_app in db.session.query(RepositoryApp).all():
+        task = MetadataTask(repo_app.id, repo_app.url, force_reload=False)
+        repo_apps_by_id[repo_app.id] = repo_app
+        tasks.append(task)
+        if str(repo_app.id) in stored_ids_in_redis:
+            stored_ids_in_redis.remove(str(repo_app.id))
+
+    RunInParallel('Go-Lab repo', tasks).run()
+
+    for key in stored_ids_in_redis:
+        print("Deleting old {}".format(key))
+        redis_store.hdel(redis_key, key)
+
+    for task in tasks:
+        repo_app = repo_apps_by_id[task.repo_id]
+        repo_changes = False
+
+        if task.failing:
+            if not repo_app.failing:
+                repo_app.failing = True
+                repo_app.failing_since = datetime.datetime.utcnow()
+                repo_changes = True
+
+        else:
+            if repo_app.failing:
+                repo_app.failing = False
+                repo_app.failing_since = None
+                repo_changes = True
+
+            current_hash = task.metadata_information['hash']
+            if repo_app.downloaded_hash != current_hash:
+                redis_store.hset(redis_key, repo_app.id, json.dumps(task.metadata_information))
+                repo_app.downloaded_hash = current_hash
+                repo_changes = True
+
+        if repo_changes:
+            repo_app.last_change = datetime.datetime.utcnow()
+
+        repo_app.last_check = datetime.datetime.utcnow()
+
+    try:
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+    else:
+        db.session.remove()
 
 
 #######################################################################################
@@ -122,8 +168,9 @@ def download_repository_apps():
 # 
 
 class MetadataTask(threading.Thread):
-    def __init__(self, app_url, force_reload):
+    def __init__(self, repo_id, app_url, force_reload):
         threading.Thread.__init__(self)
+        self.repo_id = repo_id
         self.cached_requests = trutils.get_cached_session(caching = not force_reload)
         self.app_url = app_url
         self.force_reload = force_reload
@@ -134,7 +181,7 @@ class MetadataTask(threading.Thread):
     def run(self):
         self.failing = False
         try:
-            self.metadata_information = extract_metadata_information(self.app_url, self.cached_requests, self.force_reload)
+            self.metadata_information = trutils.extract_metadata_information(self.app_url, self.cached_requests, self.force_reload)
         except Exception:
             logger.warning("Error extracting information from %s" % self.app_url, exc_info = True)
             if DEBUG_VERBOSE:
