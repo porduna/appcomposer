@@ -23,7 +23,8 @@ from flask import current_app
 from appcomposer import db, redis_store
 from appcomposer.models import RepositoryApp
 import appcomposer.translator.utils as trutils
-from appcomposer.translator.metadata import extract_metadata_information
+from appcomposer.translator.ops import calculate_content_hash
+from appcomposer.translator.extractors import extract_metadata_information
 
 from celery.utils.log import get_task_logger
 
@@ -113,7 +114,7 @@ def download_repository_apps():
     
     Therefore, it does not check in golabz, but just the database. The method itself is expensive, but can work in multiple threads processing all the requests.
 
-    This method does not do anything with the translations in the database. It only updates the RepositoryApp table, storing it in the hard disk drive.
+    This method does not do anything with the translations in the database. It only updates the RepositoryApp table, storing it in redis.
 
     Then, other methods can check on the RepositoryApp table to see if anything has changed since the last time it was checked. 
     Often, this will be "no", so no further database request will be needed.
@@ -145,6 +146,7 @@ def download_repository_apps():
     try:
         db.session.commit()
     except SQLAlchemyError:
+        logger.warning("Error downloading repo", exc_info = True)
         db.session.rollback()
         return False
     else:
@@ -172,6 +174,7 @@ def download_repository_single_app(app_url):
     try:
         db.session.commit()
     except SQLAlchemyError:
+        logger.warning("Error downloading single app: {}".format(app_url), exc_info = True)
         db.session.rollback()
         return False
     else:
@@ -179,12 +182,35 @@ def download_repository_single_app(app_url):
 
     return changes
 
+def update_content_hash(app_url):
+    """Given an App URL generate the hash of the values of the translations. This way, can quickly know if an app was changed or not in a single query, and not do the whole
+    expensive DB processing for those which have not changed."""
+    contents_hash = calculate_content_hash(app_url)
+    if contents_hash:
+        repo_app = db.session.query(RepositoryApp).filter_by(url=app_url).first()
+        if repo_app:
+            if repo_app.contents_hash != contents_hash:
+                repo_app.contents_hash = contents_hash
+                repo_app.last_change = datetime.datetime.utcnow()
+
+                try:
+                    db.session.commit()
+                except SQLAlchemyError as e:
+                    logger.warning("Error updating content hash for {}: {}".format(app_url, e), exc_info = True)
+                    db.session.rollback()
+                    return False
+                else:
+                    db.session.remove()
+
 def retrieve_updated_translatable_apps():
     """This method collects information previously stored by other process into Redis, and returns only those apps which have changed, are translatable and not currently failing"""  
     return _retrieve_translatable_apps(query = db.session.query(RepositoryApp).filter(
                         RepositoryApp.translatable == True,                                  # Only translatable pages
                         RepositoryApp.failing == False,                                      # Which are not failing
-                        RepositoryApp.last_processed_hash != RepositoryApp.downloaded_hash,  # And which have changed something
+                        or_( # OR if they have changed somewhere:
+                            RepositoryApp.last_processed_downloaded_hash != RepositoryApp.downloaded_hash,  # Either when downloading
+                            RepositoryApp.last_processed_contents_hash != RepositoryApp.contents_hash,  # Or either by a user changing something
+                        )
                 ))
 
 def retrieve_all_translatable_apps():
@@ -338,6 +364,7 @@ def _update_repo_app(task, repo_app):
 
     if repo_changes:
         repo_app.last_change = datetime.datetime.utcnow()
+        repo_app.last_download_change = datetime.datetime.utcnow()
 
     repo_app.last_check = datetime.datetime.utcnow()
 

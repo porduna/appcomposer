@@ -14,6 +14,14 @@ if cwd.endswith(path):
 
 sys.path.insert(0, cwd)
 
+from appcomposer import app as my_app, db
+from appcomposer.models import TranslationCurrentActiveUser
+from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, synchronize_single_app_no_cached
+from appcomposer.translator.suggestions import load_all_google_suggestions
+from appcomposer.translator.mongodb_pusher import sync_mongodb_all, sync_mongodb_last_hour
+from appcomposer.translator.notifications import run_notifications
+from appcomposer.translator.downloader import sync_repo_apps, download_repository_apps, download_repository_single_app, update_content_hash
+
 
 GOLAB_REPO = u'golabz'
 EXTERNAL_REPO = u'external'
@@ -129,15 +137,6 @@ cel.conf.update(
     }
 )
 
-
-from appcomposer import app as my_app, db
-from appcomposer.models import TranslationCurrentActiveUser
-from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, synchronize_single_app_no_cached
-from appcomposer.translator.suggestions import load_all_google_suggestions
-from appcomposer.translator.mongodb_pusher import sync_mongodb_all, sync_mongodb_last_hour
-from appcomposer.translator.notifications import run_notifications
-from appcomposer.translator.downloader import sync_repo_apps, download_repository_apps, download_repository_single_app
-
 @cel.task(name='notify_changes', bind=True)
 def task_notify_changes(self):
     with my_app.app_context():
@@ -180,6 +179,7 @@ def task_synchronize_single_app(self, source = None, single_app_url = None):
         source = 'scheduled'
 
     with my_app.app_context():
+        update_content_hash(single_app_url)
         result = synchronize_single_app_no_cached(source = source, single_app_url = single_app_url)
 
     sync_mongodb_last_hour(self)

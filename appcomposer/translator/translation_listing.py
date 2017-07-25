@@ -6,7 +6,7 @@ from celery.utils.log import get_task_logger
 from appcomposer.db import db
 from appcomposer.models import RepositoryApp, TranslationBundle, TranslationUrl
 
-from appcomposer.translator.downloader import retrieve_updated_translatable_apps, retrieve_all_translatable_apps, retrieve_single_translatable_apps
+from appcomposer.translator.downloader import retrieve_updated_translatable_apps, retrieve_all_translatable_apps, retrieve_single_translatable_apps, update_content_hash
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user, start_synchronization, end_synchronization, get_bundles_by_key_namespaces
 
 DEBUG = True
@@ -53,7 +53,6 @@ def _sync_translations(apps_to_check, force_reload):
             _add_or_update_app(app_url = app_metadata['app_url'], metadata_information = app_metadata['metadata'], repo_app_id=app_metadata['app_id'], force_reload=force_reload)
         except Exception as e:
             logger.warning("Error processing {}: {}".format(app_metadata['app_url'], e), exc_info=True)
-            
 
 
 def _add_or_update_app(app_url, metadata_information, repo_app_id, force_reload):
@@ -61,6 +60,9 @@ def _add_or_update_app(app_url, metadata_information, repo_app_id, force_reload)
         logger.debug("Starting %s" % app_url)
 
     repo_app = db.session.query(RepositoryApp).filter_by(id=repo_app_id).one()
+    initial_contents_hash = repo_app.contents_hash
+    initial_downloaded_hash = repo_app.downloaded_hash
+
     default_user = get_golab_default_user()
 
     translation_url = metadata_information.get('default_translation_url')
@@ -123,7 +125,8 @@ def _add_or_update_app(app_url, metadata_information, repo_app_id, force_reload)
     if translation_percent != repo_app.translation_percent:
         repo_app.translation_percent = json.dumps(translation_percent)
     
-    repo_app.last_processed_hash = repo_app.downloaded_hash
+    repo_app.last_processed_contents_hash = initial_contents_hash
+    repo_app.last_processed_downloaded_hash = initial_downloaded_hash
     repo_app.last_processed_time = datetime.datetime.utcnow()
 
     try:
@@ -131,6 +134,9 @@ def _add_or_update_app(app_url, metadata_information, repo_app_id, force_reload)
     except:
         db.session.rollback()
         raise
+
+    # In the meanwhile, maybe there were changes. Just make 100% sure that the hash is right
+    update_content_hash(app_url)
 
 
 # def _sync_regular_apps(cached_requests, synced_apps, force_reload, single_app_url = None):

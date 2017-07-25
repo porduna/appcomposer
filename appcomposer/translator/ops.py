@@ -1,3 +1,4 @@
+import zlib
 import urlparse
 import hashlib
 import datetime
@@ -33,6 +34,68 @@ def get_golab_default_user():
             db.session.rollback()
             raise
     return default_user
+
+
+def calculate_content_hash(app_url):
+    """Given an App URL generate the hash of the values of the translations. This way, can quickly know if an app was changed or not in a single query, and not do the whole
+    expensive DB processing for those which have not changed."""
+    
+    translated_app = db.session.query(TranslatedApp).filter_by(url==app_url).first()
+    if translated_app is None:
+        return
+
+    translation_url = translated_app.translation_url
+    if translation_url is None:
+        return
+
+    app_translations = []
+    # 
+    # Important: all these contents must be sorted
+    # 
+    # [
+    #      {
+    #           'lang': 'es_ES',
+    #           'messages: ' [
+    #              {
+    #                  'key': 'key1',
+    #                  'value': 'message1',
+    #              },
+    #              {
+    #                  'key': 'key2',
+    #                  'value': 'message2',
+    #              }
+    #           ],
+    #      }
+    # ]
+
+    organized_data = {
+        # es_ES: {
+        #      key: value,
+        # }
+    }
+
+    for atm in db.session.query(ActiveTranslationMessage).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.translation_url == translation_url).options(joinedload('bundle')).all():
+        bundle_key = '{}_{}'.format(atm.bundle.language, atm.bundle.target)
+        if bundle_key not in organized_data:
+            organized_data[bundle_key] = {}
+        organized_data[bundle_key][atm.key] = atm.value
+
+    # Sort data
+    for bundle_key in sorted(organized_data.keys()):
+        bundle_data = {
+            'lang': bundle_key,
+            'messages': []
+        }
+        for message_key in sorted(organized_data[bundle_key].keys()):
+            bundle_data['messages'].append({
+                'key': message_key,
+                'value': organized_data[bundle_key][message_key],
+            })
+
+        organized_data.append(bundle_data)
+
+    organized_data_str = json.dumps(organized_data)
+    return zlib.crc32(organized_data_str)
 
 def _get_or_create_app(app_url, translation_url, metadata):
     # Create the translation url if not present
@@ -514,8 +577,8 @@ def register_app_url(app_url, translation_url, metadata):
         raise
     else:
         # Delay the synchronization process
-        from appcomposer.translator.tasks import synchronize_single_app
-        synchronize_single_app.delay(source="register app", single_app_url = synchronize_single_app)
+        from appcomposer.translator.tasks import task_synchronize_single_app
+        task_synchronize_single_app.delay(source="register app", single_app_url = app_url)
 
 def retrieve_stored(translation_url, language, target):
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()

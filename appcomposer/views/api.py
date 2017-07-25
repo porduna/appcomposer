@@ -12,10 +12,10 @@ from appcomposer.models import RepositoryApp
 from appcomposer.login import requires_golab_api_login, current_golab_user
 from appcomposer.exceptions import TranslatorError
 from appcomposer.languages import obtain_groups, obtain_languages
-from appcomposer.translator.metadata import extract_local_translations_url
+from appcomposer.utils import public
+from appcomposer.translator.extractors import extract_local_translations_url
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, update_user_status, get_user_status
 
-from appcomposer.utils import public
 from appcomposer.languages import guess_default_language
 
 import flask.ext.cors.core as cors_core
@@ -246,9 +246,8 @@ def bundle_update(language, target):
     translated_messages = { key : value }
 
     add_full_translation_to_app(user, app_url, translation_url, metadata, language, target, translated_messages, original_messages, from_developer = False)
-    from appcomposer.translator.tasks import synchronize_single_app
-    synchronize_single_app.delay("update", app_url)
-
+    from appcomposer.translator.tasks import task_synchronize_single_app
+    task_synchronize_single_app.delay("update", app_url)
 
     return jsonify(**{"result": "success"})
 

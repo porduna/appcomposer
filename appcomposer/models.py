@@ -103,11 +103,14 @@ class RepositoryApp(db.Model):
 
     last_check = db.Column(db.DateTime, index = True)
     last_change = db.Column(db.DateTime, index = True)
+    last_download_change = db.Column(db.DateTime, index = True)
     failing = db.Column(db.Boolean, index = True)
     failing_since = db.Column(db.DateTime, index = True)
 
     downloaded_hash = db.Column(db.Unicode(255), index=True)
-    last_processed_hash = db.Column(db.Unicode(255), index=True)
+    contents_hash = db.Column(db.Unicode(255), index=True)
+    last_processed_downloaded_hash = db.Column(db.Unicode(255), index=True)
+    last_processed_contents_hash = db.Column(db.Unicode(255), index=True)
     last_processed_time = db.Column(db.DateTime, index=True)
 
     def __init__(self, name, url, repository, external_id = None):

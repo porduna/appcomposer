@@ -8,7 +8,7 @@ import requests
 
 from appcomposer import redis_store
 from appcomposer.exceptions import TranslatorError
-from appcomposer.utils import get_cached_session, fromstring, get_text_from_response
+from appcomposer.translator.utils import get_cached_session, fromstring, get_text_from_response
 
 DEBUG = True
 
