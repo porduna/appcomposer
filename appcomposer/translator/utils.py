@@ -237,7 +237,6 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
             if lang and messages_url and lang.lower() != 'all':
                 if len(lang) == 2:
                     lang = u'%s_ALL' % lang
-                only_if_new = not force_reload
                 try:
                     absolute_url, messages, metadata, locale_contents = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests)
                 except TranslatorError as e:

@@ -42,13 +42,19 @@ def sync_repo_apps(force=False):
     It stores in redis the hash of the Go-Lab repos, so if there is no change, it does not need to look in the database.
 
     Optionally, if force=True, then it will still go through the process, but it is very unlikely that it is ever needed.
+
+    It return True if there was any change
     """
     last_hash = redis_store.get('last_repo_apps_sync_hash')
     downloaded_apps, new_hash = _get_all_apps(last_hash)
 
+    if not downloaded_apps:
+        # An error ocurred in the apps
+        return False
+
     if not force:
         if new_hash == last_hash:
-            return
+            return False
 
     apps_by_repo_id = {
         # (repository, id): app
@@ -90,10 +96,16 @@ def sync_repo_apps(force=False):
     except SQLAlchemyError:
         logger.warning("Error upgrading apps", exc_info = True)
         db.session.rollback()
+        return False
     else:
         redis_store.set('last_repo_apps_sync_hash', new_hash)
     finally:
         db.session.remove()
+
+    return last_hash == new_hash
+
+
+_REDIS_CACHE_KEY = 'appcomposer:repository:cache'
 
 def download_repository_apps():
     """This method assumes that the table RepositoryApp is updated in a different process. 
@@ -108,57 +120,87 @@ def download_repository_apps():
     
     repo_apps_by_id = {}
     tasks = []
-    
-    redis_key = 'appcomposer:repository:cache'
 
-    stored_ids_in_redis = list(redis_store.hkeys(redis_key))
+    stored_ids_in_redis = list(redis_store.hkeys(_REDIS_CACHE_KEY))
 
     for repo_app in db.session.query(RepositoryApp).all():
-        task = MetadataTask(repo_app.id, repo_app.url, force_reload=False)
+        task = _MetadataTask(repo_app.id, repo_app.url, force_reload=False)
         repo_apps_by_id[repo_app.id] = repo_app
         tasks.append(task)
         if str(repo_app.id) in stored_ids_in_redis:
             stored_ids_in_redis.remove(str(repo_app.id))
 
-    RunInParallel('Go-Lab repo', tasks).run()
+    _RunInParallel('Go-Lab repo', tasks).run()
 
     for key in stored_ids_in_redis:
-        print("Deleting old {}".format(key))
-        redis_store.hdel(redis_key, key)
+        redis_store.hdel(_REDIS_CACHE_KEY, key)
 
+    app_changes = False
     for task in tasks:
         repo_app = repo_apps_by_id[task.repo_id]
-        repo_changes = False
-
-        if task.failing:
-            if not repo_app.failing:
-                repo_app.failing = True
-                repo_app.failing_since = datetime.datetime.utcnow()
-                repo_changes = True
-
-        else:
-            if repo_app.failing:
-                repo_app.failing = False
-                repo_app.failing_since = None
-                repo_changes = True
-
-            current_hash = task.metadata_information['hash']
-            if repo_app.downloaded_hash != current_hash:
-                redis_store.hset(redis_key, repo_app.id, json.dumps(task.metadata_information))
-                repo_app.downloaded_hash = current_hash
-                repo_changes = True
-
-        if repo_changes:
-            repo_app.last_change = datetime.datetime.utcnow()
-
-        repo_app.last_check = datetime.datetime.utcnow()
+        if _update_repo_app(task=task, repo_app=repo_app):
+            app_changes = True
 
     try:
         db.session.commit()
     except SQLAlchemyError:
         db.session.rollback()
+        return False
     else:
         db.session.remove()
+
+    return app_changes
+
+
+def download_repository_single_app(app_url):
+    """
+    This method does the same as the previous one, but with a single URL (therefore not checking more variables, neither starting more than 1 thread, and without adding new or deleting apps).
+    It returns if there was a change
+    """
+    
+    repo_app = db.session.query(RepositoryApp).filter_by(url=app_url).first()
+    if repo_app is None:
+        raise Exception("App URL not in the repository: {}".format(app_url))
+
+    task = _MetadataTask(repo_app.id, repo_app.url, force_reload=False)
+
+    _RunInParallel('Go-Lab repo', [ task ], thread_number=1).run()
+
+    changes = _update_repo_app(task=task, repo_app=repo_app)
+
+    try:
+        db.session.commit()
+    except SQLAlchemyError:
+        db.session.rollback()
+        return False
+    else:
+        db.session.remove()
+
+    return changes
+
+def retrieve_updated_translatable_apps():
+    """This method collects information previously stored by other process into Redis, and returns only those apps which have changed, are translatable and not currently failing"""  
+    contents = [
+        # app_id: repo_app.id
+        # app_url: repo_app.url
+        # metadata: {
+        #      metadata contents retrieved from Redis
+        # }
+    ]
+    for repo_app in db.session.query(RepositoryApp).filter(
+                        RepositoryApp.translatable == True,                                  # Only translatable pages
+                        RepositoryApp.failing == False,                                      # Which are not failing
+                        RepositoryApp.last_processed_hash != RepositoryApp.downloaded_hash,  # And which have changed something
+                ).all():
+        app_metadata = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)
+        if app_metadata is not None:
+            contents.append({
+                'app_id': repo_app.id,
+                'app_url': repo_app.url,
+                'metadata': app_metadata,
+            })
+
+    return contents
 
 
 #######################################################################################
@@ -167,7 +209,7 @@ def download_repository_apps():
 #             CONCURRENCY
 # 
 
-class MetadataTask(threading.Thread):
+class _MetadataTask(threading.Thread):
     def __init__(self, repo_id, app_url, force_reload):
         threading.Thread.__init__(self)
         self.repo_id = repo_id
@@ -193,7 +235,7 @@ class MetadataTask(threading.Thread):
             self.failing = self.metadata_information.get('failing', False)
         self.finished = True
 
-class RunInParallel(object):
+class _RunInParallel(object):
     def __init__(self, tag, tasks, thread_number = 15):
         self.tag = tag
         self.tasks = tasks
@@ -244,6 +286,34 @@ class RunInParallel(object):
 # 
 # 
 #
+
+def _update_repo_app(task, repo_app):
+    repo_changes = False
+
+    if task.failing:
+        if not repo_app.failing:
+            repo_app.failing = True
+            repo_app.failing_since = datetime.datetime.utcnow()
+            repo_changes = True
+
+    else:
+        if repo_app.failing:
+            repo_app.failing = False
+            repo_app.failing_since = None
+            repo_changes = True
+
+        current_hash = task.metadata_information['hash']
+        if repo_app.downloaded_hash != current_hash:
+            redis_store.hset(_REDIS_CACHE_KEY, repo_app.id, json.dumps(task.metadata_information))
+            repo_app.downloaded_hash = current_hash
+            repo_changes = True
+
+    if repo_changes:
+        repo_app.last_change = datetime.datetime.utcnow()
+
+    repo_app.last_check = datetime.datetime.utcnow()
+    return repo_changes
+
 
 def _add_new_app(repository, app_url, title, external_id, app_thumb, description, app_image, app_link):
     repo_app = RepositoryApp(name = title, url = app_url, external_id = external_id, repository = repository)

@@ -142,11 +142,6 @@ class RepositoryAppLanguage(db.Model):
     repository_app_id = db.Column(db.Integer, db.ForeignKey('RepositoryApps.id'))
     language_id = db.Column(db.Integer, db.ForeignKey('Languages.id'))
 
-    downloaded_hash = db.Column(db.Unicode(255), index=True)
-    error = db.Column(db.Boolean, index=True)
-    last_processed_hash = db.Column(db.Unicode(255), index=True)
-    last_processed_time = db.Column(db.DateTime, index=True)
-
     language = db.relation("Language", backref="repository_apps")
     repository_app = db.relation("RepositoryApp", backref="languages")
 

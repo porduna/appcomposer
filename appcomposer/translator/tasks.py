@@ -22,26 +22,27 @@ DEBUG = True
 
 logger = get_task_logger(__name__)
 
-# cel = Celery('pusher_tasks', backend='amqp', broker='amqp://')
 cel = Celery('pusher_tasks', backend='redis', broker='redis://localhost:6379/6')
 
 cel.conf.update(
-    CELERYD_PREFETCH_MULTIPLIER="4",
-    CELERYD_CONCURRENCY="8",
-    CELERY_ACKS_LATE="1",
-    CELERY_IGNORE_RESULT=True,
+    worker_prefetch_multiplier=4,
+    worker_concurrency=4,
+    task_acks_late="1",
+    task_ignore_resultLT=True,
+    task_serializer='json',
 
-    CELERYBEAT_SCHEDULE = {
-        'synchronize_apps_cache': {
-            'task': 'synchronize_apps_cache',
-            'schedule': datetime.timedelta(minutes=5),
-            'args': ()
-        },
-        'synchronize_apps_no_cache': {
-            'task': 'synchronize_apps_no_cache',
-            'schedule': crontab(hour=3, minute=0),
-            'args': ()
-        },
+
+    beat_schedule = {
+#         'synchronize_apps_cache': {
+#             'task': 'synchronize_apps_cache',
+#             'schedule': datetime.timedelta(minutes=5),
+#             'args': ()
+#         },
+#         'synchronize_apps_no_cache': {
+#             'task': 'synchronize_apps_no_cache',
+#             'schedule': crontab(hour=3, minute=0),
+#             'args': ()
+#         },
         'load_google_suggestions' : {
             'task' : 'load_google_suggestions',
             'schedule' : crontab(hour=5, minute=0),
@@ -57,6 +58,71 @@ cel.conf.update(
             'schedule' : datetime.timedelta(minutes = 5),
             'args' : ()
         },
+        'sync_mongodb_recent': {
+            'task' : 'sync_mongodb_recent',
+            'schedule' : datetime.timedelta(minutes = 2),
+            'args' : ()
+        },
+        'sync_mongodb_all': {
+            'task' : 'sync_mongodb_all',
+            'schedule' : crontab(hour=5, minute=30),
+            'args' : ()
+        },
+        'sync_repo_apps_cached': {
+            'task' : 'sync_repo_apps_cached',
+            'schedule' : datetime.timedelta(minutes = 5),
+            'args' : ()
+        },
+        'sync_repo_apps_all': {
+            'task' : 'sync_repo_apps_all',
+            'schedule' : crontab(hour=5, minute=0),
+            'args' : ()
+        },
+    },
+
+    task_routes = {
+        # 
+        # The following are tasks that are probably non-blocking and can be run in parallel and are not critical
+        # 
+        'load_google_suggestions': {
+            'queue': 'non-critical-independent-tasks',
+        },
+        'delete_old_realtime_active_users': {
+            'queue': 'non-critical-independent-tasks',
+        },
+        
+        # 
+        # The following are tasks which must be quick but still independent
+        # 
+        'notify_changes' : {
+            'queue': 'critical-independent-tasks',
+        },
+        'sync_mongodb_recent' : {
+            'queue': 'critical-independent-tasks',
+        },
+        'sync_repo_apps_cached': {
+            'queue': 'critical-independent-tasks',
+        },
+        'download_repository_single_app': {   # Only called from outside
+            'queue': 'critical-independent-tasks',
+        },
+
+        # The following are tasks which can be slow but still independent
+        # 
+        'sync_mongodb_all' : {
+            'queue': 'slow-independent-tasks',
+        },
+        'sync_repo_apps_all': {
+            'queue': 'slow-independent-tasks',
+        },
+        'download_repository_apps': {
+            'queue': 'slow-independent-tasks',
+        },
+
+        # The following are tasks which can only be run in a single queue
+        # TODO: process_single_app  # when called
+        # TODO: process_latest_apps # e.g., every 5 minute
+        # TODO: process_all_apps    # e.g., once a day
     }
 )
 
@@ -64,11 +130,12 @@ cel.conf.update(
 from appcomposer import app as my_app, db
 from appcomposer.models import TranslationCurrentActiveUser
 from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, load_all_google_suggestions
-from appcomposer.translator.mongodb_pusher import sync
+from appcomposer.translator.mongodb_pusher import sync_mongodb_all, sync_mongodb_last_hour
 from appcomposer.translator.notifications import run_notifications
+from appcomposer.translator.downloader import sync_repo_apps, download_repository_apps, download_repository_single_app
 
 @cel.task(name='notify_changes', bind=True)
-def notify_changes(self):
+def task_notify_changes(self):
     with my_app.app_context():
         return run_notifications()
 
@@ -79,7 +146,7 @@ def synchronize_apps_cache_wrapper(self, source = None, single_app_url = None):
 
     with my_app.app_context():
         result = synchronize_apps_cache(source = source, single_app_url = single_app_url)
-    sync(self, only_recent=True)
+    sync_mongodb_last_hour(self)
     return result
 
 @cel.task(name='synchronize_apps_no_cache', bind=True)
@@ -89,24 +156,24 @@ def synchronize_apps_no_cache_wrapper(self, source = None, single_app_url = None
     with my_app.app_context():
         result = synchronize_apps_no_cache(source = source, single_app_url = single_app_url)
     if must_sync:
-        sync(self, only_recent=False)
+        sync_mongodb_all(self)
     return result
 
-@cel.task(name="sync", bind=True)
-def sync_wrapper(self):
-    return sync(self, only_recent=True)
+@cel.task(name="sync_mongodb_recent", bind=True)
+def task_sync_mongodb_recent(self):
+    return sync_mongodb_last_hour(self)
 
-@cel.task(name="sync_no_cache", bind=True)
-def sync_no_cache_wrapper(self):
-    return sync(self, only_recent=False)
+@cel.task(name="sync_mongodb_all", bind=True)
+def task_sync_mongodb_all(self):
+    return sync_mongodb_all(self)
 
 @cel.task(name='load_google_suggestions', bind=True)
-def load_google_suggestions(self):
+def task_load_google_suggestions(self):
     with my_app.app_context():
         load_all_google_suggestions()
 
 @cel.task(name='delete_old_realtime_active_users', bind=True)
-def delete_old_realtime_active_users(self):
+def task_delete_old_realtime_active_users(self):
     with my_app.app_context():
         two_hours_ago = datetime.datetime.utcnow() - datetime.timedelta(hours = 2)
         old_active_users = db.session.query(TranslationCurrentActiveUser).filter(TranslationCurrentActiveUser.last_check < two_hours_ago).all()
@@ -118,3 +185,34 @@ def delete_old_realtime_active_users(self):
             except:
                 db.session.rollback()
                 raise
+
+@cel.task(name='sync_repo_apps_cached', bind=True)
+def task_sync_repo_apps_cached(self):
+    with my_app.app_context():
+        changes = sync_repo_apps(force=False)
+        if changes:
+            task_download_repository_apps.delay()
+
+
+@cel.task(name='sync_repo_apps_all', bind=True)
+def task_sync_repo_apps_all(self):
+    with my_app.app_context():
+        changes = sync_repo_apps(force=True)
+        if changes:
+            task_download_repository_apps.delay()
+
+
+@cel.task(name='download_repository_single_app', bind=True)
+def task_download_repository_single_app(self, app_url):
+    with my_app.app_context():
+        changes = download_repository_single_app(app_url)
+        if changes:
+            task_sync_mongodb_recent.delay()
+
+@cel.task(name='download_repository_apps', bind=True)
+def task_download_repository_apps(self):
+    with my_app.app_context():
+        changes = download_repository_apps()
+        if changes:
+            task_sync_mongodb_recent.delay()
+

@@ -1,11 +1,9 @@
 import time
 import json
-import random
 import datetime
 import threading
 import traceback
 
-import goslate
 import requests
 
 from sqlalchemy.exc import SQLAlchemyError
@@ -13,9 +11,8 @@ from celery.utils.log import get_task_logger
 
 from appcomposer.application import app
 from appcomposer.db import db
-from appcomposer.models import RepositoryApp, TranslatedApp, ActiveTranslationMessage, TranslationBundle, TranslationUrl, TranslationExternalSuggestion
+from appcomposer.models import RepositoryApp, TranslatedApp, TranslationBundle, TranslationUrl
 
-from appcomposer.languages import SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES, OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES
 from appcomposer.translator.utils import extract_metadata_information
 import appcomposer.translator.utils as trutils
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user, start_synchronization, end_synchronization, get_bundles_by_key_namespaces
@@ -477,85 +474,6 @@ def _add_or_update_app(cached_requests, app_url, force_reload, repo_app = None, 
     except:
         db.session.rollback()
         raise
-    
-
-ORIGIN_LANGUAGE = 'en'
-
-def load_google_suggestions_by_lang(active_messages, language, origin_language = None):
-    """ Attempt to translate all the messages to a language """
-    
-    if origin_language is None:
-        origin_language = ORIGIN_LANGUAGE
-
-    gs = goslate.Goslate()
-    logger.info("Using Google Translator to use %s" % language)
-
-    existing_suggestions = set([ human_key for human_key, in db.session.query(TranslationExternalSuggestion.human_key).filter_by(engine = 'google', language = language, origin_language = origin_language).all() ])
-
-    missing_suggestions = active_messages - existing_suggestions
-    print "Language:", language
-    print list(active_messages)[:10], len(active_messages)
-    print list(existing_suggestions)[:10], len(existing_suggestions)
-    print "Missing:", len(missing_suggestions)
-    missing_suggestions = list(missing_suggestions)
-    random.shuffle(missing_suggestions)
-    counter = 0
-
-    for message in missing_suggestions:
-        if message.strip() == '':
-            continue
-
-        try:
-            translated = gs.translate(message, language)
-        except Exception as e:
-            logger.warning("Google Translate stopped with exception: %s" % e, exc_info = True)
-            return False, counter
-        else:
-            counter += 1
-
-        if translated:
-            suggestion = TranslationExternalSuggestion(engine = 'google', human_key = message, language = language, origin_language = origin_language, value = translated)
-            db.session.add(suggestion)
-            try:
-                db.session.commit()
-            except:
-                db.session.rollback()
-                raise
-        else:
-            logger.warning("Google Translate returned %r for message %r. Stopping." % (translated, message))
-            return False, counter
-
-    return True, counter
-
-
-# ORDERED_LANGUAGES: first the semi official ones (less likely to have translations in Microsoft Translator API), then the official ones and then the rest
-ORDERED_LANGUAGES = SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
-
-def _load_all_google_suggestions(from_language, to_languages):
-    active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == '{0}_ALL'.format(from_language), ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
-    
-    total_counter = 0
-
-    for language in to_languages:
-        should_continue, counter = load_google_suggestions_by_lang(active_messages, language)
-        total_counter += counter
-        if total_counter > 1000:
-            logger.info("Stopping the google suggestions API after performing %s queries until the next cycle" % total_counter)
-            break
-
-        if not should_continue:
-            logger.info("Stopping the google suggestions API until the next cycle")
-            # There was an error: keep in the next iteration ;-)
-            break
-
-
-def load_all_google_suggestions():
-    # First try to create suggestions from English to all the languages
-    _load_all_google_suggestions('en', ORDERED_LANGUAGES)
-
-    # Then, try to create suggestions all the languages to English for developers
-    for language in ORDERED_LANGUAGES:
-        _load_all_google_suggestions(language, ['en'])
 
 if __name__ == '__main__':
     from appcomposer import create_app

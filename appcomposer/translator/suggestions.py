@@ -1,13 +1,22 @@
 import sys
 import hashlib
+import random
 import traceback
+import goslate
+
 from microsofttranslator import Translator as MSTranslator, TranslateApiException as MSTranslatorApiException, ArgumentOutOfRangeException
+
+from celery.utils.log import get_task_logger
 
 from sqlalchemy.exc import IntegrityError
 
 from appcomposer.application import app
 from appcomposer.db import db
-from appcomposer.models import TranslationExternalSuggestion
+from appcomposer.models import TranslationExternalSuggestion, ActiveTranslationMessage, TranslationBundle
+
+from appcomposer.languages import SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES, OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES
+
+logger = get_task_logger(__name__)
 
 class AbstractTranslator(object):
 
@@ -219,6 +228,83 @@ def existing_translations(texts, language, origin_language = 'en'):
 
     return translations, remaining_texts
 
+ORIGIN_LANGUAGE = 'en'
+
+def load_google_suggestions_by_lang(active_messages, language, origin_language = None):
+    """ Attempt to translate all the messages to a language """
+    
+    if origin_language is None:
+        origin_language = ORIGIN_LANGUAGE
+
+    gs = goslate.Goslate()
+    logger.info("Using Google Translator to use %s" % language)
+
+    existing_suggestions = set([ human_key for human_key, in db.session.query(TranslationExternalSuggestion.human_key).filter_by(engine = 'google', language = language, origin_language = origin_language).all() ])
+
+    missing_suggestions = active_messages - existing_suggestions
+    print "Language:", language
+    print list(active_messages)[:10], len(active_messages)
+    print list(existing_suggestions)[:10], len(existing_suggestions)
+    print "Missing:", len(missing_suggestions)
+    missing_suggestions = list(missing_suggestions)
+    random.shuffle(missing_suggestions)
+    counter = 0
+
+    for message in missing_suggestions:
+        if message.strip() == '':
+            continue
+
+        try:
+            translated = gs.translate(message, language)
+        except Exception as e:
+            logger.warning("Google Translate stopped with exception: %s" % e, exc_info = True)
+            return False, counter
+        else:
+            counter += 1
+
+        if translated:
+            suggestion = TranslationExternalSuggestion(engine = 'google', human_key = message, language = language, origin_language = origin_language, value = translated)
+            db.session.add(suggestion)
+            try:
+                db.session.commit()
+            except:
+                db.session.rollback()
+                raise
+        else:
+            logger.warning("Google Translate returned %r for message %r. Stopping." % (translated, message))
+            return False, counter
+
+    return True, counter
+
+
+# ORDERED_LANGUAGES: first the semi official ones (less likely to have translations in Microsoft Translator API), then the official ones and then the rest
+ORDERED_LANGUAGES = SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
+
+def _load_all_google_suggestions(from_language, to_languages):
+    active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == '{0}_ALL'.format(from_language), ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
+    
+    total_counter = 0
+
+    for language in to_languages:
+        should_continue, counter = load_google_suggestions_by_lang(active_messages, language)
+        total_counter += counter
+        if total_counter > 1000:
+            logger.info("Stopping the google suggestions API after performing %s queries until the next cycle" % total_counter)
+            break
+
+        if not should_continue:
+            logger.info("Stopping the google suggestions API until the next cycle")
+            # There was an error: keep in the next iteration ;-)
+            break
+
+
+def load_all_google_suggestions():
+    # First try to create suggestions from English to all the languages
+    _load_all_google_suggestions('en', ORDERED_LANGUAGES)
+
+    # Then, try to create suggestions all the languages to English for developers
+    for language in ORDERED_LANGUAGES:
+        _load_all_google_suggestions(language, ['en'])
 if __name__ == '__main__':
     with app.app_context():
         print existing_translations(["Hello", "Bye", "Good morning", "This was never stored"], 'es')

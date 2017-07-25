@@ -143,7 +143,7 @@ def sync(self, only_recent):
     start_time = datetime.utcnow()
 
     if only_recent:
-        oldest = datetime.utcnow() - timedelta(hours=1)
+        oldest = datetime.utcnow() - timedelta(minutes=30)
     else:
         oldest = datetime(1970, 1, 1)
 
@@ -154,21 +154,31 @@ def sync(self, only_recent):
                 'target' : bundle.target
             } for bundle in db.session.query(TranslationBundle).filter(ActiveTranslationMessage.datetime >= oldest, ActiveTranslationMessage.bundle_id == TranslationBundle.id).group_by(TranslationBundle.id).options(joinedload("translation_url")).all() ]
     
-    all_translation_url_ids = []
-    all_app_ids = []
+    if translation_bundles:
+        all_translation_url_ids = []
+        all_app_ids = []
 
-    for translation_bundle in translation_bundles:
-        response = push(self = None, translation_url = translation_bundle['translation_url'], lang = translation_bundle['language'], target = translation_bundle['target'])
-        if response is None:
-            logger.warn("Pushing translation for %s of %s returned None" % (translation_bundle['translation_url'], translation_bundle['language']))
-            continue
-        translation_url_id, app_ids = response
-        all_translation_url_ids.append(translation_url_id)
-        all_app_ids.extend(app_ids)
-    
-    if not only_recent:
-        mongo_bundles.remove({"_id": {"$nin": all_app_ids}, "time": {"$lt": start_time}})
-        mongo_translation_urls.remove({"_id": {"$nin": all_translation_url_ids}, "time": {"$lt": start_time}})
+        for translation_bundle in translation_bundles:
+            response = push(self = None, translation_url = translation_bundle['translation_url'], lang = translation_bundle['language'], target = translation_bundle['target'])
+            if response is None:
+                logger.warn("Pushing translation for %s of %s returned None" % (translation_bundle['translation_url'], translation_bundle['language']))
+                continue
+            translation_url_id, app_ids = response
+            all_translation_url_ids.append(translation_url_id)
+            all_app_ids.extend(app_ids)
+        
+        if not only_recent:
+            mongo_bundles.remove({"_id": {"$nin": all_app_ids}, "time": {"$lt": start_time}})
+            mongo_translation_urls.remove({"_id": {"$nin": all_translation_url_ids}, "time": {"$lt": start_time}})
 
     logger.info("[SYNC]: Sync finished.")
+
+def sync_mongodb_from_epoch(self):
+    return sync(only_recent = False)
+
+def sync_mongodb_last_hour(self):
+    return sync(only_recent = True)
+
+
+
 
