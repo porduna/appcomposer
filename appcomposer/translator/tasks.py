@@ -24,6 +24,11 @@ logger = get_task_logger(__name__)
 
 cel = Celery('pusher_tasks', backend='redis', broker='redis://localhost:6379/6')
 
+NON_CRITICAL_INDEPENDENT_TASKS = 'non-critical-independent-tasks'
+CRITICAL_INDEPENDENT_TASKS = 'critical-independent-tasks'
+SLOW_INDEPENDENT_TASKS = 'slow-independent-tasks'
+SINGLE_SYNC_TASKS = 'single-sync-tasks'
+
 cel.conf.update(
     worker_prefetch_multiplier=4,
     worker_concurrency=4,
@@ -33,20 +38,10 @@ cel.conf.update(
 
 
     beat_schedule = {
-#         'synchronize_apps_cache': {
-#             'task': 'synchronize_apps_cache',
-#             'schedule': datetime.timedelta(minutes=5),
-#             'args': ()
-#         },
-#         'synchronize_apps_no_cache': {
-#             'task': 'synchronize_apps_no_cache',
-#             'schedule': crontab(hour=3, minute=0),
-#             'args': ()
-#         },
-        'load_google_suggestions' : {
-            'task' : 'load_google_suggestions',
-            'schedule' : crontab(hour=5, minute=0),
-            'args' : ()
+        'synchronize_apps_cache': {
+            'task': 'synchronize_apps_cache',
+            'schedule': datetime.timedelta(minutes=5),
+            'args': ()
         },
         'delete_old_realtime_active_users' : {
             'task' : 'delete_old_realtime_active_users',
@@ -58,78 +53,87 @@ cel.conf.update(
             'schedule' : datetime.timedelta(minutes = 5),
             'args' : ()
         },
-        'sync_mongodb_recent': {
-            'task' : 'sync_mongodb_recent',
-            'schedule' : datetime.timedelta(minutes = 2),
-            'args' : ()
-        },
-        'sync_mongodb_all': {
-            'task' : 'sync_mongodb_all',
-            'schedule' : crontab(hour=5, minute=30),
-            'args' : ()
-        },
         'sync_repo_apps_cached': {
             'task' : 'sync_repo_apps_cached',
             'schedule' : datetime.timedelta(minutes = 5),
             'args' : ()
         },
+        
+        # Crontab-based tasks
         'sync_repo_apps_all': {
             'task' : 'sync_repo_apps_all',
+            'schedule' : crontab(hour=3, minute=30),
+            'args' : ()
+        },
+        'synchronize_apps_no_cache': {
+            'task': 'synchronize_apps_no_cache',
+            'schedule': crontab(hour=4, minute=0),
+            'args': ()
+        },
+        'load_google_suggestions' : {
+            'task' : 'load_google_suggestions',
             'schedule' : crontab(hour=5, minute=0),
             'args' : ()
         },
     },
-
+    
     task_routes = {
         # 
         # The following are tasks that are probably non-blocking and can be run in parallel and are not critical
         # 
         'load_google_suggestions': {
-            'queue': 'non-critical-independent-tasks',
+            'queue': NON_CRITICAL_INDEPENDENT_TASKS,
         },
         'delete_old_realtime_active_users': {
-            'queue': 'non-critical-independent-tasks',
+            'queue': NON_CRITICAL_INDEPENDENT_TASKS,
         },
         
         # 
         # The following are tasks which must be quick but still independent
         # 
         'notify_changes' : {
-            'queue': 'critical-independent-tasks',
+            'queue': CRITICAL_INDEPENDENT_TASKS,
         },
         'sync_mongodb_recent' : {
-            'queue': 'critical-independent-tasks',
+            'queue': CRITICAL_INDEPENDENT_TASKS,
         },
         'sync_repo_apps_cached': {
-            'queue': 'critical-independent-tasks',
+            'queue': CRITICAL_INDEPENDENT_TASKS,
         },
         'download_repository_single_app': {   # Only called from outside
-            'queue': 'critical-independent-tasks',
+            'queue': CRITICAL_INDEPENDENT_TASKS,
         },
 
         # The following are tasks which can be slow but still independent
         # 
         'sync_mongodb_all' : {
-            'queue': 'slow-independent-tasks',
+            'queue': SLOW_INDEPENDENT_TASKS,
         },
         'sync_repo_apps_all': {
-            'queue': 'slow-independent-tasks',
+            'queue': SLOW_INDEPENDENT_TASKS,
         },
         'download_repository_apps': {
-            'queue': 'slow-independent-tasks',
+            'queue': SLOW_INDEPENDENT_TASKS,
         },
 
         # The following are tasks which can only be run in a single queue
-        # TODO: process_single_app  # when called
-        # TODO: process_latest_apps # e.g., every 5 minute
-        # TODO: process_all_apps    # e.g., once a day
+        'synchronize_apps_cache': {
+            'queue': SINGLE_SYNC_TASKS,
+        },
+        'synchronize_apps_no_cache': {
+            'queue': SINGLE_SYNC_TASKS,
+        },
+        'synchronize_single_app': {
+            'queue': SINGLE_SYNC_TASKS,
+        },
     }
 )
 
 
 from appcomposer import app as my_app, db
 from appcomposer.models import TranslationCurrentActiveUser
-from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, load_all_google_suggestions
+from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, synchronize_single_app_no_cached
+from appcomposer.translator.suggestions import load_all_google_suggestions
 from appcomposer.translator.mongodb_pusher import sync_mongodb_all, sync_mongodb_last_hour
 from appcomposer.translator.notifications import run_notifications
 from appcomposer.translator.downloader import sync_repo_apps, download_repository_apps, download_repository_single_app
@@ -140,23 +144,45 @@ def task_notify_changes(self):
         return run_notifications()
 
 @cel.task(name='synchronize_apps_cache', bind=True)
-def synchronize_apps_cache_wrapper(self, source = None, single_app_url = None):
+def synchronize_apps_cache_wrapper(self, source = None):
     if source is None:
         source = 'scheduled'
 
     with my_app.app_context():
-        result = synchronize_apps_cache(source = source, single_app_url = single_app_url)
+        result = synchronize_apps_cache(source = source)
     sync_mongodb_last_hour(self)
     return result
 
 @cel.task(name='synchronize_apps_no_cache', bind=True)
-def synchronize_apps_no_cache_wrapper(self, source = None, single_app_url = None, must_sync = True):
+def synchronize_apps_no_cache_wrapper(self, source = None):
     if source is None:
         source = 'scheduled'
+    
+    # Sync golabz
     with my_app.app_context():
-        result = synchronize_apps_no_cache(source = source, single_app_url = single_app_url)
-    if must_sync:
-        sync_mongodb_all(self)
+        sync_repo_apps(force=True)
+
+    # Download all the apps
+    with my_app.app_context():
+        download_repository_apps()
+
+    # synchronize all the apps
+    with my_app.app_context():
+        result = synchronize_apps_no_cache(source = source)
+    
+    # Call mongodb
+    sync_mongodb_all(self)
+    return result
+
+@cel.task(name='synchronize_single_app', bind=True)
+def task_synchronize_single_app(self, source = None, single_app_url = None):
+    if source is None:
+        source = 'scheduled'
+
+    with my_app.app_context():
+        result = synchronize_single_app_no_cached(source = source, single_app_url = single_app_url)
+
+    sync_mongodb_last_hour(self)
     return result
 
 @cel.task(name="sync_mongodb_recent", bind=True)

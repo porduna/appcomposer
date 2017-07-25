@@ -514,8 +514,8 @@ def register_app_url(app_url, translation_url, metadata):
         raise
     else:
         # Delay the synchronization process
-        from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper
-        synchronize_apps_no_cache_wrapper.delay(source="register app", single_app_url = app_url, must_sync = False)
+        from appcomposer.translator.tasks import synchronize_single_app
+        synchronize_single_app.delay(source="register app", single_app_url = synchronize_single_app)
 
 def retrieve_stored(translation_url, language, target):
     db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
@@ -920,7 +920,7 @@ def _deep_copy_translations(old_translation_url, new_translation_url):
             db.session.add(new_bundle)
             _deep_copy_bundle(old_bundle, new_bundle)
 
-def start_synchronization(source, cached, single_app_url):
+def start_synchronization(source, cached, single_app_url = None):
     now = datetime.datetime.utcnow()
     sync_log = TranslationSyncLog(now, None, source, cached, single_app_url)
     db.session.add(sync_log)

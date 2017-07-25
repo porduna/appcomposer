@@ -180,28 +180,26 @@ def download_repository_single_app(app_url):
 
 def retrieve_updated_translatable_apps():
     """This method collects information previously stored by other process into Redis, and returns only those apps which have changed, are translatable and not currently failing"""  
-    contents = [
-        # app_id: repo_app.id
-        # app_url: repo_app.url
-        # metadata: {
-        #      metadata contents retrieved from Redis
-        # }
-    ]
-    for repo_app in db.session.query(RepositoryApp).filter(
+    return _retrieve_translatable_apps(query = db.session.query(RepositoryApp).filter(
                         RepositoryApp.translatable == True,                                  # Only translatable pages
                         RepositoryApp.failing == False,                                      # Which are not failing
                         RepositoryApp.last_processed_hash != RepositoryApp.downloaded_hash,  # And which have changed something
-                ).all():
-        app_metadata = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)
-        if app_metadata is not None:
-            contents.append({
-                'app_id': repo_app.id,
-                'app_url': repo_app.url,
-                'metadata': app_metadata,
-            })
+                ))
 
-    return contents
+def retrieve_all_translatable_apps():
+    """This method collects information previously stored by other process into Redis, and returns only those apps which are translatable and not currently failing"""  
+    return _retrieve_translatable_apps(query = db.session.query(RepositoryApp).filter(
+                        RepositoryApp.translatable == True,                                  # Only translatable pages
+                        RepositoryApp.failing == False,                                      # Which are not failing
+                ))
 
+def retrieve_single_translatable_apps(app_url):
+    """This method collects information previously stored by other process into Redis, and returns only those apps which are translatable and not currently failing"""  
+    return _retrieve_translatable_apps(query = db.session.query(RepositoryApp).filter(
+                        RepositoryApp.translatable == True,                                  # Only translatable pages
+                        RepositoryApp.failing == False,                                      # Which are not failing
+                        RepositoryApp.url == app_url,                                        # Only one
+                ))
 
 #######################################################################################
 # 
@@ -287,6 +285,25 @@ class _RunInParallel(object):
 # 
 #
 
+def _retrieve_translatable_apps(query):
+    contents = [
+        # app_id: repo_app.id
+        # app_url: repo_app.url
+        # metadata: {
+        #      metadata contents retrieved from Redis
+        # }
+    ]
+    for repo_app in query.all():
+        app_metadata = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)
+        if app_metadata is not None:
+            contents.append({
+                'app_id': repo_app.id,
+                'app_url': repo_app.url,
+                'metadata': json.loads(app_metadata),
+            })
+
+    return contents
+
 def _update_repo_app(task, repo_app):
     repo_changes = False
 
@@ -306,12 +323,23 @@ def _update_repo_app(task, repo_app):
         if repo_app.downloaded_hash != current_hash:
             redis_store.hset(_REDIS_CACHE_KEY, repo_app.id, json.dumps(task.metadata_information))
             repo_app.downloaded_hash = current_hash
+
+            if task.metadata_information.get('translatable') and len(task.metadata_information.get('default_translations', [])) > 0:
+                repo_app.translatable = True
+            else:
+                # If it is translatable but there is no default translation; don't take it into account
+                repo_app.translatable = False
+
+            repo_app.adaptable = task.metadata_information.get('adaptable', False)
+            repo_app.original_translations = u','.join(task.metadata_information.get('original_translations', {}).keys())
+
             repo_changes = True
 
     if repo_changes:
         repo_app.last_change = datetime.datetime.utcnow()
 
     repo_app.last_check = datetime.datetime.utcnow()
+
     return repo_changes
 
 
@@ -427,6 +455,21 @@ def _get_other_apps():
     OTHER_APPS = current_app.config.get('OTHER_APPS', [])
     OTHER_APPS.append(GRAASP)
     OTHER_APPS.append(TWENTE_COMMONS)
+
+    if current_app.debug:
+        if False: # ONLY FOR TESTING
+            OTHER_APPS.append({
+                'title' : 'Testing',
+                'id' : '3',
+                'description' : "Foo",
+                'app_url' : 'http://localhost/testing/app.xml',
+                'app_type': "OpenSocial gadget",
+                'app_image': "http://composer.golabz.eu/static/img/twente.jpg",
+                'app_thumb': "http://composer.golabz.eu/static/img/twente-thumb.jpg",
+                'app_golabz_page': "http://go-lab.gw.utwente.nl/production/",
+                'repository': "Go-Lab ecosystem",
+            })
+
     if current_app.config['DEBUG']:
         TWENTE_COMMONS['app_url'] = 'http://localhost:5000/twente_commons/'
 

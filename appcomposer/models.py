@@ -130,8 +130,24 @@ class RepositoryApp(db.Model):
 
     @property
     def original_translations(self):
-        return ','.join([ ote.language for ote in self.languages ])
+        return ','.join([ ote.language.language for ote in self.languages ])
 
+    @original_translations.setter
+    def original_translations(self, attr):
+        if not attr:
+            return
+
+        languages = list(attr.split(','))
+        if not languages:
+            return
+
+        for orig_lang in self.original_translations:
+            if orig_lang in languages:
+                languages.remove(orig_lang)
+
+        for lang_db in db.session.query(Language).filter(Language.language.in_(languages)).all():
+            new_lang = RepositoryAppLanguage(repository_app=self, language=lang_db)
+            db.session.add(new_lang)
 
 class RepositoryAppLanguage(db.Model):
 
@@ -144,7 +160,10 @@ class RepositoryAppLanguage(db.Model):
 
     language = db.relation("Language", backref="repository_apps")
     repository_app = db.relation("RepositoryApp", backref="languages")
-
+    
+    def __init__(self, repository_app, language):
+        self.repository_app = repository_app
+        self.language = language
 
 class GoLabOAuthUser(db.Model):
     __tablename__ = 'GoLabOAuthUsers'

@@ -246,8 +246,8 @@ def bundle_update(language, target):
     translated_messages = { key : value }
 
     add_full_translation_to_app(user, app_url, translation_url, metadata, language, target, translated_messages, original_messages, from_developer = False)
-    from appcomposer.translator.tasks import synchronize_apps_cache_wrapper
-    synchronize_apps_cache_wrapper.delay("update", app_url)
+    from appcomposer.translator.tasks import synchronize_single_app
+    synchronize_single_app.delay("update", app_url)
 
 
     return jsonify(**{"result": "success"})

@@ -173,11 +173,11 @@ def sync(self, only_recent):
 
     logger.info("[SYNC]: Sync finished.")
 
-def sync_mongodb_from_epoch(self):
-    return sync(only_recent = False)
+def sync_mongodb_all(self):
+    return sync(self, only_recent = False)
 
 def sync_mongodb_last_hour(self):
-    return sync(only_recent = True)
+    return sync(self, only_recent = True)
 
 
 
