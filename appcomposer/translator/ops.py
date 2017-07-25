@@ -1,4 +1,5 @@
 import zlib
+import json
 import urlparse
 import hashlib
 import datetime
@@ -6,7 +7,7 @@ from collections import defaultdict
 
 from sqlalchemy import func, or_, and_
 from sqlalchemy.exc import IntegrityError
-from sqlalchemy.orm import joinedload_all
+from sqlalchemy.orm import joinedload_all, joinedload
 
 from appcomposer import db
 from appcomposer.application import app
@@ -40,7 +41,7 @@ def calculate_content_hash(app_url):
     """Given an App URL generate the hash of the values of the translations. This way, can quickly know if an app was changed or not in a single query, and not do the whole
     expensive DB processing for those which have not changed."""
     
-    translated_app = db.session.query(TranslatedApp).filter_by(url==app_url).first()
+    translated_app = db.session.query(TranslatedApp).filter_by(url=app_url).first()
     if translated_app is None:
         return
 
@@ -92,10 +93,10 @@ def calculate_content_hash(app_url):
                 'value': organized_data[bundle_key][message_key],
             })
 
-        organized_data.append(bundle_data)
+        app_translations.append(bundle_data)
 
-    organized_data_str = json.dumps(organized_data)
-    return zlib.crc32(organized_data_str)
+    app_translations_str= json.dumps(app_translations)
+    return zlib.crc32(app_translations_str)
 
 def _get_or_create_app(app_url, translation_url, metadata):
     # Create the translation url if not present

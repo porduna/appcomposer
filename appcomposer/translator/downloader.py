@@ -16,6 +16,7 @@ import threading
 import traceback
 
 import requests
+from sqlalchemy import or_
 from sqlalchemy.exc import SQLAlchemyError
 
 from flask import current_app
