@@ -25,7 +25,7 @@ from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle,
 from appcomposer.login import requires_golab_login, current_golab_user
 from appcomposer.translator.mongodb_pusher import retrieve_mongodb_contents, retrieve_mongodb_apps, retrieve_mongodb_urls, retrieve_mongodb_app, retrieve_mongodb_translation_url
 from appcomposer.languages import obtain_groups, obtain_languages
-from appcomposer.translator.utils import extract_local_translations_url, extract_messages_from_translation
+from appcomposer.translator.metadata import extract_local_translations_url, extract_messages_from_translation
 from appcomposer.translator.ops import add_full_translation_to_app, get_latest_synchronizations
 from appcomposer.translator.utils import bundle_to_xml, bundle_to_jquery_i18n, bundle_to_json, bundle_to_graasp_json, bundle_to_properties, url_to_filename, messages_to_xml, NO_CATEGORY, NO_TOOL
 from appcomposer.translator.suggestions import translate_texts

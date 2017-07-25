@@ -23,6 +23,7 @@ from flask import current_app
 from appcomposer import db, redis_store
 from appcomposer.models import RepositoryApp
 import appcomposer.translator.utils as trutils
+from appcomposer.translator.metadata import extract_metadata_information
 
 from celery.utils.log import get_task_logger
 
@@ -221,7 +222,7 @@ class _MetadataTask(threading.Thread):
     def run(self):
         self.failing = False
         try:
-            self.metadata_information = trutils.extract_metadata_information(self.app_url, self.cached_requests, self.force_reload)
+            self.metadata_information = extract_metadata_information(self.app_url, self.cached_requests, self.force_reload)
         except Exception:
             logger.warning("Error extracting information from %s" % self.app_url, exc_info = True)
             if DEBUG_VERBOSE:
