@@ -2,10 +2,12 @@ import json
 from flask import request
 from mock import patch
 import appcomposer.translator.translation_listing as trlisting
+
+from appcomposer import redis_store
 from appcomposer.login import graasp_oauth_login_redirect
 from appcomposer.tests.translator.fake_requests import create_requests_mock
 from appcomposer.tests.utils import ComposerTest
-from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper, task_synchronize_single_app
+from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper, task_synchronize_single_app, task_sync_repo_apps_all, task_download_repository_apps
 from appcomposer.views.api import api_translate, bundle_update
 from appcomposer.translator.mongodb_pusher import mongo_translation_urls, mongo_bundles, sync
 
@@ -15,6 +17,7 @@ class TranslatorTest(ComposerTest):
         super(TranslatorTest, self).setUp()
         mongo_translation_urls.remove()
         mongo_bundles.remove()
+        redis_store.flushall()
 
     def assertAppMongoDB(self, language, url, messages, messages_prefix = ''):
         resultUrl = mongo_translation_urls.find_one({'_id':'{0}_ALL_ALL::http://{1}/languages/{2}en_ALL.xml'.format(language, url, messages_prefix)})
@@ -315,6 +318,8 @@ class TestSync(TranslatorTest):
         mock_requests_cached_session().get = create_requests_mock()
 
         graasp_oauth_login_redirect()
+        task_sync_repo_apps_all()
+        task_download_repository_apps()
         task_synchronize_single_app("testing", 'http://url1/gadget.xml')
         self.assertApp1()
         self.assertGraaspAppNotFound()

@@ -46,7 +46,7 @@ def extract_local_translations_url(app_url, force_local_cache = False):
         json.dumps(messages),
         json.dumps(metadata)
     ])
-    redis_store.setex(redis_key, redis_value, time=600) # For 10 minutes
+    redis_store.setex(name=redis_key, time=10 * 60, value=redis_value) # For 10 minutes
     return absolute_translation_url, messages, metadata
 
 def extract_metadata_information(app_url, cached_requests = None, force_reload = False):
@@ -217,7 +217,7 @@ def _raise_for_status(url, response):
     response.raise_for_status()
 
 def _extract_locales(app_url, cached_requests):
-    
+    print(cached_requests, app_url)
     try:
         response = cached_requests.get(app_url, timeout = 30)
         _raise_for_status(app_url, response)
