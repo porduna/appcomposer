@@ -13,13 +13,20 @@ SPACE_URL = 'http://graasp.eu/spaces/560410b2f0e1b09f6c8116da'
 def get_languages():
     return ['en']
 
+class TimeoutError(Exception):
+    pass
+
 def get_contents(lang):
     if lang == 'en':
         resource_id = '560410f1f0e1b09f6c8117ec'
         requests = get_cached_session()
         request_url = "http://graasp.eu/resources/{0}/raw".format(resource_id)
-        r = requests.get(request_url)
-        r.raise_for_status()
+        try:
+            r = requests.get(request_url, timeout=(10,10))
+            r.raise_for_status()
+        except Exception:
+            raise TimeoutError("Timeout")
+
         try:
             return json.JSONDecoder(object_pairs_hook=OrderedDict).decode(r.text)
         except ValueError as ve:
@@ -74,7 +81,11 @@ def messages_to_xml(messages):
 @graasp_i18n_blueprint.route('/locales/graasp_<language>_ALL.xml')
 @report_error("Error on graasp i18n", additional_recipients = ['alex.wild@epfl.ch'])
 def locale(language):
-    contents = get_contents(language)
+    try:
+        contents = get_contents(language)
+    except TimeoutError:
+        return "Error retrieving external resource", 502
+
     if contents is None:
         return "Language not found", 404
     i18n_contents = OrderedDict()

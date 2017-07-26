@@ -59,8 +59,12 @@ def locale(language):
         return "Language not found", 404
 
     # xml_response = requests.get('http://go-lab.gw.utwente.nl/production/commons/commons_en_ALL.xml')
-    xml_response = requests.get('http://go-lab.gw.utwente.nl/production/commons/languages/common_{0}_ALL.xml'.format(language))
-    response = make_response(get_text_from_response(xml_response))
-    response.content_type = 'application/xml'
-    return response
+    try:
+        xml_response = requests.get('http://go-lab.gw.utwente.nl/production/commons/languages/common_{0}_ALL.xml'.format(language), timeout=(10,10))
+    except Exception:
+        return "Error requesting external resource", 502
+    else:
+        response = make_response(get_text_from_response(xml_response))
+        response.content_type = 'application/xml'
+        return response
 
