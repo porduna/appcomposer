@@ -9,7 +9,7 @@ install:
     - cp config.py.dist config.py
     - echo ACTIVATE_TRANSLATOR = True >> config.py
     - echo ACTIVATE_TRANSLATOR_MONGODB_PUSHES = True >> config.py
-    - alembic upgrade head
+#    - alembic upgrade head
 #before_script:
 #    - nohup python run.py &
 #    - export SELENIUM_HEADLESS=ENABLE
