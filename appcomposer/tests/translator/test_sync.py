@@ -5,7 +5,7 @@ import appcomposer.translator.translation_listing as trlisting
 from appcomposer.login import graasp_oauth_login_redirect
 from appcomposer.tests.translator.fake_requests import create_requests_mock
 from appcomposer.tests.utils import ComposerTest
-from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper
+from appcomposer.translator.tasks import synchronize_apps_no_cache_wrapper, task_synchronize_single_app
 from appcomposer.views.api import api_translate, bundle_update
 from appcomposer.translator.mongodb_pusher import mongo_translation_urls, mongo_bundles, sync
 
@@ -276,11 +276,11 @@ class TestSync(TranslatorTest):
         mock_requests_cached_session().get = create_requests_mock()
 
         graasp_oauth_login_redirect()
-        synchronize_apps_no_cache_wrapper("testing", None)
+        synchronize_apps_no_cache_wrapper("testing")
         self.assertApps()
         self.assertGraaspApp()
 
-        synchronize_apps_no_cache_wrapper("testing", None)
+        synchronize_apps_no_cache_wrapper("testing")
         self.assertApps(before = True)
         self.assertGraaspApp()
 
@@ -315,14 +315,14 @@ class TestSync(TranslatorTest):
         mock_requests_cached_session().get = create_requests_mock()
 
         graasp_oauth_login_redirect()
-        synchronize_apps_no_cache_wrapper("testing", 'http://url1/gadget.xml')
+        task_synchronize_single_app("testing", 'http://url1/gadget.xml')
         self.assertApp1()
         self.assertGraaspAppNotFound()
-        synchronize_apps_no_cache_wrapper("testing", 'http://composer.golabz.eu/graasp_i18n/')
+        task_synchronize_single_app("testing", 'http://composer.golabz.eu/graasp_i18n/')
         self.assertGraaspApp()
 
     @patch("appcomposer.translator.utils.get_cached_session")
     def test_sync2(self, mock):
         mock().get = create_requests_mock()
-        synchronize_apps_no_cache_wrapper("testing", None)
+        synchronize_apps_no_cache_wrapper("testing")
 
