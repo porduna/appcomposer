@@ -230,7 +230,9 @@ def send_update_notification(app_url):
 
     emails = []
     for subscription in translation_url_db.subscriptions:
-        emails.append(subscription.recipient.email)
+        # TODO: don't add more mails
+        # emails.append(subscription.recipient.email)
+        pass
 
     if len(emails) == 0:
         return
