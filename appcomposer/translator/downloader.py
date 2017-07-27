@@ -348,7 +348,7 @@ def _update_repo_app(task, repo_app):
             repo_app.failing_since = None
             repo_changes = True
 
-        current_hash = task.metadata_information['hash']
+        current_hash = task.metadata_information.pop('hash')
         if repo_app.downloaded_hash != current_hash:
             redis_store.hset(_REDIS_CACHE_KEY, repo_app.id, json.dumps(task.metadata_information))
             repo_app.downloaded_hash = current_hash

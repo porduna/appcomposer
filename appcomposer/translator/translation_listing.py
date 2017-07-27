@@ -6,7 +6,7 @@ from celery.utils.log import get_task_logger
 from appcomposer.db import db
 from appcomposer.models import RepositoryApp, TranslationBundle, TranslationUrl
 
-from appcomposer.translator.downloader import retrieve_updated_translatable_apps, retrieve_all_translatable_apps, retrieve_single_translatable_apps, update_content_hash
+from appcomposer.translator.downloader import retrieve_updated_translatable_apps, retrieve_all_translatable_apps, retrieve_single_translatable_apps, update_content_hash, sync_repo_apps, download_repository_apps
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_translations_percent, get_golab_default_user, start_synchronization, end_synchronization, get_bundles_by_key_namespaces
 
 DEBUG = True
@@ -14,10 +14,15 @@ DEBUG_VERBOSE = False
 
 logger = get_task_logger(__name__)
 
-def _generic_synchronize_apps(source, cached, provided_apps, single_app_url):
+def _generic_synchronize_apps(source, cached, provided_apps, single_app_url, full_cycle=False):
     sync_id = start_synchronization(source = source, cached = cached, single_app_url = single_app_url)
     number = 0
     try:
+        if full_cycle:
+            sync_repo_apps(force=True)
+            download_repository_apps()
+            provided_apps = retrieve_all_translatable_apps()
+
         _sync_translations(provided_apps, force_reload = not cached)
         number = len(provided_apps)
     finally:
@@ -32,8 +37,8 @@ def synchronize_apps_cache(source):
     
 def synchronize_apps_no_cache(source):
     """Force obtaining the results and checking everything again to avoid inconsistences. This should be run once a day."""
-    all_apps = retrieve_all_translatable_apps()
-    return _generic_synchronize_apps(source, cached=True, provided_apps = all_apps, single_app_url = None)
+    all_apps = []
+    return _generic_synchronize_apps(source, cached=True, provided_apps = all_apps, single_app_url = None, full_cycle=True)
 
 def synchronize_single_app_no_cached(source, single_app_url):
     single_app = retrieve_single_translatable_apps(single_app_url)

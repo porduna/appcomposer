@@ -157,14 +157,6 @@ def synchronize_apps_no_cache_wrapper(self, source = None):
     if source is None:
         source = 'scheduled'
     
-    # Sync golabz
-    with my_app.app_context():
-        sync_repo_apps(force=True)
-
-    # Download all the apps
-    with my_app.app_context():
-        download_repository_apps()
-
     # synchronize all the apps
     with my_app.app_context():
         result = synchronize_apps_no_cache(source = source)
