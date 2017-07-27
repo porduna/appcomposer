@@ -21,6 +21,7 @@ from appcomposer.translator.suggestions import load_all_google_suggestions
 from appcomposer.translator.mongodb_pusher import sync_mongodb_all, sync_mongodb_last_hour
 from appcomposer.translator.notifications import run_notifications, send_update_notification
 from appcomposer.translator.downloader import sync_repo_apps, download_repository_apps, download_repository_single_app, update_content_hash
+from appcomposer.translator.ops import start_synchronization, end_synchronization
 
 
 GOLAB_REPO = u'golabz'
@@ -222,7 +223,7 @@ def task_sync_repo_apps_cached(self):
     with my_app.app_context():
         changes = sync_repo_apps(force=False)
         if changes:
-            task_download_repository_apps.delay()
+            task_download_repository_apps.delay("changes-in-repo")
 
 
 @cel.task(name='sync_repo_apps_all', bind=True)
@@ -230,7 +231,7 @@ def task_sync_repo_apps_all(self):
     with my_app.app_context():
         changes = sync_repo_apps(force=True)
         if changes:
-            task_download_repository_apps.delay()
+            task_download_repository_apps.delay("changes-in-repo")
 
 
 @cel.task(name='download_repository_single_app', bind=True)
@@ -241,9 +242,18 @@ def task_download_repository_single_app(self, app_url):
             task_sync_mongodb_recent.delay()
 
 @cel.task(name='download_repository_apps', bind=True)
-def task_download_repository_apps(self):
-    with my_app.app_context():
-        changes = download_repository_apps()
-        if changes:
-            synchronize_apps_cache_wrapper.delay()
+def task_download_repository_apps(self, source = None):
+    if source is None:
+        source = 'sched-down'
 
+    with my_app.app_context():
+        sync_id = start_synchronization(source=source, cached=False)
+    
+    try:
+        with my_app.app_context():
+            changes = download_repository_apps()
+            if changes:
+                synchronize_apps_cache_wrapper.delay()
+    finally:
+        with my_app.app_context():
+            end_synchronization(sync_id, number = 0)
