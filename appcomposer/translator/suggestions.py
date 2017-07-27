@@ -2,9 +2,12 @@ import sys
 import hashlib
 import random
 import traceback
-import goslate
 
-from microsofttranslator import Translator as MSTranslator, TranslateApiException as MSTranslatorApiException, ArgumentOutOfRangeException
+from xml.etree import ElementTree
+
+import goslate
+import requests
+
 
 from celery.utils.log import get_task_logger
 
@@ -84,14 +87,12 @@ class MicrosoftTranslator(AbstractTranslator):
 
     def __init__(self):
         super(MicrosoftTranslator, self).__init__()
+        self.client_secret = None
+
         if self.options is not None:
-            client_id = self.options.get('client_id')
-            client_secret = self.options.get('client_secret')
-            if client_id is None or client_secret is None:
-                raise ValueError("Misconfigured application. If you use the Microsoft Translator, provide a client_id and a client_secret")
-            self.client = MSTranslator(client_id = client_id, client_secret = client_secret)
-        else:
-            self.client = None
+            self.client_secret = self.options.get('client_secret')
+            if self.client_secret is None:
+                raise ValueError("Misconfigured application. If you use the Microsoft Translator, provide a client_secret")
 
         self._languages = None
 
@@ -99,19 +100,63 @@ class MicrosoftTranslator(AbstractTranslator):
     def languages(self):
         if self._languages is not None:
             return self._languages
-        if self.client is None:
+        if self.client_secret is None:
             self._languages = []
         try:
-            self._languages = self.client.get_languages()
-        except MSTranslatorApiException:
-            return []
+            self._languages = self._get_languages()
         except Exception:
+            traceback.print_exc()
             return []
         return self._languages
 
+    def _get_token(self):
+        token_service_url = 'https://api.cognitive.microsoft.com/sts/v1.0/issueToken'
+
+        request_headers = {'Ocp-Apim-Subscription-Key': self.client_secret}
+
+        response = requests.post(token_service_url, headers=request_headers)
+        response.raise_for_status()
+
+        return response.content
+
+    def _get_languages(self):
+        headers = {"Authorization ": 'Bearer ' + self._get_token() }
+        url = "https://api.microsofttranslator.com/V2/Http.svc/GetLanguagesForTranslate"
+        languages = requests.get(url, headers = headers)
+        root = ElementTree.fromstring(languages.text.encode('utf-8'))
+        return [ e.text for e in root.findall("{http://schemas.microsoft.com/2003/10/Serialization/Arrays}string") ]
+
+    def _translate_messages(self, messages, language):
+        request_root = ElementTree.fromstring("""<GetTranslationsArrayRequest>
+          <AppId></AppId>
+          <From>en</From>
+          <Options>
+          </Options>
+          <Texts>
+          </Texts>
+          <To>{lang}</To>
+          <MaxTranslations>1000</MaxTranslations>
+        </GetTranslationsArrayRequest>""".format(lang=language))
+
+        texts = request_root.find("Texts")
+        for message in messages:
+            subelement = ElementTree.SubElement(texts, '{http://schemas.microsoft.com/2003/10/Serialization/Arrays}string')
+            subelement.text = message
+
+        data = ElementTree.tostring(request_root)
+
+        url = "https://api.microsofttranslator.com/V2/Http.svc/GetTranslationsArray"
+        headers = {
+            'Authorization': 'Bearer ' + self._get_token(),
+            'Content-Type': 'application/xml'
+        }
+        translation_data = requests.post(url, data=data, headers = headers).text
+        root = ElementTree.fromstring(translation_data.encode('utf8'))
+        return [ e.text for e in root.findall(".//{http://schemas.datacontract.org/2004/07/Microsoft.MT.Web.Service.V2}TranslatedText") ]
+
     def _translate(self, texts, language, origin_language = 'en'):
         """ [ 'Hello' ], 'es' => { 'Hello' : 'Hola' } """
-        if self.client is None:
+        if self.client_secret is None:
             return {}
 
         if language not in self.languages:
@@ -140,8 +185,8 @@ class MicrosoftTranslator(AbstractTranslator):
             if current_slice:
                 app.logger.debug("Translating %r to %r using Microsoft Translator API" % (current_slice, language))
                 try:
-                    current_ms_translations = self.client.translate_array(texts = current_slice, to_lang = language, from_lang = origin_language)
-                except (MSTranslatorApiException, ArgumentOutOfRangeException, ValueError, Exception) as e:
+                    current_ms_translations = self._translate_messages(messages = current_slice, language = language)
+                except Exception as e:
                     traceback.print_exc()
                     app.logger.warn("Error translating using Microsoft Translator API: %s" % e, exc_info = True)
                     errors = True
@@ -155,16 +200,8 @@ class MicrosoftTranslator(AbstractTranslator):
         
         translations = {}
         for text, translation in zip(texts, ms_translations):
-            try:
-                translated_text = translation.get('TranslatedText')
-            except:
-                import traceback
-                print(translation)
-                traceback.print_exc()
-                continue
-            else:
-                if translated_text:
-                    translations[text] = translated_text
+            if translation:
+                translations[text] = translation
         sys.stdout.flush()
         sys.stderr.flush()
         return translations

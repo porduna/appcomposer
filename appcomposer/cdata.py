@@ -1,6 +1,7 @@
 import xml.etree.ElementTree as ET
 
-ET.sorted = lambda x: x
+# Don't sort things (so the order is preserved)
+ET.sorted = lambda x, *args, **kwargs: x
 
 # Code from: 
 # http://stackoverflow.com/questions/1091945/what-characters-do-i-need-to-escape-in-xml-documents
