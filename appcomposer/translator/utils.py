@@ -65,7 +65,7 @@ class _LastModifiedNoDate(LastModified):
         current_age = max(0, now - date)
         delta = date - calendar.timegm(last_modified)
         # So, by default, if it has a last-modified, don't check in the next 5 minutes. (not 1 day as it was previously defined)
-        MAX_TIME = 300 # seconds
+        MAX_TIME = 120 # seconds
         freshness_lifetime = max(0, min(delta * self.error_margin, MAX_TIME)) # max so as to avoid negative numbers
         if freshness_lifetime <= current_age:
             return {}
