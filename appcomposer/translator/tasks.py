@@ -41,7 +41,7 @@ cel.conf.update(
     worker_prefetch_multiplier=4,
     worker_concurrency=4,
     task_acks_late="1",
-    task_ignore_resultLT=True,
+    task_ignore_result=True,
     task_serializer='json',
 
 

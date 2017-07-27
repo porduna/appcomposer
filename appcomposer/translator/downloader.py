@@ -77,6 +77,7 @@ def sync_repo_apps(force=False):
             stored_ids.append(unicode(external_id))
             app = apps_by_repo_id[repo_app.repository, external_id]
             _update_existing_app(repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app.get('app_thumb'), description = app.get('description'), app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), repository = app['repository'])
+
         else:
             # Delete old apps (translations are kept, and the app is kept, but not listed in the repository apps)
             db.session.delete(repo_app)
