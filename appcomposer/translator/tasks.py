@@ -240,5 +240,5 @@ def task_download_repository_apps(self):
     with my_app.app_context():
         changes = download_repository_apps()
         if changes:
-            task_sync_mongodb_recent.delay()
+            synchronize_apps_cache_wrapper.delay()
 
