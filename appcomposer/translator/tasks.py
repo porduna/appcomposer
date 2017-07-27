@@ -46,11 +46,6 @@ cel.conf.update(
 
 
     beat_schedule = {
-        'synchronize_apps_cache': {
-            'task': 'synchronize_apps_cache',
-            'schedule': datetime.timedelta(minutes=5),
-            'args': ()
-        },
         'delete_old_realtime_active_users' : {
             'task' : 'delete_old_realtime_active_users',
             'schedule' : datetime.timedelta(hours = 1),
@@ -61,13 +56,23 @@ cel.conf.update(
             'schedule' : datetime.timedelta(minutes = 5),
             'args' : ()
         },
-        'sync_repo_apps_cached': {
+        'synchronize_apps_cache': { # This must be triggered even if there is no change in the contents
+            'task': 'synchronize_apps_cache',
+            'schedule': datetime.timedelta(minutes=5),
+            'args': ()
+        },
+        'download_repository_apps': { # This triggers synchronize_apps_cache too, but only if a change in the original contents
+            'task': 'download_repository_apps',
+            'schedule': datetime.timedelta(minutes=5),
+            'args': ()
+        },
+        'sync_repo_apps_cached': { # This triggers download_repository_apps too, but only if a change in the golabz repo
             'task' : 'sync_repo_apps_cached',
             'schedule' : datetime.timedelta(minutes = 5),
             'args' : ()
         },
         
-        # Crontab-based tasks
+        # Crontab-based tasks: slow tasks at night
         'sync_repo_apps_all': {
             'task' : 'sync_repo_apps_all',
             'schedule' : crontab(hour=3, minute=30),
