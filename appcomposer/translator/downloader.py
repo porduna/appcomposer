@@ -374,6 +374,7 @@ def _update_repo_app(task, repo_app):
             current_contents = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)
             if current_contents is None:
                 redis_store.hset(_REDIS_CACHE_KEY, repo_app.id, json.dumps(task.metadata_information))
+                repo_changes = True
 
     if repo_changes:
         repo_app.last_change = datetime.datetime.utcnow()
