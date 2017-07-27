@@ -144,7 +144,7 @@ class RepositoryApp(db.Model):
         if not languages:
             return
 
-        for orig_lang in self.original_translations:
+        for orig_lang in self.original_translations.split(','):
             if orig_lang in languages:
                 languages.remove(orig_lang)
 
@@ -157,9 +157,8 @@ class RepositoryAppLanguage(db.Model):
     __tablename__ = 'RepositoryApp2languages'
     __table_args__ = (UniqueConstraint('repository_app_id', 'language_id'), )
     
-    id = db.Column(db.Integer, primary_key=True)
-    repository_app_id = db.Column(db.Integer, db.ForeignKey('RepositoryApps.id'))
-    language_id = db.Column(db.Integer, db.ForeignKey('Languages.id'))
+    repository_app_id = db.Column(db.Integer, db.ForeignKey('RepositoryApps.id'), primary_key=True)
+    language_id = db.Column(db.Integer, db.ForeignKey('Languages.id'), primary_key=True)
 
     language = db.relation("Language", backref="repository_apps")
     repository_app = db.relation("RepositoryApp", backref="languages")
