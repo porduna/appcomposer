@@ -60,8 +60,6 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
     default_translation_url = None
     default_metadata = {}
 
-    total_hash = zlib.crc32(body.encode('utf8'))
-
     if len(locales) == 0:
         translatable = False
     else:
@@ -79,7 +77,6 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
                     logging.warning(u"Could not load %s translation for app URL: %s Reason: %s" % (lang, app_url, e), exc_info = True)
                     continue
                 else:
-                    total_hash += zlib.crc32(locale_contents.encode('utf8'))
                     new_messages = {}
                     if messages:
                         for key, value in messages.iteritems():
@@ -94,7 +91,6 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
         if default_locale is not None:
             messages_url = default_locale.attrib.get('messages')
             absolute_url, messages, metadata, locale_contents = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests)
-            total_hash += zlib.crc32(locale_contents.encode('utf8'))
             default_translations = messages
             default_translation_url = absolute_url
             default_metadata = metadata
@@ -112,8 +108,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
 
     adaptable = ' data-configuration ' in body and ' data-configuration-definition ' in body
 
-    return {
-        'hash': unicode(total_hash),
+    metadata = {
         'translatable' : translatable,
         'adaptable' : adaptable,
         'original_translations' : original_translations,
@@ -122,6 +117,9 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
         'default_translation_url' : default_translation_url,
         'default_metadata' : default_metadata,
     }
+
+    metadata['hash'] = zlib.crc32(json.dumps(metadata))
+    return metadata
 
 def extract_messages_from_translation(messages_absolute_url, xml_contents):
     contents = fromstring(xml_contents)

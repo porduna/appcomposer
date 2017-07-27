@@ -342,6 +342,7 @@ def load_all_google_suggestions():
     # Then, try to create suggestions all the languages to English for developers
     for language in ORDERED_LANGUAGES:
         _load_all_google_suggestions(language, ['en'])
+
 if __name__ == '__main__':
     with app.app_context():
         print existing_translations(["Hello", "Bye", "Good morning", "This was never stored"], 'es')
