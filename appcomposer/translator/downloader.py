@@ -370,8 +370,11 @@ def _update_repo_app(task, repo_app):
             repo_app.original_translations = u','.join(task.metadata_information.get('original_translations', {}).keys())
 
             repo_changes = True
-
-            unique_file = 'change_report_{}_{}'.format(repo_app.id, time.time())
+    
+            import os
+            if not os.path.exists('change_reports'):
+                os.mkdir('change_reports')
+            unique_file = 'change_reports/change_report_{}_{}'.format(repo_app.id, time.time())
             open(unique_file, 'w').write(json.dumps({
                 'before': {
                     'hash': previous_hash,
