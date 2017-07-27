@@ -213,22 +213,41 @@ def run_notifications():
         html_msg += "<p>If you don't want to receive these e-mails, please reply this e-mail.</p><p>--<br>The Go-Lab App Composer team<p>"
 
         recipient = recipients_by_id[recipient_id]
-
+        
+        subject = "Translations for %s" % ('; '.join([ name for name in names_for_subject if name ]))
         try:
-            send_notification(recipient.email, txt_msg, html_msg, '; '.join([ name for name in names_for_subject if name ]))
+            send_notification([ recipient.email ], txt_msg, html_msg, subject)
         except:
             traceback.print_exc()
         else:
             print "Notification sent to %s about changes in %s" % (recipient.email, repr(translation_urls))
     print "Finished notification process"
 
+def send_update_notification(app_url):
+    translation_url_db = db.session.query(TranslationUrl).fiter(TranslatedApp.url == app_url, TranslatedApp.translation_url_id == TranslationUrl.id).first()
+    if translation_url_db is None:
+        return
 
-def send_notification(recipient, txt_body, html_body, translated_titles):
+    emails = []
+    for subscription in translation_url_db.subscriptions:
+        emails.append(subscription.recipient.email)
+
+    if len(emails) == 0:
+        return
+    
+    txt_msg = "Hi,\n\nThis is a quick mail to confirm that the AppComposer is aware of changes in the app: {}\n\nThe AppComposer team".format(app_url)
+    try:
+        send_notification(emails, txt_msg, None, "Change confirmed")
+    except:
+        traceback.print_exc()
+    
+
+def send_notification(recipients, txt_body, html_body, subject):
     ACTIVE = True
     if ACTIVE:
-        to_addrs = list(app.config.get('ADMINS', [])) + [ recipient ]
+        to_addrs = list(app.config.get('ADMINS', [])) + list(recipients)
     else:
-        to_addrs = list(app.config.get('ADMINS', [])) # + [ recipient ]
+        to_addrs = list(app.config.get('ADMINS', [])) # + list(recipients)
     from_addr = 'weblab@deusto.es'
 
     smtp_server = app.config.get("SMTP_SERVER")
@@ -236,14 +255,15 @@ def send_notification(recipient, txt_body, html_body, translated_titles):
         return
 
     msg = MIMEMultipart('alternative')
-    msg['Subject'] = "[AppComp] Translations for %s" % translated_titles
+    msg['Subject'] = "[AppComp] %s" % subject
     msg['From'] = "App Composer Translator <weblab@deusto.es>"
-    msg['To'] = recipient
+    msg['To'] = ', '.join(recipients)
 
     part1 = MIMEText(txt_body.encode('utf8'), 'plain', _charset='UTF-8')
-    part2 = MIMEText(html_body.encode('utf8'), 'html', _charset='UTF-8')
     msg.attach(part1)
-    msg.attach(part2)
+    if html_body:
+        part2 = MIMEText(html_body.encode('utf8'), 'html', _charset='UTF-8')
+        msg.attach(part2)
 
     server = smtplib.SMTP(smtp_server)
     server.sendmail(from_addr, to_addrs, msg.as_string())

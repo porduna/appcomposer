@@ -19,7 +19,7 @@ from appcomposer.models import TranslationCurrentActiveUser
 from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, synchronize_single_app_no_cached
 from appcomposer.translator.suggestions import load_all_google_suggestions
 from appcomposer.translator.mongodb_pusher import sync_mongodb_all, sync_mongodb_last_hour
-from appcomposer.translator.notifications import run_notifications
+from appcomposer.translator.notifications import run_notifications, send_update_notification
 from appcomposer.translator.downloader import sync_repo_apps, download_repository_apps, download_repository_single_app, update_content_hash
 
 
@@ -102,6 +102,9 @@ cel.conf.update(
         'notify_changes' : {
             'queue': CRITICAL_INDEPENDENT_TASKS,
         },
+        'send_update_notification' : {
+            'queue': CRITICAL_INDEPENDENT_TASKS,
+        },
         'sync_mongodb_recent' : {
             'queue': CRITICAL_INDEPENDENT_TASKS,
         },
@@ -141,6 +144,11 @@ cel.conf.update(
 def task_notify_changes(self):
     with my_app.app_context():
         return run_notifications()
+
+@cel.task(name='send_update_notification', bind=True)
+def task_send_update_notification(self, app_url):
+    with my_app.app_context():
+        return send_update_notification(app_url)
 
 @cel.task(name='synchronize_apps_cache', bind=True)
 def synchronize_apps_cache_wrapper(self, source = None):

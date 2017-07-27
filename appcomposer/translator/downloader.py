@@ -364,6 +364,9 @@ def _update_repo_app(task, repo_app):
 
             repo_changes = True
 
+            from appcomposer.translator.tasks import task_send_update_notification
+            task_send_update_notification.delay(repo_app.url)
+
     if repo_changes:
         repo_app.last_change = datetime.datetime.utcnow()
         repo_app.last_download_change = datetime.datetime.utcnow()
@@ -505,3 +508,4 @@ def _get_other_apps():
         TWENTE_COMMONS['app_url'] = 'http://localhost:5000/twente_commons/'
 
     return OTHER_APPS
+
