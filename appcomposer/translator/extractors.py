@@ -217,7 +217,6 @@ def _raise_for_status(url, response):
     response.raise_for_status()
 
 def _extract_locales(app_url, cached_requests):
-    print(cached_requests, app_url)
     try:
         response = cached_requests.get(app_url, timeout = 30)
         _raise_for_status(app_url, response)

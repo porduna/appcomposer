@@ -209,7 +209,11 @@ def retrieve_updated_translatable_apps():
     return _retrieve_translatable_apps(query = db.session.query(RepositoryApp).filter(
                         RepositoryApp.translatable == True,                                  # Only translatable pages
                         RepositoryApp.failing == False,                                      # Which are not failing
-                        or_( # OR if they have changed somewhere:
+                        or_(
+                            # If it has never been processed
+                            RepositoryApp.last_processed_downloaded_hash == None,
+                            RepositoryApp.last_processed_contents_hash == None,
+                            # or if they have changed somewhere:
                             RepositoryApp.last_processed_downloaded_hash != RepositoryApp.downloaded_hash,  # Either when downloading
                             RepositoryApp.last_processed_contents_hash != RepositoryApp.contents_hash,  # Or either by a user changing something
                         )
@@ -366,6 +370,10 @@ def _update_repo_app(task, repo_app):
 
             from appcomposer.translator.tasks import task_send_update_notification
             task_send_update_notification.delay(repo_app.url)
+        else: # same hash, still check (if redis was restarted or something, the database will say that it's gone while it's not)
+            current_contents = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)
+            if current_contents is None:
+                redis_store.hset(_REDIS_CACHE_KEY, repo_app.id, json.dumps(task.metadata_information))
 
     if repo_changes:
         repo_app.last_change = datetime.datetime.utcnow()

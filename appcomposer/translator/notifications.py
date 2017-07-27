@@ -224,7 +224,7 @@ def run_notifications():
     print "Finished notification process"
 
 def send_update_notification(app_url):
-    translation_url_db = db.session.query(TranslationUrl).fiter(TranslatedApp.url == app_url, TranslatedApp.translation_url_id == TranslationUrl.id).first()
+    translation_url_db = db.session.query(TranslationUrl).filter(TranslatedApp.url == app_url, TranslatedApp.translation_url_id == TranslationUrl.id).first()
     if translation_url_db is None:
         return
 
