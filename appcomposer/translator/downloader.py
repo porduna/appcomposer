@@ -354,6 +354,9 @@ def _update_repo_app(task, repo_app):
 
         current_hash = task.metadata_information.pop('hash')
         if repo_app.downloaded_hash != current_hash:
+            previous_contents = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)
+            previous_hash = repo_app.downloaded_hash
+
             redis_store.hset(_REDIS_CACHE_KEY, repo_app.id, json.dumps(task.metadata_information))
             repo_app.downloaded_hash = current_hash
 
@@ -367,6 +370,18 @@ def _update_repo_app(task, repo_app):
             repo_app.original_translations = u','.join(task.metadata_information.get('original_translations', {}).keys())
 
             repo_changes = True
+
+            unique_file = 'change_report_{}_{}'.format(repo_app.id, time.time())
+            open(unique_file, 'w').write(json.dumps({
+                'before': {
+                    'hash': previous_hash,
+                    'contents': json.loads(previous_contents or '{}'),
+                },
+                'after': {
+                    'hash': current_hash,
+                    'contents': task.metadata_information,
+                }
+            }, indent=4))
 
             from appcomposer.translator.tasks import task_send_update_notification
             task_send_update_notification.delay(repo_app.url)

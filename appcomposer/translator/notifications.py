@@ -232,7 +232,10 @@ def send_update_notification(app_url):
     for subscription in translation_url_db.subscriptions:
         # TODO: don't add more mails
         # emails.append(subscription.recipient.email)
-        pass
+        # TODO: REMOVE THIS:
+        admins = app.config.get('ADMINS', [])
+        if admins:
+            emails.append(admins[0])
 
     if len(emails) == 0:
         return
