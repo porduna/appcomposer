@@ -23,6 +23,6 @@ selenium==2.44.0
 lockfile==0.10.2
 celery==4.0.2
 pymongo==3.0.3
-goslate==1.4.0
+goslate==1.5.1
 redis==2.10.5
 coverage==4.0.2
