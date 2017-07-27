@@ -33,7 +33,6 @@ def synchronize_apps_cache(source):
     """Force obtaining the results and checking everything again to avoid inconsistences. 
     This can safely be run every few minutes, since most applications will be in the cache."""
     updated_apps = retrieve_updated_translatable_apps()
-    print(updated_apps)
     return _generic_synchronize_apps(source, cached=True, provided_apps = updated_apps, single_app_url = None)
     
 def synchronize_apps_no_cache(source):
