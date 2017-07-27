@@ -356,8 +356,8 @@ def _update_repo_app(task, repo_app):
         if repo_app.downloaded_hash != current_hash:
             previous_contents = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)
             previous_hash = repo_app.downloaded_hash
-
-            redis_store.hset(_REDIS_CACHE_KEY, repo_app.id, json.dumps(task.metadata_information))
+            new_contents = json.dumps(task.metadata_information)
+            redis_store.hset(_REDIS_CACHE_KEY, repo_app.id, new_contents)
             repo_app.downloaded_hash = current_hash
 
             if task.metadata_information.get('translatable') and len(task.metadata_information.get('default_translations', [])) > 0:
@@ -378,11 +378,11 @@ def _update_repo_app(task, repo_app):
             open(unique_file, 'w').write(json.dumps({
                 'before': {
                     'hash': previous_hash,
-                    'contents': json.loads(previous_contents or '{}'),
+                    'contents': previous_contents,
                 },
                 'after': {
                     'hash': current_hash,
-                    'contents': task.metadata_information,
+                    'contents': new_contents,
                 }
             }, indent=4))
 

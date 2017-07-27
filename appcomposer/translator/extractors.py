@@ -117,8 +117,9 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
         'default_translation_url' : default_translation_url,
         'default_metadata' : default_metadata,
     }
-
-    metadata['hash'] = unicode(zlib.crc32(json.dumps(metadata)))
+    
+    serialized = json.dumps(metadata)
+    metadata['hash'] = unicode(zlib.crc32(serialized))
     return metadata
 
 def extract_messages_from_translation(messages_absolute_url, xml_contents):
