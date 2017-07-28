@@ -249,6 +249,8 @@ def run_update_notifications():
         else:
             break
 
+    app_urls = list(set(app_urls)) # Duplicated don't cause two messages or listed twice
+
     if not app_urls:
         return
 
