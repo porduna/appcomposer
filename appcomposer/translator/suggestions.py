@@ -126,17 +126,17 @@ class MicrosoftTranslator(AbstractTranslator):
         root = ElementTree.fromstring(languages.text.encode('utf-8'))
         return [ e.text for e in root.findall("{http://schemas.microsoft.com/2003/10/Serialization/Arrays}string") ]
 
-    def _translate_messages(self, messages, language):
+    def _translate_messages(self, messages, language, origin_language):
         request_root = ElementTree.fromstring("""<GetTranslationsArrayRequest>
           <AppId></AppId>
-          <From>en</From>
+          <From>{origin}</From>
           <Options>
           </Options>
           <Texts>
           </Texts>
           <To>{lang}</To>
           <MaxTranslations>1000</MaxTranslations>
-        </GetTranslationsArrayRequest>""".format(lang=language))
+        </GetTranslationsArrayRequest>""".format(lang=language, origin=origin_language))
 
         texts = request_root.find("Texts")
         for message in messages:
@@ -161,6 +161,8 @@ class MicrosoftTranslator(AbstractTranslator):
 
         if language not in self.languages:
             return {}
+
+        unique_texts = list(set(texts))
         
         slices = [
             # the size of a slice can't be over 10k characters in theory (we try to keep them under 5k in practice)
@@ -169,7 +171,7 @@ class MicrosoftTranslator(AbstractTranslator):
         ]
         current_slice = slices[0]
 
-        for text in texts:
+        for text in unique_texts:
             current_slice.append(text)
             if len(u''.join(current_slice).encode('utf8')) > 2000:
                 current_slice = []
@@ -179,32 +181,29 @@ class MicrosoftTranslator(AbstractTranslator):
         for pos, slice in enumerate(slices):
             app.logger.debug("  slice: {}: {} characters".format(pos, len(''.join(slice).encode('utf8'))))
         
-        ms_translations = []
+        ms_translations = {}
         errors = False
         for current_slice in slices:
             if current_slice:
                 app.logger.debug("Translating %r to %r using Microsoft Translator API" % (current_slice, language))
                 try:
-                    current_ms_translations = self._translate_messages(messages = current_slice, language = language)
+                    current_ms_translations = self._translate_messages(messages = current_slice, language = language, origin_language=origin_language)
                 except Exception as e:
                     traceback.print_exc()
                     app.logger.warn("Error translating using Microsoft Translator API: %s" % e, exc_info = True)
                     errors = True
                     continue
                 else:
-                    ms_translations.extend(list(current_ms_translations))
+                    for current_text, current_translation in zip(current_slice, current_ms_translations):
+                        ms_translations[current_text] = current_translation
                     app.logger.debug("Translated %s sentences using Microsoft Translator API" % len(current_ms_translations))
 
         if errors and not ms_translations:
             return {}
         
-        translations = {}
-        for text, translation in zip(texts, ms_translations):
-            if translation:
-                translations[text] = translation
         sys.stdout.flush()
         sys.stderr.flush()
-        return translations
+        return ms_translations
 
 class GoogleTranslator(AbstractTranslator):
     name = 'google'
