@@ -371,21 +371,6 @@ def _update_repo_app(task, repo_app):
 
             repo_changes = True
     
-            import os
-            if not os.path.exists('change_reports'):
-                os.mkdir('change_reports')
-            unique_file = 'change_reports/change_report_{}_{}'.format(repo_app.id, time.time())
-            open(unique_file, 'w').write(json.dumps({
-                'before': {
-                    'hash': previous_hash,
-                    'contents': previous_contents,
-                },
-                'after': {
-                    'hash': current_hash,
-                    'contents': new_contents,
-                }
-            }, indent=4))
-
             from appcomposer.translator.tasks import task_send_update_notification
             task_send_update_notification.delay(repo_app.url)
         else: # same hash, still check (if redis was restarted or something, the database will say that it's gone while it's not)
