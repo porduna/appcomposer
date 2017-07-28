@@ -267,7 +267,7 @@ def run_update_notifications():
             repos_by_trurl[trurl].append(repo_by_app_url[trapp])
 
     translation_urls = db.session.query(TranslationUrl).filter(TranslatedApp.url.in_(app_urls), TranslatedApp.translation_url_id == TranslationUrl.id).all()
-    subscriptions = db.session.query(TranslationSubscription).filter_by(TranslationSubscription.translation_url_id.in_([ trurl.id for trurl in translation_urls ])).options(joinedload('recipient')).all()
+    subscriptions = db.session.query(TranslationSubscription).filter(TranslationSubscription.translation_url_id.in_([ trurl.id for trurl in translation_urls ])).options(joinedload('recipient')).all()
 
     emails = {
         # email: [
