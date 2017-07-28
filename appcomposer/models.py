@@ -397,6 +397,7 @@ class TranslationExternalSuggestion(db.Model):
     language = db.Column(db.Unicode(255), index = True)
     origin_language = db.Column(db.Unicode(20), index = True)
     value = db.Column(db.UnicodeText)
+    created = db.Column(db.DateTime)
 
     def __init__(self, engine, human_key, language, origin_language, value):
         self.engine = engine
@@ -405,6 +406,7 @@ class TranslationExternalSuggestion(db.Model):
         self.language = language
         self.origin_language = origin_language
         self.value = value
+        self.created = datetime.datetime.utcnow()
 
 
 class TranslationSyncLog(db.Model):

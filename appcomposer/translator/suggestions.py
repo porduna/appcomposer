@@ -232,7 +232,10 @@ def translate_texts(texts, language, origin_language = 'en'):
         current_translations = translator.translate_texts(texts, language, origin_language)
         for key, values in current_translations.iteritems():
             if key not in translations:
-                print("Corrupt translation. translator {} returned key {} not found in the original".format(translator, key))
+                try:
+                    print(u"Corrupt translation. translator {} returned key {} not found in the original".format(translator, key))
+                except:
+                    traceback.print_exc()
                 continue
             for value, weight in values.iteritems():
                 if value not in translations[key]:
