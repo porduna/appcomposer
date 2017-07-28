@@ -118,9 +118,30 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
         'default_metadata' : default_metadata,
     }
     
-    serialized = json.dumps(metadata)
-    metadata['hash'] = unicode(zlib.crc32(serialized))
+    translation_hash, serialized = _calculate_translations_hash(original_translations, default_translations)
+    metadata['hash'] = translation_hash
     return metadata
+
+def _calculate_translations_hash(original_translations, default_translations):
+    values = [
+        # [
+        #     lang,
+        #     [('category', None), ('tool_id', None)...] # Sorted by key
+        # ]
+    ]
+    for term, term_data in default_translations.items():
+        listed_data = sorted(list(term_data.items()), lambda (k1, v1), (k2, v2): cmp(k1, k2))
+        values.append([ term, listed_data ])
+
+    for lang, lang_data in original_translations.items():
+        listed_data = sorted(list(lang_data.items()), lambda (k1, v1), (k2, v2): cmp(k1, k2))
+        values.append([ lang, listed_data])
+
+    values.sort(lambda (k1, v1), (k2, v2): cmp(k1, k2))
+
+    contents = json.dumps(values)
+    return unicode(zlib.crc32(contents)), contents
+
 
 def extract_messages_from_translation(messages_absolute_url, xml_contents):
     contents = fromstring(xml_contents)
