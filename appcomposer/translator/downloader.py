@@ -371,8 +371,8 @@ def _update_repo_app(task, repo_app):
 
             repo_changes = True
     
-            from appcomposer.translator.tasks import task_send_update_notification
-            task_send_update_notification.delay(repo_app.url)
+            redis_store.rpush('appcomposer:downloader:changes', repo_app.url)
+
         else: # same hash, still check (if redis was restarted or something, the database will say that it's gone while it's not)
             current_contents = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)
             if current_contents is None:

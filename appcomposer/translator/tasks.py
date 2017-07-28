@@ -19,7 +19,7 @@ from appcomposer.models import TranslationCurrentActiveUser
 from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, synchronize_single_app_no_cached
 from appcomposer.translator.suggestions import load_all_google_suggestions
 from appcomposer.translator.mongodb_pusher import sync_mongodb_all, sync_mongodb_last_hour
-from appcomposer.translator.notifications import run_notifications, send_update_notification
+from appcomposer.translator.notifications import run_notifications, run_update_notifications
 from appcomposer.translator.downloader import sync_repo_apps, download_repository_apps, download_repository_single_app, update_content_hash
 from appcomposer.translator.ops import start_synchronization, end_synchronization
 
@@ -55,6 +55,11 @@ cel.conf.update(
         'notify_changes' : {
             'task' : 'notify_changes',
             'schedule' : datetime.timedelta(minutes = 5),
+            'args' : ()
+        },
+        'notify_updates' : {
+            'task' : 'notify_updates',
+            'schedule' : datetime.timedelta(minutes = 1),
             'args' : ()
         },
         'synchronize_apps_cache': { # This must be triggered even if there is no change in the contents
@@ -108,7 +113,7 @@ cel.conf.update(
         'notify_changes' : {
             'queue': CRITICAL_INDEPENDENT_TASKS,
         },
-        'send_update_notification' : {
+        'notify_updates' : {
             'queue': CRITICAL_INDEPENDENT_TASKS,
         },
         'sync_mongodb_recent' : {
@@ -151,10 +156,10 @@ def task_notify_changes(self):
     with my_app.app_context():
         return run_notifications()
 
-@cel.task(name='send_update_notification', bind=True)
-def task_send_update_notification(self, app_url):
+@cel.task(name='notify_updates', bind=True)
+def task_notify_updates(self):
     with my_app.app_context():
-        return send_update_notification(app_url)
+        return run_update_notifications()
 
 @cel.task(name='synchronize_apps_cache', bind=True)
 def synchronize_apps_cache_wrapper(self, source = None):

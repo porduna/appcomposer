@@ -6,8 +6,10 @@ from email.mime.multipart import MIMEMultipart
 from email.mime.text import MIMEText
 
 from sqlalchemy import func
+from sqlalchemy.orm import joinedload
 
 from flask import render_template, current_app
+from appcomposer import redis_store
 from appcomposer.db import db
 from appcomposer.models import TranslationSubscription, TranslationNotificationRecipient, TranslationUrl, TranslationBundle, ActiveTranslationMessage, GoLabOAuthUser, TranslationMessageHistory, TranslatedApp, RepositoryApp
 
@@ -238,25 +240,70 @@ def run_notifications():
             print "Notification sent to %s about changes in %s" % (recipient.email, repr(translation_urls))
     print "Finished notification process"
 
-def send_update_notification(app_url):
-    translation_url_db = db.session.query(TranslationUrl).filter(TranslatedApp.url == app_url, TranslatedApp.translation_url_id == TranslationUrl.id).first()
-    if translation_url_db is None:
+def run_update_notifications():
+    app_urls = []
+    while True:
+        app_url = redis_store.lpop('appcomposer:downloader:changes')
+        if app_url:
+            app_urls.append(app_url)
+        else:
+            break
+
+    if not app_urls:
         return
 
-    emails = []
-    for subscription in translation_url_db.subscriptions:
-        emails.append(subscription.recipient.email)
-        # TODO: REMOVE THIS:
-        # admins = app.config.get('ADMINS', [])
-        # if admins:
-        #     emails.append(admins[0])
+    repo_by_app_url = { repo.url: repo for repo in db.session.query(RepositoryApp).filter(RepositoryApp.url.in_(app_urls)).all() }
+    translation_apps = { trapp.url: trapp.translation_url.url for trapp in db.session.query(TranslatedApp).filter(TranslatedApp.url.in_(app_urls)).all() }
+    repos_by_trurl = {
+        # trurl: [ trapp ]
+    }
+    for trapp, trurl in translation_apps.items():
+        if trurl not in repos_by_trurl:
+            repos_by_trurl[trurl] = []
 
-    if len(emails) == 0:
-        return
-    
-    txt_msg = "Hi,\n\nThis is a quick mail to confirm that the AppComposer is aware of changes in the app: {}\n\nThe AppComposer team".format(app_url)
+        if trapp in repo_by_app_url:
+            repos_by_trurl[trurl].append(repo_by_app_url[trapp])
+
+    translation_urls = db.session.query(TranslationUrl).filter(TranslatedApp.url.in_(app_urls), TranslatedApp.translation_url_id == TranslationUrl.id).all()
+    subscriptions = db.session.query(TranslationSubscription).filter_by(TranslationSubscription.translation_url_id.in_([ trurl.id for trurl in translation_urls ])).options(joinedload('recipient')).all()
+
+    emails = {
+        # email: [
+        #    {
+        #        'name': 'Hypothesis scratchpad',
+        #        'app_url': '',
+        #    },
+        #    {
+        #        'name': 'Foo',
+        #        'url': '',
+        #    }
+        # ]
+    }
+
+    for subscription in subscriptions:
+        email = subscription.recipient.email
+        
+        if email not in emails:
+            emails[email] = []
+
+        repo = repo_by_app_url.get(subscription.translation_url)
+        if repo:
+            emails[email].append({
+                'name': repo.name,
+                'url': repo.url,
+            })
+
+    for email, apps in emails.items():
+        send_update_notification(email, apps)
+        
+
+def send_update_notification(email, apps):
+    txt_msg = u"Hi,\n\nThis is a quick mail to confirm that the AppComposer is aware of changes in the following apps:\n"
+    for app in apps:
+        txt_msg += u" + {} ({})\n".format(app['name'], app['url'])
+    txt_msg += u"\nThe AppComposer team"
     try:
-        send_notification(emails, txt_msg, None, "Change confirmed")
+        send_notification([ email ], txt_msg, None, "Change confirmed")
     except:
         traceback.print_exc()
     
