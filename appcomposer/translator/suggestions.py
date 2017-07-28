@@ -166,6 +166,7 @@ class MicrosoftTranslator(AbstractTranslator):
         
         slices = [
             # the size of a slice can't be over 10k characters in theory (we try to keep them under 5k in practice)
+            # Neither more than 10 elements per slice (!!!)
             # [ element1, element2, element3 ...]
             [],
         ]
@@ -173,7 +174,7 @@ class MicrosoftTranslator(AbstractTranslator):
 
         for text in unique_texts:
             current_slice.append(text)
-            if len(u''.join(current_slice).encode('utf8')) > 2000:
+            if len(u''.join(current_slice).encode('utf8')) > 2000 or len(current_slice) == 10:
                 current_slice = []
                 slices.append(current_slice)
 
@@ -222,12 +223,16 @@ def translate_texts(texts, language, origin_language = 'en'):
     """ translate_texts(['Hello', 'Bye'], 'es') -> { 'Hello' : {'Hola' : 1}, 'Bye' : { 'Adios' : 1}} """
     translations = {}
     for key in texts:
-        translations[key] = {}
+        translations[key] = {
+            # 'potential1': 1,
+            # 'potential2': 2,
+        }
 
     for translator in TRANSLATORS:
         current_translations = translator.translate_texts(texts, language, origin_language)
         for key, values in current_translations.iteritems():
             if key not in translations:
+                print("Corrupt translation. translator {} returned key {} not found in the original".format(translator, key))
                 continue
             for value, weight in values.iteritems():
                 if value not in translations[key]:
