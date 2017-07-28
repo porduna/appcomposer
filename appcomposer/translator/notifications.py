@@ -7,8 +7,8 @@ from email.mime.text import MIMEText
 
 from sqlalchemy import func
 
+from flask import render_template, current_app
 from appcomposer.db import db
-from appcomposer.application import app
 from appcomposer.models import TranslationSubscription, TranslationNotificationRecipient, TranslationUrl, TranslationBundle, ActiveTranslationMessage, GoLabOAuthUser, TranslationMessageHistory, TranslatedApp, RepositoryApp
 
 def run_notifications():
@@ -18,7 +18,7 @@ def run_notifications():
     # last_period = datetime.datetime.utcnow() - datetime.timedelta(minutes = MIN_INTERVAL)
     still_working_period = datetime.datetime.utcnow() - datetime.timedelta(minutes = STILL_WORKING)
 
-    default_email = app.config.get('TRANSLATOR_DEFAULT_EMAIL', 'weblab+appcomposer@deusto.es')
+    default_email = current_app.config.get('TRANSLATOR_DEFAULT_EMAIL', 'weblab+appcomposer@deusto.es')
     default_user = db.session.query(GoLabOAuthUser).filter_by(email = default_email).first()
     if default_user:
         default_user_id = default_user.id
@@ -58,7 +58,9 @@ def run_notifications():
         return
     
     # Calculate the maximum last update
-    active_messages_by_url_id = {}
+    active_messages_by_url_id = {
+        # translation_url_id: last_message_update (when was the last message update)
+    }
     for active_message_last_update, bundle_id, translation_url_id in active_messages:
         if translation_url_id not in active_messages_by_url_id:
             active_messages_by_url_id[translation_url_id] = active_message_last_update
@@ -130,7 +132,11 @@ def run_notifications():
         try:
             db.session.commit()
         except:
+            traceback.print_exc()
             db.session.rollback()
+            send_notification([], "Error commiting notification changes to the database: {}".format(traceback.format_exc()), None, "Error in notifications in appcomposer")
+            # If the update fails, we can have the risk that the message is sent twice. Better fail
+            raise
 
     # Lookup all the users and recipients involved
     users_by_id = {}
@@ -156,36 +162,35 @@ def run_notifications():
     for translation_apps in translation_apps_by_translation_url_id.values():
         all_translation_urls.extend([ translation_app for translation_app in translation_apps ])
 
-    repository_names_by_translation_app = {}
+    repository_names_by_translation_app = {
+        # url: name
+    }
     if all_translation_urls:
         for repository_app in db.session.query(RepositoryApp).filter(TranslatedApp.url.in_(all_translation_urls)).all():
             repository_names_by_translation_app[repository_app.url] = repository_app.name
+    
 
     for recipient_id, recipient_messages in pending_emails.iteritems():
         translation_urls = []
         txt_msg = "Hi,\nThe following changes have been detected in applications on which you're subscribed:\n"
-        html_msg = "<p>Hi,</p><p>The following changes have been detected in applications on which you're subscribed:</p><ul>\n"
+        html_translations = []
 
         names_for_subject = set()
         for translation_url_id, translation_url_changes in recipient_messages.iteritems():
             translation_url = translation_urls_by_id[translation_url_id].url
             translation_urls.append(translation_url)
             txt_msg += " - %s \n" % translation_url
-            html_msg += "<li>%s<ul>" % translation_url
             translation_apps = translation_apps_by_translation_url_id[translation_url_id]
 
             current_name_for_subject = None
             fallback_name_for_subject = set()
             if translation_apps:
-                html_msg += "<li>Applications:<ul>\n"
                 for translation_app in translation_apps:
-                    html_msg += "<li>%s</li>" % translation_app
                     # Title if name not found
                     if current_name_for_subject is None and translation_app in repository_names_by_translation_app:
                         current_name_for_subject = repository_names_by_translation_app[translation_app]
                     else:
                         fallback_name_for_subject.add(translation_app)
-                html_msg += "</ul></li>"
 
             # Names
             if current_name_for_subject is None:
@@ -195,24 +200,34 @@ def run_notifications():
                     current_name_for_subject = translation_url
             names_for_subject.add(current_name_for_subject)
 
-            html_msg += "<li>Changes:<ul>\n"
+            html_changes = []
             for language, language_changes in translation_url_changes.iteritems():
                 txt_msg += "   * %s\n" % language
-                html_msg += "<li>%s<ul>" % language
                 for user_id, number_of_changes in language_changes.iteritems():
                     user = users_by_id[user_id]
                     txt_msg += "     + %s <%s> has made %s changes on the %s translation\n" % (user.display_name, user.email, number_of_changes, language)
-                    html_msg += "<li><a href=\"mailto:%s\">%s</a> has made %s changes on the %s translation</li>" % (user.email, user.display_name, number_of_changes, language)
-                html_msg += "</ul></li>"
+                    html_changes.append((language, {
+                        'mail': user.email,
+                        'name': user.display_name,
+                    }, number_of_changes))
             txt_msg += "\n"
-            html_msg += "</ul></li></ul>"
-            html_msg += "</li>\n"
+            
+            cur_record = {
+                'name': current_name_for_subject,
+                'changes': html_changes,
+            }
+            if translation_apps:
+                cur_record['url'] = translation_apps[0]
+            else:
+                cur_record['url'] = None
+
+            html_translations.append(cur_record)
+
         txt_msg += "\nYou can find the translations in different formats in:\n    - http://composer.golabz.eu/translator/dev/apps/\n\n"
-        html_msg += "</ul><p>You can find the translations <a href='http://composer.golabz.eu/translator/dev/apps/'>here</a>.</p>"
         txt_msg += "\nIf you don't want to receive these messages, please reply this e-mail.\n\n--\nThe Go-Lab App Composer team"
-        html_msg += "<p>If you don't want to receive these e-mails, please reply this e-mail.</p><p>--<br>The Go-Lab App Composer team<p>"
 
         recipient = recipients_by_id[recipient_id]
+        html_msg = render_template("emails/changes.html", translations=html_translations)
         
         subject = "Translations for %s" % ('; '.join([ name for name in names_for_subject if name ]))
         try:
@@ -249,14 +264,18 @@ def send_update_notification(app_url):
 def send_notification(recipients, txt_body, html_body, subject):
     ACTIVE = True
     if ACTIVE:
-        to_addrs = list(app.config.get('ADMINS', [])) + list(recipients)
+        to_addrs = list(current_app.config.get('ADMINS', [])) + list(recipients)
     else:
-        to_addrs = list(app.config.get('ADMINS', [])) # + list(recipients)
+        to_addrs = list(current_app.config.get('ADMINS', [])) # + list(recipients)
     from_addr = 'weblab@deusto.es'
-
-    smtp_server = app.config.get("SMTP_SERVER")
+    
+    smtp_server = current_app.config.get("SMTP_SERVER")
     if not smtp_server or not from_addr or not to_addrs:
+        print("Skipping mail (no SMTP_SERVER configured)")
+        print(txt_body)
+        print(html_body)
         return
+
 
     msg = MIMEMultipart('alternative')
     msg['Subject'] = "[AppComp] %s" % subject
@@ -272,8 +291,8 @@ def send_notification(recipients, txt_body, html_body, subject):
     server = smtplib.SMTP(smtp_server)
     server.sendmail(from_addr, to_addrs, msg.as_string())
 
-
 if __name__ == '__main__':
+    from appcomposer.application import app
     with app.app_context():
         run_notifications()
 

@@ -1,0 +1,34 @@
+<p>Hi,</p>
+<p>The following changes have been detected in applications on which you're subscribed:</p>
+
+
+{% for translation in translations %}
+{% set url = translation['url'] %}
+<h2>{% if url %}<a href="{{ translation['url'] }}">{% endif %}{{ translation['name'] }}{% if url %}</a>{% endif %}</h2>
+
+{% if url %}
+    <p><a href="http://composer.golabz.eu/translator/dev/apps/{{ translation['url'] }}">(See translations)</a></p>
+{% endif %}
+
+<table style="border-collapse: collapse; border: 1px solid black; max-width: 700px; width: 100%">
+    <thead>
+        <tr style="text-align: center">
+            <th style="border: 1px solid black; padding: 5px">Language</th>
+            <th style="border: 1px solid black; padding: 5px">Translator</th>
+            <th style="border: 1px solid black; padding: 5px">Changes</th>
+        </tr>
+    </thead>
+    <tbody>
+    {% for lang, person, count in translation['changes'] %}
+    <tr style="text-align: center">
+        <td style="border: 1px solid black; padding: 5px">{{ lang }}</td>
+        <td style="border: 1px solid black; padding: 5px"><a href="mailto:{{ person['mail'] }}">{{ person['name'] }}</a></td>
+        <td style="border: 1px solid black; padding: 5px">{% if url %}<a href="http://composer.golabz.eu/translator/dev/apps/revisions/{{ lang }}/ALL/{{ translation['url'] }}">{% endif %}{{ count }} changes{% if url %}</a>{% endif %}</td>
+    </tr>
+    {% endfor %}
+    </tbody>
+{% endfor %}
+</table>
+
+<p>If you don't want to receive these e-mails, please reply this e-mail.</p>
+<p>--<br>The Go-Lab App Composer team<p>
