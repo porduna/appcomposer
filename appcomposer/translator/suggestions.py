@@ -37,7 +37,7 @@ class AbstractTranslator(object):
 
         language = language.split('_')[0]
 
-        existing_suggestions, remaining_texts = self.existing_translations(texts, language)
+        existing_suggestions, remaining_texts = self.existing_translations(texts, language, origin_language)
         if remaining_texts:
             new_suggestions = self._translate(remaining_texts, language, origin_language)
             for human_key, value in new_suggestions.iteritems():
@@ -47,8 +47,10 @@ class AbstractTranslator(object):
             try:
                 db.session.commit()
             except IntegrityError:
+                traceback.print_exc()
                 db.session.rollback()
             except:
+                traceback.print_exc()
                 db.session.rollback()
                 raise
         return existing_suggestions
@@ -66,20 +68,23 @@ class AbstractTranslator(object):
         
 
         language = language.split('_')[0]
-        hashed_texts = [ hashlib.md5(text.encode('utf8')).hexdigest() for text in texts ]
+        hashed_texts_per_text = { text: hashlib.md5(text.encode('utf8')).hexdigest() for text in texts }
+        text_per_hash = { v:k for (k, v) in hashed_texts_per_text.items() }
+        hashed_texts = list(hashed_texts_per_text.values())
         
         if hashed_texts:
             suggestions = db.session.query(TranslationExternalSuggestion).filter(TranslationExternalSuggestion.engine == self.name, TranslationExternalSuggestion.human_key_hash.in_(hashed_texts), TranslationExternalSuggestion.language == language, TranslationExternalSuggestion.origin_language == origin_language).all()
         else:
             suggestions = []
-
+        
         remaining_texts = texts[:]
         existing_suggestions = {}
         for suggestion in suggestions:
             existing_suggestions[suggestion.human_key] = { suggestion.value : 1 }
-            if suggestion.human_key in remaining_texts:
-                remaining_texts.remove(suggestion.human_key)
-
+            human_key = text_per_hash.get(suggestion.human_key_hash)
+            if human_key in remaining_texts:
+                remaining_texts.remove(human_key)
+        
         return existing_suggestions, remaining_texts
 
 class MicrosoftTranslator(AbstractTranslator):

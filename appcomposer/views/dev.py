@@ -10,7 +10,7 @@ import requests
 from collections import OrderedDict, defaultdict
 
 from sqlalchemy import distinct, func, or_
-from sqlalchemy.orm import joinedload_all
+from sqlalchemy.orm import joinedload
 
 from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify, Response, current_app
 from flask.ext.wtf import Form
@@ -276,7 +276,7 @@ def sync_debug():
 @public
 def translations_urls():
     urls = {}
-    for db_url in db.session.query(TranslationUrl).options(joinedload_all('bundles')):
+    for db_url in db.session.query(TranslationUrl).options(joinedload('bundles')):
         urls[db_url.url] = []
         for bundle in db_url.bundles:
             urls[db_url.url].append({
@@ -330,7 +330,7 @@ def translations_apps_filtered(app_url):
 @translator_dev_blueprint.route('/apps/revisions/<lang>/<target>/<path:app_url>')
 @public
 def translations_revisions(lang, target, app_url):
-    translation_app = db.session.query(TranslatedApp).filter_by(url = app_url).options(joinedload_all('translation_url')).first()
+    translation_app = db.session.query(TranslatedApp).filter_by(url = app_url).options(joinedload('translation_url')).first()
     if translation_app is None:
         return render_template("translator/error.html", message = "App does not exist"), 404
 
@@ -342,7 +342,7 @@ def translations_revisions(lang, target, app_url):
     if bundle is None:
         return render_template("translator/error.html", message = "App found, but no translation for that language or target"), 404
 
-    db_messages = db.session.query(TranslationMessageHistory).filter_by(bundle = bundle).options(joinedload_all('user')).order_by('-datetime').all()
+    db_messages = db.session.query(TranslationMessageHistory).filter_by(bundle = bundle).options(joinedload('user')).order_by('-datetime').all()
 
     messages = {
         # key: {
@@ -354,6 +354,7 @@ def translations_revisions(lang, target, app_url):
         #         'user': {'display_name': "...", 'email': "..."},
         #         'value': value,
         #         'from_default' : true/false
+
         #         'from_developer' : true/false
         #    } }
     }
@@ -387,11 +388,12 @@ def translations_revisions(lang, target, app_url):
     collaborators = {
         # email: display_name
     }
-    db_active_messages = db.session.query(ActiveTranslationMessage).filter_by(bundle = bundle).options(joinedload_all('history.user')).order_by('-ActiveTranslationMessages.datetime').all()
+    db_active_messages = db.session.query(ActiveTranslationMessage).filter_by(bundle = bundle).options(joinedload('history.user'), joinedload('history')).order_by('-ActiveTranslationMessages.datetime').limit(10000) # when using .all(), there is hundreds of queries when commit() is run
     active_messages = []
     active_values = [ am.value for am in db_active_messages ]
 
     suggestions = {}
+
     for human_key, suggested_values in translate_texts(active_values, 'en', lang.split('_')[0]).iteritems():
         suggestions[human_key] = ' / '.join([ key for key, value in sorted(suggested_values.items(), lambda (x1, x2), (y1 ,y2): cmp(x2, y2), reverse = True) ])
 
@@ -485,7 +487,7 @@ def translations_apps_json():
                                             .group_by(TranslationBundle.translation_url_id).all()):
         max_date_per_translation_url_id[translation_url_id] = max_date
 
-    for app in db.session.query(TranslatedApp).options(joinedload_all('translation_url.bundles')):
+    for app in db.session.query(TranslatedApp).options(joinedload('translation_url.bundles')):
         if requested_app_url is not None and requested_app_url != app.url:
             continue
 
