@@ -281,14 +281,14 @@ def run_update_notifications():
         #    }
         # ]
     }
-
+    
     for subscription in subscriptions:
         email = subscription.recipient.email
         
         if email not in emails:
             emails[email] = []
 
-        repos = repos_by_trurl.get(subscription.translation_url, [])
+        repos = repos_by_trurl.get(subscription.translation_url.url, [])
         if repos:
             repo = repos[0]
             emails[email].append({
@@ -303,7 +303,7 @@ def run_update_notifications():
 def send_update_notification(email, apps):
     txt_msg = u"Hi,\n\nThis is a quick mail to confirm that the AppComposer is aware of changes in the following apps:\n"
     for app in apps:
-        txt_msg += u" + {} ({})\n".format(app['name'], app['url'])
+        txt_msg += u" - {} ( {} )\n".format(app['name'], app['url'])
     txt_msg += u"\nThe AppComposer team"
     try:
         send_notification([ email ], txt_msg, None, "Change confirmed")
