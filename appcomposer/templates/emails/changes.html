@@ -20,15 +20,18 @@
     </thead>
     <tbody>
     {% for lang, person, count in translation['changes'] %}
-    <tr style="text-align: center">
-        <td style="border: 1px solid black; padding: 5px">{{ lang }}</td>
-        <td style="border: 1px solid black; padding: 5px"><a href="mailto:{{ person['mail'] }}">{{ person['name'] }}</a></td>
-        <td style="border: 1px solid black; padding: 5px">{% if url %}<a href="http://composer.golabz.eu/translator/dev/apps/revisions/{{ lang }}/ALL/{{ translation['url'] }}">{% endif %}{{ count }} changes{% if url %}</a>{% endif %}</td>
-    </tr>
+        <tr style="text-align: center">
+            <td style="border: 1px solid black; padding: 5px">{{ lang }}</td>
+            <td style="border: 1px solid black; padding: 5px"><a href="mailto:{{ person['mail'] }}">{{ person['name'] }}</a></td>
+            <td style="border: 1px solid black; padding: 5px">{% if url %}<a href="http://composer.golabz.eu/translator/dev/apps/revisions/{{ lang }}/ALL/{{ translation['url'] }}">{% endif %}{{ count }} changes{% if url %}</a>{% endif %}</td>
+        </tr>
     {% endfor %}
     </tbody>
-{% endfor %}
 </table>
+
+<br>
+{% endfor %}
+
 
 <p>If you don't want to receive these e-mails, please reply this e-mail.</p>
 <p>--<br>The Go-Lab App Composer team<p>
