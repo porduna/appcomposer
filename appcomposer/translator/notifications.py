@@ -288,8 +288,9 @@ def run_update_notifications():
         if email not in emails:
             emails[email] = []
 
-        repo = repo_by_app_url.get(subscription.translation_url)
-        if repo:
+        repos = repos_by_trurl.get(subscription.translation_url, [])
+        if repos:
+            repo = repos[0]
             emails[email].append({
                 'name': repo.name,
                 'url': repo.url,
