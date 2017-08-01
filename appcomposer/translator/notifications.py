@@ -312,11 +312,14 @@ def send_update_notification(email, apps):
     
 
 def send_notification(recipients, txt_body, html_body, subject):
-    ACTIVE = True
-    if ACTIVE:
-        to_addrs = list(current_app.config.get('ADMINS', [])) + list(recipients)
+    if current_app.config.get('NOTIFICATIONS_DISABLED'):
+        return
+
+    if current_app.config.get('NOTIFICATIONS_ONLY_ADMIN'):
+        to_addrs = list(current_app.config.get('ADMINS', []))
     else:
-        to_addrs = list(current_app.config.get('ADMINS', [])) # + list(recipients)
+        to_addrs = list(current_app.config.get('ADMINS', [])) + list(recipients)
+
     from_addr = 'weblab@deusto.es'
     
     smtp_server = current_app.config.get("SMTP_SERVER")
