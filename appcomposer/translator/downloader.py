@@ -358,7 +358,7 @@ def _update_repo_app(task, repo_app):
             previous_hash = repo_app.downloaded_hash
             
             open('changes_{}_{}.txt'.format(int(time.time()), repo_app.id), 'w').write(json.dumps({
-                'previous_contents': json.loads(previous_contents),
+                'previous_contents': json.loads(previous_contents or '{}'),
                 'previous_hash': previous_hash,
                 'new_contents': task.metadata_information,
                 'new_hash': current_hash
