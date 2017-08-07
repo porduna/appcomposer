@@ -357,7 +357,7 @@ def _update_repo_app(task, repo_app):
             previous_contents = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)
             previous_hash = repo_app.downloaded_hash
             
-            open('changes_{}_{}.txt', 'w').write(json.dumps({
+            open('changes_{}_{}.txt'.format(int(time.time()), repo_app.id), 'w').write(json.dumps({
                 'previous_contents': json.loads(previous_contents),
                 'previous_hash': previous_hash,
                 'new_contents': task.metadata_information,
