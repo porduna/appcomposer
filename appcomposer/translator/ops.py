@@ -396,8 +396,11 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 same_tool = original_messages[key]['same_tool']
                 fmt = original_messages[key]['format']
 
-                same_text_or_empty_text = original_messages.get(key, {}).get('text', object()) == value or (unicode(original_messages.get(key, {}).get('text', "non.empty.text")).strip() != "" and value.strip() == "")
-                if from_developer and same_text_or_empty_text:
+                same_text = original_messages.get(key, {}).get('text', object()) == value
+
+                if value.strip() == "":
+                    taken_from_default = False # Force that it's empty, it's taken from default. After all, empty messages will not appear in the UI
+                elif from_developer and same_text:
                     taken_from_default = True
                 else:
                     taken_from_default = False
@@ -514,6 +517,8 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
             same_tool = original_message_pack['same_tool']
             fmt = original_message_pack['format']
             taken_from_default = True
+            if value.strip() == '':
+                taken_from_default = False
             
             # If there is a namespace, try to get the value from other namespaces, and override the current value
             current_from_developer = False
