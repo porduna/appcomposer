@@ -415,7 +415,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, taken_from_default, position, category, from_developer, namespace, tool_id, same_tool, fmt)
                 db.session.add(db_active_translation_message)
 
-                if same_text_or_empty_text:
+                if same_text:
                     # If the message in the original language is the same as in the target language or the value is empty and it shouldn't, then
                     # it can be two things: 
                     # 
