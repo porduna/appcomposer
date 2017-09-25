@@ -20,7 +20,7 @@ def run_notifications():
     # last_period = datetime.datetime.utcnow() - datetime.timedelta(minutes = MIN_INTERVAL)
     still_working_period = datetime.datetime.utcnow() - datetime.timedelta(minutes = STILL_WORKING)
 
-    default_email = current_app.config.get('TRANSLATOR_DEFAULT_EMAIL', 'weblab+appcomposer@deusto.es')
+    default_email = current_app.config.get('TRANSLATOR_DEFAULT_EMAIL', 'golab.project@labsland.com')
     default_user = db.session.query(GoLabOAuthUser).filter_by(email = default_email).first()
     if default_user:
         default_user_id = default_user.id
@@ -320,7 +320,7 @@ def send_notification(recipients, txt_body, html_body, subject):
     else:
         to_addrs = list(current_app.config.get('ADMINS', [])) + list(recipients)
 
-    from_addr = 'weblab@deusto.es'
+    from_addr = 'golab.project@labsland.com'
     
     smtp_server = current_app.config.get("SMTP_SERVER")
     if not smtp_server or not from_addr or not to_addrs:
@@ -332,7 +332,7 @@ def send_notification(recipients, txt_body, html_body, subject):
 
     msg = MIMEMultipart('alternative')
     msg['Subject'] = "[AppComp] %s" % subject
-    msg['From'] = "App Composer Translator <weblab@deusto.es>"
+    msg['From'] = "App Composer Translator <golab.project@labsland.com>"
     msg['To'] = ', '.join(recipients)
 
     part1 = MIMEText(txt_body.encode('utf8'), 'plain', _charset='UTF-8')
