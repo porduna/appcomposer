@@ -344,10 +344,16 @@ def load_deepl_suggestions_by_lang(active_messages, language, origin_language = 
     if language.upper() not in SUPPORTED_DEEPL_LANGUAGES:
         return True, 0
 
+    if language.upper() == 'EN':
+        return True, 0
+
     return _load_generic_suggestions_by_lang(active_messages, language, origin_language, 'deepl', translation_func = _deepltranslate)
 
 def load_google_suggestions_by_lang(active_messages, language, origin_language = None):
     """ Attempt to translate all the messages to a language """
+    if language == 'en':
+        return True, 0
+
     return _load_generic_suggestions_by_lang(active_messages, language, origin_language, 'google', translation_func = _gtranslate)
 
 
