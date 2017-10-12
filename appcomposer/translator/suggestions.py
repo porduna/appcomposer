@@ -311,7 +311,7 @@ def _load_generic_suggestions_by_lang(active_messages, language, origin_language
         try:
             translated = translation_func(message, language)
         except Exception as e:
-            logger.warning("Google Translate stopped in pos %s with exception: %s" % (counter, e), exc_info = True)
+            logger.warning("%s stopped in pos %s with exception: %s" % (engine, counter, e), exc_info = True)
             return False, counter
         else:
             counter += 1
@@ -325,7 +325,7 @@ def _load_generic_suggestions_by_lang(active_messages, language, origin_language
                 db.session.rollback()
                 raise
         else:
-            logger.warning("Google Translate returned %r for message %r in pos %s. Stopping." % (translated, message, counter))
+            logger.warning("%s returned %r for message %r in pos %s. Stopping." % (engine, translated, message, counter))
             return False, counter
 
     return True, counter
