@@ -5,9 +5,9 @@ import traceback
 
 from xml.etree import ElementTree
 
+import pydeepl
 import goslate
 import requests
-
 
 from celery.utils.log import get_task_logger
 
@@ -219,9 +219,18 @@ class GoogleTranslator(AbstractTranslator):
         # We don't provide anything and asynchronously populate the database
         return {}
 
+class DeeplTranslator(AbstractTranslator):
+    name = 'deepl'
+
+    def _translate(self, texts, language, origin_language = 'en'):
+        """ [ 'Hello' ], 'es' => { 'Hello' : 'Hola' } """
+        # We don't provide anything and asynchronously populate the database
+        return {}
+
 TRANSLATORS = [ 
     MicrosoftTranslator(), 
-    GoogleTranslator() 
+    GoogleTranslator(),
+    DeeplTranslator(),
 ]
 
 def translate_texts(texts, language, origin_language = 'en'):
@@ -279,16 +288,14 @@ def existing_translations(texts, language, origin_language = 'en'):
 
 ORIGIN_LANGUAGE = 'en'
 
-def load_google_suggestions_by_lang(active_messages, language, origin_language = None):
-    """ Attempt to translate all the messages to a language """
     
+def _load_generic_suggestions_by_lang(active_messages, language, origin_language, engine, translation_func):
     if origin_language is None:
         origin_language = ORIGIN_LANGUAGE
 
-    gs = goslate.Goslate()
-    logger.info("Using Google Translator to use %s" % language)
+    logger.info("Using %s to use %s" % (engine, language))
 
-    existing_suggestions = set([ human_key for human_key, in db.session.query(TranslationExternalSuggestion.human_key).filter_by(engine = 'google', language = language, origin_language = origin_language).all() ])
+    existing_suggestions = set([ human_key for human_key, in db.session.query(TranslationExternalSuggestion.human_key).filter_by(engine = engine, language = language, origin_language = origin_language).all() ])
 
     missing_suggestions = active_messages - existing_suggestions
     print "Language:", language
@@ -302,15 +309,15 @@ def load_google_suggestions_by_lang(active_messages, language, origin_language =
             continue
 
         try:
-            translated = gs.translate(message, language)
+            translated = translation_func(message, language)
         except Exception as e:
-            logger.warning("Google Translate stopped in pos %s with exception: %s" % (counter, e), exc_info = True)
+            logger.warning("%s stopped in pos %s with exception: %s" % (engine, counter, e), exc_info = True)
             return False, counter
         else:
             counter += 1
 
         if translated:
-            suggestion = TranslationExternalSuggestion(engine = 'google', human_key = message, language = language, origin_language = origin_language, value = translated)
+            suggestion = TranslationExternalSuggestion(engine = engine, human_key = message, language = language, origin_language = origin_language, value = translated)
             db.session.add(suggestion)
             try:
                 db.session.commit()
@@ -318,16 +325,42 @@ def load_google_suggestions_by_lang(active_messages, language, origin_language =
                 db.session.rollback()
                 raise
         else:
-            logger.warning("Google Translate returned %r for message %r in pos %s. Stopping." % (translated, message, counter))
+            logger.warning("%s returned %r for message %r in pos %s. Stopping." % (engine, translated, message, counter))
             return False, counter
 
     return True, counter
+
+def _gtranslate(message, language):
+    gs = goslate.Goslate()
+    return gs.translate(message, language)
+
+def _deepltranslate(message, language):
+    return pydeepl.translate(message, language.upper(), from_lang='EN')
+
+SUPPORTED_DEEPL_LANGUAGES = ['DE', 'EN', 'ES', 'FR', 'IT', 'NL', 'PL']
+
+def load_deepl_suggestions_by_lang(active_messages, language, origin_language = None):
+    """ Attempt to translate all the messages to a language """
+    if language.upper() not in SUPPORTED_DEEPL_LANGUAGES:
+        return True, 0
+
+    if language.upper() == 'EN':
+        return True, 0
+
+    return _load_generic_suggestions_by_lang(active_messages, language, origin_language, 'deepl', translation_func = _deepltranslate)
+
+def load_google_suggestions_by_lang(active_messages, language, origin_language = None):
+    """ Attempt to translate all the messages to a language """
+    if language == 'en':
+        return True, 0
+
+    return _load_generic_suggestions_by_lang(active_messages, language, origin_language, 'google', translation_func = _gtranslate)
 
 
 # ORDERED_LANGUAGES: first the semi official ones (less likely to have translations in Microsoft Translator API), then the official ones and then the rest
 ORDERED_LANGUAGES = SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
 
-def _load_all_google_suggestions(from_language, to_languages_per_category):
+def _load_all_suggestions(from_language, to_languages_per_category, load_function):
     active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == '{0}_ALL'.format(from_language), ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
     
     total_counter = 0
@@ -342,7 +375,7 @@ def _load_all_google_suggestions(from_language, to_languages_per_category):
         random.shuffle(to_languages)
         
         for language in to_languages:
-            should_continue, counter = load_google_suggestions_by_lang(active_messages, language)
+            should_continue, counter = load_function(active_messages, language)
             total_counter += counter
             if total_counter > 1000:
                 should_continue = False
@@ -357,20 +390,21 @@ def _load_all_google_suggestions(from_language, to_languages_per_category):
         if not should_continue:
             break
 
+def load_all_deepl_suggestions():
+    # First try to create suggestions from English to all the languages
+
+    languages_per_category = [ SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES ]
+
+    _load_all_suggestions('en', languages_per_category, load_function = load_deepl_suggestions_by_lang)
+
 
 def load_all_google_suggestions():
     # First try to create suggestions from English to all the languages
 
     languages_per_category = [ SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES ]
 
-    _load_all_google_suggestions('en', languages_per_category)
+    _load_all_suggestions('en', languages_per_category, load_function = load_google_suggestions_by_lang)
 
-    # Then, try to create suggestions all the languages to English for developers
-    # 
-    # Skipped: we already have Microsoft for that.
-    # 
-    # for language in ORDERED_LANGUAGES:
-    #     _load_all_google_suggestions(language, [['en']])
 
 if __name__ == '__main__':
     with app.app_context():
