@@ -152,37 +152,37 @@ class RepositoryApp(db.Model):
             new_lang = RepositoryAppLanguage(repository_app=self, language=lang_db)
             db.session.add(new_lang)
 
-class RepositoryAppCheckUrl(db.Model):
-    __tablename__ = 'RepositoryAppCheckUrls'
-
-    id = db.Column(db.Integer, primary_key=True)
-    url = db.Column(db.Unicode(255), unique=True, nullable=False, index=True)
-    supports_ssl = db.Column(db.Boolean, index=True)
-    working = db.Column(db.Boolean, index=True)
-    # TODO: N-N
-
-class RepositoryAppFailure(db.Model):
-    __tablename__ = 'RepositoryAppFailures'
-
-    id = db.Column(db.Integer, primary_key=True)
-
-    repository_app_check_url_id = db.Column(db.Integer, db.ForeignKey('RepositoryAppCheckUrls.id'), primary_key=True)
-
-    current = db.Column(db.Boolean, index=True)
-    started = db.Column(db.DateTime, index=True)
-    ended = db.Column(db.DateTime, index=True)
-
-    repository_app_check_url = db.relation("RepositoryApp", backref="languages")
-
-    def __init__(self, app_checker_url):
-        self.current = True
-        self.started = datetime.datetime.utcnow()
-        self.repository_app_check_url = app_check_url
-
-    def finished(self):
-        self.current = False
-        self.ended = datetime.datetime.utcnow()
-
+# class RepositoryAppCheckUrl(db.Model):
+#     __tablename__ = 'RepositoryAppCheckUrls'
+# 
+#     id = db.Column(db.Integer, primary_key=True)
+#     url = db.Column(db.Unicode(255), unique=True, nullable=False, index=True)
+#     supports_ssl = db.Column(db.Boolean, index=True)
+#     working = db.Column(db.Boolean, index=True)
+#     # TODO: N-N
+# 
+# class RepositoryAppFailure(db.Model):
+#     __tablename__ = 'RepositoryAppFailures'
+# 
+#     id = db.Column(db.Integer, primary_key=True)
+# 
+#     repository_app_check_url_id = db.Column(db.Integer, db.ForeignKey('RepositoryAppCheckUrls.id'), primary_key=True)
+# 
+#     current = db.Column(db.Boolean, index=True)
+#     started = db.Column(db.DateTime, index=True)
+#     ended = db.Column(db.DateTime, index=True)
+# 
+#     repository_app_check_url = db.relation("RepositoryApp", backref="languages")
+# 
+#     def __init__(self, app_checker_url):
+#         self.current = True
+#         self.started = datetime.datetime.utcnow()
+#         self.repository_app_check_url = app_check_url
+# 
+#     def finished(self):
+#         self.current = False
+#         self.ended = datetime.datetime.utcnow()
+# 
 
 class RepositoryAppLanguage(db.Model):
 
