@@ -16,6 +16,7 @@
                               ng-change="onChange('textAngular', 'input', values.current)"
                               ta-paste="onPaste($html)"
                               class="ac-edit-message-control"
+                              dir="{{ getDirAttribute() }}"
                               ng-class="{'ac-edit-message-input-from-default': item.from_default}"></text-angular>
 
 
@@ -27,7 +28,9 @@
                    ng-change="onChange('plain', 'input')"
                    ng-model-options="{ updateOn: 'change blur' }"
                    ng-keyup="onKey($event)" name="ac-edit-message-input"
-                   ng-class="{'ac-edit-message-input-from-default': item.from_default}" class="form-control ac-edit-message-control ac-edit-message-input"
+                   ng-class="{'ac-edit-message-input-from-default': item.from_default}"
+                   dir="{{ getDirAttribute() }}"
+                   class="form-control ac-edit-message-control ac-edit-message-input"
                    type="text"/>
             <!-- The shield notice is disabled for now -->
             <!--<span ng-show="(!item.can_edit)" title="{{ ::('The original developer is providing a translation for this message' | translate) }}" name="ac-original-icon"

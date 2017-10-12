@@ -43,6 +43,7 @@ function EditMessageController($scope, $log, $resource) {
     $scope.shouldDisplayDetails = shouldDisplayDetails;
     $scope.suggestionSelected = suggestionSelected;
     $scope.onDetailsClose = onDetailsClose;
+    $scope.getDirAttribute = getDirAttribute;
 
 
     /* SCOPE EVENTS */
@@ -67,6 +68,21 @@ function EditMessageController($scope, $log, $resource) {
     // --------------
     // Implementations
     // --------------
+
+    function getDirAttribute() {
+        var lang = $scope.bundle.targetlang;
+        switch (lang) {
+            case 'ar':
+            case 'ar_ALL':
+            case 'he':
+            case 'he_ALL':
+            case 'ur':
+            case 'ur_ALL':
+                return "rtl";
+            default:
+                return "ltr";
+        }
+    }
 
     /**
      * Whether we should show the from-default warning message. We should show it if an item
