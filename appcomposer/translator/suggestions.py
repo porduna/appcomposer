@@ -252,6 +252,7 @@ def translate_texts(texts, language, origin_language = 'en'):
             if key not in translations:
                 try:
                     print(u"Corrupt translation. translator {} returned key {} not found in the original".format(translator, key))
+                    traceback.print_stack()
                 except:
                     traceback.print_exc()
                 continue
