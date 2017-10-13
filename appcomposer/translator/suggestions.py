@@ -2,6 +2,7 @@ import sys
 import hashlib
 import random
 import traceback
+import datetime
 
 from xml.etree import ElementTree
 
@@ -11,6 +12,7 @@ import requests
 
 from celery.utils.log import get_task_logger
 
+from sqlalchemy import func
 from sqlalchemy.exc import IntegrityError
 
 from appcomposer.application import app
@@ -227,8 +229,10 @@ class DeeplTranslator(AbstractTranslator):
         # We don't provide anything and asynchronously populate the database
         return {}
 
-TRANSLATORS = [ 
-    MicrosoftTranslator(), 
+microsoft_translator = MicrosoftTranslator()
+
+TRANSLATORS = [
+    microsoft_translator,
     GoogleTranslator(),
     DeeplTranslator(),
 ]
@@ -289,7 +293,7 @@ def existing_translations(texts, language, origin_language = 'en'):
 ORIGIN_LANGUAGE = 'en'
 
     
-def _load_generic_suggestions_by_lang(active_messages, language, origin_language, engine, translation_func):
+def _load_generic_suggestions_by_lang(active_messages, language, origin_language, engine, translation_func, bulk_messages):
     if origin_language is None:
         origin_language = ORIGIN_LANGUAGE
 
@@ -304,29 +308,47 @@ def _load_generic_suggestions_by_lang(active_messages, language, origin_language
     random.shuffle(missing_suggestions)
     counter = 0
 
-    for message in missing_suggestions:
-        if message.strip() == '':
-            continue
-
-        try:
-            translated = translation_func(message, language)
-        except Exception as e:
-            logger.warning("%s stopped in pos %s with exception: %s" % (engine, counter, e), exc_info = True)
-            return False, counter
-        else:
-            counter += 1
-
-        if translated:
+    if bulk_messages:
+        results = translation_func(missing_suggestions, language)
+        for message, translated in results.items():
             suggestion = TranslationExternalSuggestion(engine = engine, human_key = message, language = language, origin_language = origin_language, value = translated)
             db.session.add(suggestion)
+            counter += 1
+
+        if results:
             try:
                 db.session.commit()
             except:
                 db.session.rollback()
                 raise
         else:
-            logger.warning("%s returned %r for message %r in pos %s. Stopping." % (engine, translated, message, counter))
             return False, counter
+
+    else:
+
+        for message in missing_suggestions:
+            if message.strip() == '':
+                continue
+
+            try:
+                translated = translation_func(message, language)
+            except Exception as e:
+                logger.warning("%s stopped in pos %s with exception: %s" % (engine, counter, e), exc_info = True)
+                return False, counter
+            else:
+                counter += 1
+
+            if translated:
+                suggestion = TranslationExternalSuggestion(engine = engine, human_key = message, language = language, origin_language = origin_language, value = translated)
+                db.session.add(suggestion)
+                try:
+                    db.session.commit()
+                except:
+                    db.session.rollback()
+                    raise
+            else:
+                logger.warning("%s returned %r for message %r in pos %s. Stopping." % (engine, translated, message, counter))
+                return False, counter
 
     return True, counter
 
@@ -336,6 +358,9 @@ def _gtranslate(message, language):
 
 def _deepltranslate(message, language):
     return pydeepl.translate(message, language.upper(), from_lang='EN')
+
+def _mstranslate(messages, language):
+    return microsoft_translator._translate(messages, language)
 
 SUPPORTED_DEEPL_LANGUAGES = ['DE', 'EN', 'ES', 'FR', 'IT', 'NL', 'PL']
 
@@ -347,44 +372,69 @@ def load_deepl_suggestions_by_lang(active_messages, language, origin_language = 
     if language.upper() == 'EN':
         return True, 0
 
-    return _load_generic_suggestions_by_lang(active_messages, language, origin_language, 'deepl', translation_func = _deepltranslate)
+    return _load_generic_suggestions_by_lang(active_messages, language, origin_language, 'deepl', translation_func = _deepltranslate, bulk_messages=False)
 
 def load_google_suggestions_by_lang(active_messages, language, origin_language = None):
     """ Attempt to translate all the messages to a language """
     if language == 'en':
         return True, 0
 
-    return _load_generic_suggestions_by_lang(active_messages, language, origin_language, 'google', translation_func = _gtranslate)
+    for ms_language in microsoft_translator.languages:
+        if ms_language == language:
+            return True, 0 # Focus on those not available in Microsoft
+
+    return _load_generic_suggestions_by_lang(active_messages, language, origin_language, 'google', translation_func = _gtranslate, bulk_messages=False)
+
+def load_microsoft_suggestions_by_lang(active_messages, language, origin_language = None):
+    """ Attempt to translate all the messages to a language """
+    if language == 'en':
+        return True, 0
+
+    last_month = datetime.datetime.utcnow() - datetime.timedelta(days=32)
+
+    row = db.session.query(func.sum(func.length(TranslationExternalSuggestion))).filter(TranslationExternalSuggestion.engine=='microsoft', TranslationExternalSuggestion.created>=last_month).first()
+    if row[0] > 1500000:
+        return False, 0
+
+    return _load_generic_suggestions_by_lang(active_messages, language, origin_language, 'google', translation_func = _mstranslate, bulk_messages=True)
 
 
 # ORDERED_LANGUAGES: first the semi official ones (less likely to have translations in Microsoft Translator API), then the official ones and then the rest
 ORDERED_LANGUAGES = SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
 
-def _load_all_suggestions(from_language, to_languages_per_category, load_function):
+def _load_all_suggestions(from_language, to_languages_per_category, load_function, engine):
     active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == '{0}_ALL'.format(from_language), ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
-    
+
     total_counter = 0
 
     should_continue = True
 
-    for to_languages in to_languages_per_category:
-        # 
-        # per category are first the official and co-official ones, then the others
-        # 
-        to_languages = list(to_languages)
-        random.shuffle(to_languages)
-        
-        for language in to_languages:
-            should_continue, counter = load_function(active_messages, language)
-            total_counter += counter
-            if total_counter > 1000:
-                should_continue = False
-                logger.info("Stopping the google suggestions API after performing %s queries until the next cycle" % total_counter)
-                break
+    message_size = 100 # send messages from 100 in 100
+
+    for block_number in range(len(active_messages) / message_size + 1):
+        current_block = active_messages[block_number * message_size: (block_number + 1 ) * message_size]
+
+        for to_languages in to_languages_per_category:
+            #
+            # per category are first the official and co-official ones, then the others
+            #
+            to_languages = list(to_languages)
+            random.shuffle(to_languages)
+
+            for language in to_languages:
+                should_continue, counter = load_function(current_block, language)
+                total_counter += counter
+                if total_counter > 50000:
+                    should_continue = False
+                    logger.info("Stopping the %s suggestions API after performing %s queries until the next cycle" % (engine, total_counter))
+                    break
+
+                if not should_continue:
+                    logger.info("Stopping the %s suggestions API until the next cycle" % engine)
+                    # There was an error: keep in the next iteration ;-)
+                    break
 
             if not should_continue:
-                logger.info("Stopping the google suggestions API until the next cycle")
-                # There was an error: keep in the next iteration ;-)
                 break
 
         if not should_continue:
@@ -395,7 +445,7 @@ def load_all_deepl_suggestions():
 
     languages_per_category = [ SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES ]
 
-    _load_all_suggestions('en', languages_per_category, load_function = load_deepl_suggestions_by_lang)
+    _load_all_suggestions('en', languages_per_category, load_function = load_deepl_suggestions_by_lang, engine='deepl')
 
 
 def load_all_google_suggestions():
@@ -403,7 +453,14 @@ def load_all_google_suggestions():
 
     languages_per_category = [ SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES ]
 
-    _load_all_suggestions('en', languages_per_category, load_function = load_google_suggestions_by_lang)
+    _load_all_suggestions('en', languages_per_category, load_function = load_google_suggestions_by_lang, engine='google')
+
+def load_all_microsoft_suggestions():
+    # First try to create suggestions from English to all the languages
+
+    languages_per_category = [ SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES ]
+
+    _load_all_suggestions('en', languages_per_category, load_function = load_microsoft_suggestions_by_lang, engine='microsoft')
 
 
 if __name__ == '__main__':

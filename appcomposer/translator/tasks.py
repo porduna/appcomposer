@@ -17,7 +17,7 @@ sys.path.insert(0, cwd)
 from appcomposer import app as my_app, db
 from appcomposer.models import TranslationCurrentActiveUser
 from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, synchronize_single_app_no_cached
-from appcomposer.translator.suggestions import load_all_google_suggestions, load_all_deepl_suggestions
+from appcomposer.translator.suggestions import load_all_google_suggestions, load_all_deepl_suggestions, load_all_microsoft_suggestions
 from appcomposer.translator.mongodb_pusher import sync_mongodb_all, sync_mongodb_last_hour
 from appcomposer.translator.notifications import run_notifications, run_update_notifications
 from appcomposer.translator.downloader import sync_repo_apps, download_repository_apps, download_repository_single_app, update_content_hash
@@ -91,12 +91,17 @@ cel.conf.update(
         },
         'load_google_suggestions' : {
             'task' : 'load_google_suggestions',
-            'schedule' : crontab(hour=5, minute=0),
+            'schedule' : crontab(hour='*/12', minute=0),
             'args' : ()
         },
         'load_deepl_suggestions' : {
             'task' : 'load_deepl_suggestions',
-            'schedule' : crontab(hour=5, minute=0),
+            'schedule' : crontab(hour='*/12', minute=0),
+            'args' : ()
+        },
+        'load_microsoft_suggestions' : {
+            'task' : 'load_microsoft_suggestions',
+            'schedule' : crontab(hour='*/6', minute=0),
             'args' : ()
         },
     },
@@ -109,6 +114,9 @@ cel.conf.update(
             'queue': NON_CRITICAL_INDEPENDENT_TASKS,
         },
         'load_deepl_suggestions': {
+            'queue': NON_CRITICAL_INDEPENDENT_TASKS,
+        },
+        'load_microsoft_suggestions': {
             'queue': NON_CRITICAL_INDEPENDENT_TASKS,
         },
         'delete_old_realtime_active_users': {
@@ -221,6 +229,12 @@ def task_load_google_suggestions(self):
 def task_load_deepl_suggestions(self):
     with my_app.app_context():
         load_all_deepl_suggestions()
+
+@cel.task(name='load_microsoft_suggestions', bind=True)
+def task_load_microsoft_suggestions(self):
+    with my_app.app_context():
+        load_all_microsoft_suggestions()
+
 
 @cel.task(name='delete_old_realtime_active_users', bind=True)
 def task_delete_old_realtime_active_users(self):
