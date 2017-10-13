@@ -391,6 +391,14 @@ def load_microsoft_suggestions_by_lang(active_messages, language, origin_languag
     if language == 'en':
         return True, 0
 
+    found = False
+    for ms_language in microsoft_translator.languages:
+        if ms_language == language:
+            found = True
+
+    if not found:
+        return True, 0 # Focus on those not available in Microsoft
+
     last_month = datetime.datetime.utcnow() - datetime.timedelta(days=32)
 
     row = db.session.query(func.sum(func.length(TranslationExternalSuggestion))).filter(TranslationExternalSuggestion.engine=='microsoft', TranslationExternalSuggestion.created>=last_month).first()
