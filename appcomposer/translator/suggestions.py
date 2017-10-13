@@ -302,7 +302,7 @@ def _load_generic_suggestions_by_lang(active_messages, language, origin_language
 
     existing_suggestions = set([ human_key for human_key, in db.session.query(TranslationExternalSuggestion.human_key).filter_by(engine = engine, language = language, origin_language = origin_language).all() ])
 
-    missing_suggestions = active_messages - existing_suggestions
+    missing_suggestions = set(active_messages) - existing_suggestions
     print "Language:", language
     print "Missing ",  len(missing_suggestions), ":", list(missing_suggestions)[:5], "..."
     missing_suggestions = list(missing_suggestions)
