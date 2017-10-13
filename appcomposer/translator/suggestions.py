@@ -397,7 +397,7 @@ def load_microsoft_suggestions_by_lang(active_messages, language, origin_languag
     if row[0] > 1500000:
         return False, 0
 
-    return _load_generic_suggestions_by_lang(active_messages, language, origin_language, 'google', translation_func = _mstranslate, bulk_messages=True)
+    return _load_generic_suggestions_by_lang(active_messages, language, origin_language, 'microsoft', translation_func = _mstranslate, bulk_messages=True)
 
 
 # ORDERED_LANGUAGES: first the semi official ones (less likely to have translations in Microsoft Translator API), then the official ones and then the rest
