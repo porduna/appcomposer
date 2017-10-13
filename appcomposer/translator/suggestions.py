@@ -404,7 +404,9 @@ def load_microsoft_suggestions_by_lang(active_messages, language, origin_languag
 ORDERED_LANGUAGES = SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
 
 def _load_all_suggestions(from_language, to_languages_per_category, load_function, engine):
-    active_messages = list(set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == '{0}_ALL'.format(from_language), ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ]))
+    active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == '{0}_ALL'.format(from_language), ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
+    active_messages = list(active_messages)
+    random.shuffle(active_messages)
 
     total_counter = 0
 
