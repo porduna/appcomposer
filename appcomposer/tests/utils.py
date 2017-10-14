@@ -1,5 +1,5 @@
 import datetime
-from flask.ext.testing import TestCase
+from flask_testing import TestCase
 from appcomposer import db, app
 from appcomposer.models import User
 

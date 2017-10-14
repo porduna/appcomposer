@@ -13,10 +13,10 @@ from sqlalchemy import distinct, func, or_
 from sqlalchemy.orm import joinedload
 
 from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify, Response, current_app
-from flask.ext.wtf import Form
-from flask.ext.wtf.file import FileField
-from flask.ext.admin.form import Select2Field
-from flask.ext.cors import cross_origin
+from flask_wtf import Form
+from flask_wtf.file import FileField
+from flask_admin.form import Select2Field
+from flask_cors import cross_origin
 from wtforms.fields.html5 import URLField
 from wtforms.validators import url, required
 
@@ -33,7 +33,7 @@ from appcomposer.translator.suggestions import translate_texts
 from appcomposer.utils import public
 from appcomposer.languages import LANGUAGES_PER_NAME, LANGUAGE_NAMES_PER_CODE, WRONG_LANGUAGES_PER_CORRECT_NAME, WRONG_LANGUAGES, LANGUAGE_THRESHOLD, sort_languages, guess_default_language
 
-import flask.ext.cors.core as cors_core
+import flask_cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
 
 

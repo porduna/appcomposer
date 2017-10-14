@@ -12,6 +12,7 @@ app.config["SECRET_KEY"] = os.urandom(32)
 app.config['SESSION_COOKIE_NAME'] = 'appcompsession'
 app.config['SQLALCHEMY_NATIVE_UNICODE'] = True
 app.config['SQLALCHEMY_POOL_RECYCLE'] = 3600
+app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config.from_object('config')
 
 # Add an extension to jinja2

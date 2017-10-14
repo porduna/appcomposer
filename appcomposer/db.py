@@ -8,7 +8,7 @@ import os
 
 from sqlalchemy import create_engine
 
-from flask.ext.sqlalchemy import SQLAlchemy
+from flask_sqlalchemy import SQLAlchemy
 from .application import app
 
 db = SQLAlchemy()
@@ -47,8 +47,9 @@ class DbParticularUpgrader(object):
 
     def check(self):
         engine = create_engine(app.config['SQLALCHEMY_DATABASE_URI'])
+        conn = engine.connect()
 
-        context = MigrationContext.configure(engine)
+        context = MigrationContext.configure(conn)
         current_rev = context.get_current_revision()
 
         return self.head == current_rev

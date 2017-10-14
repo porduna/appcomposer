@@ -2,7 +2,7 @@ import json
 import traceback
 
 from flask import Blueprint, make_response, render_template, request, redirect, url_for
-from flask.ext.cors import cross_origin
+from flask_cors import cross_origin
 
 from appcomposer.db import db
 from appcomposer.models import RepositoryApp
@@ -12,7 +12,7 @@ from appcomposer.languages import obtain_groups, obtain_languages
 from appcomposer.utils import public
 from appcomposer.languages import LANGUAGES, LANGUAGE_THRESHOLD, sort_languages
 
-import flask.ext.cors.core as cors_core
+import flask_cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
 
 translator_blueprint = Blueprint('translator', __name__, static_folder = '../../translator3/dist/', static_url_path = '/web')

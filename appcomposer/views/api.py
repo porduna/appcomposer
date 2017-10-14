@@ -5,7 +5,7 @@ from functools import wraps
 from collections import OrderedDict
 
 from flask import Blueprint, make_response, request, url_for, jsonify, current_app
-from flask.ext.cors import cross_origin
+from flask_cors import cross_origin
 
 from appcomposer.db import db
 from appcomposer.models import RepositoryApp
@@ -18,7 +18,7 @@ from appcomposer.translator.ops import add_full_translation_to_app, retrieve_sto
 
 from appcomposer.languages import guess_default_language
 
-import flask.ext.cors.core as cors_core
+import flask_cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
 
 

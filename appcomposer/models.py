@@ -1,7 +1,7 @@
 import hashlib
 import datetime
 
-from flask.ext.login import UserMixin
+from flask_login import UserMixin
 
 from sqlalchemy import sql, UniqueConstraint, ForeignKey
 from sqlalchemy.orm import relation, backref
