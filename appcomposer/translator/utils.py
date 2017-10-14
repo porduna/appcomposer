@@ -82,6 +82,7 @@ class _LastModifiedNoDate(LastModified):
 def get_cached_session(caching = True):
     if not caching:
         return requests.Session()
+    return requests.Session() # For some reason, in concurrent environments CacheControl works quite bad.
 
     CACHE_DIR = 'web_cache'
     return CacheControl(requests.Session(),

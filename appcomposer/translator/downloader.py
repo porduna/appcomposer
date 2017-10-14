@@ -244,7 +244,6 @@ class _MetadataTask(threading.Thread):
     def __init__(self, repo_id, app_url, force_reload):
         threading.Thread.__init__(self)
         self.repo_id = repo_id
-        self.cached_requests = trutils.get_cached_session(caching = not force_reload)
         self.app_url = app_url
         self.force_reload = force_reload
         self.finished = False
@@ -253,8 +252,9 @@ class _MetadataTask(threading.Thread):
 
     def run(self):
         self.failing = False
+        cached_requests = trutils.get_cached_session(caching = not self.force_reload)
         try:
-            self.metadata_information = extract_metadata_information(self.app_url, self.cached_requests, self.force_reload)
+            self.metadata_information = extract_metadata_information(self.app_url, cached_requests, self.force_reload)
         except Exception:
             logger.warning("Error extracting information from %s" % self.app_url, exc_info = True)
             if DEBUG_VERBOSE:
