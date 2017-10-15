@@ -363,6 +363,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 db.session.add(new_db_history)
 
                 # 3rd) Create a new active translation message
+                db.session.query(ActiveTranslationMessage).filter_by(bundle=db_translation_bundle, key=key).delete()
                 new_db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, new_db_history, now, False, wrong_message_position, wrong_message_category, current_from_developer, namespace, wrong_message_tool_id, wrong_message_same_tool, wrong_message_fmt)
                 db.session.add(new_db_active_translation_message)
 
@@ -412,6 +413,9 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 db.session.add(db_history)
 
                 # Establish that thew new active message points to this history message
+
+                # We are going to add a new message: delete the one existing if any
+                db.session.query(ActiveTranslationMessage).filter_by(bundle=db_translation_bundle, key=key).delete()
                 db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, taken_from_default, position, category, from_developer, namespace, tool_id, same_tool, fmt)
                 db.session.add(db_active_translation_message)
 
@@ -455,6 +459,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                         db.session.add(new_db_history)
 
                         # 3rd) Create a new active translation message
+                        db.session.query(ActiveTranslationMessage).filter_by(bundle=wrong_message_bundle, key=key).delete()
                         new_db_active_translation_message = ActiveTranslationMessage(wrong_message_bundle, key, value, new_db_history, now, False, wrong_message_position, wrong_message_category, from_developer, namespace, wrong_message_tool_id, wrong_message_same_tool, wrong_message_fmt)
                         db.session.add(new_db_active_translation_message)
                 
@@ -537,6 +542,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
             db.session.add(db_history)
             
             # Establish that thew new active message points to this history message
+            db.session.query(ActiveTranslationMessage).filter_by(bundle=db_translation_bundle, key=key).delete()
             db_active_translation_message = ActiveTranslationMessage(db_translation_bundle, key, value, db_history, now, taken_from_default = taken_from_default, position = position, category = category, from_developer = current_from_developer, namespace = namespace, tool_id = tool_id, same_tool = same_tool, fmt = fmt)
             db.session.add(db_active_translation_message)
 
