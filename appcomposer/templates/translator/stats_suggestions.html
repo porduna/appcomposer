@@ -67,21 +67,25 @@
                 {% for engine in engines %}
                 <th>{{ engine.title() }}</th>
                 {% endfor %}
+                <th>Total</th>
             </tr>
         </thead>
         <tbody>
+            {% set GREEN_LIMIT = 90 %}
+            {% set YELLOW_LIMIT = 40 %}
             {% for code, language in languages %}
             <tr>
                 <td>{{ loop.index }}</td>
                 <td>{{ language }} ({{ code }})</td>
+
                 {% for engine in engines %}
                     {% if code in supported[engine] %}
                         {% if code in data_per_engine[engine] %}
                             {% set number = data_per_engine[engine][code] %}
                             {% set percent = 100.0 * number / english_stats['total_distinct'] %}
-                            {% if percent < 40 %}
+                            {% if percent < YELLOW_LIMIT %}
                                 {% set color = 'danger' %}
-                            {% elif percent < 90 %}
+                            {% elif percent < GREEN_LIMIT %}
                                 {% set color = 'warning' %}
                             {% else %}
                                 {% set color = 'success' %}
@@ -94,6 +98,21 @@
                         <td class=""><i>Not supported</i></td>
                     {% endif %}
                 {% endfor %}
+
+                {% if code in data_per_language %}
+                    {% set number = data_per_language[code] %}
+                    {% set percent = 100.0 * number / english_stats['total_distinct'] %}
+                    {% if percent < YELLOW_LIMIT %}
+                        {% set color = 'danger' %}
+                    {% elif percent < GREEN_LIMIT %}
+                        {% set color = 'warning' %}
+                    {% else %}
+                        {% set color = 'success' %}
+                    {% endif %}
+                    <td class="{{ color }}"><strong>{{ number }} ({{ '%.2f' % percent }}%)</strong></td>
+                {% else %}
+                    <td class="danger">0</td>
+                {% endif %}
             </tr>
             {% endfor %}
         </tbody>

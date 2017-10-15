@@ -234,7 +234,13 @@ def suggestions():
             data_per_engine[engine] = {}
         data_per_engine[engine][language] = count
 
-    return render_template("translator/stats_suggestions.html", data_per_engine=data_per_engine, supported=supported, english_stats=english_stats, languages=languages, engines=engines)
+    data_per_language = {
+        # language: count
+    }
+    for count, language in db.session.query(func.count(func.distinct(TranslationExternalSuggestion.human_key_hash)), TranslationExternalSuggestion.language).filter(TranslationExternalSuggestion.human_key_hash.in_(distinct_short_messages), TranslationExternalSuggestion.origin_language == u'en').group_by(TranslationExternalSuggestion.language).all():
+        data_per_language[language] = count
+
+    return render_template("translator/stats_suggestions.html", data_per_engine=data_per_engine, supported=supported, english_stats=english_stats, languages=languages, engines=engines, data_per_language=data_per_language)
 
 
 
