@@ -10,11 +10,13 @@
     <ul>
         <li>Total messages in English: <strong>{{ english_stats['total_messages'] }}</strong></li>
         <li>Total <strong>different</strong> messages in English: <strong>{{ english_stats['total_distinct'] }}</strong></li>
-        <li>Total length of the different messages in English: <strong>{{ english_stats['length'] }}</strong></li>
+        <li>Total characters of the different messages in English: <strong>{{ english_stats['length'] }}</strong></li>
+        <li>Total languages: <strong>{{ languages|length }}</strong></li>
+        <li>Total characters for all the languages: <strong>{{ english_stats['length'] * (languages|length) }}</strong></li>
         <li>Total messages by services (they might have been deprecated and therefore not useful anymore):
         <ul>
             {% for engine in engines %}
-            <li>{{ engine }}: <strong>{{ english_stats['engines'][engine] }}</strong></li>
+            <li>{{ engine.title() }}: <strong>{{ english_stats['engines'][engine] }}</strong>; supporting <strong>{{ supported[engine]|length }}</strong> languages</li>
             {% endfor %}
         </ul>
         </li>
@@ -26,9 +28,41 @@
         <p>This is the important part to see the progress. Take into account that different policies have been taking into account (e.g., make Google translate only messages that can't be translated by Microsoft, etc.)</p>
     </div>
 
+    <h3>Policy (as of October 2017)</h3>
+
     <table class="table table-bordered">
         <thead>
             <tr>
+                <th>Engine</th>
+                <th>On background</th>
+                <th>When a user translates an app</th>
+            </tr>
+        </thead>
+        <tbody>
+            <tr>
+                <td><strong>Microsoft</strong></td>
+                <td>It is run with all the languages supported by Microsoft ({{ supported['microsoft']|length }}).</td>
+                <td>The AppComposer calls Microsoft for those messages not already translated in background.</td>
+            </tr>
+            <tr>
+                <td><strong>Google</strong></td>
+                <td>Google supports more languages than Microsoft ({{ supported['google']|length }}; {{ (supported['google'] - supported['microsoft'])|length }} more). Temporarily, it only checks those languages not supported by Microsoft. Whenever those languages are 100% or close, we might remove this policy.</td>
+                <td>It is not called; it only retrieves the messages downloaded in background.</td>
+            </tr>
+            <tr>
+                <td><strong>Deepl</strong></td>
+                <td>Deepl supports very few languages. It tries calling them in background, but the number of retrieved messages is very low.</td>
+                <td>It is not called; it only retrieves the messages downloaded in background.</td>
+            </tr>
+        </tbody>
+    </table>
+
+    <h3>Current status (as of now)</h3>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>#</th>
                 <th>Language</th>
                 {% for engine in engines %}
                 <th>{{ engine.title() }}</th>
@@ -38,6 +72,7 @@
         <tbody>
             {% for code, language in languages %}
             <tr>
+                <td>{{ loop.index }}</td>
                 <td>{{ language }} ({{ code }})</td>
                 {% for engine in engines %}
                     {% if code in supported[engine] %}

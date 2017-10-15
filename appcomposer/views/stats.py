@@ -212,19 +212,20 @@ def suggestions():
         # }
     }
 
-    supported = {
-        # engine: [ code1, code2... ]
-        'google': google_translator.languages,
-        'microsoft': microsoft_translator.languages,
-        'deepl': deepl_translator.languages,
-    }
-
     languages = [
         (code, get_locale_english_name(code, 'ALL'))
         for code in ALL_LANGUAGES
         if code != 'en'
     ]
     languages.sort(lambda (c1, n1), (c2, n2): cmp(n1, n2))
+    lang_codes = [ code for (code, name) in languages ]
+
+    supported = {
+        # engine: [ code1, code2... ]
+        'google': { lang for lang in google_translator.languages if lang in lang_codes },
+        'microsoft': { lang for lang in microsoft_translator.languages if lang in lang_codes  },
+        'deepl': { lang for lang in deepl_translator.languages if lang in lang_codes },
+    }
 
     engines = ['google', 'microsoft', 'deepl']
 
