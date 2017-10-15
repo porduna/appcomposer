@@ -383,7 +383,7 @@ def _update_repo_app(task, repo_app):
                         db_existing_check_urls.active = True
                         repo_changes = True
 
-        current_hash = task.metadata_information.pop('translations_hash')
+        current_hash = task.metadata_information.pop('translation_hash')
         if repo_app.downloaded_hash != current_hash:
             previous_contents = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)
             previous_hash = repo_app.downloaded_hash
