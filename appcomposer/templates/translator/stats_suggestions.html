@@ -1,0 +1,69 @@
+{% extends "translator/base.html" %}
+{% block body %}
+
+<div class="container">
+
+    <h1>Suggestions by translation services</h1>
+
+    <h2>Introduction</h2>
+
+    <ul>
+        <li>Total messages in English: <strong>{{ english_stats['total_messages'] }}</strong></li>
+        <li>Total <strong>different</strong> messages in English: <strong>{{ english_stats['total_distinct'] }}</strong></li>
+        <li>Total length of the different messages in English: <strong>{{ english_stats['length'] }}</strong></li>
+        <li>Total messages by services (they might have been deprecated and therefore not useful anymore):
+        <ul>
+            {% for engine in engines %}
+            <li>{{ engine }}: <strong>{{ english_stats['engines'][engine] }}</strong></li>
+            {% endfor %}
+        </ul>
+        </li>
+    </ul>
+
+    <h2>Suggestions by language</h2>
+
+    <div class="alert alert-info">
+        <p>This is the important part to see the progress. Take into account that different policies have been taking into account (e.g., make Google translate only messages that can't be translated by Microsoft, etc.)</p>
+    </div>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Language</th>
+                {% for engine in engines %}
+                <th>{{ engine.title() }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for code, language in languages %}
+            <tr>
+                <td>{{ language }} ({{ code }})</td>
+                {% for engine in engines %}
+                    {% if code in supported[engine] %}
+                        {% if code in data_per_engine[engine] %}
+                            {% set number = data_per_engine[engine][code] %}
+                            {% set percent = 100.0 * number / english_stats['total_distinct'] %}
+                            {% if percent < 40 %}
+                                {% set color = 'danger' %}
+                            {% elif percent < 90 %}
+                                {% set color = 'warning' %}
+                            {% else %}
+                                {% set color = 'success' %}
+                            {% endif %}
+                            <td class="{{ color }}">{{ number }} ({{ '%.2f' % percent }}%)</td>
+                        {% else %}
+                            <td class="danger">0</td>
+                        {% endif %}
+                    {% else %}
+                        <td class=""><i>Not supported</i></td>
+                    {% endif %}
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+</div>
+
+{% endblock %}

@@ -13,10 +13,12 @@ from flask import Blueprint, render_template, request, url_for
 
 from appcomposer.db import db
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp, GoLabOAuthUser, ActiveTranslationMessage, TranslationMessageHistory
+from appcomposer.models import TranslationExternalSuggestion
 from appcomposer.login import requires_golab_login
 
 from appcomposer.utils import public
-from appcomposer.languages import LANGUAGE_NAMES_PER_CODE, LANGUAGE_THRESHOLD
+from appcomposer.languages import LANGUAGE_NAMES_PER_CODE, LANGUAGE_THRESHOLD, ALL_LANGUAGES, get_locale_english_name
+from appcomposer.translator.suggestions import microsoft_translator, google_translator, deepl_translator
 
 translator_stats_blueprint = Blueprint('translator_stats', __name__, static_folder = '../../translator3/dist/', static_url_path = '/web')
 
@@ -189,6 +191,52 @@ def translation_users():
         })
 
     return render_template('translator/users.html', users_by_gravatar = users_by_gravatar)
+
+@translator_stats_blueprint.route('/suggestions')
+def suggestions():
+    total_messages = db.session.query(ActiveTranslationMessage).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == u'en_ALL', TranslationBundle.target == u'ALL').count()
+    distinct_messages = [ (value or u'') for value,  in db.session.query(func.distinct(ActiveTranslationMessage.value)).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == u'en_ALL', TranslationBundle.target == u'ALL').all() ]
+
+    distinct_short_messages = [ unicode(hashlib.md5(msg.encode('utf8')).hexdigest()) for msg in distinct_messages ]
+
+    english_stats = {
+        'total_messages': total_messages,
+        'total_distinct': len(distinct_messages),
+        'length': sum([ len(msg) for msg in distinct_messages ]),
+        'engines': dict(db.session.query(TranslationExternalSuggestion.engine, func.count(TranslationExternalSuggestion.id)).group_by(TranslationExternalSuggestion.engine)),
+    }
+
+    data_per_engine = {
+        # engine: {
+            # lang: number
+        # }
+    }
+
+    supported = {
+        # engine: [ code1, code2... ]
+        'google': google_translator.languages,
+        'microsoft': microsoft_translator.languages,
+        'deepl': deepl_translator.languages,
+    }
+
+    languages = [
+        (code, get_locale_english_name(code, 'ALL'))
+        for code in ALL_LANGUAGES
+        if code != 'en'
+    ]
+    languages.sort(lambda (c1, n1), (c2, n2): cmp(n1, n2))
+
+    engines = ['google', 'microsoft', 'deepl']
+
+    for count, engine, language in db.session.query(func.count(TranslationExternalSuggestion.id), TranslationExternalSuggestion.engine, TranslationExternalSuggestion.language).filter(TranslationExternalSuggestion.human_key_hash.in_(distinct_short_messages), TranslationExternalSuggestion.origin_language == u'en').group_by(TranslationExternalSuggestion.engine, TranslationExternalSuggestion.language).all():
+        if engine not in data_per_engine:
+            data_per_engine[engine] = {}
+        data_per_engine[engine][language] = count
+
+    return render_template("translator/stats_suggestions.html", data_per_engine=data_per_engine, supported=supported, english_stats=english_stats, languages=languages, engines=engines)
+
+
+
 
 @translator_stats_blueprint.route('/users/<int:user_id>')
 @requires_golab_login

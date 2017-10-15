@@ -82,8 +82,8 @@ class AbstractTranslator(object):
         remaining_texts = texts[:]
         existing_suggestions = {}
         for suggestion in suggestions:
-            existing_suggestions[suggestion.human_key] = { suggestion.value : 1 }
             human_key = text_per_hash.get(suggestion.human_key_hash)
+            existing_suggestions[human_key] = { suggestion.value : 1 }
             if human_key in remaining_texts:
                 remaining_texts.remove(human_key)
         
@@ -216,6 +216,11 @@ class MicrosoftTranslator(AbstractTranslator):
 class GoogleTranslator(AbstractTranslator):
     name = 'google'
 
+    @property
+    def languages(self):
+        # as of October 2017
+        return list(["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "zh", "zh", "co", "hr", "cs", "da", "nl", "en", "eo", "et", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha", "iw", "hi", "hu", "is", "ig", "id", "ga", "it", "ja", "jw", "kn", "kk", "km", "ko", "ku", "ky", "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ny", "ps", "fa", "pl", "pt", "pa", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw", "sv", "tl", "tg", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "cy", "xh", "yi", "yo", "zu"])
+
     def _translate(self, texts, language, origin_language = 'en'):
         """ [ 'Hello' ], 'es' => { 'Hello' : 'Hola' } """
         # We don't provide anything and asynchronously populate the database
@@ -224,17 +229,23 @@ class GoogleTranslator(AbstractTranslator):
 class DeeplTranslator(AbstractTranslator):
     name = 'deepl'
 
+    @property
+    def languages(self):
+        return [ lang.lower() for lang in SUPPORTED_DEEPL_LANGUAGES ]
+
     def _translate(self, texts, language, origin_language = 'en'):
         """ [ 'Hello' ], 'es' => { 'Hello' : 'Hola' } """
         # We don't provide anything and asynchronously populate the database
         return {}
 
 microsoft_translator = MicrosoftTranslator()
+google_translator = GoogleTranslator()
+deepl_translator = DeeplTranslator()
 
 TRANSLATORS = [
     microsoft_translator,
-    GoogleTranslator(),
-    DeeplTranslator(),
+    google_translator,
+    deepl_translator,
 ]
 
 def translate_texts(texts, language, origin_language = 'en'):
@@ -293,19 +304,20 @@ def existing_translations(texts, language, origin_language = 'en'):
 
 ORIGIN_LANGUAGE = 'en'
 
-    
+
 def _load_generic_suggestions_by_lang(active_messages, language, origin_language, engine, translation_func, bulk_messages):
     if origin_language is None:
         origin_language = ORIGIN_LANGUAGE
 
     logger.info("Using %s to use %s" % (engine, language))
 
-    existing_suggestions = set([ human_key for human_key, in db.session.query(TranslationExternalSuggestion.human_key).filter_by(engine = engine, language = language, origin_language = origin_language).all() ])
+    existing_suggestion_hashes = set([ human_key_hash for human_key_hash, in db.session.query(TranslationExternalSuggestion.human_key_hash).filter_by(engine = engine, language = language, origin_language = origin_language).all() ])
+    active_message_hashes = { hashlib.md5(text.encode('utf8')).hexdigest(): text for text in active_messages }
 
-    missing_suggestions = set(active_messages) - existing_suggestions
+    missing_suggestion_hashes = set(active_message_hashes.keys()) - existing_suggestion_hashes
+    missing_suggestions = [ active_message_hashes[missing_hash] for missing_hash in missing_suggestion_hashes ]
     print "Language:", language
-    print "Missing ",  len(missing_suggestions), ":", list(missing_suggestions)[:5], "..."
-    missing_suggestions = list(missing_suggestions)
+    print "Missing ",  len(missing_suggestions), ":", missing_suggestions[:5], "..."
     random.shuffle(missing_suggestions)
     counter = 0
 
