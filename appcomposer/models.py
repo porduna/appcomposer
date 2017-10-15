@@ -1,3 +1,5 @@
+import json
+import zlib
 import hashlib
 import datetime
 
@@ -135,6 +137,10 @@ class RepositoryApp(db.Model):
         self.failing_since = None
 
     @property
+    def check_urls_hash(self):
+        return unicode(zlib.crc32(json.dumps(sorted([ check_url.url for check_url in self.check_urls ]))))
+
+    @property
     def original_translations(self):
         return ','.join([ ote.language.language for ote in self.languages ])
 
@@ -169,6 +175,7 @@ class RepositoryAppCheckUrl(db.Model):
     working = db.Column(db.Boolean, index=True)
     contains_flash = db.Column(db.Boolean, index=True)
     last_update = db.Column(db.DateTime, index=True)
+    active = db.Column(db.Boolean, index=True)
 
     repository_app = db.relation("RepositoryApp", backref="check_urls")
 
@@ -176,6 +183,7 @@ class RepositoryAppCheckUrl(db.Model):
         self.repository_app = repository_app
         self.url = url
         self.url_hash = hashlib.md5(url.encode('utf8')).hexdigest()
+        self.active = True
         self.supports_ssl = None
         self.working = None
         self.contains_flash = None
@@ -197,7 +205,7 @@ class RepositoryAppFailure(db.Model):
     started = db.Column(db.DateTime, index=True)
     ended = db.Column(db.DateTime, index=True)
 
-    repository_app_check_url = db.relation("RepositoryAppFailure", backref="failures")
+    repository_app_check_url = db.relation("RepositoryAppCheckUrl", backref="failures")
 
     def __init__(self, app_checker_url):
         self.current = True

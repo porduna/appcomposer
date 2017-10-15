@@ -118,6 +118,30 @@
         </tbody>
     </table>
 
+    <h3>Suggestion retrievals</h3>
+
+    <p>Since late July, we store when the translations are retrieved. Here is when the translations have been retrieved. Note that for example Microsoft impose a monthly limit. So in October 13th there are 25k messages and then we don't check more every night, only covering requests by users when loading the App Composer.</p>
+
+    <table class="table table-border table-striped">
+        <thead>
+            <tr>
+                <th>Date</th>
+                {% for engine in engines %}
+                <th>{{ engine.title() }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for row in dates_by_engine %}
+            <tr>
+                {% for col in row %}
+                    <td>{{ col }}</td>
+                {% endfor %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
 </div>
 
 {% endblock %}

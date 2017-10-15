@@ -22,7 +22,7 @@ from sqlalchemy.exc import SQLAlchemyError
 from flask import current_app
 
 from appcomposer import db, redis_store
-from appcomposer.models import RepositoryApp
+from appcomposer.models import RepositoryApp, RepositoryAppCheckUrl
 import appcomposer.translator.utils as trutils
 from appcomposer.translator.ops import calculate_content_hash
 from appcomposer.translator.extractors import extract_metadata_information
@@ -352,17 +352,50 @@ def _update_repo_app(task, repo_app):
             repo_app.failing_since = None
             repo_changes = True
 
-        current_hash = task.metadata_information.pop('hash')
+        check_urls = task.metadata_information.pop('check_urls')
+        current_check_urls_hash = task.metadata_information.pop('check_urls_hash')
+        if repo_app.check_urls_hash != current_check_urls_hash:
+            current_check_urls = set(check_urls)
+
+            # There was a change in the repository!
+            db_existing_check_urls = db.session.query(RepositoryAppCheckUrl).filter_by(repository_app=repo_app).all()
+            inactive_check_urls = { db_check_url.url for db_check_url in db_existing_check_urls if db_check_url.active == False }
+            active_check_urls = { db_check_url.url for db_check_url in db_existing_check_urls if db_check_url.active == False }
+            existing_check_urls  = { db_check_url.url for db_check_url in db_existing_check_urls }
+
+            check_urls_to_add = list(current_check_urls - existing_check_urls)
+            check_urls_to_activate = list(current_check_urls.intersection(inactive_check_urls))
+            check_urls_to_deactivate = list(active_check_urls - current_check_urls)
+
+            for check_url in check_urls_to_add:
+                db.session.add(RepositoryAppCheckUrl(repo_app, check_url))
+                repo_changes = True
+
+            for check_url in check_urls_to_deactivate:
+                for db_existing_check_url in db_existing_check_urls:
+                    if db_existing_check_url.url == check_url:
+                        db_existing_check_urls.active = False
+                        repo_changes = True
+
+            for check_url in check_urls_to_activate:
+                for db_existing_check_url in db_existing_check_urls:
+                    if db_existing_check_url.url == check_url:
+                        db_existing_check_urls.active = True
+                        repo_changes = True
+
+        current_hash = task.metadata_information.pop('translations_hash')
         if repo_app.downloaded_hash != current_hash:
             previous_contents = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)
             previous_hash = repo_app.downloaded_hash
-            
-            open('changes_{}_{}.txt'.format(int(time.time()), repo_app.id), 'w').write(json.dumps({
-                'previous_contents': json.loads(previous_contents or '{}'),
-                'previous_hash': previous_hash,
-                'new_contents': task.metadata_information,
-                'new_hash': current_hash
-            }, indent = 4))
+
+            store_changes = False
+            if store_changes:
+                open('changes_{}_{}.txt'.format(int(time.time()), repo_app.id), 'w').write(json.dumps({
+                    'previous_contents': json.loads(previous_contents or '{}'),
+                    'previous_hash': previous_hash,
+                    'new_contents': task.metadata_information,
+                    'new_hash': current_hash
+                }, indent = 4))
 
             new_contents = json.dumps(task.metadata_information)
             redis_store.hset(_REDIS_CACHE_KEY, repo_app.id, new_contents)
@@ -378,7 +411,7 @@ def _update_repo_app(task, repo_app):
             repo_app.original_translations = u','.join(task.metadata_information.get('original_translations', {}).keys())
 
             repo_changes = True
-    
+
             redis_store.rpush('appcomposer:downloader:changes', repo_app.url)
 
         else: # same hash, still check (if redis was restarted or something, the database will say that it's gone while it's not)

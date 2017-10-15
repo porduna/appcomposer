@@ -2,6 +2,8 @@ import sys
 import json
 import hashlib
 import operator
+import datetime
+
 import requests
 
 from collections import defaultdict
@@ -240,7 +242,24 @@ def suggestions():
     for count, language in db.session.query(func.count(func.distinct(TranslationExternalSuggestion.human_key_hash)), TranslationExternalSuggestion.language).filter(TranslationExternalSuggestion.human_key_hash.in_(distinct_short_messages), TranslationExternalSuggestion.origin_language == u'en').group_by(TranslationExternalSuggestion.language).all():
         data_per_language[language] = count
 
-    return render_template("translator/stats_suggestions.html", data_per_engine=data_per_engine, supported=supported, english_stats=english_stats, languages=languages, engines=engines, data_per_language=data_per_language)
+    dict_dates_by_engine = {
+        # date: {
+        #    engine: count
+        # }
+    }
+
+    for date, engine, count in db.session.query(func.date(TranslationExternalSuggestion.created), TranslationExternalSuggestion.engine, func.count(TranslationExternalSuggestion.id)).filter(TranslationExternalSuggestion.created >= datetime.datetime(2017, 7, 29)).group_by(func.date(TranslationExternalSuggestion.created), TranslationExternalSuggestion.engine).order_by(func.date(TranslationExternalSuggestion.created)).all():
+        date_str = date.strftime('%Y-%m-%d')
+        if date_str not in dict_dates_by_engine:
+            dict_dates_by_engine[date_str] = {}
+        dict_dates_by_engine[date_str][engine] = count
+
+    dates_by_engine = [
+        [date] + [ dict_dates_by_engine[date].get(engine, 0) for engine in engines]
+        for date in sorted(dict_dates_by_engine.keys(), reverse=True)
+    ]
+
+    return render_template("translator/stats_suggestions.html", data_per_engine=data_per_engine, supported=supported, english_stats=english_stats, languages=languages, engines=engines, data_per_language=data_per_language, dates_by_engine=dates_by_engine)
 
 
 

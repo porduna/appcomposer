@@ -29,7 +29,7 @@ def extract_local_translations_url(app_url, force_local_cache = False):
 
     cached_requests = get_cached_session()
 
-    locales, _ = _extract_locales(app_url, cached_requests)
+    locales, _, _ = _extract_locales(app_url, cached_requests)
 
     locales_without_lang = [ locale for locale in locales if 'lang' not in locale.attrib or locale.attrib['lang'].lower() == 'all' ]
     if not locales_without_lang:
@@ -53,7 +53,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
     if cached_requests is None:
         cached_requests = get_cached_session()
 
-    locales, body = _extract_locales(app_url, cached_requests)
+    locales, check_urls, body = _extract_locales(app_url, cached_requests)
     original_translations = {}
     original_translation_urls = {}
     default_translations = {}
@@ -110,6 +110,7 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
 
     metadata = {
         'translatable' : translatable,
+        'check_urls' : check_urls,
         'adaptable' : adaptable,
         'original_translations' : original_translations,
         'original_translation_urls' : original_translation_urls,
@@ -117,9 +118,10 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
         'default_translation_url' : default_translation_url,
         'default_metadata' : default_metadata,
     }
-    
+
     translation_hash, serialized = _calculate_translations_hash(original_translations, default_translations)
-    metadata['hash'] = translation_hash
+    metadata['translation_hash'] = translation_hash
+    metadata['check_urls_hash'] = unicode(zlib.crc32(json.dumps(sorted(check_urls))))
     return metadata
 
 def _calculate_translations_hash(original_translations, default_translations):
@@ -256,13 +258,15 @@ def _extract_locales(app_url, cached_requests):
     if not module_prefs:
         raise TranslatorError("ModulePrefs not found in App URL")
 
-    # TODO: here we should do more things:
-    # - check if it's Smart Gateway or Embedder, if it mentions other URLs, check them
-    # - check SSL
-    # etc.
+    check_urls = [ app_url ] # The app_url itself is always a URL to check
+    for appcomposer_tag in module_prefs[0].findall('appcomposer'):
+        check_url = appcomposer_tag.attrib.get('check-url')
+        if check_url:
+            check_urls.append(check_url)
+    check_urls.sort()
 
     locales = module_prefs[0].findall('Locale')
-    return locales, xml_contents
+    return locales, check_urls, xml_contents
 
 def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests):
     if messages_url.startswith(('http://', 'https://', '//')):
