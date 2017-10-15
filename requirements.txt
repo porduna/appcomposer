@@ -13,7 +13,7 @@ Flask-Testing==0.4.2
 PyMySQL==0.5
 pymysql-sa==1.0
 SQLAlchemy==1.1.14
-alembic==0.9.6
+alembic==0.9.1 # onwards causes problems on index detection
 pyflakes==0.5.0
 babel
 nose
