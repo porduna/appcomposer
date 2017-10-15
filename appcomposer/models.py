@@ -107,6 +107,9 @@ class RepositoryApp(db.Model):
     failing = db.Column(db.Boolean, index = True)
     failing_since = db.Column(db.DateTime, index = True)
 
+    supports_ssl = db.Column(db.Boolean, index=True)
+    contains_flash = db.Column(db.Boolean, index=True)
+
     downloaded_hash = db.Column(db.Unicode(255), index=True)
     contents_hash = db.Column(db.Unicode(255), index=True)
     last_processed_downloaded_hash = db.Column(db.Unicode(255), index=True)
@@ -154,37 +157,57 @@ class RepositoryApp(db.Model):
 
 Index('ix_RepositoryApps_url_shortened', RepositoryApp.url, mysql_length={'url': 255})
 
-# class RepositoryAppCheckUrl(db.Model):
-#     __tablename__ = 'RepositoryAppCheckUrls'
-# 
-#     id = db.Column(db.Integer, primary_key=True)
-#     url = db.Column(db.Unicode(255), unique=True, nullable=False, index=True)
-#     supports_ssl = db.Column(db.Boolean, index=True)
-#     working = db.Column(db.Boolean, index=True)
-#     # TODO: N-N
-# 
-# class RepositoryAppFailure(db.Model):
-#     __tablename__ = 'RepositoryAppFailures'
-# 
-#     id = db.Column(db.Integer, primary_key=True)
-# 
-#     repository_app_check_url_id = db.Column(db.Integer, db.ForeignKey('RepositoryAppCheckUrls.id'), primary_key=True)
-# 
-#     current = db.Column(db.Boolean, index=True)
-#     started = db.Column(db.DateTime, index=True)
-#     ended = db.Column(db.DateTime, index=True)
-# 
-#     repository_app_check_url = db.relation("RepositoryApp", backref="languages")
-# 
-#     def __init__(self, app_checker_url):
-#         self.current = True
-#         self.started = datetime.datetime.utcnow()
-#         self.repository_app_check_url = app_check_url
-# 
-#     def finished(self):
-#         self.current = False
-#         self.ended = datetime.datetime.utcnow()
-# 
+class RepositoryAppCheckUrl(db.Model):
+    __tablename__ = 'RepositoryAppCheckUrls'
+    __table_args__ = (UniqueConstraint('repository_app_id', 'url_hash'), )
+
+    id = db.Column(db.Integer, primary_key=True)
+    repository_app_id = db.Column(db.Integer, db.ForeignKey('RepositoryApps.id'), nullable=False)
+    url = db.Column(db.Unicode(1024), nullable=False) # not index=true; Index below
+    url_hash = db.Column(db.Unicode(255), nullable=False, index=True)
+    supports_ssl = db.Column(db.Boolean, index=True)
+    working = db.Column(db.Boolean, index=True)
+    contains_flash = db.Column(db.Boolean, index=True)
+    last_update = db.Column(db.DateTime, index=True)
+
+    repository_app = db.relation("RepositoryApp", backref="check_urls")
+
+    def __init__(self, repository_app, url):
+        self.repository_app = repository_app
+        self.url = url
+        self.url_hash = hashlib.md5(url.encode('utf8')).hexdigest()
+        self.supports_ssl = None
+        self.working = None
+        self.contains_flash = None
+        self.last_update = datetime.datetime.utcnow()
+
+    def update(self):
+        self.last_update = datetime.datetime.utcnow()
+
+Index('ix_RepositoryAppCheckUrls_url_shortened', RepositoryAppCheckUrl.url, mysql_length={'url': 255})
+
+class RepositoryAppFailure(db.Model):
+    __tablename__ = 'RepositoryAppFailures'
+
+    id = db.Column(db.Integer, primary_key=True)
+
+    repository_app_check_url_id = db.Column(db.Integer, db.ForeignKey('RepositoryAppCheckUrls.id'))
+
+    current = db.Column(db.Boolean, index=True)
+    started = db.Column(db.DateTime, index=True)
+    ended = db.Column(db.DateTime, index=True)
+
+    repository_app_check_url = db.relation("RepositoryAppFailure", backref="failures")
+
+    def __init__(self, app_checker_url):
+        self.current = True
+        self.started = datetime.datetime.utcnow()
+        self.repository_app_check_url = app_check_url
+
+    def finished(self):
+        self.current = False
+        self.ended = datetime.datetime.utcnow()
+
 
 class RepositoryAppLanguage(db.Model):
 
