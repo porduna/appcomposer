@@ -3,7 +3,7 @@ import datetime
 
 from flask_login import UserMixin
 
-from sqlalchemy import sql, UniqueConstraint, ForeignKey
+from sqlalchemy import sql, UniqueConstraint, ForeignKey, Index
 from sqlalchemy.orm import relation, backref
 
 from appcomposer.db import db
@@ -87,7 +87,7 @@ class RepositoryApp(db.Model):
     id = db.Column(db.Integer, primary_key=True)
 
     name = db.Column(db.Unicode(200), nullable = False, index = True)
-    url = db.Column(db.Unicode(255), nullable = False, index = True)
+    url = db.Column(db.Unicode(1024), nullable = False)
     app_thumb = db.Column(db.Unicode(255))
     description = db.Column(db.UnicodeText)
     app_link = db.Column(db.Unicode(255))
@@ -151,6 +151,8 @@ class RepositoryApp(db.Model):
         for lang_db in db.session.query(Language).filter(Language.language.in_(languages)).all():
             new_lang = RepositoryAppLanguage(repository_app=self, language=lang_db)
             db.session.add(new_lang)
+
+Index('ix_RepositoryApps_url_shortened', RepositoryApp.url, mysql_length={'url': 255})
 
 # class RepositoryAppCheckUrl(db.Model):
 #     __tablename__ = 'RepositoryAppCheckUrls'
