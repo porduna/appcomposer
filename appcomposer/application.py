@@ -1,5 +1,6 @@
 from logging.handlers import SMTPHandler, RotatingFileHandler
 import os
+import traceback
 
 from flask import Flask, request
 from flask import escape
@@ -51,6 +52,7 @@ if not app.debug and app.config.get("ADMINS") is not None and app.config.get("SM
                 return False
             try:
                 from appcomposer.login import current_golab_user
+                db.session.remove()
                 user = current_golab_user()
                 if user is None:
                     record.user = 'User not logged in'
@@ -58,6 +60,7 @@ if not app.debug and app.config.get("ADMINS") is not None and app.config.get("SM
                     record.user = user.email
             except:
                 record.user = 'Error checking user'
+                traceback.print_exc()
             return True
 
     app.logger.addFilter(MailLoggingFilter())
