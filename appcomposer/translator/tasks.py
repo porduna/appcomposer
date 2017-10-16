@@ -77,7 +77,7 @@ cel.conf.update(
             'schedule' : datetime.timedelta(minutes=4),
             'args' : ()
         },
-        
+
         # Crontab-based tasks: slow tasks at night
         'sync_repo_apps_all': {
             'task' : 'sync_repo_apps_all',
@@ -105,11 +105,11 @@ cel.conf.update(
             'args' : ()
         },
     },
-    
+
     task_routes = {
-        # 
+        #
         # The following are tasks that are probably non-blocking and can be run in parallel and are not critical
-        # 
+        #
         'load_google_suggestions': {
             'queue': NON_CRITICAL_INDEPENDENT_TASKS,
         },
@@ -122,10 +122,10 @@ cel.conf.update(
         'delete_old_realtime_active_users': {
             'queue': NON_CRITICAL_INDEPENDENT_TASKS,
         },
-        
-        # 
+
+        #
         # The following are tasks which must be quick but still independent
-        # 
+        #
         'notify_changes' : {
             'queue': CRITICAL_INDEPENDENT_TASKS,
         },
@@ -143,7 +143,7 @@ cel.conf.update(
         },
 
         # The following are tasks which can be slow but still independent
-        # 
+        #
         'sync_mongodb_all' : {
             'queue': SLOW_INDEPENDENT_TASKS,
         },
@@ -191,11 +191,11 @@ def synchronize_apps_cache_wrapper(self, source = None):
 def synchronize_apps_no_cache_wrapper(self, source = None):
     if source is None:
         source = 'scheduled'
-    
+
     # synchronize all the apps
     with my_app.app_context():
         result = synchronize_apps_no_cache(source = source)
-    
+
     # Call mongodb
     sync_mongodb_all(self)
     return result
@@ -280,7 +280,7 @@ def task_download_repository_apps(self, source = None):
 
     with my_app.app_context():
         sync_id = start_synchronization(source=source, cached=False)
-    
+
     try:
         with my_app.app_context():
             changes = download_repository_apps()

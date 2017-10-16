@@ -295,4 +295,52 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests)
 
     return absolute_translation_url, messages, metadata, translation_messages_xml
 
+def extract_check_url_metadata(url):
+    failed = False
+    flash = None
+    ssl = None
+    error_message = None
+    try:
+        req = requests.get(url, allow_redirects=True, timeout=(15,15))
+        req.raise_for_status()
+    except Exception as err:
+        failed = True
+        error_message = str(err)
+    else:
+        content = req.content or ''
+        if not flash:
+            if url.endswith('.swf'):
+                flash = True
+            elif 'shockwave' in (req.headers.get('Content-Type') or ''):
+                flash = True
+            elif 'download.macromedia.com' in content:
+                flash = True
+            elif 'macromedia.com/go/getflashplayer' in content:
+                flash = True
+            elif 'flash.embedFlash' in content:
+                flash = True
 
+        content_size = len(content)
+
+        if url.startswith('https://'):
+            ssl = True
+        else:
+            ssl_url = url.replace('http://', 'https://', 1)
+
+            try:
+                req = requests.get(ssl_url, allow_redirects=True, timeout=(15,15))
+                req.raise_for_status()
+            except Exception as err:
+                ssl = False
+            else:
+                ssl_content = req.content or ''
+                # +- 10% since sometimes it includes https URLs
+                if content_size * 0.9 <= len(ssl_content) <= content_size * 1.1:
+                    ssl = True
+
+    return {
+        'failed': failed,
+        'flash': flash,
+        'ssl': ssl,
+        'error_message': error_message,
+    }
