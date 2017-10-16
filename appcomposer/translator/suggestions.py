@@ -504,7 +504,10 @@ def load_google_paid():
 
         print " + ",lang, "missing", len(missing_hashes), "messages. Total characters:", lang_chars
 
-        block_size = 100
+        block_size = 50
+
+        if not missing_hashes:
+            continue
 
         missing_hashes = list(missing_hashes)
 
