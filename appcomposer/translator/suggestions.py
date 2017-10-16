@@ -54,7 +54,9 @@ class AbstractTranslator(object):
             except:
                 traceback.print_exc()
                 db.session.rollback()
+                db.session.remove()
                 raise
+            db.session.remove()
         return existing_suggestions
 
     def existing_translations(self, texts, language, origin_language = 'en'):
