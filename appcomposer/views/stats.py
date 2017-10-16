@@ -282,7 +282,7 @@ def apps_status():
 @public
 def apps_failing():
     failing_apps = db.session.query(RepositoryApp).filter_by(failing = True).options(joinedload('check_urls')).all()
-    return render_template("translator/failing_apps.html", failing_apps = failing_apps, header = "Failing labs and apps", what = 'working')
+    return render_template("translator/failing_apps.html", failing_apps = failing_apps, header = "Failing labs and apps", show_since=True, what = 'working')
 
 @translator_stats_blueprint.route('/ssl/')
 @public
