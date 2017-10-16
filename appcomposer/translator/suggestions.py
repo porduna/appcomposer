@@ -486,8 +486,61 @@ def load_all_microsoft_suggestions():
     _load_all_suggestions('en', languages_per_category, load_function = load_microsoft_suggestions_by_lang, engine='microsoft')
 
 
+def load_google_paid():
+    priority_languages = [u'sh', u'se', u'mk', u'lb', u'my', u'bs', u'be', u'sr', u'id', u'ja', u'zh', u'hi', u'no', u'uk', u'tr', u'ar', u'de']
+
+    active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == u'en_ALL', TranslationBundle.target == u'ALL', ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
+    active_message_by_hash = { unicode(hashlib.md5(text.encode('utf8')).hexdigest()): text for text in active_messages }
+    print "Total of", len(active_messages), "messages in English"
+
+    total_char = 0
+
+    for lang in priority_languages:
+        existing_hashes = { human_key_hash for human_key_hash, in db.session.query(TranslationExternalSuggestion.human_key_hash).filter(TranslationExternalSuggestion.origin_language == u'en', TranslationExternalSuggestion.language == lang).all() }
+        missing_hashes = set(active_message_by_hash.keys()) - existing_hashes
+
+        lang_chars = sum([ len(active_message_by_hash[msg_hash]) for msg_hash in missing_hashes ])
+        total_char += lang_chars
+
+        print " + ",lang, "missing", len(missing_hashes), "messages. Total characters:", lang_chars
+
+        block_size = 100
+
+        missing_hashes = list(missing_hashes)
+
+        for block_number in range(1 + (len(missing_hashes) / block_size)):
+            initial_pos = block_size * block_number
+            final_pos = block_size * (block_number + 1)
+            current_block_hashes = missing_hashes[initial_pos:final_pos]
+            current_block_msgs = [ active_message_by_hash[msg_hash] for msg_hash in current_block_hashes ]
+
+            print "   - Translating {}:{}...".format(initial_pos, final_pos)
+
+            from google.cloud import translate
+            client = translate.Client()
+
+            translated_results = client.translate(current_block_msgs, target_language=lang, source_language='en')
+            for translated_result in translated_results:
+                try:
+                    original_message = translated_result['input']
+                    translated_text = translated_result['translatedText']
+                except:
+                    print("Error parsing:", translated_result)
+                    traceback.print_exc()
+                    continue
+
+                suggestion = TranslationExternalSuggestion(engine='google', human_key=original_message, language=lang, origin_language='en', value=translated_text)
+                db.session.add(suggestion)
+
+            db.session.commit()
+            db.session.remove()
+
+            if block_number > 1:
+                break
+        break
+
+    print "Total:", total_char
+
 if __name__ == '__main__':
     with app.app_context():
-        print existing_translations(["Hello", "Bye", "Good morning", "This was never stored"], 'es')
-        print translate_texts(["Hello", "Bye", "Good morning"], 'es')
-
+        load_google_paid()

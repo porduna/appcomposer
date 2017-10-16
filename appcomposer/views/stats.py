@@ -197,7 +197,7 @@ def translation_users():
 @translator_stats_blueprint.route('/suggestions')
 def suggestions():
     total_messages = db.session.query(ActiveTranslationMessage).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == u'en_ALL', TranslationBundle.target == u'ALL').count()
-    distinct_messages = [ (value or u'') for value,  in db.session.query(func.distinct(ActiveTranslationMessage.value)).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == u'en_ALL', TranslationBundle.target == u'ALL').all() ]
+    distinct_messages = { (value or u'') for value,  in db.session.query(ActiveTranslationMessage.value).filter(ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == u'en_ALL', TranslationBundle.target == u'ALL').all() }
 
     distinct_short_messages = [ unicode(hashlib.md5(msg.encode('utf8')).hexdigest()) for msg in distinct_messages ]
 
