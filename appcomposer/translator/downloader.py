@@ -207,6 +207,18 @@ def update_content_hash(app_url):
 
 def update_check_urls_status():
     db_urls = db.session.query(RepositoryAppCheckUrl).filter(RepositoryAppCheckUrl.active == True).all()
+    urls = set([ db_url.url for db_url in db_urls ])
+
+    tasks = []
+    for url in urls:
+        tasks.append(_CheckUrlMetadataTask(url))
+
+    db.session.remove()
+
+    _RunInParallel("check-urls", tasks).run()
+
+    # Recalculate
+    db_urls = db.session.query(RepositoryAppCheckUrl).filter(RepositoryAppCheckUrl.active == True).all()
     urls = set([])
     db_by_url = {}
     for db_url in db_urls:
@@ -216,16 +228,10 @@ def update_check_urls_status():
             db_by_url[url] = []
         db_by_url[url].append(db_url)
 
-    tasks = []
-    for url in urls:
-        tasks.append(_CheckUrlMetadataTask(url))
-
-    _RunInParallel("check-urls", tasks).run()
-
     for task in tasks:
         if not task.failed: # if something important failed
             metadata = task.metadata_information
-            for db_url in db_by_url[task.url]:
+            for db_url in db_by_url.get(task.url, []):
                 if metadata['ssl'] is not None:
                     db_url.supports_ssl = metadata['ssl']
 
