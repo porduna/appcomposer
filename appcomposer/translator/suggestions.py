@@ -392,10 +392,6 @@ def load_google_suggestions_by_lang(active_messages, language, origin_language =
     if language == 'en':
         return True, 0
 
-    for ms_language in microsoft_translator.languages:
-        if ms_language == language:
-            return True, 0 # Focus on those not available in Microsoft
-
     return _load_generic_suggestions_by_lang(active_messages, language, origin_language, 'google', translation_func = _gtranslate, bulk_messages=False)
 
 def load_microsoft_suggestions_by_lang(active_messages, language, origin_language = None):
@@ -487,7 +483,8 @@ def load_all_microsoft_suggestions():
 
 
 def load_google_paid():
-    priority_languages = [u'sh', u'se', u'mk', u'lb', u'my', u'bs', u'be', u'sr', u'id', u'ja', u'zh', u'hi', u'no', u'uk', u'tr', u'ar', u'de']
+    # priority_languages = [u'sh', u'se', u'mk', u'lb', u'my', u'bs', u'be', u'sr', u'id', u'ja', u'zh', u'hi', u'no', u'uk', u'tr', u'ar', u'de']
+    priority_languages = [u'sh', u'mk', u'lb', u'my', u'bs', u'be', u'sr', u'id', u'ja', u'zh', u'hi', u'no', u'uk', u'tr', u'ar', u'de'] + [ unicode(lang) for lang in SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES if lang not in ['en', 'se'] ]
 
     active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == u'en_ALL', TranslationBundle.target == u'ALL', ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
     active_message_by_hash = { unicode(hashlib.md5(text.encode('utf8')).hexdigest()): text for text in active_messages }
@@ -496,7 +493,7 @@ def load_google_paid():
     total_char = 0
 
     for lang in priority_languages:
-        existing_hashes = { human_key_hash for human_key_hash, in db.session.query(TranslationExternalSuggestion.human_key_hash).filter(TranslationExternalSuggestion.origin_language == u'en', TranslationExternalSuggestion.language == lang).all() }
+        existing_hashes = { human_key_hash for human_key_hash, in db.session.query(TranslationExternalSuggestion.human_key_hash).filter(TranslationExternalSuggestion.origin_language == u'en', TranslationExternalSuggestion.language == lang, TranslationExternalSuggestion.engine == u'google').all() }
         missing_hashes = set(active_message_by_hash.keys()) - existing_hashes
 
         lang_chars = sum([ len(active_message_by_hash[msg_hash]) for msg_hash in missing_hashes ])
@@ -522,7 +519,15 @@ def load_google_paid():
             from google.cloud import translate
             client = translate.Client()
 
-            translated_results = client.translate(current_block_msgs, target_language=lang, source_language='en')
+            try:
+                translated_results = client.translate(current_block_msgs, target_language=lang, source_language='en')
+            except Exception as e:
+
+                traceback.print_exc()
+                if u"User Rate Limit Exceeded" in unicode(e):
+                    return
+                continue
+
             for translated_result in translated_results:
                 try:
                     original_message = translated_result['input']
