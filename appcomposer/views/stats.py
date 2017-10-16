@@ -273,7 +273,7 @@ def apps_status():
             flash.add(app.app_link)
         if app.supports_ssl == False:
             ssl.add(app.app_link)
-        if app.failing == False:
+        if app.failing == True:
             failing.add(app.app_link)
 
     return jsonify(flash=list(flash), ssl=list(ssl), failing=list(failing))
