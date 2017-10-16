@@ -529,7 +529,7 @@ def load_google_paid():
                     traceback.print_exc()
                     continue
 
-                suggestion = TranslationExternalSuggestion(engine='google', human_key=original_message, language=lang, origin_language='en', value=translated_text)
+                suggestion = TranslationExternalSuggestion(engine=u'google', human_key=original_message, language=lang, origin_language=u'en', value=translated_text)
                 db.session.add(suggestion)
 
             db.session.commit()
