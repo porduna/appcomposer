@@ -16,6 +16,13 @@
     <li><a href="{{ url_for('.stats_golabz') }}">Go-Lab Repository:</a> what apps are provided through the App Composer or Smart Gateway</li>
     <li><a href="{{ url_for('.translation_users') }}">Users:</a> what users have translated what, etc.</li>
     <li><a href="{{ url_for('.suggestions') }}">Suggestions:</a> texts provided by Microsoft Translator API, Google Translator, etc.</li>
+    <li>Status:
+        <ul>
+            <li><a href="{{ url_for('.apps_failing') }}">Apps failing:</a> what apps are currently not available and since when.</li>
+            <li><a href="{{ url_for('.apps_ssl') }}">Apps not supporting https:</a> what apps do not seem to support https.</li>
+            <li><a href="{{ url_for('.apps_flash') }}">Apps using Flash:</a> what apps are using Flash.</li>
+        </ul>
+    </li>
 </ul>
 
 {% endblock %}

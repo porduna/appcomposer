@@ -434,8 +434,7 @@ def translations_revisions(lang, target, app_url):
 @translator_dev_blueprint.route('/apps/failing/')
 @public
 def apps_failing():
-    failing_apps = db.session.query(RepositoryApp).filter_by(failing = True).all()
-    return render_template("translator/failing_apps.html", failing_apps = failing_apps)
+    return redirect(url_for('translator_stats.apps_failing'))
 
 @translator_dev_blueprint.route('/apps/apps.json')
 @public

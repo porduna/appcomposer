@@ -1,14 +1,22 @@
 {% extends "translator/base.html" %}
 {% block body %}
-<h1>Failing apps and labs ({{ failing_apps|length }})</h1>
+<h1>{{ header }} ({{ failing_apps|length }})</h1>
+
+{% if sorted_domains %}
+    <p>See also the <a href="#domains">domain list below</a></p>
+{% endif %}
+
 {% if failing_apps %}
 <table class="table table-bordered table-hover">
     <thead>
         <tr>
             <th>#</th>
+            <th>What</th>
             <th colspan="2">Name</th>
-            <th>Failing URLs</th>
+            <th>Checked URLs</th>
+            {% if show_since %}
             <th>Since</th>
+            {% endif %}
         </tr>
     </thead>
     <tbody>
@@ -16,17 +24,27 @@
         {% for app in failing_apps %}
         <tr>
             <td>{{ loop.index }}</td>
+            <td>{% if 'golabz.eu/app' in app.app_link %}app{% else %}lab{% endif %}</td>
             <td><img src="{{ app.app_thumb }}" width="50px"></td>
             <td><a href="{{ app.app_link }}">{{ app.name }}</a> (<a href="{{ app.url }}">OpenSocial link</a>)</td>
             <td>
                 <ul>
                     {% for check_url in app.check_urls %}
-                        {% if not check_url.working %}
-                            <li><a href="{{ check_url.url }}">{{ check_url.url[:70] }}{% if check_url.url|length > 70 %}...{% endif %}</a></li>
+                        {% set selected = False %}
+                        {% if what == 'working' and check_url.working == False
+                            or what == 'flash' and check_url.contains_flash == True
+                            or what == 'ssl' and check_url.supports_ssl == False %}
+                            {% set selected = True %}
+                        {% endif %}
+
+                        {% if selected %}
+                        <li><a href="{{ check_url.url }}">{{ check_url.url[:70] }}{% if check_url.url|length > 70 %}...{% endif %}</a></li>
                         {% endif %}
                     {% endfor %}
                 </ul></td>
+            {% if show_since %}
             <td><span data-date="{{ app.failing_since.strftime(FORMAT) }}"></span></td>
+            {% endif %}
         </tr>
         {% endfor %}
     </tbody>
@@ -34,6 +52,28 @@
 {% else %}
     <p>There are no failing apps. Let's celebrate it!</p>
 {% endif %}
+
+{% if sorted_domains %}
+<a name="domains"></a><h2>Domain list (and labs/apps affected)</h2>
+<table class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Domain</th>
+            <th>Labs or apps</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for domain, count in sorted_domains %}
+        <tr>
+            <td>{{ domain }}</td>
+            <td>{{ count }}</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endif %}
+
+
 {% endblock %}
 
 {% block tail %}

@@ -3,6 +3,7 @@ import json
 import hashlib
 import operator
 import datetime
+import urlparse
 
 import requests
 
@@ -15,7 +16,7 @@ from flask import Blueprint, render_template, request, url_for
 
 from appcomposer.db import db
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp, GoLabOAuthUser, ActiveTranslationMessage, TranslationMessageHistory
-from appcomposer.models import TranslationExternalSuggestion
+from appcomposer.models import TranslationExternalSuggestion, RepositoryAppCheckUrl
 from appcomposer.login import requires_golab_login
 
 from appcomposer.utils import public
@@ -262,7 +263,35 @@ def suggestions():
     return render_template("translator/stats_suggestions.html", data_per_engine=data_per_engine, supported=supported, english_stats=english_stats, languages=languages, engines=engines, data_per_language=data_per_language, dates_by_engine=dates_by_engine)
 
 
+@translator_stats_blueprint.route('/failing/')
+@public
+def apps_failing():
+    failing_apps = db.session.query(RepositoryApp).filter_by(failing = True).options(joinedload('check_urls')).all()
+    return render_template("translator/failing_apps.html", failing_apps = failing_apps, header = "Failing labs and apps", what = 'working')
 
+@translator_stats_blueprint.route('/ssl/')
+@public
+def apps_ssl():
+    failing_apps = db.session.query(RepositoryApp).filter_by(supports_ssl = False).options(joinedload('check_urls')).all()
+    domains = {}
+    for app in failing_apps:
+        current_domains = set([])
+        for check_url in app.check_urls:
+            if check_url.supports_ssl == False:
+                hostname = urlparse.urlparse(check_url.url).hostname
+                current_domains.add(hostname)
+        for domain in current_domains:
+            if domain not in domains:
+                domains[domain] = 0
+            domains[domain] += 1
+    sorted_domains = sorted(domains.items(), lambda (k1, c1), (k2, c2): cmp(c2, c1))
+    return render_template("translator/failing_apps.html", failing_apps = failing_apps, header = "Labs and apps without https support", show_since=False, what = 'ssl', sorted_domains=sorted_domains)
+
+@translator_stats_blueprint.route('/flash/')
+@public
+def apps_flash():
+    failing_apps = db.session.query(RepositoryApp).filter_by(contains_flash = True).options(joinedload('check_urls')).all()
+    return render_template("translator/failing_apps.html", failing_apps = failing_apps, header = "Labs and apps using Flash", show_since=False, what = 'flash')
 
 @translator_stats_blueprint.route('/users/<int:user_id>')
 @requires_golab_login
