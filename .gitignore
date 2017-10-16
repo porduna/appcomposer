@@ -1,3 +1,9 @@
+run_celery.sh
+gunicorn_start
+appcomposer_celery_*.err*
+appcomposer_celery_*.log*
+appcomposer_web.err
+appcomposer_web.log
 logfile.log
 appcomposer.sql
 appcomposer*.sql
