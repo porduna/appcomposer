@@ -411,7 +411,7 @@ def load_microsoft_suggestions_by_lang(active_messages, language, origin_languag
 
     last_month = datetime.datetime.utcnow() - datetime.timedelta(days=32)
 
-    row = db.session.query(func.sum(func.length(TranslationExternalSuggestion))).filter(TranslationExternalSuggestion.engine=='microsoft', TranslationExternalSuggestion.created>=last_month).first()
+    row = db.session.query(func.sum(func.length(TranslationExternalSuggestion.value))).filter(TranslationExternalSuggestion.origin_language == u'en', TranslationExternalSuggestion.engine==u'microsoft', TranslationExternalSuggestion.created>=last_month).first()
     if row[0] > 1500000:
         return False, 0
 
