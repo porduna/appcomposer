@@ -132,7 +132,7 @@ class RepositoryApp(db.Model):
 
         self.last_check = None
         self.last_change = None
-        
+
         self.failing = False
         self.failing_since = None
 

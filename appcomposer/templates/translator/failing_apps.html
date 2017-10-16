@@ -1,12 +1,13 @@
 {% extends "translator/base.html" %}
 {% block body %}
-<h1>Failing applications</h1>
+<h1>Failing apps and labs ({{ failing_apps|length }})</h1>
 {% if failing_apps %}
 <table class="table table-bordered table-hover">
     <thead>
         <tr>
+            <th>#</th>
             <th colspan="2">Name</th>
-            <th>URL</th>
+            <th>Failing URLs</th>
             <th>Since</th>
         </tr>
     </thead>
@@ -14,9 +15,17 @@
         {% set FORMAT = '%Y-%m-%d %H:%M:%SZ' %}
         {% for app in failing_apps %}
         <tr>
+            <td>{{ loop.index }}</td>
             <td><img src="{{ app.app_thumb }}" width="50px"></td>
-            <td><a href="{{ app.app_link }}">{{ app.name }}</a></td>
-            <td><a href="{{ app.url }}">{{ app.url[:70] }}{% if app.url|length > 70 %}...{% endif %}</a></td>
+            <td><a href="{{ app.app_link }}">{{ app.name }}</a> (<a href="{{ app.url }}">OpenSocial link</a>)</td>
+            <td>
+                <ul>
+                    {% for check_url in app.check_urls %}
+                        {% if not check_url.working %}
+                            <li><a href="{{ check_url.url }}">{{ check_url.url[:70] }}{% if check_url.url|length > 70 %}...{% endif %}</a></li>
+                        {% endif %}
+                    {% endfor %}
+                </ul></td>
             <td><span data-date="{{ app.failing_since.strftime(FORMAT) }}"></span></td>
         </tr>
         {% endfor %}

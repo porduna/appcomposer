@@ -18,6 +18,7 @@ import traceback
 import requests
 from sqlalchemy import or_
 from sqlalchemy.exc import SQLAlchemyError
+from sqlalchemy.orm import joinedload
 
 from flask import current_app
 
@@ -25,7 +26,7 @@ from appcomposer import db, redis_store
 from appcomposer.models import RepositoryApp, RepositoryAppCheckUrl
 import appcomposer.translator.utils as trutils
 from appcomposer.translator.ops import calculate_content_hash
-from appcomposer.translator.extractors import extract_metadata_information
+from appcomposer.translator.extractors import extract_metadata_information, extract_check_url_metadata
 
 from celery.utils.log import get_task_logger
 
@@ -39,7 +40,7 @@ DEBUG_VERBOSE = False
 
 def sync_repo_apps(force=False):
     """
-    This script does not download anything related to the apps: it only checks golabz, and for repo app there, 
+    This script does not download anything related to the apps: it only checks golabz, and for repo app there,
     it synchronizes the table RepositoryApp adding new apps, deleting expired ones or updating existing ones.
 
     It stores in redis the hash of the Go-Lab repos, so if there is no change, it does not need to look in the database.
@@ -67,10 +68,10 @@ def sync_repo_apps(force=False):
 
     stored_apps = db.session.query(RepositoryApp).all()
     stored_ids = []
-    
-    # 
+
+    #
     # Update or delete existing apps
-    # 
+    #
     for repo_app in stored_apps:
         external_id = unicode(repo_app.external_id)
         if (repo_app.repository, external_id) in apps_by_repo_id:
@@ -82,15 +83,15 @@ def sync_repo_apps(force=False):
             # Delete old apps (translations are kept, and the app is kept, but not listed in the repository apps)
             db.session.delete(repo_app)
 
-    # 
+    #
     # Add new apps
-    # 
+    #
     for app in downloaded_apps:
         if unicode(app['id']) not in stored_ids:
             # Double-check
             repo_app = db.session.query(RepositoryApp).filter_by(repository = app['repository'], external_id = app['id']).first()
             if repo_app is None:
-                _add_new_app(repository = app['repository'], 
+                _add_new_app(repository = app['repository'],
                             app_url = app['app_url'], title = app['title'], external_id = app['id'],
                             app_thumb = app.get('app_thumb'), description = app.get('description'),
                             app_image = app.get('app_image'), app_link = app.get('app_golabz_page'))
@@ -112,16 +113,16 @@ def sync_repo_apps(force=False):
 _REDIS_CACHE_KEY = 'appcomposer:repository:cache'
 
 def download_repository_apps():
-    """This method assumes that the table RepositoryApp is updated in a different process. 
-    
+    """This method assumes that the table RepositoryApp is updated in a different process.
+
     Therefore, it does not check in golabz, but just the database. The method itself is expensive, but can work in multiple threads processing all the requests.
 
     This method does not do anything with the translations in the database. It only updates the RepositoryApp table, storing it in redis.
 
-    Then, other methods can check on the RepositoryApp table to see if anything has changed since the last time it was checked. 
+    Then, other methods can check on the RepositoryApp table to see if anything has changed since the last time it was checked.
     Often, this will be "no", so no further database request will be needed.
     """
-    
+
     repo_apps_by_id = {}
     tasks = []
 
@@ -162,7 +163,7 @@ def download_repository_single_app(app_url):
     This method does the same as the previous one, but with a single URL (therefore not checking more variables, neither starting more than 1 thread, and without adding new or deleting apps).
     It returns if there was a change
     """
-    
+
     repo_app = db.session.query(RepositoryApp).filter_by(url=app_url).first()
     if repo_app is None:
         raise Exception("App URL not in the repository: {}".format(app_url))
@@ -204,8 +205,92 @@ def update_content_hash(app_url):
                 else:
                     db.session.remove()
 
+def update_check_urls_status():
+    db_urls = db.session.query(RepositoryAppCheckUrl).filter(RepositoryAppCheckUrl.active == True).all()
+    urls = set([])
+    db_by_url = {}
+    for db_url in db_urls:
+        url = db_url.url
+        urls.add(url)
+        if url not in db_by_url:
+            db_by_url[url] = []
+        db_by_url[url].append(db_url)
+
+    tasks = []
+    for url in urls:
+        tasks.append(_CheckUrlMetadataTask(url))
+
+    _RunInParallel("check-urls", tasks).run()
+
+    for task in tasks:
+        if not task.failed: # if something important failed
+            metadata = task.metadata_information
+            for db_url in db_by_url[task.url]:
+                if metadata['ssl'] is not None:
+                    db_url.supports_ssl = metadata['ssl']
+
+                if metadata['flash'] is not None:
+                    db_url.contains_flash = metadata['flash']
+
+                if metadata['failed'] is not None:
+                    db_url.working = not metadata['failed']
+
+                db_url.update()
+
+    try:
+        db.session.commit()
+    except Exception as err:
+        traceback.print_exc()
+    else:
+        db.session.remove()
+
+    # All the RepositoryAppCheckUrls are defined
+    for repository_app in db.session.query(RepositoryApp).options(joinedload('check_urls')):
+        ssl = None
+        flash = None
+        failed = None
+        for db_check_url in repository_app.check_urls:
+            if ssl is None:
+                ssl = db_check_url.supports_ssl
+            elif ssl and db_check_url.supports_ssl == False:
+                ssl = False
+
+            if flash is None:
+                flash = db_check_url.contains_flash
+            elif not flash and db_check_url.contains_flash:
+                flash = True
+
+            if failed is None:
+                if db_check_url.working is not None:
+                    failed = not db_check_url.working
+            elif not failed and db_check_url.working == False:
+                failed = True
+
+        if ssl is not None:
+            repository_app.supports_ssl = ssl
+
+        if flash is not None:
+            repository_app.contains_flash = flash
+
+        if failed is not None:
+            if failed:
+                if not repository_app.failing:
+                    repository_app.failing = True
+                    repository_app.failing_since = datetime.datetime.utcnow()
+            else:
+                repository_app.failing = False
+                repository_app.failing_since = None
+
+    try:
+        db.session.commit()
+    except Exception as err:
+        traceback.print_exc()
+    else:
+        db.session.remove()
+
+
 def retrieve_updated_translatable_apps():
-    """This method collects information previously stored by other process into Redis, and returns only those apps which have changed, are translatable and not currently failing"""  
+    """This method collects information previously stored by other process into Redis, and returns only those apps which have changed, are translatable and not currently failing"""
     return _retrieve_translatable_apps(query = db.session.query(RepositoryApp).filter(
                         RepositoryApp.translatable == True,                                  # Only translatable pages
                         RepositoryApp.failing == False,                                      # Which are not failing
@@ -220,14 +305,14 @@ def retrieve_updated_translatable_apps():
                 ))
 
 def retrieve_all_translatable_apps():
-    """This method collects information previously stored by other process into Redis, and returns only those apps which are translatable and not currently failing"""  
+    """This method collects information previously stored by other process into Redis, and returns only those apps which are translatable and not currently failing"""
     return _retrieve_translatable_apps(query = db.session.query(RepositoryApp).filter(
                         RepositoryApp.translatable == True,                                  # Only translatable pages
                         RepositoryApp.failing == False,                                      # Which are not failing
                 ))
 
 def retrieve_single_translatable_apps(app_url):
-    """This method collects information previously stored by other process into Redis, and returns only those apps which are translatable and not currently failing"""  
+    """This method collects information previously stored by other process into Redis, and returns only those apps which are translatable and not currently failing"""
     return _retrieve_translatable_apps(query = db.session.query(RepositoryApp).filter(
                         RepositoryApp.translatable == True,                                  # Only translatable pages
                         RepositoryApp.failing == False,                                      # Which are not failing
@@ -235,10 +320,30 @@ def retrieve_single_translatable_apps(app_url):
                 ))
 
 #######################################################################################
-# 
-#   
+#
+#
 #             CONCURRENCY
-# 
+#
+
+class _CheckUrlMetadataTask(threading.Thread):
+    def __init__(self, url):
+        threading.Thread.__init__(self)
+        self.url = url
+        self.finished = False
+        self.failed = False
+        self.metadata_information = None
+
+    def run(self):
+        try:
+            self.metadata_information = extract_check_url_metadata(self.url)
+        except Exception as err:
+            logger.warning("Error extracting information from checker url %s" % self.url, exc_info = True)
+            if DEBUG_VERBOSE:
+                print("Error extracting information from checker url %s" % self.url)
+                traceback.print_exc()
+
+            self.failed = True
+        self.finished = True
 
 class _MetadataTask(threading.Thread):
     def __init__(self, repo_id, app_url, force_reload):
@@ -310,12 +415,12 @@ class _RunInParallel(object):
 
 
 #######################################################################################
-# 
-# 
-# 
-#             AUXILIAR METHODS 
-# 
-# 
+#
+#
+#
+#             AUXILIAR METHODS
+#
+#
 #
 
 def _retrieve_translatable_apps(query):
@@ -341,48 +446,43 @@ def _update_repo_app(task, repo_app):
     repo_changes = False
 
     if task.failing:
-        if not repo_app.failing:
-            repo_app.failing = True
-            repo_app.failing_since = datetime.datetime.utcnow()
-            repo_changes = True
-
+        check_urls = [ task.app_url ]
+        current_check_urls_hash = unicode(zlib.crc32(json.dumps(check_urls)))
     else:
-        if repo_app.failing:
-            repo_app.failing = False
-            repo_app.failing_since = None
-            repo_changes = True
-
         check_urls = task.metadata_information.pop('check_urls')
         current_check_urls_hash = task.metadata_information.pop('check_urls_hash')
-        if repo_app.check_urls_hash != current_check_urls_hash:
-            current_check_urls = set(check_urls)
 
-            # There was a change in the repository!
-            db_existing_check_urls = db.session.query(RepositoryAppCheckUrl).filter_by(repository_app=repo_app).all()
-            inactive_check_urls = { db_check_url.url for db_check_url in db_existing_check_urls if db_check_url.active == False }
-            active_check_urls = { db_check_url.url for db_check_url in db_existing_check_urls if db_check_url.active == False }
-            existing_check_urls  = { db_check_url.url for db_check_url in db_existing_check_urls }
+    if repo_app.check_urls_hash != current_check_urls_hash:
+        current_check_urls = set(check_urls)
 
-            check_urls_to_add = list(current_check_urls - existing_check_urls)
-            check_urls_to_activate = list(current_check_urls.intersection(inactive_check_urls))
-            check_urls_to_deactivate = list(active_check_urls - current_check_urls)
+        # There was a change in the repository!
+        db_existing_check_urls = db.session.query(RepositoryAppCheckUrl).filter_by(repository_app=repo_app).all()
+        inactive_check_urls = { db_check_url.url for db_check_url in db_existing_check_urls if db_check_url.active == False }
+        active_check_urls = { db_check_url.url for db_check_url in db_existing_check_urls if db_check_url.active == False }
+        existing_check_urls  = { db_check_url.url for db_check_url in db_existing_check_urls }
 
-            for check_url in check_urls_to_add:
-                db.session.add(RepositoryAppCheckUrl(repo_app, check_url))
-                repo_changes = True
+        check_urls_to_add = list(current_check_urls - existing_check_urls)
+        check_urls_to_activate = list(current_check_urls.intersection(inactive_check_urls))
+        check_urls_to_deactivate = list(active_check_urls - current_check_urls)
 
-            for check_url in check_urls_to_deactivate:
-                for db_existing_check_url in db_existing_check_urls:
-                    if db_existing_check_url.url == check_url:
-                        db_existing_check_urls.active = False
-                        repo_changes = True
+        for check_url in check_urls_to_add:
+            db.session.add(RepositoryAppCheckUrl(repo_app, check_url))
+            repo_changes = True
 
-            for check_url in check_urls_to_activate:
-                for db_existing_check_url in db_existing_check_urls:
-                    if db_existing_check_url.url == check_url:
-                        db_existing_check_urls.active = True
-                        repo_changes = True
+        for check_url in check_urls_to_deactivate:
+            for db_existing_check_url in db_existing_check_urls:
+                if db_existing_check_url.url == check_url:
+                    db_existing_check_urls.active = False
+                    repo_changes = True
 
+        for check_url in check_urls_to_activate:
+            for db_existing_check_url in db_existing_check_urls:
+                if db_existing_check_url.url == check_url:
+                    db_existing_check_urls.active = True
+                    repo_changes = True
+
+
+    if not task.failing:
         current_hash = task.metadata_information.pop('translation_hash')
         if repo_app.downloaded_hash != current_hash:
             previous_contents = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)

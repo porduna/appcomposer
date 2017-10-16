@@ -20,7 +20,7 @@ from appcomposer.translator.translation_listing import synchronize_apps_cache, s
 from appcomposer.translator.suggestions import load_all_google_suggestions, load_all_deepl_suggestions, load_all_microsoft_suggestions
 from appcomposer.translator.mongodb_pusher import sync_mongodb_all, sync_mongodb_last_hour
 from appcomposer.translator.notifications import run_notifications, run_update_notifications
-from appcomposer.translator.downloader import sync_repo_apps, download_repository_apps, download_repository_single_app, update_content_hash
+from appcomposer.translator.downloader import sync_repo_apps, download_repository_apps, download_repository_single_app, update_content_hash, update_check_urls_status
 from appcomposer.translator.ops import start_synchronization, end_synchronization
 
 
@@ -104,6 +104,11 @@ cel.conf.update(
             'schedule' : crontab(hour='*/6', minute=0),
             'args' : ()
         },
+        'update_check_urls_status' : {
+            'task' : 'update_check_urls_status',
+            'schedule' : crontab(hour='*/2', minute=0),
+            'args' : ()
+        },
     },
 
     task_routes = {
@@ -148,6 +153,9 @@ cel.conf.update(
             'queue': SLOW_INDEPENDENT_TASKS,
         },
         'sync_repo_apps_all': {
+            'queue': SLOW_INDEPENDENT_TASKS,
+        },
+        'update_check_urls_status': {
             'queue': SLOW_INDEPENDENT_TASKS,
         },
         'download_repository_apps': {
@@ -199,6 +207,11 @@ def synchronize_apps_no_cache_wrapper(self, source = None):
     # Call mongodb
     sync_mongodb_all(self)
     return result
+
+@cel.task(name='update_check_urls_status', bind=True)
+def task_update_check_urls_status(self):
+    with my_app.app_context():
+        update_check_urls_status()
 
 @cel.task(name='synchronize_single_app', bind=True)
 def task_synchronize_single_app(self, source = None, single_app_url = None):
