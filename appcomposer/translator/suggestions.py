@@ -535,10 +535,6 @@ def load_google_paid():
             db.session.commit()
             db.session.remove()
 
-            if block_number > 1:
-                break
-        break
-
     print "Total:", total_char
 
 if __name__ == '__main__':
