@@ -9,10 +9,10 @@ import requests
 
 from collections import defaultdict
 
-from sqlalchemy import func
+from sqlalchemy import func, or_
 from sqlalchemy.orm import joinedload
 
-from flask import Blueprint, render_template, request, url_for
+from flask import Blueprint, render_template, request, url_for, jsonify
 
 from appcomposer.db import db
 from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, RepositoryApp, GoLabOAuthUser, ActiveTranslationMessage, TranslationMessageHistory
@@ -262,6 +262,21 @@ def suggestions():
 
     return render_template("translator/stats_suggestions.html", data_per_engine=data_per_engine, supported=supported, english_stats=english_stats, languages=languages, engines=engines, data_per_language=data_per_language, dates_by_engine=dates_by_engine)
 
+@translator_stats_blueprint.route('/status.json')
+def apps_status():
+    flash = set([])
+    ssl = set([])
+    failing = set([])
+
+    for app in db.session.query(RepositoryApp).filter(or_(RepositoryApp.failing == True, RepositoryApp.supports_ssl == False, RepositoryApp.contains_flash == True)).all():
+        if app.contains_flash == True:
+            flash.add(app.app_link)
+        if app.supports_ssl == False:
+            ssl.add(app.app_link)
+        if app.failing == False:
+            failing.add(app.app_link)
+
+    return jsonify(flash=list(flash), ssl=list(ssl), failing=list(failing))
 
 @translator_stats_blueprint.route('/failing/')
 @public
