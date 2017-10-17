@@ -177,7 +177,7 @@ class RepositoryAppCheckUrl(db.Model):
     last_update = db.Column(db.DateTime, index=True)
     active = db.Column(db.Boolean, index=True)
 
-    repository_app = db.relation("RepositoryApp", backref="check_urls")
+    repository_app = db.relation("RepositoryApp", backref="check_urls", cascade="delete, delete-orphan")
 
     def __init__(self, repository_app, url):
         self.repository_app = repository_app
@@ -205,7 +205,7 @@ class RepositoryAppFailure(db.Model):
     started = db.Column(db.DateTime, index=True)
     ended = db.Column(db.DateTime, index=True)
 
-    repository_app_check_url = db.relation("RepositoryAppCheckUrl", backref="failures")
+    repository_app_check_url = db.relation("RepositoryAppCheckUrl", backref="failures", cascade="delete, delete-orphan")
 
     def __init__(self, app_checker_url):
         self.current = True
@@ -226,7 +226,7 @@ class RepositoryAppLanguage(db.Model):
     language_id = db.Column(db.Integer, db.ForeignKey('Languages.id'), primary_key=True)
 
     language = db.relation("Language", backref="repository_apps")
-    repository_app = db.relation("RepositoryApp", backref="languages")
+    repository_app = db.relation("RepositoryApp", backref="languages", cascade="delete, delete-orphan")
     
     def __init__(self, repository_app, language):
         self.repository_app = repository_app
