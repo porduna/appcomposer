@@ -335,8 +335,7 @@ def translations_revisions(lang, target, app_url):
         return render_template("translator/error.html", message = "App does not exist"), 404
 
     translation_url = translation_app.translation_url
-
-    supported_languages = db.session.query(TranslationBundle.language, TranslationBundle.target).filter_by(translation_url = translation_url).all()
+    translation_url_url = translation_url.url
 
     bundle = db.session.query(TranslationBundle).filter_by(translation_url = translation_url, language = lang, target = target).first()
     if bundle is None:
@@ -394,9 +393,17 @@ def translations_revisions(lang, target, app_url):
 
     suggestions = {}
 
+    #
+    # translate_texts might call db.session.remove!
+    #
     for human_key, suggested_values in translate_texts(active_values, 'en', lang.split('_')[0]).iteritems():
         suggestions[human_key] = ' / '.join([ key for key, value in sorted(suggested_values.items(), lambda (x1, x2), (y1 ,y2): cmp(x2, y2), reverse = True) ])
 
+    db.session.remove() # Force remove so we start with a new database connection after translations
+
+    translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url_url).first()
+    bundle = db.session.query(TranslationBundle).filter_by(translation_url = translation_url, language = lang, target = target).first()
+    db_active_messages = db.session.query(ActiveTranslationMessage).filter_by(bundle = bundle).options(joinedload('history.user'), joinedload('history')).order_by('-ActiveTranslationMessages.datetime').limit(10000) # when using .all(), there is hundreds of queries when commit() is run
     for active_message in db_active_messages:
         active_messages.append({
             'key': active_message.key,
@@ -428,6 +435,8 @@ def translations_revisions(lang, target, app_url):
         key = am['key']
         if key not in english_messages:
             english_messages[key] = "(No English translation available)"
+
+    supported_languages = db.session.query(TranslationBundle.language, TranslationBundle.target).filter_by(translation_url = translation_url).all()
 
     return render_template("translator/revisions.html", url = app_url, lang = lang, target = target, messages = messages, active_messages = active_messages, collaborators = collaborators, past_collaborators = past_collaborators, supported_languages = supported_languages, app_url = app_url, english_messages = english_messages)
 
