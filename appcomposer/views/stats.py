@@ -382,7 +382,7 @@ def translation_user(user_id):
                     translation_app_info[tr_app.url]['golabz'] = {
                         'name': repo_app.name,
                         'thumb': repo_app.app_thumb,
-                        'link': repo_app.app_link,
+                        'link': repo_app.app_link or '',
                     }
         else:
             if tr_url not in translation_url_info:

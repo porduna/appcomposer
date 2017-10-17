@@ -24,7 +24,7 @@
         {% for app in failing_apps %}
         <tr>
             <td>{{ loop.index }}</td>
-            <td>{% if 'golabz.eu/app' in app.app_link %}app{% else %}lab{% endif %}</td>
+            <td>{% if 'golabz.eu/app' in (app.app_link or '') %}app{% else %}lab{% endif %}</td>
             <td><img src="{{ app.app_thumb }}" width="50px"></td>
             <td><a href="{{ app.app_link }}">{{ app.name }}</a> (<a href="{{ app.url }}">OpenSocial link</a>)</td>
             <td>

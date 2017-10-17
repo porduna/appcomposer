@@ -124,9 +124,10 @@ def api_translations():
             }
 
         # TODO: add Graasp and so on, plus use the retrieval method (e.g., labs/retrieve.json vs. apps/retrieve.json) to know whether it's one thing or the other
-        if repo_app.repository == 'golabz' and (repo_app.app_link.startswith('http://www.golabz.eu/app/') or repo_app.app_link.startswith('http://www.golabz.eu/apps/') or repo_app.app_link.startswith('http://www.golabz.eu/content/')):
+        app_link = repo_app.app_link or ''
+        if repo_app.repository == 'golabz' and ((app_link.startswith('http://www.golabz.eu/app/') or app_link.startswith('http://www.golabz.eu/apps/') or app_link.startswith('http://www.golabz.eu/content/')):
             where = applications
-        elif repo_app.repository == 'golabz' and (repo_app.app_link.startswith('http://www.golabz.eu/lab/') or repo_app.app_link.startswith('http://www.golabz.eu/labs/')):
+        elif repo_app.repository == 'golabz' and (app_link.startswith('http://www.golabz.eu/lab/') or app_link.startswith('http://www.golabz.eu/labs/')):
             where = laboratories
         else:
             where = others
