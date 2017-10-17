@@ -607,7 +607,7 @@ def _get_golab_urls(last_hash):
                     current_lab['app_url'] = 'http://{0}'.format(current_lab['app_url'])
             if len(lab.get('lab_apps', [])) > 1:
                 current_lab['title'] = u"{0} ({1})".format(lab_title, internal_lab['app_title'])
-            current_lab['app_type'] = internal_lab['app_type']
+            current_lab['app_type'] = internal_lab.get('app_type')
             labs_adapted.append(current_lab)
 
     apps.extend(labs_adapted)
