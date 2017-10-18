@@ -66,7 +66,7 @@ def languages_apps():
     for app in apps:
         app_languages = []
         for lang in app.languages:
-            app_languages.append(lang.language)
+            app_languages.append(lang.language.language)
         by_repo[app.external_id] = app_languages
     return jsonify(by_repo)
 
@@ -82,7 +82,7 @@ def languages_labs():
         external_id = lab.external_id.split('-')[0]
         lab_languages = set(by_repo.get(external_id, []))
         for lang in lab.languages:
-            lab_languages.add(lang.language)
+            lab_languages.add(lang.language.language)
         by_repo[external_id] = list(lab_languages)
     return jsonify(by_repo)
 
