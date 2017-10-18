@@ -225,7 +225,7 @@ def translations():
 
 @translator_dev_blueprint.route('/users')
 def translation_users_old():
-    return redirect(url_for('.translation_users'))
+    return redirect(url_for('translator_stats.translation_users'))
 
 @translator_dev_blueprint.route('/sync/', methods = ['GET', 'POST'])
 @requires_golab_login
