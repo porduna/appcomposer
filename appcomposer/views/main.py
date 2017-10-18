@@ -83,7 +83,7 @@ def widget_js():
         str_translations = u', '.join(sort_languages(human_translations))
 
         if str_translations and link:
-            resp = make_response(render_template("translator/lib.js", translations = str_translations, link = link))
+            resp = make_response(render_template("translator/lib.js", translations = sort_languages(human_translations), link = link))
         else:
             resp = make_response("// App found and transtable, but no translation found")
         resp.content_type = 'application/javascript'
