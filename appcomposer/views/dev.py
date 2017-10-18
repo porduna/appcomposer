@@ -9,7 +9,7 @@ import requests
 
 from collections import OrderedDict, defaultdict
 
-from sqlalchemy import distinct, func, or_
+from sqlalchemy import distinct, func, or_, not_
 from sqlalchemy.orm import joinedload
 
 from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify, Response, current_app
@@ -54,6 +54,37 @@ def supported_languages_human():
     languages = sorted([ (name, code) for name, code in LANGUAGES_PER_NAME.items() if not '_' in code ], lambda (name1, code1), (name2, code2) : cmp(name1, name2))
     visible_languages = [ key.split('_')[0] for key in obtain_languages().keys() ]
     return render_template("translator/supported_languages.html", languages=languages, wrong=WRONG_LANGUAGES_PER_CORRECT_NAME, visible_languages=visible_languages)
+
+@translator_dev_blueprint.route('/languages/apps.json')
+@public
+def languages_apps():
+    from appcomposer.translator.tasks import GOLAB_REPO
+    apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(not_(RepositoryApp.external_id.like('%-%'))).all()
+    by_repo = {
+        # id: [lang1, lang2...]
+    }
+    for app in apps:
+        app_languages = []
+        for lang in app.languages:
+            app_languages.append(lang.language)
+        by_repo[app.external_id] = app_languages
+    return jsonify(by_repo)
+
+@translator_dev_blueprint.route('/languages/labs.json')
+@public
+def languages_labs():
+    from appcomposer.translator.tasks import GOLAB_REPO
+    labs = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(RepositoryApp.external_id.like('%-%')).all()
+    by_repo = {
+        # id: [lang1, lang2...]
+    }
+    for lab in labs:
+        external_id = lab.external_id.split('-')[0]
+        lab_languages = set(by_repo.get(external_id, []))
+        for lang in lab.languages:
+            lab_languages.add(lang.language)
+        by_repo[external_id] = list(lab_languages)
+    return jsonify(by_repo)
 
 @translator_dev_blueprint.route('/changes.json')
 @public
