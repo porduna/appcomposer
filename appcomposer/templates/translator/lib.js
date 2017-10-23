@@ -1,10 +1,12 @@
 // Application found and translatable!
-$(document).ready(function () {
-    $web_link = $(".field-name-field-app-web-link");
+jQuery(document).ready(function () {
+    $web_link = jQuery(".field-group.group-info");
 
-    $("<div class=\"field field-type-link-field field-label-inline clearfix\"><div class=\"field-label\">Available languages:&nbsp;</div><div class=\"field-items\"><div class=\"field-item even\">{{ translations }} &nbsp;</div></div></div>").insertAfter($web_link);
+    var translations = "";
+    {% for translation in translations %}
+    translations += "<li>" + {{ translation|tojson }} + "</li>";
+    {% endfor %}
 
-    $web_link = $(".field-name-field-weblink");
+    $web_link.append(jQuery("<div class=\"field field_languages less\" style=\"display: flex\"><h4>Languages</h4><ul>" + translations + "</ul></div>"));
 
-    $("<div class=\"field field-type-link-field field-label-inline clearfix\"><div class=\"field-label\">Available languages:&nbsp;</div><div class=\"field-items\"><div class=\"field-item even\">{{ translations }} &nbsp;</div></div></div>").insertAfter($web_link);
 });

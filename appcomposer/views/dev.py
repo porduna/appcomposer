@@ -9,7 +9,7 @@ import requests
 
 from collections import OrderedDict, defaultdict
 
-from sqlalchemy import distinct, func, or_
+from sqlalchemy import distinct, func, or_, not_
 from sqlalchemy.orm import joinedload
 
 from flask import Blueprint, make_response, render_template, request, flash, redirect, url_for, jsonify, Response, current_app
@@ -54,6 +54,37 @@ def supported_languages_human():
     languages = sorted([ (name, code) for name, code in LANGUAGES_PER_NAME.items() if not '_' in code ], lambda (name1, code1), (name2, code2) : cmp(name1, name2))
     visible_languages = [ key.split('_')[0] for key in obtain_languages().keys() ]
     return render_template("translator/supported_languages.html", languages=languages, wrong=WRONG_LANGUAGES_PER_CORRECT_NAME, visible_languages=visible_languages)
+
+@translator_dev_blueprint.route('/languages/apps.json')
+@public
+def languages_apps():
+    from appcomposer.translator.tasks import GOLAB_REPO
+    apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(not_(RepositoryApp.external_id.like('%-%'))).all()
+    by_repo = {
+        # id: [lang1, lang2...]
+    }
+    for app in apps:
+        app_languages = []
+        for lang in app.languages:
+            app_languages.append(lang.language.language.split('_')[0])
+        by_repo[app.external_id] = app_languages
+    return jsonify(by_repo)
+
+@translator_dev_blueprint.route('/languages/labs.json')
+@public
+def languages_labs():
+    from appcomposer.translator.tasks import GOLAB_REPO
+    labs = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(RepositoryApp.external_id.like('%-%')).all()
+    by_repo = {
+        # id: [lang1, lang2...]
+    }
+    for lab in labs:
+        external_id = lab.external_id.split('-')[0]
+        lab_languages = set(by_repo.get(external_id, []))
+        for lang in lab.languages:
+            lab_languages.add(lang.language.language.split('_')[0])
+        by_repo[external_id] = list(lab_languages)
+    return jsonify(by_repo)
 
 @translator_dev_blueprint.route('/changes.json')
 @public
@@ -225,7 +256,7 @@ def translations():
 
 @translator_dev_blueprint.route('/users')
 def translation_users_old():
-    return redirect(url_for('.translation_users'))
+    return redirect(url_for('translator_stats.translation_users'))
 
 @translator_dev_blueprint.route('/sync/', methods = ['GET', 'POST'])
 @requires_golab_login
@@ -335,8 +366,7 @@ def translations_revisions(lang, target, app_url):
         return render_template("translator/error.html", message = "App does not exist"), 404
 
     translation_url = translation_app.translation_url
-
-    supported_languages = db.session.query(TranslationBundle.language, TranslationBundle.target).filter_by(translation_url = translation_url).all()
+    translation_url_url = translation_url.url
 
     bundle = db.session.query(TranslationBundle).filter_by(translation_url = translation_url, language = lang, target = target).first()
     if bundle is None:
@@ -394,9 +424,17 @@ def translations_revisions(lang, target, app_url):
 
     suggestions = {}
 
+    #
+    # translate_texts might call db.session.remove!
+    #
     for human_key, suggested_values in translate_texts(active_values, 'en', lang.split('_')[0]).iteritems():
         suggestions[human_key] = ' / '.join([ key for key, value in sorted(suggested_values.items(), lambda (x1, x2), (y1 ,y2): cmp(x2, y2), reverse = True) ])
 
+    db.session.remove() # Force remove so we start with a new database connection after translations
+
+    translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url_url).first()
+    bundle = db.session.query(TranslationBundle).filter_by(translation_url = translation_url, language = lang, target = target).first()
+    db_active_messages = db.session.query(ActiveTranslationMessage).filter_by(bundle = bundle).options(joinedload('history.user'), joinedload('history')).order_by('-ActiveTranslationMessages.datetime').limit(10000) # when using .all(), there is hundreds of queries when commit() is run
     for active_message in db_active_messages:
         active_messages.append({
             'key': active_message.key,
@@ -428,6 +466,8 @@ def translations_revisions(lang, target, app_url):
         key = am['key']
         if key not in english_messages:
             english_messages[key] = "(No English translation available)"
+
+    supported_languages = db.session.query(TranslationBundle.language, TranslationBundle.target).filter_by(translation_url = translation_url).all()
 
     return render_template("translator/revisions.html", url = app_url, lang = lang, target = target, messages = messages, active_messages = active_messages, collaborators = collaborators, past_collaborators = past_collaborators, supported_languages = supported_languages, app_url = app_url, english_messages = english_messages)
 
