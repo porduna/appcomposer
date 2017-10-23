@@ -49,7 +49,7 @@ def stats_status():
 
     lang_codes = [ lang + '_ALL' for count, lang in translations_per_languages ]
 
-    translations_per_languages = [(count, LANGUAGE_NAMES_PER_CODE[lang.split('_')[0]] ) for count, lang in translations_per_languages ]
+    translations_per_languages = [(count, LANGUAGE_NAMES_PER_CODE[lang.split('_')[0]] ) for count, lang in translations_per_languages if lang.split('_')[0] in LANGUAGE_NAMES_PER_CODE ]
 
     data_per_language = defaultdict(list)
         # language: [
