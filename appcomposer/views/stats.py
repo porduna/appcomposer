@@ -40,16 +40,20 @@ def stats_status():
                 ActiveTranslationMessage.taken_from_default == False, 
                 ActiveTranslationMessage.from_developer == False,
                 ActiveTranslationMessage.bundle_id == TranslationBundle.id,
-                ActiveTranslationMessage.same_tool.in_([True, None])
+                ActiveTranslationMessage.same_tool.in_([True, None]),
+                TranslationBundle.target == 'ALL',
+                TranslationBundle.translation_url_id == TranslationUrl.id,
+                TranslatedApp.translation_url_id == TranslationUrl.id,
+                RepositoryApp.url == TranslatedApp.url,
             ).group_by(TranslationBundle.language).all()
     translations_per_languages = list(translations_per_languages)
     translations_per_languages.sort(lambda (n1, lang1), (n2, lang2):  cmp(n1, n2), reverse=True)
 
     total = sum([ count for count, lang in translations_per_languages ])
 
-    lang_codes = [ lang + '_ALL' for count, lang in translations_per_languages if lang.split('_')[0] in LANGUAGE_NAMES_PER_CODE ]
+    lang_codes = [ lang + '_ALL' for count, lang in translations_per_languages if lang.split('_')[0] in LANGUAGE_NAMES_PER_CODE and lang.split('_')[0] != 'en' ]
 
-    translations_per_languages = [(count, LANGUAGE_NAMES_PER_CODE[lang.split('_')[0]] ) for count, lang in translations_per_languages if lang.split('_')[0] in LANGUAGE_NAMES_PER_CODE ]
+    translations_per_languages = [(count, LANGUAGE_NAMES_PER_CODE[lang.split('_')[0]] ) for count, lang in translations_per_languages if lang.split('_')[0] in LANGUAGE_NAMES_PER_CODE and lang.split('_')[0] != 'en' ]
 
     data_per_language = defaultdict(list)
         # language: [
@@ -60,6 +64,7 @@ def stats_status():
         #     }
         # ]
     
+    total_apps = db.session.query(RepositoryApp).filter_by(translatable = True).count()
 
     for repository_app in db.session.query(RepositoryApp).filter_by(translatable = True).all():
         percent = json.loads(repository_app.translation_percent)
@@ -74,10 +79,15 @@ def stats_status():
                 'link': 'http://composer.golabz.eu/translator/web/index.html#/edit/{}/ALL/{}'.format(lang_code.rsplit('_', 1)[0], repository_app.url),
             })
 
-    for lang_data in data_per_language.values():
-        lang_data.sort(lambda x, y: cmp(x['percent'], y['percent']), reverse=True)
+    apps_translated = {
+        # language: number of apps 100% translated
+    }
 
-    return render_template("translator/status.html", translations_per_languages = translations_per_languages, total = total, data_per_language = data_per_language)
+    for lang, lang_data in data_per_language.items():
+        lang_data.sort(lambda x, y: cmp(x['percent'], y['percent']), reverse=True)
+        apps_translated[lang] = len([ app for app in lang_data if app['percent'] >= 100 ])
+
+    return render_template("translator/status.html", translations_per_languages = translations_per_languages, total = total, data_per_language = data_per_language, apps_translated=apps_translated, total_apps = total_apps)
 
 @translator_stats_blueprint.route('/golabz')
 @public

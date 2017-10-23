@@ -13,7 +13,8 @@
                 <tr>
                     <th>#</th>
                     <th>Language</th>
-                    <th>Messages</th>
+                    <th>Messages (by human)</th>
+                    <th>Apps translated 100%</th>
                 </tr>
             </thead>
             <tbody>
@@ -22,6 +23,7 @@
                     <td>{{ loop.index }}</td>
                     <td><a href="#{{ language }}">{{ language }}</a></td>
                     <td>{{ count }}</td>
+                    <td>{{ apps_translated[language] }} <a href="#{{ language }}">({{ total_apps - apps_translated[language] }} missing)</a></td>
                 </tr>
                 {% endfor %}
             </tbody>
