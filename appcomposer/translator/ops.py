@@ -3,6 +3,7 @@ import json
 import urlparse
 import hashlib
 import datetime
+import traceback
 from collections import defaultdict
 
 from sqlalchemy import func, or_, and_
@@ -585,6 +586,7 @@ def register_app_url(app_url, translation_url, metadata):
         # Somebody else did this process
         db.session.rollback()
     except:
+        traceback.print_exc()
         db.session.rollback()
         raise
     else:

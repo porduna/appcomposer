@@ -190,7 +190,7 @@ def extract_messages_from_translation(messages_absolute_url, xml_contents):
             tool_id = xml_msg.attrib['toolId']
             if tool_id:
                 basename = messages_absolute_url.rsplit('/', 1)[1]
-                if not basename.startswith(tool_id):
+                if not basename.lower().startswith(tool_id.lower()):
                     same_tool = False
                 hostname = urlparse.urlparse(messages_absolute_url).netloc
                 # We generate the namespace based on the hostname. But localhost:5000 and composer.golabz.eu has a special hostname
