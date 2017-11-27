@@ -44,7 +44,7 @@ def graasp_oauth_login():
         return "No next= provided"
     session['oauth_next'] = next_url
     state = token_urlsafe()
-    redirect_back_url = url_for('graasp_oauth_login_redirect', response_type="code", state=state, _external = True)
+    redirect_back_url = url_for('graasp_oauth_login_redirect', state=state, _external = True)
     session['state'] = state
     return redirect('https://graasp.eu/authorize?client_id={client_id}&response_type=code&state={state}&redirect_uri={redirect_uri}'.format(client_id=PUBLIC_APPCOMPOSER_ID, redirect_uri=requests.utils.quote(redirect_back_url, ''), state=state))
 
