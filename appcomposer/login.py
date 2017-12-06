@@ -61,13 +61,17 @@ def graasp_oauth_login_redirect():
     rsession = requests.Session()
 
     request_data = dict(code=code, grant_type='authorization_code', client_id=PUBLIC_APPCOMPOSER_ID, client_secret=current_app.config.get('APPCOMPOSER_SECRET'))
+    r = None
     try:
         r = rsession.post('https://graasp.eu/token', json=request_data)
         result = r.json()
-    except:
-        raise Exception("Invalid json: {}".format(r.text))
+    except Exception as e:
+        return "https://graasp.eu/token returned an invalid response: {}".format(e)
+        # raise Exception("Invalid json: {}".format(r.text))
 
     access_token = result.get('access_token')
+    if not access_token:
+        return "https://graasp.eu/token returned a valid JSON response, but which does not include access_token: {}".format(result)
     refresh_token = result.get('refresh_token')
     # timeout = request.args.get('expires_in')
     next_url = session.get('oauth_next')
@@ -87,6 +91,7 @@ def graasp_oauth_login_redirect():
         user_data = response.json()
     except ValueError:
         logging.error("Error logging in user with data: %r" % response.text, exc_info = True)
+        return "https://graasp.eu/users/me returned an invalid JSON file"
         raise ValueError("Error logging in user with data: %r" % response.text)
     user = db.session.query(GoLabOAuthUser).filter_by(email = user_data['email']).first()
     if user is None:
