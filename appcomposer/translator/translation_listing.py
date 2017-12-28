@@ -1,5 +1,6 @@
 import json
 import datetime
+import traceback
 
 from celery.utils.log import get_task_logger
 
@@ -25,6 +26,8 @@ def _generic_synchronize_apps(source, cached, provided_apps, single_app_url, ful
 
         _sync_translations(provided_apps, force_reload = not cached)
         number = len(provided_apps)
+    except:
+        traceback.print_exc()
     finally:
         end_synchronization(sync_id, number)
 
