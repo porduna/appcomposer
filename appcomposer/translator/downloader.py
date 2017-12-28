@@ -50,7 +50,7 @@ def sync_repo_apps(force=False):
     It return True if there was any change
     """
     last_hash = redis_store.get('last_repo_apps_sync_hash')
-    downloaded_apps, new_hash = _get_all_apps(last_hash)
+    downloaded_apps, new_hash = _get_all_apps(last_hash if not force else u'')
 
     if not downloaded_apps:
         # An error ocurred in the apps
