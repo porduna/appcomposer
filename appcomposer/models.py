@@ -169,7 +169,7 @@ class RepositoryAppCheckUrl(db.Model):
     __table_args__ = (UniqueConstraint('repository_app_id', 'url_hash'), )
 
     id = db.Column(db.Integer, primary_key=True)
-    repository_app_id = db.Column(db.Integer, db.ForeignKey('RepositoryApps.id'), nullable=False)
+    repository_app_id = db.Column(db.Integer, db.ForeignKey('RepositoryApps.id',  onupdate="CASCADE", ondelete="CASCADE"), nullable=False)
     url = db.Column(db.Unicode(1024), nullable=False) # not index=true; Index below
     url_hash = db.Column(db.Unicode(255), nullable=False, index=True)
     supports_ssl = db.Column(db.Boolean, index=True)
@@ -201,7 +201,7 @@ class RepositoryAppFailure(db.Model):
 
     id = db.Column(db.Integer, primary_key=True)
 
-    repository_app_check_url_id = db.Column(db.Integer, db.ForeignKey('RepositoryAppCheckUrls.id'))
+    repository_app_check_url_id = db.Column(db.Integer, db.ForeignKey('RepositoryAppCheckUrls.id', onupdate="CASCADE", ondelete="CASCADE"))
 
     current = db.Column(db.Boolean, index=True)
     started = db.Column(db.DateTime, index=True)
@@ -224,8 +224,8 @@ class RepositoryAppLanguage(db.Model):
     __tablename__ = 'RepositoryApp2languages'
     __table_args__ = (UniqueConstraint('repository_app_id', 'language_id'), )
     
-    repository_app_id = db.Column(db.Integer, db.ForeignKey('RepositoryApps.id'), primary_key=True)
-    language_id = db.Column(db.Integer, db.ForeignKey('Languages.id'), primary_key=True)
+    repository_app_id = db.Column(db.Integer, db.ForeignKey('RepositoryApps.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
+    language_id = db.Column(db.Integer, db.ForeignKey('Languages.id', onupdate="CASCADE", ondelete="CASCADE"), primary_key=True)
 
     language = db.relation("Language", backref="repository_apps")
     repository_app = db.relation("RepositoryApp", backref="languages", cascade="all, delete-orphan", single_parent=True)
