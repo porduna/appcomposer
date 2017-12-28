@@ -81,12 +81,17 @@ def sync_repo_apps(force=False):
 
         else:
             # Delete old apps (translations are kept, and the app is kept, but not listed in the repository apps)
+            objs = []
             for db_url in repo_app.check_urls:
                 for db_failure in db_url.failures:
-                    db.session.delete(db_failure)
-                db.session.delete(db_url)
+                    objs.append(db_failure)
+            for db_url in repo_app.check_urls:
+                objs.append(db_url)
             for db_lang in repo_app.languages:
-                db.session.delete(db_lang)
+                objs.append(db_lang)
+
+            for obj_to_delete in objs:
+                db.session.delete(obj_to_delete)
             db.session.delete(repo_app)
 
     #
