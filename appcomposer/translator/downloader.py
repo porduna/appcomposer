@@ -659,14 +659,14 @@ def _get_other_apps():
     }
 
     SPEAKUP = {
-        'title': 'Graasp',
+        'title': 'SpeakUp',
         'id': '4',
         'description': "SpeakUp",
         'app_url': "http://composer.golabz.eu/speakup_i18n/",
         'app_type': "OpenSocial gadget",
-        'app_image': "http://composer.golabz.eu/static/img/speakup.png",
-        'app_thumb': "http://composer.golabz.eu/static/img/speakup-thumb.png",
-        'app_golabz_page': "http://graasp.eu/",
+        'app_image': "http://composer.golabz.eu/static/img/speakup.jpg",
+        'app_thumb': "http://composer.golabz.eu/static/img/speakup-thumb.jpg",
+        'app_golabz_page': "http://speakup.info/",
         'repository': "Go-Lab ecosystem",
     }
 
