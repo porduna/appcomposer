@@ -20,7 +20,7 @@ def get_contents(lang):
     if lang == 'en':
         resource_id = '5a2ee559256f60731402f4da'
         requests = get_cached_session()
-        request_url = "http://speakup.eu/resources/{0}/raw".format(resource_id)
+        request_url = "http://graasp.eu/resources/{0}/raw".format(resource_id)
         try:
             r = requests.get(request_url, timeout=(10,10))
             r.raise_for_status()
@@ -46,7 +46,7 @@ def get_contents(lang):
 @report_error("Error on speakup i18n at the App Composer")
 def index():
     languages = get_languages()
-    response = make_response(render_template('speakup_i18n.xml', languages = languages, title = "SpeakUp"))
+    response = make_response(render_template('graasp_i18n.xml', languages = languages, title = "SpeakUp"))
     response.content_type = 'application/xml'
     return response
 
