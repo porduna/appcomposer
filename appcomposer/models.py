@@ -184,7 +184,7 @@ class RepositoryAppCheckUrl(db.Model):
     def __init__(self, repository_app, url):
         self.repository_app = repository_app
         self.url = url
-        self.url_hash = hashlib.md5(url.encode('utf8')).hexdigest()
+        self.url_hash = unicode(hashlib.md5(url.encode('utf8')).hexdigest())
         self.active = True
         self.supports_ssl = None
         self.working = None

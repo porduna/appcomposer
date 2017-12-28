@@ -97,7 +97,7 @@ def calculate_content_hash(app_url):
         app_translations.append(bundle_data)
 
     app_translations_str= json.dumps(app_translations)
-    return zlib.crc32(app_translations_str)
+    return unicode(zlib.crc32(app_translations_str))
 
 def _get_or_create_app(app_url, translation_url, metadata):
     # Create the translation url if not present
