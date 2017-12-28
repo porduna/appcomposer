@@ -189,6 +189,16 @@ def generate_side_effects():
                     <Locale lang="en" messages="languages/en_ALL.xml" />
                 """),
         'http://composer.golabz.eu/graasp_i18n/languages/en_ALL.xml' : BASIC_MESSAGE_BUNDLE_ENGLISH.format(n=1),
+        'http://composer.golabz.eu/speakup_i18n/' : BASIC_GADGET_XML.format(language="""
+                    <Locale messages="languages/en_ALL.xml" />
+                    <Locale lang="en" messages="languages/en_ALL.xml" />
+                """),
+        'http://composer.golabz.eu/speakup_i18n/languages/en_ALL.xml' : BASIC_MESSAGE_BUNDLE_ENGLISH.format(n=1),
+        'http://composer.golabz.eu/twente_commons/' : BASIC_GADGET_XML.format(language="""
+                    <Locale messages="languages/en_ALL.xml" />
+                    <Locale lang="en" messages="languages/en_ALL.xml" />
+                """),
+        'http://composer.golabz.eu/twente_commons/languages/en_ALL.xml' : BASIC_MESSAGE_BUNDLE_ENGLISH.format(n=1),
     })
 
     SIDE_EFFECT_STRINGS = {
