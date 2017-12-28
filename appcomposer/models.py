@@ -164,6 +164,7 @@ class RepositoryApp(db.Model):
 Index('ix_RepositoryApps_url_shortened', RepositoryApp.url, mysql_length={'url': 255})
 
 class RepositoryAppCheckUrl(db.Model):
+    # TODO: if it the app is deleted, all the historic data is deleted too.
     __tablename__ = 'RepositoryAppCheckUrls'
     __table_args__ = (UniqueConstraint('repository_app_id', 'url_hash'), )
 
@@ -177,7 +178,8 @@ class RepositoryAppCheckUrl(db.Model):
     last_update = db.Column(db.DateTime, index=True)
     active = db.Column(db.Boolean, index=True)
 
-    repository_app = db.relation("RepositoryApp", backref="check_urls", cascade="delete")
+    # This will be deleted
+    repository_app = db.relation("RepositoryApp", backref="check_urls", cascade="all, delete-orphan")
 
     def __init__(self, repository_app, url):
         self.repository_app = repository_app
@@ -205,7 +207,7 @@ class RepositoryAppFailure(db.Model):
     started = db.Column(db.DateTime, index=True)
     ended = db.Column(db.DateTime, index=True)
 
-    repository_app_check_url = db.relation("RepositoryAppCheckUrl", backref="failures", cascade="delete")
+    repository_app_check_url = db.relation("RepositoryAppCheckUrl", backref="failures", cascade="all, delete-orphan")
 
     def __init__(self, app_checker_url):
         self.current = True
@@ -226,7 +228,7 @@ class RepositoryAppLanguage(db.Model):
     language_id = db.Column(db.Integer, db.ForeignKey('Languages.id'), primary_key=True)
 
     language = db.relation("Language", backref="repository_apps")
-    repository_app = db.relation("RepositoryApp", backref="languages", cascade="delete")
+    repository_app = db.relation("RepositoryApp", backref="languages", cascade="all, delete-orphan")
     
     def __init__(self, repository_app, language):
         self.repository_app = repository_app
