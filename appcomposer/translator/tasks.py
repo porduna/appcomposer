@@ -192,7 +192,7 @@ def synchronize_apps_cache_wrapper(self, source = None):
 
     with my_app.app_context():
         result = synchronize_apps_cache(source = source)
-    sync_mongodb_last_hour(self)
+    task_sync_mongodb_recent.delay()
     return result
 
 @cel.task(name='synchronize_apps_no_cache', bind=True)
@@ -222,7 +222,7 @@ def task_synchronize_single_app(self, source = None, single_app_url = None):
         update_content_hash(single_app_url)
         result = synchronize_single_app_no_cached(source = source, single_app_url = single_app_url)
 
-    sync_mongodb_last_hour(self)
+    task_sync_mongodb_recent.delay()
     return result
 
 @cel.task(name="sync_mongodb_recent", bind=True)
