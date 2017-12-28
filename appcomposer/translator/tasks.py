@@ -205,7 +205,7 @@ def synchronize_apps_no_cache_wrapper(self, source = None):
         result = synchronize_apps_no_cache(source = source)
 
     # Call mongodb
-    sync_mongodb_all(self)
+    task_sync_mongodb_all.delay()
     return result
 
 @cel.task(name='update_check_urls_status', bind=True)
