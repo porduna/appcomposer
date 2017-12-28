@@ -143,6 +143,9 @@ app.register_blueprint(translator_dev_blueprint, url_prefix='/translator/dev')
 from .graasp_i18n import graasp_i18n_blueprint
 app.register_blueprint(graasp_i18n_blueprint, url_prefix='/graasp_i18n')
 
+from .speakup_i18n import speakup_i18n_blueprint
+app.register_blueprint(speakup_i18n_blueprint, url_prefix='/speakup_i18n')
+
 from .twente_commons import twente_commons_blueprint
 app.register_blueprint(twente_commons_blueprint, url_prefix='/twente_commons')
 

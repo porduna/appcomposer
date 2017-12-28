@@ -645,9 +645,22 @@ def _get_other_apps():
         'repository': "Go-Lab ecosystem",
     }
 
+    SPEAKUP = {
+        'title': 'Graasp',
+        'id': '4',
+        'description': "SpeakUp",
+        'app_url': "http://composer.golabz.eu/speakup_i18n/",
+        'app_type': "OpenSocial gadget",
+        'app_image': "http://composer.golabz.eu/static/img/speakup.png",
+        'app_thumb': "http://composer.golabz.eu/static/img/speakup-thumb.png",
+        'app_golabz_page': "http://graasp.eu/",
+        'repository': "Go-Lab ecosystem",
+    }
+
     OTHER_APPS = current_app.config.get('OTHER_APPS', [])
     OTHER_APPS.append(GRAASP)
     OTHER_APPS.append(TWENTE_COMMONS)
+    OTHER_APPS.append(SPEAKUP)
 
     if current_app.debug:
         if False: # ONLY FOR TESTING
