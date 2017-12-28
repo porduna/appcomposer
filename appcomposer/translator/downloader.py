@@ -67,7 +67,9 @@ def sync_repo_apps(force=False):
         apps_by_repo_id[app['repository'], unicode(app['id'])] = app
 
     stored_apps = db.session.query(RepositoryApp).all()
-    stored_ids = []
+    stored_ids = [
+        # (repo, external_id)
+    ]
 
     #
     # Update or delete existing apps
@@ -75,7 +77,7 @@ def sync_repo_apps(force=False):
     for repo_app in stored_apps:
         external_id = unicode(repo_app.external_id)
         if (repo_app.repository, external_id) in apps_by_repo_id:
-            stored_ids.append(unicode(external_id))
+            stored_ids.append((repo_app.repository, unicode(external_id)))
             app = apps_by_repo_id[repo_app.repository, external_id]
             _update_existing_app(repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app.get('app_thumb'), description = app.get('description'), app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), repository = app['repository'])
 
@@ -98,7 +100,7 @@ def sync_repo_apps(force=False):
     # Add new apps
     #
     for app in downloaded_apps:
-        if unicode(app['id']) not in stored_ids:
+        if (app['repository'], unicode(app['id'])) not in stored_ids:
             # Double-check
             repo_app = db.session.query(RepositoryApp).filter_by(repository = app['repository'], external_id = app['id']).first()
             if repo_app is None:
