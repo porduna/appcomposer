@@ -100,7 +100,7 @@ def api_translations():
             original_languages = []
         original_languages_simplified = [ lang.split('_')[0] for lang in original_languages ]
         try:
-            translated_languages = json.loads(repo_app.translation_percent) or {}
+            translated_languages = json.loads(repo_app.translation_percent or '{}') or {}
         except ValueError:
             translated_languages = {}
 
