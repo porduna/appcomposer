@@ -151,6 +151,7 @@ WRONG_LANGUAGES = {
     'Serbo Croatian' : 'Serbo-Croatian',
     'Luxembourgeois' : 'Luxembourgish',
     'Slovene': 'Slovenian',
+    'Macedonian': 'Macedonian Slavic',
 }
 
 WRONG_LANGUAGES_PER_CORRECT_NAME = {}
