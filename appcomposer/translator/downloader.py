@@ -269,21 +269,22 @@ def update_check_urls_status():
         flash = None
         failed = None
         for db_check_url in repository_app.check_urls:
-            if ssl is None:
-                ssl = db_check_url.supports_ssl
-            elif ssl and db_check_url.supports_ssl == False:
-                ssl = False
+            if db_check_url.active:
+                if ssl is None:
+                    ssl = db_check_url.supports_ssl
+                elif ssl and db_check_url.supports_ssl == False:
+                    ssl = False
 
-            if flash is None:
-                flash = db_check_url.contains_flash
-            elif not flash and db_check_url.contains_flash:
-                flash = True
+                if flash is None:
+                    flash = db_check_url.contains_flash
+                elif not flash and db_check_url.contains_flash:
+                    flash = True
 
-            if failed is None:
-                if db_check_url.working is not None:
-                    failed = not db_check_url.working
-            elif not failed and db_check_url.working == False:
-                failed = True
+                if failed is None:
+                    if db_check_url.working is not None:
+                        failed = not db_check_url.working
+                elif not failed and db_check_url.working == False:
+                    failed = True
 
         if ssl is not None:
             repository_app.supports_ssl = ssl
