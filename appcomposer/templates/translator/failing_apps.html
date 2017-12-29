@@ -30,15 +30,17 @@
             <td>
                 <ul>
                     {% for check_url in app.check_urls %}
-                        {% set selected = False %}
-                        {% if what == 'working' and check_url.working == False
-                            or what == 'flash' and check_url.contains_flash == True
-                            or what == 'ssl' and check_url.supports_ssl == False %}
-                            {% set selected = True %}
-                        {% endif %}
+                        {% if check_url.active %}
+                            {% set selected = False %}
+                            {% if what == 'working' and check_url.working == False
+                                or what == 'flash' and check_url.contains_flash == True
+                                or what == 'ssl' and check_url.supports_ssl == False %}
+                                {% set selected = True %}
+                            {% endif %}
 
-                        {% if selected %}
-                        <li><a href="{{ check_url.url }}">{{ check_url.url[:70] }}{% if check_url.url|length > 70 %}...{% endif %}</a></li>
+                            {% if selected %}
+                            <li><a href="{{ check_url.url }}">{{ check_url.url[:70] }}{% if check_url.url|length > 70 %}...{% endif %}</a></li>
+                            {% endif %}
                         {% endif %}
                     {% endfor %}
                 </ul></td>
