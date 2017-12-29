@@ -300,7 +300,7 @@ def extract_check_url_metadata(url):
     flash = None
     ssl = None
     error_message = None
-    headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64 GOLAB APP COMPOSER) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36'}
+    headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64 GOLAB APP COMPOSER) AppleWebKit/537.36 (KHTML, like Gecko)'}
     try:
         req = requests.get(url, allow_redirects=True, timeout=(15,15), headers=headers)
         req.raise_for_status()
