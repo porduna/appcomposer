@@ -107,11 +107,18 @@ def languages_labs():
     for lab in labs:
         external_id = lab.external_id.split('-')[0]
         lab_languages = set(by_repo.get(external_id, []))
-        for lang, level in json.loads(lab.translation_percent or '{}').items():
-            if level > 0.7:
+
+        # Add all the languages supported by the original provider
+        for lang in lab.languages:
+            lab_languages.add(lang.language.language.split('_')[0])
+
+        # Add all the languages supported by the translators
+        for lang, translation_level in json.loads(lab.translation_percent or '{}').items():
+            if translation_level > level:
                 lab_languages.add(lang.split('_')[0])
         by_repo[external_id] = list(lab_languages)
 
+    # Some labs do not report what language they support. Assume English
     for lang_pack in by_repo.values():
         if len(lang_pack) == 0:
             lang_pack.append('en')
