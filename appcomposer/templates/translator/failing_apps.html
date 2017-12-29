@@ -2,58 +2,83 @@
 {% block body %}
 <h1>{{ header }} ({{ failing_apps|length }})</h1>
 
+<p>This is calculated by checking {{ stats['check_urls'] }} websites, so it is a process that takes over half an hour. The last time this process was finished was
+
+{% if stats['days'] > 0 %}
+    {{ stats['days'] }} {% if stats['days'] > 1 %} days{% else %} day{% endif %}{% if stats['hours'] > 0 and stats['minutes'] > 0 %}, {% endif %}
+    {% if stats['hours'] == 0 and stats['minutes'] > 0 %} and {% endif %}
+    {% if stats['hours'] > 0 and stats['minutes'] == 0 %} and {% endif %}
+{% endif %}
+
+{% if stats['hours'] > 0 %}
+    {{ stats['hours'] }} {% if stats['hours'] > 1 %} hours {% else %} hour {% endif %}
+    {% if stats['minutes'] > 0 %} and {% endif %}
+{% endif %}
+
+{% if stats['minutes'] > 0 %}
+    {{ stats['minutes'] }} {% if stats['minutes'] > 1 %} minutes {% else %} minute {% endif %}
+{% endif %}
+
+{% if stats['minutes'] > 0 or stats['hours'] > 0 or stats['days'] > 0 %} ago.  {% else %} just now.  {% endif %}
+</p>
+
 {% if sorted_domains %}
     <p>See also the <a href="#domains">domain list below</a></p>
 {% endif %}
 
-{% if failing_apps %}
-<table class="table table-bordered table-hover">
-    <thead>
-        <tr>
-            <th>#</th>
-            <th>What</th>
-            <th colspan="2">Name</th>
-            <th>Checked URLs</th>
-            {% if show_since %}
-            <th>Since</th>
-            {% endif %}
-        </tr>
-    </thead>
-    <tbody>
-        {% set FORMAT = '%Y-%m-%d %H:%M:%SZ' %}
-        {% for app in failing_apps %}
-        <tr>
-            <td>{{ loop.index }}</td>
-            <td>{% if 'golabz.eu/app' in (app.app_link or '') %}app{% else %}lab{% endif %}</td>
-            <td><img src="{{ app.app_thumb }}" width="50px"></td>
-            <td><a href="{{ app.app_link }}">{{ app.name }}</a> (<a href="{{ app.url }}">OpenSocial link</a>)</td>
-            <td>
-                <ul>
-                    {% for check_url in app.check_urls %}
-                        {% if check_url.active %}
-                            {% set selected = False %}
-                            {% if what == 'working' and check_url.working == False
-                                or what == 'flash' and check_url.contains_flash == True
-                                or what == 'ssl' and check_url.supports_ssl == False %}
-                                {% set selected = True %}
-                            {% endif %}
+{% set over_week, over_day, recently = stats['split'](failing_apps) %}
 
-                            {% if selected %}
-                            <li><a href="{{ check_url.url }}">{{ check_url.url[:70] }}{% if check_url.url|length > 70 %}...{% endif %}</a></li>
+{% for cur_failing_apps in over_week, over_day, recently %}
+    <h2>{% if loop.index == 1 %}Apps failing for over a week{% elif loop.index == 2 %}Apps failing for over a day{% else %}Apps recently failing (could be a temporary error){% endif %} ({{ cur_failing_apps|length }})</h2>
+    {% if cur_failing_apps %}
+    <table class="table table-bordered table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>What</th>
+                <th colspan="2">Name</th>
+                <th>URLs with problem</th>
+                {% if show_since %}
+                <th>Problem since</th>
+                {% endif %}
+            </tr>
+        </thead>
+        <tbody>
+            {% set FORMAT = '%Y-%m-%d %H:%M:%SZ' %}
+            {% for app in cur_failing_apps %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{% if 'golabz.eu/app' in (app.app_link or '') %}app{% else %}lab{% endif %}</td>
+                <td><img src="{{ app.app_thumb }}" width="50px"></td>
+                <td><a href="{{ app.app_link }}">{{ app.name }}</a> (<a href="{{ app.url }}">OpenSocial link</a>)</td>
+                <td>
+                    <ul>
+                        {% for check_url in app.check_urls %}
+                            {% if check_url.active %}
+                                {% set selected = False %}
+                                {% if what == 'working' and check_url.working == False
+                                    or what == 'flash' and check_url.contains_flash == True
+                                    or what == 'ssl' and check_url.supports_ssl == False %}
+                                    {% set selected = True %}
+                                {% endif %}
+
+                                {% if selected %}
+                                <li><a href="{{ check_url.url }}">{{ check_url.url[:70] }}{% if check_url.url|length > 70 %}...{% endif %}</a></li>
+                                {% endif %}
                             {% endif %}
-                        {% endif %}
-                    {% endfor %}
-                </ul></td>
-            {% if show_since %}
-            <td><span data-date="{{ app.failing_since.strftime(FORMAT) }}"></span></td>
-            {% endif %}
-        </tr>
-        {% endfor %}
-    </tbody>
-</table>
-{% else %}
-    <p>There are no failing apps. Let's celebrate it!</p>
-{% endif %}
+                        {% endfor %}
+                    </ul></td>
+                {% if show_since %}
+                <td><span data-date="{{ app.failing_since.strftime(FORMAT) }}"></span></td>
+                {% endif %}
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    {% else %}
+        <p>There are no failing apps in this category.</p>
+    {% endif %}
+{% endfor %}
 
 {% if sorted_domains %}
 <a name="domains"></a><h2>Domain list (and labs/apps affected)</h2>

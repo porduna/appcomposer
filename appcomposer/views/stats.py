@@ -288,11 +288,40 @@ def apps_status():
 
     return jsonify(flash=list(flash), ssl=list(ssl), failing=list(failing))
 
+def _get_last_general_check_stats():
+    check_urls, = db.session.query(func.count(RepositoryAppCheckUrl.id)).filter_by(active=True).first()
+    last_check, = db.session.query(func.min(RepositoryAppCheckUrl.last_update)).filter_by(active=True).first()
+    delta = datetime.datetime.utcnow() - last_check
+    return {
+        'last_check': last_check,
+        'days': delta.days,
+        'hours': delta.seconds // 3600,
+        'minutes': (delta.seconds % 3600) // 60,
+        'check_urls': check_urls,
+        'split': _split,
+    }
+
+def _split(failing_apps):
+    recent = []
+    over_day = []
+    over_week = []
+
+    for failing_app in failing_apps:
+        hours = (datetime.datetime.utcnow() - failing_app.failing_since).total_seconds() // 3600
+        if hours < 24:
+            recent.append(failing_app)
+        elif hours < 24 * 7:
+            over_day.append(failing_app)
+        else:
+            over_week.append(failing_app)
+    return over_week, over_day, recent
+
 @translator_stats_blueprint.route('/failing/')
 @public
 def apps_failing():
     failing_apps = db.session.query(RepositoryApp).filter_by(failing = True).options(joinedload('check_urls')).all()
-    return render_template("translator/failing_apps.html", failing_apps = failing_apps, header = "Failing labs and apps", show_since=True, what = 'working')
+    stats = _get_last_general_check_stats()
+    return render_template("translator/failing_apps.html", failing_apps = failing_apps, header = "Failing labs and apps", show_since=True, what = 'working', stats=stats)
 
 @translator_stats_blueprint.route('/ssl/')
 @public
@@ -310,13 +339,15 @@ def apps_ssl():
                 domains[domain] = 0
             domains[domain] += 1
     sorted_domains = sorted(domains.items(), lambda (k1, c1), (k2, c2): cmp(c2, c1))
-    return render_template("translator/failing_apps.html", failing_apps = failing_apps, header = "Labs and apps without https support", show_since=False, what = 'ssl', sorted_domains=sorted_domains)
+    stats = _get_last_general_check_stats()
+    return render_template("translator/failing_apps.html", failing_apps = failing_apps, header = "Labs and apps without https support", show_since=False, what = 'ssl', sorted_domains=sorted_domains, stats=stats)
 
 @translator_stats_blueprint.route('/flash/')
 @public
 def apps_flash():
     failing_apps = db.session.query(RepositoryApp).filter_by(contains_flash = True).options(joinedload('check_urls')).all()
-    return render_template("translator/failing_apps.html", failing_apps = failing_apps, header = "Labs and apps using Flash", show_since=False, what = 'flash')
+    stats = _get_last_general_check_stats()
+    return render_template("translator/failing_apps.html", failing_apps = failing_apps, header = "Labs and apps using Flash", show_since=False, what = 'flash', stats=stats)
 
 @translator_stats_blueprint.route('/users/<int:user_id>')
 @requires_golab_login
