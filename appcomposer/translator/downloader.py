@@ -477,7 +477,7 @@ def _update_repo_app(task, repo_app):
         # There was a change in the repository!
         db_existing_check_urls = db.session.query(RepositoryAppCheckUrl).filter_by(repository_app=repo_app).all()
         inactive_check_urls = { db_check_url.url for db_check_url in db_existing_check_urls if db_check_url.active == False }
-        active_check_urls = { db_check_url.url for db_check_url in db_existing_check_urls if db_check_url.active == False }
+        active_check_urls = { db_check_url.url for db_check_url in db_existing_check_urls if db_check_url.active == True }
         existing_check_urls  = { db_check_url.url for db_check_url in db_existing_check_urls }
 
         check_urls_to_add = list(current_check_urls - existing_check_urls)
