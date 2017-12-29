@@ -26,10 +26,17 @@
     <p>See also the <a href="#domains">domain list below</a></p>
 {% endif %}
 
-{% set over_week, over_day, recently = stats['split'](failing_apps) %}
+{% if show_since %}
+    {% set all_failing_apps = stats['split'](failing_apps) %}
+{% else %}
+    {% set all_failing_apps = [ failing_apps ] %}
+{% endif %}
 
-{% for cur_failing_apps in over_week, over_day, recently %}
+{% for cur_failing_apps in all_failing_apps %}
+    {% if show_since %}
     <h2>{% if loop.index == 1 %}Apps failing for over a week{% elif loop.index == 2 %}Apps failing for over a day{% else %}Apps recently failing (could be a temporary error){% endif %} ({{ cur_failing_apps|length }})</h2>
+    {% endif %}
+
     {% if cur_failing_apps %}
     <table class="table table-bordered table-hover">
         <thead>
