@@ -491,13 +491,13 @@ def _update_repo_app(task, repo_app):
         for check_url in check_urls_to_deactivate:
             for db_existing_check_url in db_existing_check_urls:
                 if db_existing_check_url.url == check_url:
-                    db_existing_check_urls.active = False
+                    db_existing_check_url.active = False
                     repo_changes = True
 
         for check_url in check_urls_to_activate:
             for db_existing_check_url in db_existing_check_urls:
                 if db_existing_check_url.url == check_url:
-                    db_existing_check_urls.active = True
+                    db_existing_check_url.active = True
                     repo_changes = True
 
 
