@@ -258,15 +258,15 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                 if key in translated_messages and value == translated_messages[key] and translated_messages[key] != active_msgs_by_key.get(key):
                     translated_messages.pop(key, None)
 
-    # 
+    #
     # </NO SHIELD NEW BEHAVIOR>
-    # 
+    #
 
     if from_developer and not db_translation_bundle.from_developer:
         # If this is an existing translation and it comes from a developer, establish that it is from developer
         db_translation_bundle.from_developer = from_developer
 
-    # 
+    #
     # # CODE COMMENTED as part of the no shield removal:
     # if not from_developer and db_translation_bundle.from_developer:
     #     # If this is an existing translation from a developer and it comes from a user (and not a developer)
@@ -284,7 +284,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
     existing_namespaces = set()
     existing_namespace_keys = set()
     existing_active_translations_with_namespace_with_default_value = []
-    
+
     # First, update translations
 
     for existing_active_translation in db.session.query(ActiveTranslationMessage).filter_by(bundle = db_translation_bundle).all():
@@ -318,7 +318,7 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
             existing_namespaces.add(namespace)
             existing_namespace_keys.add(key)
             existing_active_translations_with_namespace_with_default_value.append(existing_active_translation)
-    
+
     # Then, check namespaces
 
     if existing_namespaces:
@@ -330,7 +330,23 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
         _user_ids = set()
 
         if existing_namespace_keys:
-            for key, namespace, value, current_from_developer, existing_user_id in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace, ActiveTranslationMessage.value, ActiveTranslationMessage.from_developer, TranslationMessageHistory.user_id).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, ActiveTranslationMessage.key.in_(list(existing_namespace_keys)), ActiveTranslationMessage.namespace.in_(list(existing_namespaces)), ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == db_translation_bundle.language, TranslationBundle.target == db_translation_bundle.target, ActiveTranslationMessage.bundle_id != db_translation_bundle.id, ActiveTranslationMessage.taken_from_default == False).all():
+            for key, namespace, value, current_from_developer, existing_user_id in db.session.query(
+                    ActiveTranslationMessage.key,
+                    ActiveTranslationMessage.namespace,
+                    ActiveTranslationMessage.value,
+                    ActiveTranslationMessage.from_developer,
+                    TranslationMessageHistory.user_id
+                ).filter(
+                    ActiveTranslationMessage.history_id == TranslationMessageHistory.id,
+                    ActiveTranslationMessage.key.in_(list(existing_namespace_keys)),
+                    ActiveTranslationMessage.namespace.in_(list(existing_namespaces)),
+                    ActiveTranslationMessage.bundle_id == TranslationBundle.id,
+                    TranslationBundle.language == db_translation_bundle.language,
+                    TranslationBundle.target == db_translation_bundle.target,
+                    ActiveTranslationMessage.bundle_id != db_translation_bundle.id,
+                    ActiveTranslationMessage.taken_from_default == False
+                ).all():
+
                 existing_namespace_translations[key, namespace] = (value, current_from_developer, existing_user_id)
                 _user_ids.add(existing_user_id)
 
