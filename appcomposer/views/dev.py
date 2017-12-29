@@ -55,35 +55,67 @@ def supported_languages_human():
     visible_languages = [ key.split('_')[0] for key in obtain_languages().keys() ]
     return render_template("translator/supported_languages.html", languages=languages, wrong=WRONG_LANGUAGES_PER_CORRECT_NAME, visible_languages=visible_languages)
 
-@translator_dev_blueprint.route('/languages/apps.json')
-@public
-def languages_apps():
-    from appcomposer.translator.tasks import GOLAB_REPO
-    apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(not_(RepositoryApp.external_id.like('%-%'))).all()
-    by_repo = {
-        # id: [lang1, lang2...]
-    }
-    for app in apps:
-        app_languages = []
-        for lang in app.languages:
-            app_languages.append(lang.language.language.split('_')[0])
-        by_repo[app.external_id] = app_languages
-    return jsonify(by_repo)
+# @translator_dev_blueprint.route('/languages/apps.json')
+# @public
+# def languages_apps():
+#     from appcomposer.translator.tasks import GOLAB_REPO
+#     apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(not_(RepositoryApp.external_id.like('%-%'))).all()
+#     by_repo = {
+#         # id: [lang1, lang2...]
+#     }
+#     for app in apps:
+#         app_languages = []
+#         for lang in app.languages:
+#             app_languages.append(lang.language.language.split('_')[0])
+#         by_repo[app.external_id] = app_languages
+#     return jsonify(by_repo)
+# 
+# @translator_dev_blueprint.route('/languages/labs.json')
+# @public
+# def languages_labs():
+#     from appcomposer.translator.tasks import GOLAB_REPO
+#     labs = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(RepositoryApp.external_id.like('%-%')).all()
+#     by_repo = {
+#         # id: [lang1, lang2...]
+#     }
+#     for lab in labs:
+#         external_id = lab.external_id.split('-')[0]
+#         lab_languages = set(by_repo.get(external_id, []))
+#         for lang in lab.languages:
+#             lab_languages.add(lang.language.language.split('_')[0])
+#         by_repo[external_id] = list(lab_languages)
+#     return jsonify(by_repo)
 
-@translator_dev_blueprint.route('/languages/labs.json')
+@translator_dev_blueprint.route('/languages.json')
 @public
 def languages_labs():
     from appcomposer.translator.tasks import GOLAB_REPO
-    labs = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(RepositoryApp.external_id.like('%-%')).all()
+    labs = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).all()
     by_repo = {
         # id: [lang1, lang2...]
     }
+    default_level = 0.7
+    provided_level = request.args.get('level')
+
+    level = default_level
+    if provided_level:
+        try:
+            level = float(provided_level)
+        except:
+            pass
+
     for lab in labs:
         external_id = lab.external_id.split('-')[0]
         lab_languages = set(by_repo.get(external_id, []))
-        for lang in lab.languages:
-            lab_languages.add(lang.language.language.split('_')[0])
+        for lang, level in json.loads(lab.translation_percent or '{}').items():
+            if level > 0.7:
+                lab_languages.add(lang.split('_')[0])
         by_repo[external_id] = list(lab_languages)
+
+    for lang_pack in by_repo.values():
+        if len(lang_pack) == 0:
+            lang_pack.append('en')
+
     return jsonify(by_repo)
 
 @translator_dev_blueprint.route('/changes.json')
