@@ -117,6 +117,8 @@ def get_locale_english_name(lang, country):
     @param country: Country code.
     @return: String representation for the locale.
     """
+    if lang == 'mk':
+        return u'Macedonian Slavic'
     try:
         if country.upper() == 'ALL':
             country = ""
