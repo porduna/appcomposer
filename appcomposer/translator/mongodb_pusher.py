@@ -4,6 +4,7 @@ import json
 from celery.utils.log import get_task_logger
 from bson import json_util
 from pymongo import MongoClient
+from pymongo.errors import ServerSelectionTimeoutError
 from sqlalchemy.orm import joinedload
 
 # Fix the working directory when running from the script's own folder.
@@ -124,6 +125,9 @@ def push(self, translation_url, lang, target):
                     print("[PUSH]: Ignoring push for application bundle %s (newer date exists already)" % app_bundle_id)
 
             return bundle_id, app_bundle_ids
+    except ServerSelectionTimeoutError as exc:
+        logger.warn("[PUSH]: Exception occurred due to server disconnect. NOT RETRYING.", exc_info = True)
+        return 'timeout'
     except Exception as exc:
         logger.warn("[PUSH]: Exception occurred. Retrying soon.", exc_info = True)
         print("[PUSH]: Exception occurred. Retrying soon.")
@@ -163,6 +167,11 @@ def sync(self, only_recent):
             if response is None:
                 logger.warn("Pushing translation for %s of %s returned None" % (translation_bundle['translation_url'], translation_bundle['language']))
                 continue
+
+            if response == 'timeout':
+                logger.warn("Pushing translation for %s of %s returned a timeout error" % (translation_bundle['translation_url'], translation_bundle['language']))
+                break
+
             translation_url_id, app_ids = response
             all_translation_url_ids.append(translation_url_id)
             all_app_ids.extend(app_ids)
