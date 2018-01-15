@@ -556,10 +556,14 @@ def _add_new_app(repository, app_url, title, external_id, app_thumb, description
     repo_app.description = description
     repo_app.app_link = app_link
     repo_app.app_image = app_image
+    if preview_link and not preview_link.startswith(('http://','https://')):
+        preview_link = 'http://' + preview_link
     repo_app.preview_link = preview_link
     db.session.add(repo_app)
 
 def _update_existing_app(repo_app, app_url, title, app_thumb, description, app_image, app_link, preview_link, repository):
+    if preview_link and not preview_link.startswith(('http://','https://')):
+        preview_link = 'http://' + preview_link
     if repo_app.name != title:
         repo_app.name = title
     if repo_app.url != app_url:
