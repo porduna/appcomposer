@@ -289,7 +289,7 @@ def apps_status():
     return jsonify(flash=list(flash), ssl=list(ssl), failing=list(failing))
 
 def _get_last_general_check_stats():
-    check_urls, = db.session.query(func.count(RepositoryAppCheckUrl.id)).filter_by(active=True).first()
+    check_urls, = db.session.query(func.count(func.distinct(RepositoryAppCheckUrl.url))).filter_by(active=True).first()
     last_check, = db.session.query(func.min(RepositoryAppCheckUrl.last_update)).filter_by(active=True).first()
     delta = datetime.datetime.utcnow() - last_check
     return {
