@@ -79,7 +79,7 @@ def sync_repo_apps(force=False):
         if (repo_app.repository, external_id) in apps_by_repo_id:
             stored_ids.append((repo_app.repository, unicode(external_id)))
             app = apps_by_repo_id[repo_app.repository, external_id]
-            _update_existing_app(repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app.get('app_thumb'), description = app.get('description'), app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), repository = app['repository'])
+            _update_existing_app(repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app.get('app_thumb'), preview_link = app.get('preview_link'), description = app.get('description'), app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), repository = app['repository'])
 
         else:
             # Delete old apps (translations are kept, and the app is kept, but not listed in the repository apps)
@@ -107,7 +107,7 @@ def sync_repo_apps(force=False):
                 _add_new_app(repository = app['repository'],
                             app_url = app['app_url'], title = app['title'], external_id = app['id'],
                             app_thumb = app.get('app_thumb'), description = app.get('description'),
-                            app_image = app.get('app_image'), app_link = app.get('app_golabz_page'))
+                            app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), preview_link=app.get('preview_link'))
 
     try:
         db.session.commit()
@@ -142,7 +142,7 @@ def download_repository_apps():
     stored_ids_in_redis = list(redis_store.hkeys(_REDIS_CACHE_KEY))
 
     for repo_app in db.session.query(RepositoryApp).all():
-        task = _MetadataTask(repo_app.id, repo_app.url, force_reload=False)
+        task = _MetadataTask(repo_app.id, repo_app.url, repo_app.preview_link, force_reload=False)
         repo_apps_by_id[repo_app.id] = repo_app
         tasks.append(task)
         if str(repo_app.id) in stored_ids_in_redis:
@@ -181,7 +181,7 @@ def download_repository_single_app(app_url):
     if repo_app is None:
         raise Exception("App URL not in the repository: {}".format(app_url))
 
-    task = _MetadataTask(repo_app.id, repo_app.url, force_reload=False)
+    task = _MetadataTask(repo_app.id, repo_app.url, repo_app.preview_link, force_reload=False)
 
     _RunInParallel('Go-Lab repo', [ task ], thread_number=1).run()
 
@@ -366,10 +366,11 @@ class _CheckUrlMetadataTask(threading.Thread):
         self.finished = True
 
 class _MetadataTask(threading.Thread):
-    def __init__(self, repo_id, app_url, force_reload):
+    def __init__(self, repo_id, app_url, preview_link, force_reload):
         threading.Thread.__init__(self)
         self.repo_id = repo_id
         self.app_url = app_url
+        self.preview_link = preview_link
         self.force_reload = force_reload
         self.finished = False
         self.failing = False
@@ -379,7 +380,7 @@ class _MetadataTask(threading.Thread):
         self.failing = False
         cached_requests = trutils.get_cached_session(caching = not self.force_reload)
         try:
-            self.metadata_information = extract_metadata_information(self.app_url, cached_requests, self.force_reload)
+            self.metadata_information = extract_metadata_information(self.app_url, self.preview_link, cached_requests, self.force_reload)
         except Exception:
             logger.warning("Error extracting information from %s" % self.app_url, exc_info = True)
             if DEBUG_VERBOSE:
@@ -549,15 +550,16 @@ def _update_repo_app(task, repo_app):
     return repo_changes
 
 
-def _add_new_app(repository, app_url, title, external_id, app_thumb, description, app_image, app_link):
+def _add_new_app(repository, app_url, title, external_id, app_thumb, description, app_image, app_link, preview_link):
     repo_app = RepositoryApp(name = title, url = app_url, external_id = external_id, repository = repository)
     repo_app.app_thumb = app_thumb
     repo_app.description = description
     repo_app.app_link = app_link
     repo_app.app_image = app_image
+    repo_app.preview_link = preview_link
     db.session.add(repo_app)
 
-def _update_existing_app(repo_app, app_url, title, app_thumb, description, app_image, app_link, repository):
+def _update_existing_app(repo_app, app_url, title, app_thumb, description, app_image, app_link, preview_link, repository):
     if repo_app.name != title:
         repo_app.name = title
     if repo_app.url != app_url:
@@ -570,6 +572,8 @@ def _update_existing_app(repo_app, app_url, title, app_thumb, description, app_i
         repo_app.app_link = app_link
     if repo_app.app_image != app_image:
         repo_app.app_image = app_image
+    if repo_app.preview_link != preview_link:
+        repo_app.preview_link = preview_link
     if repository is not None and repo_app.repository != repository:
         repo_app.repository = repository
 
@@ -610,6 +614,7 @@ def _get_golab_urls(last_hash):
         lab_id = lab['id']
         current_lab['app_image'] = current_lab.get('lab_image')
         current_lab['app_thumb'] = current_lab.get('lab_thumb')
+        current_lab['preview_link'] = current_lab.get('preview_link')
         current_lab['app_golabz_page'] = current_lab.get('lab_golabz_page')
         lab_title = current_lab['title']
         for pos, internal_lab in enumerate(lab.get('lab_apps', [])):

@@ -94,6 +94,7 @@ class RepositoryApp(db.Model):
     description = db.Column(db.UnicodeText)
     app_link = db.Column(db.Unicode(255))
     app_image = db.Column(db.Unicode(255))
+    preview_link = db.Column(db.Unicode(1024), nullable=True)
 
     repository = db.Column(db.Unicode(400), nullable = False, index = True)
     external_id = db.Column(db.Unicode(200), index = True)

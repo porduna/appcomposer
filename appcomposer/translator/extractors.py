@@ -49,7 +49,7 @@ def extract_local_translations_url(app_url, force_local_cache = False):
     redis_store.setex(name=redis_key, time=10 * 60, value=redis_value) # For 10 minutes
     return absolute_translation_url, messages, metadata
 
-def extract_metadata_information(app_url, cached_requests = None, force_reload = False):
+def extract_metadata_information(app_url, preview_link, cached_requests = None, force_reload = False):
     if cached_requests is None:
         cached_requests = get_cached_session()
 
@@ -105,6 +105,9 @@ def extract_metadata_information(app_url, cached_requests = None, force_reload =
 
                 original_translations[lang] = new_messages
                 original_translation_urls[lang] = absolute_url
+
+    if preview_link:
+        check_urls.append(preview_link)
 
     adaptable = ' data-configuration ' in body and ' data-configuration-definition ' in body
 
