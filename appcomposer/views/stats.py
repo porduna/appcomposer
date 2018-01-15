@@ -323,6 +323,43 @@ def apps_failing():
     stats = _get_last_general_check_stats()
     return render_template("translator/failing_apps.html", failing_apps = failing_apps, header = "Failing labs and apps", show_since=True, what = 'working', stats=stats)
 
+@translator_stats_blueprint.route('/failing.json')
+@public
+def apps_failing_json():
+    try:
+        hours = int(request.args.get('hours', 24))
+    except:
+        hours = 24
+
+    failing_since = datetime.datetime.utcnow() - datetime.timedelta(hours=hours)
+    failing_apps = db.session.query(RepositoryApp).filter_by(failing = True, repository='golabz').filter(RepositoryApp.failing_since <= failing_since).options(joinedload('check_urls')).all()
+
+    failing_ids = sorted(set([ failing_app.external_id.split('-')[0] for failing_app in failing_apps ]))
+
+    per_id = {
+        # id: {
+        #    'url': app_link,
+        #    'failing_urls': [ ... ]
+        # }
+    }
+    for failing_app in failing_apps:
+        failing_id = failing_app.external_id.split('-')[0]
+        app_link = failing_app.app_link
+        failing_urls = []
+        for check_url in failing_app.check_urls:
+            if check_url.active and check_url.working == False:
+                failing_urls.append(check_url.url)
+        per_id[failing_id] = {
+            'url': app_link,
+            'failing_urls': failing_urls,
+        }
+
+    return jsonify(
+        failing_ids=failing_ids,
+        explanation=per_id,
+    )
+
+
 @translator_stats_blueprint.route('/ssl/')
 @public
 def apps_ssl():
