@@ -139,7 +139,7 @@ class RepositoryApp(db.Model):
 
     @property
     def check_urls_hash(self):
-        return unicode(zlib.crc32(json.dumps(sorted([ check_url.url for check_url in self.check_urls ]))))
+        return unicode(zlib.crc32(json.dumps(sorted([ check_url.url for check_url in self.check_urls if check_url.active ]))))
 
     @property
     def original_translations(self):
