@@ -47,6 +47,7 @@ OTHER_LANGUAGES = [
     'my', # Burmese
     'mk', # Macedonian
     'he', # Hebrew
+    'sw', # Swahili
 ]
 
 ALL_LANGUAGES = OFFICIAL_EUROPEAN_UNION_LANGUAGES + SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
