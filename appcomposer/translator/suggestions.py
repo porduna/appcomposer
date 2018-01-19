@@ -463,25 +463,32 @@ def _load_all_suggestions(from_language, to_languages_per_category, load_functio
         if not should_continue:
             break
 
-def load_all_deepl_suggestions():
+def load_all_deepl_suggestions(lang=None):
     # First try to create suggestions from English to all the languages
-
-    languages_per_category = [ SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES ]
+    if lang:
+        languages_per_category = [ lang ]
+    else:
+        languages_per_category = [ SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES ]
 
     _load_all_suggestions('en', languages_per_category, load_function = load_deepl_suggestions_by_lang, engine='deepl')
 
 
-def load_all_google_suggestions():
+def load_all_google_suggestions(lang=None):
     # First try to create suggestions from English to all the languages
 
-    languages_per_category = [ SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES ]
+    if lang:
+        languages_per_category = [ lang ]
+    else:
+        languages_per_category = [ SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES ]
 
     _load_all_suggestions('en', languages_per_category, load_function = load_google_suggestions_by_lang, engine='google')
 
-def load_all_microsoft_suggestions():
+def load_all_microsoft_suggestions(lang=None):
     # First try to create suggestions from English to all the languages
-
-    languages_per_category = [ SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES ]
+    if lang:
+        languages_per_category = [ lang ]
+    else:
+        languages_per_category = [ SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES ]
 
     _load_all_suggestions('en', languages_per_category, load_function = load_microsoft_suggestions_by_lang, engine='microsoft')
 
