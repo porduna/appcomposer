@@ -93,7 +93,7 @@ def stats_status():
 @public
 def stats_golabz():
     try:
-        labs = requests.get('http://www.golabz.eu/rest/labs/retrieve.json', timeout = (30, 30)).json()
+        labs = requests.get('https://www.golabz.eu/rest/labs/retrieve.json', timeout = (30, 30)).json()
     except:
         return "Error accessing www.golabz.eu"
 

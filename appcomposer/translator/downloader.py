@@ -590,7 +590,7 @@ def _get_all_apps(last_hash):
 def _get_golab_urls(last_hash):
     rsession = requests.Session()
     try:
-        apps_response = rsession.get("http://www.golabz.eu/rest/apps/retrieve.json")
+        apps_response = rsession.get("https://www.golabz.eu/rest/apps/retrieve.json")
         apps_response.raise_for_status()
         apps_response_hash = unicode(zlib.crc32(apps_response.text))
         apps = apps_response.json()
@@ -599,7 +599,7 @@ def _get_golab_urls(last_hash):
         return [], last_hash
 
     try:
-        labs_response = rsession.get("http://www.golabz.eu/rest/labs/retrieve.json")
+        labs_response = rsession.get("https://www.golabz.eu/rest/labs/retrieve.json")
         labs_response.raise_for_status()
         labs_response_hash = unicode(zlib.crc32(labs_response.text))
         labs = labs_response.json()

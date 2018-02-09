@@ -130,14 +130,14 @@ def languages_labs():
 @cross_origin()
 def translation_changes():
     try:
-        r = requests.get("http://www.golabz.eu/rest/labs/retrieve.json")
+        r = requests.get("https://www.golabz.eu/rest/labs/retrieve.json")
         r.raise_for_status()
         labs = r.json()
     except:
-        return "Error accessing http://www.golabz.eu/rest/labs/retrieve.json", 500
+        return "Error accessing https://www.golabz.eu/rest/labs/retrieve.json", 500
 
     from appcomposer.translator.tasks import GOLAB_REPO
-    repository_apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(RepositoryApp.app_link.like('http://www.golabz.eu/lab%'), or_(RepositoryApp.translation_percent != None, RepositoryApp.original_translations != None)).all()
+    repository_apps = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO).filter(RepositoryApp.app_link.like('https://www.golabz.eu/lab%'), or_(RepositoryApp.translation_percent != None, RepositoryApp.original_translations != None)).all()
     automatic_urls = {}
     for translated_app in db.session.query(TranslatedApp).filter(TranslatedApp.url.in_([ repo_app.url for repo_app in repository_apps ])).all():
         automatic_urls[translated_app.url] = translated_app.translation_url.automatic

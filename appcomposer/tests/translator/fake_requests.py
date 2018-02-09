@@ -107,9 +107,9 @@ def generate_side_effects():
             "description": "DESCRIPTION%s" % app_id,
             "app_url": "http://url%s/gadget.xml" % app_id,
             "app_type": "OpenSocial gadget",
-            "app_image": "http://www.golabz.eu/logo%s.png" % app_id,
-            "app_thumb": "http://www.golabz.eu/logo_thumb%s.png" % app_id,
-            "app_golabz_page": "http://www.golabz.eu/apps/page%s" % app_id
+            "app_image": "https://www.golabz.eu/logo%s.png" % app_id,
+            "app_thumb": "https://www.golabz.eu/logo_thumb%s.png" % app_id,
+            "app_golabz_page": "https://www.golabz.eu/apps/page%s" % app_id
         })
 
     # With prefix
@@ -122,9 +122,9 @@ def generate_side_effects():
             "description": "DESCRIPTION%s" % app_id,
             "app_url": "http://url%s/%sgadget.xml" % (app_id, prefix),
             "app_type": "OpenSocial gadget",
-            "app_image": "http://www.golabz.eu/logo%s.png" % app_id,
-            "app_thumb": "http://www.golabz.eu/logo_thumb%s.png" % app_id,
-            "app_golabz_page": "http://www.golabz.eu/apps/page%s-%s" % (app_id, pos)
+            "app_image": "https://www.golabz.eu/logo%s.png" % app_id,
+            "app_thumb": "https://www.golabz.eu/logo_thumb%s.png" % app_id,
+            "app_golabz_page": "https://www.golabz.eu/apps/page%s-%s" % (app_id, pos)
         })
 
 
@@ -204,8 +204,8 @@ def generate_side_effects():
     SIDE_EFFECT_STRINGS = {
         "http://graasp.eu/token": json.dumps({'access_token': 'foo', 'refresh_token': 'bar'}),
         "http://graasp.eu/users/me": json.dumps(dict(username="Test User", email="appcomposer@go-lab-project.eu")),
-        "http://www.golabz.eu/rest/apps/retrieve.json": json.dumps(APPS),
-        "http://www.golabz.eu/rest/labs/retrieve.json": json.dumps(LABS),
+        "https://www.golabz.eu/rest/apps/retrieve.json": json.dumps(APPS),
+        "https://www.golabz.eu/rest/labs/retrieve.json": json.dumps(LABS),
         "http://go-lab.gw.utwente.nl/production/commons/languages/list.txt": TWENTE_LIST,
     }
 
