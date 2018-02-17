@@ -101,9 +101,12 @@ def stats_golabz():
 
     sg_labs = []
     ac_labs = []
+    other_labs = []
+    total_lab_apps = 0
 
     for lab in labs:
         for lab_app in lab['lab_apps']:
+            total_lab_apps += 1
             app_url = lab_app['app_url']
             if app_url.startswith('http://gateway.golabz.eu/embed/'):
                 ac_labs.append(lab)
@@ -114,8 +117,10 @@ def stats_golabz():
             elif 'weblab.deusto.es/golab/labmanager' in app_url:
                 sg_labs.append(lab)
                 break
+            else:
+                other_labs.append(lab)
 
-    return render_template("translator/stats_golabz.html", total_labs = total_labs, sg_labs = sg_labs, ac_labs = ac_labs, len_sg_labs = len(sg_labs), len_ac_labs = len(ac_labs))
+    return render_template("translator/stats_golabz.html", total_labs = total_labs, total_lab_apps=total_lab_apps, sg_labs = sg_labs, ac_labs = ac_labs, other_labs=other_labs, len_sg_labs = len(sg_labs), len_ac_labs = len(ac_labs), len_other_labs=len(other_labs))
 
 
 @translator_stats_blueprint.route('/missing')

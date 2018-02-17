@@ -21,20 +21,28 @@
                 <td>{{ total_labs }}</td>
             </tr>
             <tr>
+                <td>Total resources</td>
+                <td>{{ total_lab_apps }}</td>
+            </tr>
+            <tr>
                 <td>Smart Gateway Plug-ins</td>
-                <td>{{ len_sg_labs }} ({{ '%.2f' % (100.0*len_sg_labs/total_labs) }}%)</td>
+                <td>{{ len_sg_labs }} ({{ '%.2f' % (100.0*len_sg_labs/total_lab_apps) }}%)</td>
             </tr>
             <tr>
                 <td>App Composer</td>
-                <td>0</td>
+                <td>0 (replaced by Smart Gateway)</td>
             </tr>
             <tr>
                 <td>Smart Gateway Embedder</td>
-                <td>{{ len_ac_labs }} ({{ '%.2f' % (100.0*len_ac_labs/total_labs) }}%)</td>
+                <td>{{ len_ac_labs }} ({{ '%.2f' % (100.0*len_ac_labs/total_lab_apps) }}%)</td>
             </tr>
             <tr>
                 <td>Smart Gateway (Plug-ins + Embedder)</td>
-                <td>{{ len_ac_labs + len_sg_labs }} ({{ '%.2f' % (100.0*(len_ac_labs+len_sg_labs)/total_labs) }}%)</td>
+                <td>{{ len_ac_labs + len_sg_labs }} ({{ '%.2f' % (100.0*(len_ac_labs+len_sg_labs)/total_lab_apps) }}%)</td>
+            </tr>
+            <tr>
+                <td>Other</td>
+                <td>{{ len_other_labs }} ({{ '%.2f' % (100.0*(len_other_labs)/total_lab_apps) }}%)</td>
             </tr>
         </tbody>
     </table>
@@ -48,9 +56,10 @@
     <ul>
         <li><a href="#SmartGateway">Smart Gateway Plug-ins</a></li>
         <li><a href="#AppComposer">Smart Gateway Embedder</a></li>
+        <li><a href="#OtherLabs">Other Labs</a></li>
     </ul>
 
-    {% for name, cur_labs in [ ('Smart Gateway', sg_labs), ('App Composer', ac_labs) ] %}
+    {% for name, cur_labs in [ ('Smart Gateway', sg_labs), ('App Composer', ac_labs), ('Other Labs', other_labs) ] %}
     <a name="{{ name.replace(' ', '') }}"></a>
     <h4>{{ name }}</h4>
 
@@ -77,11 +86,11 @@
                 </td>
                 <td>
                     {% if cur_lab['lab_apps']|length == 1 %}
-                        <a href="{{ cur_lab['lab_apps'][0]['app_url'] }}">{{ cur_lab['lab_apps'][0]['app_title'] }}</a>
+                        <a href="{{ cur_lab['lab_apps'][0]['app_url'] }}">{{ cur_lab['lab_apps'][0]['app_title'] }} ({{ cur_lab['lab_apps'][0]['app_url'][:50] }}...)</a>
                     {% else %}
                         <ul>
                             {% for lab_app in cur_lab['lab_apps'] %}
-                                <li><a href="{{ lab_app['app_url'] }}">{{ lab_app['app_title'] }}</a></li>
+                                <li><a href="{{ lab_app['app_url'] }}">{{ lab_app['app_title'] }} ({{ lab_app['app_url'][:50] }}...)</a></li>
                             {% endfor %}
                         </ul>
                     {% endif %}
