@@ -200,11 +200,11 @@ class RepositoryAppCheckUrl(db.Model):
 
     @property
     def filename_with_proxy(self):
-        return '{}_proxy.png'.format(hashlib('md5', self.url).hexdigest())
+        return '{}_proxy.png'.format(hashlib.hashlib('md5', self.url.encode('utf8')).hexdigest())
 
     @property
     def filename_without_proxy(self):
-        return '{}_non-proxy.png'.format(hashlib('md5', self.url).hexdigest())
+        return '{}_non-proxy.png'.format(hashlib.hashlib('md5', self.url.encode('utf8')).hexdigest())
 
     def update(self):
         self.last_update = datetime.datetime.utcnow()
