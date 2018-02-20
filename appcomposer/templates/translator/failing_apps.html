@@ -76,7 +76,7 @@
                                     {% if check_url.proxy_image_stored %}
                                         -
                                         <a href="{{ url_for('static', filename='proxy-images/' + check_url.filename_with_proxy) }}">Image with proxy</a> vs.
-                                        <a href="{{ url_for('static', filename='proxy-images/' + check_url.filename_without_proxy) }}">Image without proxy</a>
+                                        <a href="{{ url_for('static', filename='proxy-images/' + check_url.filename_without_proxy) }}">Image without proxy</a>:
 
                                         {% if check_url.proxy_image_works %}They match{% else %}They do not match{% endif %}
                                     {% endif %})
