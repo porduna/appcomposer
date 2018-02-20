@@ -121,6 +121,11 @@ def sync_repo_apps(force=False):
     finally:
         db.session.remove()
 
+    report_allowed_hosts()
+
+    return last_hash == new_hash
+
+def report_allowed_hosts():
     allowed_hosts_secret = current_app.config.get('ALLOWED_HOSTS_SECRET')
     if allowed_hosts_secret:
         hosts = list(set([ urlparse.urlparse(racu.url).netloc for racul in db.session.query(RepositoryAppCheckUrl).all() ]))
@@ -129,9 +134,6 @@ def sync_repo_apps(force=False):
             requests.post('https://gateway.golabz.eu/proxy/allowed-hosts/', json=dict(hosts=hosts), headers={'gw4labs-auth': allowed_hosts_secret})
         except:
             traceback.print_exc()
-
-    return last_hash == new_hash
-
 
 _REDIS_CACHE_KEY = 'appcomposer:repository:cache'
 
@@ -178,6 +180,8 @@ def download_repository_apps():
     else:
         db.session.remove()
 
+    report_allowed_hosts()
+
     return app_changes
 
 
@@ -205,6 +209,8 @@ def download_repository_single_app(app_url):
         return False
     else:
         db.session.remove()
+
+    report_allowed_hosts()
 
     return changes
 
