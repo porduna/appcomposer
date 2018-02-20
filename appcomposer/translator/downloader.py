@@ -11,6 +11,7 @@ For this reason, we need a storage mechanism and we use redis for that.
 import zlib
 import time
 import json
+import urlparse
 import datetime
 import threading
 import traceback
@@ -119,6 +120,15 @@ def sync_repo_apps(force=False):
         redis_store.set('last_repo_apps_sync_hash', new_hash)
     finally:
         db.session.remove()
+
+    allowed_hosts_secret = current_app.config.get('ALLOWED_HOSTS_SECRET')
+    if allowed_hosts_secret:
+        hosts = list(set([ urlparse.urlparse(racu.url).netloc for racul in db.session.query(RepositoryAppCheckUrl).all() ]))
+        try:
+            # Report to gateway.golabz.eu that allowed-hosts is this
+            requests.post('https://gateway.golabz.eu/proxy/allowed-hosts/', json=dict(hosts=hosts), headers={'gw4labs-auth': allowed_hosts_secret})
+        except:
+            traceback.print_exc()
 
     return last_hash == new_hash
 
