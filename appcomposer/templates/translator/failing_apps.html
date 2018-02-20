@@ -70,7 +70,11 @@
                                 {% endif %}
 
                                 {% if selected %}
-                                <li><a href="{{ check_url.url }}">{{ check_url.url[:70] }}{% if check_url.url|length > 70 %}...{% endif %}</a></li>
+                                <li><a href="{{ check_url.url }}">{{ check_url.url[:70] }}{% if check_url.url|length > 70 %}...{% endif %}</a>
+                                    {% if what == 'ssl' %}
+                                    (<a href="https://gateway.golabz.eu/proxy/{{ check_url.url }}">Check proxy</a>)
+                                    {% endif %}
+                                </li>
                                 {% endif %}
                             {% endif %}
                         {% endfor %}
