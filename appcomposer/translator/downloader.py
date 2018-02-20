@@ -270,6 +270,9 @@ def update_check_urls_status():
                 if metadata['failed'] is not None:
                     db_url.working = not metadata['failed']
 
+                db_url.proxy_image_works = metadata['proxy_image_works']
+                db_url.proxy_image_stored = metadata['proxy_image_stored']
+
                 db_url.update()
 
     try:

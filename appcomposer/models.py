@@ -111,6 +111,8 @@ class RepositoryApp(db.Model):
     failing_since = db.Column(db.DateTime, index = True)
 
     supports_ssl = db.Column(db.Boolean, index=True)
+    proxy_image_works = db.Column(db.Boolean, index=True)
+    proxy_image_stored = db.Column(db.Boolean, index=True)
     contains_flash = db.Column(db.Boolean, index=True)
 
     downloaded_hash = db.Column(db.Unicode(255), index=True)
@@ -174,6 +176,8 @@ class RepositoryAppCheckUrl(db.Model):
     url = db.Column(db.Unicode(1024), nullable=False) # not index=true; Index below
     url_hash = db.Column(db.Unicode(255), nullable=False, index=True)
     supports_ssl = db.Column(db.Boolean, index=True)
+    proxy_image_works = db.Column(db.Boolean, index=True)
+    proxy_image_stored = db.Column(db.Boolean, index=True)
     working = db.Column(db.Boolean, index=True)
     contains_flash = db.Column(db.Boolean, index=True)
     last_update = db.Column(db.DateTime, index=True)
@@ -188,9 +192,19 @@ class RepositoryAppCheckUrl(db.Model):
         self.url_hash = unicode(hashlib.md5(url.encode('utf8')).hexdigest())
         self.active = True
         self.supports_ssl = None
+        self.proxy_image_works = None
+        self.proxy_image_stored = None
         self.working = None
         self.contains_flash = None
         self.last_update = datetime.datetime.utcnow()
+
+    @property
+    def filename_with_proxy(self):
+        return '{}_proxy.png'.format(hashlib('md5', self.url).hexdigest())
+
+    @property
+    def filename_without_proxy(self):
+        return '{}_non-proxy.png'.format(hashlib('md5', self.url).hexdigest())
 
     def update(self):
         self.last_update = datetime.datetime.utcnow()

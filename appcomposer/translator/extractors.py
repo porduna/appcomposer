@@ -1,10 +1,14 @@
 import json
 import zlib
+import time
+import hashlib
 import logging
 import urlparse
 import xml.etree.ElementTree as ET
 
 import requests
+
+from selenium import webdriver
 
 from appcomposer import redis_store
 from appcomposer.exceptions import TranslatorError
@@ -302,6 +306,8 @@ def extract_check_url_metadata(url):
     failed = False
     flash = None
     ssl = None
+    proxy_works = None
+    proxy_image_stored = False
     error_message = None
     headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64 GOLAB APP COMPOSER) AppleWebKit/537.36 (KHTML, like Gecko)'}
     try:
@@ -346,9 +352,56 @@ def extract_check_url_metadata(url):
                 if content_size * 0.9 <= len(ssl_content) <= content_size * 1.1:
                     ssl = True
 
+            if not ssl:
+                result = _check_proxy(url)
+                proxy_works = result['equals']
+                proxy_image_stored = result['stored']
+
     return {
         'failed': failed,
         'flash': flash,
         'ssl': ssl,
         'error_message': error_message,
+        'proxy_image_works': proxy_works,
+        'proxy_image_stored': proxy_image_stored,
+    }
+
+def _check_proxy(url):
+    # It works but ssl is not working. Time to check whether in phantomjs it's the same thing or not
+    cap = webdriver.DesiredCapabilities.PHANTOMJS
+    cap["phantomjs.page.settings.resourceTimeout"] = 1000
+    cap["phantomjs.page.settings.loadImages"] = False
+    cap["phantomjs.page.settings.userAgent"] = 'Mozilla/5.0 (X11; Linux x86_64 GOLAB APP COMPOSER) AppleWebKit/537.36 (KHTML, like Gecko)'
+    driver = webdriver.PhantomJS(desired_capabilities=cap)
+    driver.implicitly_wait(15)
+    driver.set_page_load_timeout(15)
+    hashed = hashlib.new("md5", url).hexdigest()
+    file_path_with_proxy = 'appcomposer/static/proxy-images/{}_proxy.png'.format(hashed)
+    file_path_without_proxy = 'appcomposer/static/proxy-images/{}_non-proxy.png'.format(hashed)
+    stored = False
+    try:
+        driver.get(url)
+        time.sleep(3)
+        driver.save_screenshot(file_path_without_proxy)
+        driver.get('https://gateway.golabz.eu/proxy/' + url)
+        time.sleep(3)
+        driver.save_screenshot(file_path_with_proxy)
+        stored = True
+    except:
+        pass
+    finally:
+        try:
+            driver.close()
+        except:
+            pass
+
+    files_are_equal = False
+    if stored:
+        contents_with_proxy = hashlib.new('md5', open(file_path_with_proxy).read()).hexdigest()
+        contents_without_proxy = hashlib.new('md5', open(file_path_without_proxy).read()).hexdigest()
+        files_are_equal = contents_with_proxy == contents_without_proxy
+
+    return {
+        'stored': stored,
+        'equals': files_are_equal,
     }

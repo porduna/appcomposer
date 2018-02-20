@@ -72,7 +72,12 @@
                                 {% if selected %}
                                 <li><a href="{{ check_url.url }}">{{ check_url.url[:70] }}{% if check_url.url|length > 70 %}...{% endif %}</a>
                                     {% if what == 'ssl' %}
-                                    (<a href="https://gateway.golabz.eu/proxy/{{ check_url.url }}">Check proxy</a>)
+                                    (<a href="https://gateway.golabz.eu/proxy/{{ check_url.url }}">Check proxy</a>. 
+                                    {% if check_url.proxy_image_stored %}
+                                        <a href="{{ url_for('static', filename='proxy-images/' + check_url.filename_with_proxy) }}">Image with proxy</a> vs.
+                                        <a href="{{ url_for('static', filename='proxy-images/' + check_url.filename_without_proxy) }}">Image without proxy</a>
+                                    {% endif %}
+                                    {% if check_url.proxy_image_works %}They match{% else %}They do not match{% endif %})
                                     {% endif %}
                                 </li>
                                 {% endif %}
