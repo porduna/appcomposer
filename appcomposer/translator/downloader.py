@@ -128,7 +128,7 @@ def sync_repo_apps(force=False):
 def report_allowed_hosts():
     allowed_hosts_secret = current_app.config.get('ALLOWED_HOSTS_SECRET')
     if allowed_hosts_secret:
-        hosts = list(set([ urlparse.urlparse(racu.url).netloc for racul in db.session.query(RepositoryAppCheckUrl).all() ]))
+        hosts = list(set([ urlparse.urlparse(racu.url).netloc for racu in db.session.query(RepositoryAppCheckUrl).all() ]))
         try:
             # Report to gateway.golabz.eu that allowed-hosts is this
             requests.post('https://gateway.golabz.eu/proxy/allowed-hosts/', json=dict(hosts=hosts), headers={'gw4labs-auth': allowed_hosts_secret})
