@@ -49,6 +49,7 @@ OTHER_LANGUAGES = [
     'he', # Hebrew
     'sw', # Swahili
     'vi', # Vietnamese
+    'zh_TW', # Taiwanese
 ]
 
 ALL_LANGUAGES = OFFICIAL_EUROPEAN_UNION_LANGUAGES + SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
@@ -72,6 +73,9 @@ def obtain_languages():
                 break
         if golab_supported:
             languages.append( (code, lang) )
+
+    languages.append( ('zh_TW', 'Taiwanese Mandarin') )
+
     if False:
         print "Babel Supported languages after filter: %s" % len(languages)
         print "Go-Lab Supported languages: %s" % len(ALL_LANGUAGES)
@@ -82,6 +86,9 @@ def obtain_languages():
     # Eventually we should consider whether we need to support special languages with _
     # on its code.
     targetlangs_codes = [lang[0] + "_ALL" for lang in languages if "_" not in lang[0]]
+    for code, name in languages:
+        if '_' in code and code.count('_') == 1:
+            targetlangs_codes.append(code)
 
     targetlangs_list = [{"pcode": code, "repr": get_locale_english_name(
         *get_locale_info_from_code(code))} for code in targetlangs_codes]
@@ -121,6 +128,8 @@ def get_locale_english_name(lang, country):
     """
     if lang == 'mk':
         return u'Macedonian Slavic'
+    if lang == 'zh' and country == 'TW':
+        return u'Taiwanese Mandarin'
     try:
         if country.upper() == 'ALL':
             country = ""
