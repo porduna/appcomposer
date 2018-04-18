@@ -130,6 +130,9 @@ def get_locale_english_name(lang, country):
         return u'Macedonian Slavic'
     if lang == 'zh' and country == 'TW':
         return u'Chinese (Traditional)'
+    if lang == 'zh' and country in ('ALL', 'CN'):
+        return u'Chinese (Simplified)'
+
     try:
         if country.upper() == 'ALL':
             country = ""
