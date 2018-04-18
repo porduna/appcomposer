@@ -139,7 +139,7 @@ class MicrosoftTranslator(AbstractTranslator):
         languages = requests.get(url, headers = headers)
         root = ElementTree.fromstring(languages.text.encode('utf-8'))
         lang_adaptor = {
-            'zh-CHS': 'zh_ALL',
+            'zh-CHS': 'zh',
             'zh-CHT': 'zh_TW',
         }
         langs = [ lang_adaptor.get(e.text, e.text) for e in root.findall("{http://schemas.microsoft.com/2003/10/Serialization/Arrays}string") ]
