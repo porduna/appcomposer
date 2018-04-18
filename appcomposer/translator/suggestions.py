@@ -138,7 +138,12 @@ class MicrosoftTranslator(AbstractTranslator):
         url = "https://api.microsofttranslator.com/V2/Http.svc/GetLanguagesForTranslate"
         languages = requests.get(url, headers = headers)
         root = ElementTree.fromstring(languages.text.encode('utf-8'))
-        return [ e.text for e in root.findall("{http://schemas.microsoft.com/2003/10/Serialization/Arrays}string") ]
+        lang_adaptor = {
+            'zh-CHS': 'zh_ALL',
+            'zh-CHT': 'zh_TW',
+        }
+        langs = [ lang_adaptor.get(e.text, e.text) for e in root.findall("{http://schemas.microsoft.com/2003/10/Serialization/Arrays}string") ]
+        return langs
 
     def _translate_messages(self, messages, language, origin_language):
         request_root = ElementTree.fromstring("""<GetTranslationsArrayRequest>
