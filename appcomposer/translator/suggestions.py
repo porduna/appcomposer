@@ -146,6 +146,12 @@ class MicrosoftTranslator(AbstractTranslator):
         return langs
 
     def _translate_messages(self, messages, language, origin_language):
+        lang_adaptor = {
+            'zh': 'zh-CHS',
+            'zh_TW': 'zh-CHT',
+        }
+        language = lang_adaptor.get(language, language)
+
         request_root = ElementTree.fromstring("""<GetTranslationsArrayRequest>
           <AppId></AppId>
           <From>{origin}</From>
