@@ -37,26 +37,28 @@ class AbstractTranslator(object):
         if not self.enabled:
             return {}
 
-        language = language.split('_')[0]
+        if language not in self.languages:
+            language = language.split('_')[0]
 
         existing_suggestions, remaining_texts = self.existing_translations(texts, language, origin_language)
         if remaining_texts:
-            new_suggestions = self._translate(remaining_texts, language, origin_language)
-            for human_key, value in new_suggestions.iteritems():
-                new_suggestion = TranslationExternalSuggestion(engine = self.name, human_key = human_key, language = language, origin_language = origin_language, value = value)
-                db.session.add(new_suggestion)
-                existing_suggestions[human_key] = { value : 1 }
-            try:
-                db.session.commit()
-            except IntegrityError:
-                traceback.print_exc()
-                db.session.rollback()
-            except:
-                traceback.print_exc()
-                db.session.rollback()
+            if language in self.languages:
+                new_suggestions = self._translate(remaining_texts, language, origin_language)
+                for human_key, value in new_suggestions.iteritems():
+                    new_suggestion = TranslationExternalSuggestion(engine = self.name, human_key = human_key, language = language, origin_language = origin_language, value = value)
+                    db.session.add(new_suggestion)
+                    existing_suggestions[human_key] = { value : 1 }
+                try:
+                    db.session.commit()
+                except IntegrityError:
+                    traceback.print_exc()
+                    db.session.rollback()
+                except:
+                    traceback.print_exc()
+                    db.session.rollback()
+                    db.session.remove()
+                    raise
                 db.session.remove()
-                raise
-            db.session.remove()
         return existing_suggestions
 
     def existing_translations(self, texts, language, origin_language = 'en'):
@@ -70,8 +72,9 @@ class AbstractTranslator(object):
         if not self.enabled:
             return {}, texts[:]
         
+        if language not in self.languages:
+            language = language.split('_')[0]
 
-        language = language.split('_')[0]
         hashed_texts_per_text = { text: hashlib.md5(text.encode('utf8')).hexdigest() for text in texts }
         text_per_hash = { v:k for (k, v) in hashed_texts_per_text.items() }
         hashed_texts = list(hashed_texts_per_text.values())
@@ -116,6 +119,8 @@ class MicrosoftTranslator(AbstractTranslator):
         except Exception:
             traceback.print_exc()
             return []
+        else:
+            print "Microsoft supported languages:", self._languages
         return self._languages
 
     def _get_token(self):
@@ -221,7 +226,7 @@ class GoogleTranslator(AbstractTranslator):
     @property
     def languages(self):
         # as of October 2017
-        return list(["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "zh", "zh", "co", "hr", "cs", "da", "nl", "en", "eo", "et", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha", "iw", "hi", "hu", "is", "ig", "id", "ga", "it", "ja", "jw", "kn", "kk", "km", "ko", "ku", "ky", "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ny", "ps", "fa", "pl", "pt", "pa", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw", "sv", "tl", "tg", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "cy", "xh", "yi", "yo", "zu"]) + ['se', 'sh', 'he'] # For some reason, there are translations in these two languages
+        return list(["af", "sq", "am", "ar", "hy", "az", "eu", "be", "bn", "bs", "bg", "ca", "zh", "zh_TW", "co", "hr", "cs", "da", "nl", "en", "eo", "et", "fi", "fr", "fy", "gl", "ka", "de", "el", "gu", "ht", "ha", "iw", "hi", "hu", "is", "ig", "id", "ga", "it", "ja", "jw", "kn", "kk", "km", "ko", "ku", "ky", "lo", "la", "lv", "lt", "lb", "mk", "mg", "ms", "ml", "mt", "mi", "mr", "mn", "my", "ne", "no", "ny", "ps", "fa", "pl", "pt", "pa", "ro", "ru", "sm", "gd", "sr", "st", "sn", "sd", "si", "sk", "sl", "so", "es", "su", "sw", "sv", "tl", "tg", "ta", "te", "th", "tr", "uk", "ur", "uz", "vi", "cy", "xh", "yi", "yo", "zu"]) + ['se', 'sh', 'he'] # For some reason, there are translations in these two languages
 
     def _translate(self, texts, language, origin_language = 'en'):
         """ [ 'Hello' ], 'es' => { 'Hello' : 'Hola' } """
@@ -495,7 +500,7 @@ def load_all_microsoft_suggestions(lang=None):
 
 def load_google_paid():
     # priority_languages = [u'sh', u'se', u'mk', u'lb', u'my', u'bs', u'be', u'sr', u'id', u'ja', u'zh', u'hi', u'no', u'uk', u'tr', u'ar', u'de']
-    priority_languages = [u'sh', u'mk', u'lb', u'my', u'bs', u'be', u'sr', u'id', u'ja', u'zh', u'hi', u'no', u'uk', u'tr', u'ar', u'de'] + [ unicode(lang) for lang in SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES if lang not in ['en', 'se'] ]
+    priority_languages = [u'sh', u'mk', u'lb', u'my', u'bs', u'be', u'sr', u'id', u'ja', u'zh', u'zh_TW' u'hi', u'no', u'uk', u'tr', u'ar', u'de'] + [ unicode(lang) for lang in SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES if lang not in ['en', 'se'] ]
 
     active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == u'en_ALL', TranslationBundle.target == u'ALL', ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
     active_message_by_hash = { unicode(hashlib.md5(text.encode('utf8')).hexdigest()): text for text in active_messages }

@@ -74,7 +74,7 @@ def obtain_languages():
         if golab_supported:
             languages.append( (code, lang) )
 
-    languages.append( ('zh_TW', 'Taiwanese Mandarin') )
+    languages.append( ('zh_TW', 'Chinese (Traditional)') )
 
     if False:
         print "Babel Supported languages after filter: %s" % len(languages)
@@ -129,7 +129,7 @@ def get_locale_english_name(lang, country):
     if lang == 'mk':
         return u'Macedonian Slavic'
     if lang == 'zh' and country == 'TW':
-        return u'Taiwanese Mandarin'
+        return u'Chinese (Traditional)'
     try:
         if country.upper() == 'ALL':
             country = ""
