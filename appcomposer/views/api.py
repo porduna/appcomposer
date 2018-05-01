@@ -116,7 +116,14 @@ def api_translations():
 
         languages = {}
         for translated_lang, progress in translated_languages.iteritems():
-            translated_lang_simplified = translated_lang.split('_')[0]
+            translated_lang_pack = translated_lang.split('_')
+            if translated_lang_pack[1] == 'ALL':
+                translated_lang_simplified = translated_lang.split('_')[0]
+                if translated_lang_simplified == 'zh':
+                    translated_lang_simplified = 'zh_CN'
+            else:
+                translated_lang_simplified = translated_lang_pack[0] + '_' + translated_lang_pack[1]
+            
             translated_lang_country = '_'.join(translated_lang.split('_')[:2])
             languages[translated_lang_simplified] = {
                 'original' : translated_lang_country in original_languages,
