@@ -11,7 +11,7 @@ from appcomposer.db import db
 from appcomposer.models import RepositoryApp
 from appcomposer.login import requires_golab_api_login, current_golab_user
 from appcomposer.exceptions import TranslatorError
-from appcomposer.languages import obtain_groups, obtain_languages
+from appcomposer.languages import obtain_groups, obtain_languages, get_locale_english_name
 from appcomposer.utils import public
 from appcomposer.translator.extractors import extract_local_translations_url
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, update_user_status, get_user_status
@@ -125,10 +125,12 @@ def api_translations():
                 translated_lang_simplified = translated_lang_pack[0] + '_' + translated_lang_pack[1]
             
             translated_lang_country = '_'.join(translated_lang.split('_')[:2])
+            name = get_locale_english_name(*translated_lang_country.split('_'))
             languages[translated_lang_country] = {
                 'original' : translated_lang_country in original_languages,
                 'progress' : progress,
-                'name': translated_lang_simplified,
+                # 'name': translated_lang_simplified,
+                'name': name,
             }
 
         # TODO: add Graasp and so on, plus use the retrieval method (e.g., labs/retrieve.json vs. apps/retrieve.json) to know whether it's one thing or the other

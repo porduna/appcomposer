@@ -123,7 +123,7 @@
                     <td>
 
                         <!-- Display each badge for each language -->
-                        <a ng-repeat="(langname, lang) in app.languages"
+                        <a ng-repeat="(langname, lang) in app.languages | orderBy:'name':true"
                            ng-href="#/edit/{{ langname }}/ALL/{{ app.app_url }}">
 
                                 <span tooltip="{{ getBadgeTitle(langname, lang) }}"

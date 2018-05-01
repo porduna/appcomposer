@@ -135,6 +135,8 @@ FOR THE APP / EDIT SCREEN
     color: rgb(50, 50, 50);
     margin-left: 2px;
     margin-right: 2px;
+    margin-top: 2px;
+    margin-bottom: 2px;
 }
 
 .ac-badge-complete {
