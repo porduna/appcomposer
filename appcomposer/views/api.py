@@ -125,9 +125,10 @@ def api_translations():
                 translated_lang_simplified = translated_lang_pack[0] + '_' + translated_lang_pack[1]
             
             translated_lang_country = '_'.join(translated_lang.split('_')[:2])
-            languages[translated_lang_simplified] = {
+            languages[translated_lang_country] = {
                 'original' : translated_lang_country in original_languages,
-                'progress' : progress
+                'progress' : progress,
+                'name': translated_lang_simplified,
             }
 
         # TODO: add Graasp and so on, plus use the retrieval method (e.g., labs/retrieve.json vs. apps/retrieve.json) to know whether it's one thing or the other

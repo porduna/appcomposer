@@ -124,7 +124,7 @@
 
                         <!-- Display each badge for each language -->
                         <a ng-repeat="(langname, lang) in app.languages"
-                           ng-href="#/edit/{{ langname }}_ALL/ALL/{{ app.app_url }}">
+                           ng-href="#/edit/{{ langname }}/ALL/{{ app.app_url }}">
 
                                 <span tooltip="{{ getBadgeTitle(langname, lang) }}"
                                       class="badge ac-lang-badge"
@@ -133,9 +133,14 @@
                                     'ac-badge-complete': lang.progress == 1}">
 
                                     <span ng-show="lang.original"
-                                          class="fa fa-shield ac-badge-icon-locked"></span> {{ langname }}
+                                          class="fa fa-shield ac-badge-icon-locked"></span> {{ lang.name }} </span>
+                        </a>
 
-                                </span>
+                        <a ng-href="#/app/{{ app.app_url }}">
+
+                                <span tooltip="New language"
+                                      class="badge ac-lang-badge ac-badge-notoriginal ac-badge-complete"
+                                      ng-style="{'background-color': 'white'}"><span class="fa fa-plus"></span></span>
                         </a>
 
                     </td>
