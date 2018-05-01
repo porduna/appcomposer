@@ -133,6 +133,16 @@ def api_translations():
                 'name': name,
             }
 
+        languages_obj = []
+
+        for lang_key, lang_value in languages.iteritems():
+            languages_obj.append({
+                'name': lang_value['name'],
+                'original': lang_value['original'],
+                'progress': lang_value['progress'],
+                'key': lang_key,
+            })
+
         # TODO: add Graasp and so on, plus use the retrieval method (e.g., labs/retrieve.json vs. apps/retrieve.json) to know whether it's one thing or the other
         app_link = repo_app.app_link or ''
         if repo_app.repository == 'golabz' and (app_link.startswith('https://www.golabz.eu/app/') or app_link.startswith('https://www.golabz.eu/apps/') or app_link.startswith('https://www.golabz.eu/content/')):
@@ -147,6 +157,7 @@ def api_translations():
             'original_languages_simplified' : original_languages_simplified,
             'translated_languages' : translated_languages,
             'languages' : languages,
+            'languages_obj' : languages_obj,
             'source' : repo_app.repository,
             'id' : repo_app.external_id,
             'description': repo_app.description,
