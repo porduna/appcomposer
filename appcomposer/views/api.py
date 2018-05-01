@@ -126,12 +126,13 @@ def api_translations():
             
             translated_lang_country = '_'.join(translated_lang.split('_')[:2])
             name = get_locale_english_name(*translated_lang_country.split('_'))
-            languages[translated_lang_country] = {
-                'original' : translated_lang_country in original_languages,
-                'progress' : progress,
-                # 'name': translated_lang_simplified,
-                'name': name,
-            }
+            if name:
+                languages[translated_lang_country] = {
+                    'original' : translated_lang_country in original_languages,
+                    'progress' : progress,
+                    # 'name': translated_lang_simplified,
+                    'name': name,
+                }
 
         languages_obj = []
 
@@ -201,7 +202,7 @@ def api_languages_default():
             continue
         list_of_languages.append({
             'name': lang_name,
-            'code': lang_code.split('_')[0]
+            'code': '_'.join(lang_code.split('_')[:2])
         })
     contents = {
         'default': (guess_default_language() or 'en').split('_')[0],
