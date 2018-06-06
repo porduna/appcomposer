@@ -16,6 +16,7 @@ import datetime
 import threading
 import traceback
 
+import certifi
 import requests
 from sqlalchemy import or_
 from sqlalchemy.exc import SQLAlchemyError
@@ -234,7 +235,29 @@ def update_content_hash(app_url):
                 else:
                     db.session.remove()
 
+
+
 def update_check_urls_status():
+    #######################################################################
+    # FIXME
+    # For some reason, some comodo certificates are not working. This affects our partner cosci.tw. For this reason, we add this:
+    try:
+        requests.get("https://cosci.tw/run/", timeout=(10, 10)).close()
+    except:
+        ca_file = certifi.where()
+        with open('utils/comodo_domain_server_ca.crt', 'rb') as infile:
+            comodo_ca = infile.read()
+
+        with open(ca_file, 'rb') as infile:
+            ca_file_contents = infile.read()
+
+        if comodo_ca not in ca_file_contents:
+            with open(ca_file, 'ab') as outfile:
+                outfile.write(comodo_ca)
+    #######################################################################
+
+
+
     db_urls = db.session.query(RepositoryAppCheckUrl).filter(RepositoryAppCheckUrl.active == True).all()
     urls = set([ db_url.url for db_url in db_urls ])
 
