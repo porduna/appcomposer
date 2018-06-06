@@ -11,7 +11,7 @@ from appcomposer.db import db
 from appcomposer.models import RepositoryApp
 from appcomposer.login import requires_golab_api_login, current_golab_user
 from appcomposer.exceptions import TranslatorError
-from appcomposer.languages import obtain_groups, obtain_languages
+from appcomposer.languages import obtain_groups, obtain_languages, get_locale_english_name
 from appcomposer.utils import public
 from appcomposer.translator.extractors import extract_local_translations_url
 from appcomposer.translator.ops import add_full_translation_to_app, retrieve_stored, retrieve_suggestions, retrieve_translations_stats, register_app_url, update_user_status, get_user_status
@@ -116,12 +116,33 @@ def api_translations():
 
         languages = {}
         for translated_lang, progress in translated_languages.iteritems():
-            translated_lang_simplified = translated_lang.split('_')[0]
+            translated_lang_pack = translated_lang.split('_')
+            if translated_lang_pack[1] == 'ALL':
+                translated_lang_simplified = translated_lang.split('_')[0]
+                if translated_lang_simplified == 'zh':
+                    translated_lang_simplified = 'zh_CN'
+            else:
+                translated_lang_simplified = translated_lang_pack[0] + '_' + translated_lang_pack[1]
+            
             translated_lang_country = '_'.join(translated_lang.split('_')[:2])
-            languages[translated_lang_simplified] = {
-                'original' : translated_lang_country in original_languages,
-                'progress' : progress
-            }
+            name = get_locale_english_name(*translated_lang_country.split('_'))
+            if name:
+                languages[translated_lang_country] = {
+                    'original' : translated_lang_country in original_languages,
+                    'progress' : progress,
+                    # 'name': translated_lang_simplified,
+                    'name': name,
+                }
+
+        languages_obj = []
+
+        for lang_key, lang_value in languages.iteritems():
+            languages_obj.append({
+                'name': lang_value['name'],
+                'original': lang_value['original'],
+                'progress': lang_value['progress'],
+                'key': lang_key,
+            })
 
         # TODO: add Graasp and so on, plus use the retrieval method (e.g., labs/retrieve.json vs. apps/retrieve.json) to know whether it's one thing or the other
         app_link = repo_app.app_link or ''
@@ -137,6 +158,7 @@ def api_translations():
             'original_languages_simplified' : original_languages_simplified,
             'translated_languages' : translated_languages,
             'languages' : languages,
+            'languages_obj' : languages_obj,
             'source' : repo_app.repository,
             'id' : repo_app.external_id,
             'description': repo_app.description,
@@ -180,7 +202,7 @@ def api_languages_default():
             continue
         list_of_languages.append({
             'name': lang_name,
-            'code': lang_code.split('_')[0]
+            'code': '_'.join(lang_code.split('_')[:2])
         })
     contents = {
         'default': (guess_default_language() or 'en').split('_')[0],

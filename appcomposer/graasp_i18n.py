@@ -2,7 +2,7 @@ import json
 import xml.etree.ElementTree as ET
 from collections import OrderedDict
 
-from flask import Blueprint, render_template, make_response
+from flask import Blueprint, render_template, make_response, current_app
 from appcomposer.translator.utils import get_cached_session, indent
 from appcomposer.utils import report_error
 
@@ -65,7 +65,7 @@ def _parse_contents(contents, dictionary, parent_key = ''):
 def messages_to_xml(messages):
     xml_bundle = ET.Element("messagebundle")
     xml_bundle.attrib.update({
-        'mails' : 'pablo.orduna@deusto.es,graasp@groupes.epfl.ch',
+        'mails' : 'pablo.orduna@deusto.es,{}'.format(','.join(current_app.config.get('GRAASP_ADMINS', []))),
         'automatic' : 'false'
     })
     for key in messages.keys():

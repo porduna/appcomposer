@@ -49,9 +49,9 @@ function AppsController($scope, $resource, $compile, $filter, $log, $timeout, DT
         });
 
     vm.dt.columnDefs = [
-        DTColumnDefBuilder.newColumnDef(0).notSortable().withOption("width", "30%"),
-        DTColumnDefBuilder.newColumnDef(1).notSortable().withOption("width", "40%"),
-        DTColumnDefBuilder.newColumnDef(2).notSortable()
+        DTColumnDefBuilder.newColumnDef(0).notSortable().withOption("width", "20%"),
+        DTColumnDefBuilder.newColumnDef(1).notSortable(),
+        DTColumnDefBuilder.newColumnDef(2).notSortable().withOption("width", "60%")
     ];
 
 

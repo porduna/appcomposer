@@ -163,7 +163,7 @@ function EditMessageController($scope, $log, $resource) {
         $scope.values.saved = undefined;
 
         // Trigger a fake onChange event.
-        onChange($scope.item.format, "suggestionSelected");
+        onChange($scope.item.format, "suggestionSelected", $scope.values.current, true);
 
         $log.debug("A suggestion was chosen.");
 
@@ -225,9 +225,9 @@ function EditMessageController($scope, $log, $resource) {
         return $after;
     }
 
-    function onChange(format, origin, value) {
-        $log.debug("[EditMessageController/onChange]. Called for format: " + format + "; origin: " + origin + "; value: " + value);
-        if (!isSaved()) {
+    function onChange(format, origin, value, force) {
+        $log.debug("[EditMessageController/onChange]. Called for format: " + format + "; origin: " + origin + "; value: " + value + "; value: " + $scope.values.current + "; isSaved: " + isSaved());
+        if (!isSaved() || force === true) {
             // We should query a server-side update.
 
             $scope.status.saving = true;

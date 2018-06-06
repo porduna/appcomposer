@@ -123,19 +123,24 @@
                     <td>
 
                         <!-- Display each badge for each language -->
-                        <a ng-repeat="(langname, lang) in app.languages"
-                           ng-href="#/edit/{{ langname }}_ALL/ALL/{{ app.app_url }}">
+                        <a ng-repeat="lang in app.languages_obj | orderBy:'name'"
+                           ng-href="#/edit/{{ lang.key }}/ALL/{{ app.app_url }}">
 
-                                <span tooltip="{{ getBadgeTitle(langname, lang) }}"
+                                <span tooltip="{{ getBadgeTitle(lang.key, lang) }}"
                                       class="badge ac-lang-badge"
                                       ng-style="{'background-color': getGradientColor(lang.progress)}"
                                       ng-class="{'ac-badge-original': lang.original, 'ac-badge-notoriginal': !lang.original,
                                     'ac-badge-complete': lang.progress == 1}">
 
                                     <span ng-show="lang.original"
-                                          class="fa fa-shield ac-badge-icon-locked"></span> {{ langname }}
+                                          class="fa fa-shield ac-badge-icon-locked"></span> {{ lang.name }} </span>
+                        </a>
 
-                                </span>
+                        <a ng-href="#/app/{{ app.app_url }}">
+
+                                <span tooltip="New language"
+                                      class="badge ac-lang-badge ac-badge-notoriginal ac-badge-complete"
+                                      ng-style="{'background-color': 'white'}"><span class="fa fa-plus"></span> Add language </span>
                         </a>
 
                     </td>

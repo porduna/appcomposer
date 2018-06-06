@@ -81,9 +81,19 @@ def retrieve_mongodb_urls():
     return apps
 
 
-def push(self, translation_url, lang, target):
+def push(self, translation_url, lang, target, recursive = False):
     if not flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
         return
+    
+    previous = []
+
+    if not recursive:
+        if lang == 'zh_CN':
+            for record in push(self, translation_url, 'zh_ALL', target, recursive=True):
+                previous.append(record)
+        elif lang == 'zh_ALL':
+            for record in push(self, translation_url, 'zh_CN', target, recursive=True):
+                previous.append(record)
 
     try:
         logger.info("[PUSH] Pushing to %s@%s" % (lang, translation_url))
@@ -92,7 +102,13 @@ def push(self, translation_url, lang, target):
         with flask_app.app_context():
             translation_bundle = db.session.query(TranslationBundle).filter(TranslationBundle.translation_url_id == TranslationUrl.id, TranslationUrl.url == translation_url, TranslationBundle.language == lang, TranslationBundle.target == target).options(joinedload("translation_url")).first()
             if translation_bundle is None:
-                return
+                if lang == 'zh_CN':
+                    translation_bundle = db.session.query(TranslationBundle).filter(TranslationBundle.translation_url_id == TranslationUrl.id, TranslationUrl.url == translation_url, TranslationBundle.language == 'zh_ALL', TranslationBundle.target == target).options(joinedload("translation_url")).first()
+                elif lang == 'zh_ALL':
+                    translation_bundle = db.session.query(TranslationBundle).filter(TranslationBundle.translation_url_id == TranslationUrl.id, TranslationUrl.url == translation_url, TranslationBundle.language == 'zh_CN', TranslationBundle.target == target).options(joinedload("translation_url")).first()
+
+                if translation_bundle is None:
+                    return
             payload = {}
             max_date = datetime(1970, 1, 1)
             for message in translation_bundle.active_messages:
@@ -123,8 +139,9 @@ def push(self, translation_url, lang, target):
                     print("[PUSH]: Updated application bundle %s" % app_bundle_id)
                 except DuplicateKeyError:
                     print("[PUSH]: Ignoring push for application bundle %s (newer date exists already)" % app_bundle_id)
-
-            return bundle_id, app_bundle_ids
+            
+            previous.append([bundle_id, app_bundle_ids])
+            return previous
     except ServerSelectionTimeoutError as exc:
         logger.warn("[PUSH]: Exception occurred due to server disconnect. NOT RETRYING.", exc_info = True)
         return 'timeout'
@@ -163,18 +180,19 @@ def sync(self, only_recent):
         all_app_ids = []
 
         for translation_bundle in translation_bundles:
-            response = push(self = None, translation_url = translation_bundle['translation_url'], lang = translation_bundle['language'], target = translation_bundle['target'])
-            if response is None:
+            responses = push(self = None, translation_url = translation_bundle['translation_url'], lang = translation_bundle['language'], target = translation_bundle['target'])
+            if responses is None:
                 logger.warn("Pushing translation for %s of %s returned None" % (translation_bundle['translation_url'], translation_bundle['language']))
                 continue
 
-            if response == 'timeout':
+            if responses == 'timeout':
                 logger.warn("Pushing translation for %s of %s returned a timeout error" % (translation_bundle['translation_url'], translation_bundle['language']))
                 break
 
-            translation_url_id, app_ids = response
-            all_translation_url_ids.append(translation_url_id)
-            all_app_ids.extend(app_ids)
+            for response in responses:
+                translation_url_id, app_ids = response
+                all_translation_url_ids.append(translation_url_id)
+                all_app_ids.extend(app_ids)
         
         if not only_recent:
             mongo_bundles.remove({"_id": {"$nin": all_app_ids}, "time": {"$lt": start_time}})

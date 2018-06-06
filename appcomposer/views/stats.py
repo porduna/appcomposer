@@ -233,8 +233,12 @@ def suggestions():
     languages = [
         (code, get_locale_english_name(code, 'ALL'))
         for code in ALL_LANGUAGES
-        if code != 'en'
+        if code != 'en' and '_' not in code
     ]
+    for code in ALL_LANGUAGES:
+        if '_' in code and code[0] != 'en':
+            languages.append((code, get_locale_english_name(code.split('_')[0], code.split('_')[1])))
+
     languages.sort(lambda (c1, n1), (c2, n2): cmp(n1, n2))
     lang_codes = [ code for (code, name) in languages ]
 

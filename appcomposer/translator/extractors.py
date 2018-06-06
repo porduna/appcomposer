@@ -367,6 +367,11 @@ def extract_check_url_metadata(url):
     }
 
 def _check_proxy(url):
+    return {
+        'stored': False,
+        'equals': False,
+    }
+
     # It works but ssl is not working. Time to check whether in phantomjs it's the same thing or not
     cap = webdriver.DesiredCapabilities.PHANTOMJS
     cap["phantomjs.page.settings.resourceTimeout"] = 1000
