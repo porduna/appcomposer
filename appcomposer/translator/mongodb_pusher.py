@@ -84,7 +84,11 @@ def retrieve_mongodb_urls():
 def push(self, translation_url, lang, target, recursive = False):
     if not flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
         return
-    
+
+    if lang.startswith('en_'):
+        # Don't send any English text
+        return
+
     previous = []
 
     if not recursive:
