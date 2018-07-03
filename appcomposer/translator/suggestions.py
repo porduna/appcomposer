@@ -21,6 +21,8 @@ from appcomposer.models import TranslationExternalSuggestion, ActiveTranslationM
 
 from appcomposer.languages import SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES, OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES
 
+from config import DEBUG
+
 logger = get_task_logger(__name__)
 
 class AbstractTranslator(object):
@@ -134,6 +136,9 @@ class MicrosoftTranslator(AbstractTranslator):
         return response.content
 
     def _get_languages(self):
+        if DEBUG:
+            return []
+
         headers = {"Authorization ": 'Bearer ' + self._get_token() }
         url = "https://api.microsofttranslator.com/V2/Http.svc/GetLanguagesForTranslate"
         languages = requests.get(url, headers = headers)
@@ -146,6 +151,9 @@ class MicrosoftTranslator(AbstractTranslator):
         return langs
 
     def _translate_messages(self, messages, language, origin_language):
+        if DEBUG:
+            return []
+
         lang_adaptor = {
             'zh': 'zh-CHS',
             'zh_TW': 'zh-CHT',

@@ -83,7 +83,6 @@ class TranslatorTest(ComposerTest):
                 self.assertNotIn(unexpected_key, results['translation'])
 
     def assertApp1(self):
-        self.assertAppMongoDB("en", "url1", self.build_dict(1, 4, "Message"))
         self.assertAppMongoDB("es", "url1", self.build_dict(1, 4, "Mensaje", "Message"))
 
         # Check API
@@ -104,7 +103,6 @@ class TranslatorTest(ComposerTest):
         })
 
     def assertApp2(self):
-        self.assertAppMongoDB("en", "url2", self.build_dict(2, 4, "NonAutomaticMessage"))
         self.assertAppMongoDB("es", "url2", self.build_dict(2, 4, "NonAutomaticMensaje", "NonAutomaticMessage"))
 
         # Check API
@@ -130,7 +128,6 @@ class TranslatorTest(ComposerTest):
 
         # First we test the first app (tool_, so messages 4, 5 and 6 apply)
 
-        self.assertAppMongoDB("en", "url3", self.build_dict(3, 6, "ToolIdMessage"), 'tool_')
         self.assertAppMongoDB("es", "url3", self.build_dict(3, 6, "ToolIdMensaje", "ToolIdMessage"), 'tool_')
 
         # Check API
@@ -157,7 +154,6 @@ class TranslatorTest(ComposerTest):
         # 
         # Then we test the second one (common_, so messages 1, 2, 5 and 6 apply)
         # 
-        self.assertAppMongoDB("en", "url3", self.build_dict(3, 6, "ToolIdMessage"), 'common_')
         self.assertAppMongoDB("es", "url3", self.build_dict(3, 6, "ToolIdMensaje", "ToolIdMessage"), 'common_')
 
         self.assertApiTranslate('http://url3/common_gadget.xml', lang = 'en', automatic = False, preview = True, expected_messages = {
@@ -187,7 +183,6 @@ class TranslatorTest(ComposerTest):
 
         # First we test the first app (tool_, so messages 4, 5 and 6 apply)
 
-        self.assertAppMongoDB("en", "url3", self.build_dict(3, 6, "ToolIdMessage"), 'tool_')
         self.assertAppMongoDB("es", "url3", self.build_dict(3, 6, "ToolIdMensaje", "ToolIdMessage"), 'tool_')
         self.assertAppMongoDB("fr", "url3", self.build_dict(3, 6, "ToolIdMessage", exceptions = {
             "message1_3": "TESTING_MESSAGE1", # From commons
@@ -217,7 +212,6 @@ class TranslatorTest(ComposerTest):
 
         # 
         # Then we test the second one (common_, so messages 1, 2, 5 and 6 apply)
-        self.assertAppMongoDB("en", "url3", self.build_dict(3, 6, "ToolIdMessage"), 'common_')
         self.assertAppMongoDB("es", "url3", self.build_dict(3, 6, "ToolIdMensaje", "ToolIdMessage"), 'common_')
         self.assertAppMongoDB("fr", "url3", self.build_dict(3, 6, "ToolIdMessage", exceptions = {
             "message1_3": "TESTING_MESSAGE1", # From commons
@@ -247,19 +241,19 @@ class TranslatorTest(ComposerTest):
 
 
     def assertGraaspApp(self):
-        resultEngUrl = mongo_translation_urls.find_one({'_id':'en_ALL_ALL::http://composer.golabz.eu/graasp_i18n/languages/en_ALL.xml'})
-        resultEngApp = mongo_bundles.find_one({'_id':'en_ALL_ALL::http://composer.golabz.eu/graasp_i18n/'})
+        resultEngUrl = mongo_translation_urls.find_one({'_id':'es_ALL_ALL::http://composer.golabz.eu/graasp_i18n/languages/en_ALL.xml'})
+        resultEngApp = mongo_bundles.find_one({'_id':'es_ALL_ALL::http://composer.golabz.eu/graasp_i18n/'})
         self.assertEquals(resultEngUrl['data'], resultEngApp['data'])
         data = json.loads(resultEngUrl['data'])
-        self.assertEquals("Message1_1", data['message1_1'])
-        self.assertEquals("Message2_1", data['message2_1'])
-        self.assertEquals("Message3_1", data['message3_1'])
+        self.assertEquals("Mensaje1_1", data['message1_1'])
+        self.assertEquals("Mensaje2_1", data['message2_1'])
+        self.assertEquals("Mensaje3_1", data['message3_1'])
         self.assertEquals("Message4_1", data['message4_1'])
 
     def assertGraaspAppNotFound(self):
-        resultEngUrl = mongo_translation_urls.find_one({'_id':'en_ALL_ALL::http://composer.golabz.eu/graasp_i18n/languages/en_ALL.xml'})
+        resultEngUrl = mongo_translation_urls.find_one({'_id':'es_ALL_ALL::http://composer.golabz.eu/graasp_i18n/languages/en_ALL.xml'})
         self.assertIsNone(resultEngUrl)
-        resultEngApp = mongo_bundles.find_one({'_id':'en_ALL_ALL::http://composer.golabz.eu/graasp_i18n/'})
+        resultEngApp = mongo_bundles.find_one({'_id':'es_ALL_ALL::http://composer.golabz.eu/graasp_i18n/'})
         self.assertIsNone(resultEngApp)
 
     def assertApps(self, before = True):
