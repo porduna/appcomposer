@@ -21,7 +21,10 @@ from appcomposer.models import TranslationExternalSuggestion, ActiveTranslationM
 
 from appcomposer.languages import SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES, OFFICIAL_EUROPEAN_UNION_LANGUAGES, OTHER_LANGUAGES
 
-from config import DEBUG
+try:
+    from config import DEBUG
+except ImportError:
+    DEBUG = False
 
 logger = get_task_logger(__name__)
 
