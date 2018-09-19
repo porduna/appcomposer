@@ -10,7 +10,7 @@ def get_languages():
     return ['en']
     requests = get_cached_session()
     languages = []
-    for line in requests.get("http://go-lab.gw.utwente.nl/production/commons/languages/list.txt").text.splitlines():
+    for line in requests.get("http://go-lab.gw.utwente.nl/production/common/languages/list.txt").text.splitlines():
         languages.append(line.split("_")[1])
     return languages
 
@@ -60,7 +60,7 @@ def locale(language):
 
     # xml_response = requests.get('http://go-lab.gw.utwente.nl/production/commons/commons_en_ALL.xml')
     try:
-        xml_response = requests.get('http://go-lab.gw.utwente.nl/production/commons/languages/common_{0}_ALL.xml'.format(language), timeout=(10,10))
+        xml_response = requests.get('http://go-lab.gw.utwente.nl/production/common/languages/common_{0}_ALL.xml'.format(language), timeout=(10,10))
     except Exception:
         return "Error requesting external resource", 502
     else:
