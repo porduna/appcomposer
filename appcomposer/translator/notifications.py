@@ -317,6 +317,10 @@ def send_notification(recipients, txt_body, html_body, subject):
     if current_app.config.get('NOTIFICATIONS_DISABLED'):
         return
 
+    for banned_mail in current_app.config.get('BANNED_MAILS', []):
+        if banned_mail in recipients:
+            return
+
     if current_app.config.get('NOTIFICATIONS_ONLY_ADMIN'):
         to_addrs = list(current_app.config.get('ADMINS', []))
     else:
