@@ -301,6 +301,8 @@ def run_update_notifications():
         
 
 def send_update_notification(email, apps):
+    return
+
     txt_msg = u"Hi,\n\nThis is a quick mail to confirm that the AppComposer is aware of changes in the following apps:\n"
     for app in apps:
         txt_msg += u" - {} ( {} )\n".format(app['name'], app['url'])
