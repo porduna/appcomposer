@@ -129,7 +129,7 @@ def api_translations():
             
             translated_lang_country = '_'.join(translated_lang.split('_')[:2])
             name = get_locale_english_name(*translated_lang_country.split('_'))
-            if name:
+            if name and progress:
                 languages[translated_lang_country] = {
                     'original' : translated_lang_country in original_languages,
                     'progress' : progress,
