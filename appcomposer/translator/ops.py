@@ -36,7 +36,7 @@ def get_golab_default_user():
             db.session.rollback()
             raise
         else:
-            db.sesssion.remove()
+            db.session.remove()
             default_user = db.session.query(GoLabOAuthUser).filter_by(email = default_email).first()
     return default_user
 
