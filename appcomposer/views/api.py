@@ -116,6 +116,9 @@ def api_translations():
 
         languages = {}
         for translated_lang, progress in translated_languages.iteritems():
+            if translated_lang.startswith('en_'):
+                continue
+
             translated_lang_pack = translated_lang.split('_')
             if translated_lang_pack[1] == 'ALL':
                 translated_lang_simplified = translated_lang.split('_')[0]
@@ -137,12 +140,13 @@ def api_translations():
         languages_obj = []
 
         for lang_key, lang_value in languages.iteritems():
-            languages_obj.append({
-                'name': lang_value['name'],
-                'original': lang_value['original'],
-                'progress': lang_value['progress'],
-                'key': lang_key,
-            })
+            if not lang_key.startswith('en_'):
+                languages_obj.append({
+                    'name': lang_value['name'],
+                    'original': lang_value['original'],
+                    'progress': lang_value['progress'],
+                    'key': lang_key,
+                })
 
         # TODO: add Graasp and so on, plus use the retrieval method (e.g., labs/retrieve.json vs. apps/retrieve.json) to know whether it's one thing or the other
         app_link = repo_app.app_link or ''
@@ -184,7 +188,8 @@ def api_languages():
     languages = list(obtain_languages().iteritems())
     languages.sort(lambda x1, x2 : cmp(x1[1], x2[1]))
     for lang_code, lang_name in languages:
-        ordered_dict[lang_code] = lang_name
+        if not lang_code.startswith('en_'):
+            ordered_dict[lang_code] = lang_name
     resp = make_response(json.dumps(ordered_dict, indent = 4))
     resp.content_type = 'application/json'
     return resp
