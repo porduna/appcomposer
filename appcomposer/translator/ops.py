@@ -35,6 +35,9 @@ def get_golab_default_user():
         except:
             db.session.rollback()
             raise
+        else:
+            db.sesssion.remove()
+            default_user = db.session.query(GoLabOAuthUser).filter_by(email = default_email).first()
     return default_user
 
 
@@ -261,7 +264,6 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
     #
     # </NO SHIELD NEW BEHAVIOR>
     #
-
     if from_developer and not db_translation_bundle.from_developer:
         # If this is an existing translation and it comes from a developer, establish that it is from developer
         db_translation_bundle.from_developer = from_developer
@@ -500,14 +502,6 @@ def add_full_translation_to_app(user, app_url, translation_url, app_metadata, la
                     else:
                         db_human_key_suggestion = TranslationValueSuggestion(human_key = human_key, language = language, target = target, value = value, number = 1)
                         db.session.add(db_human_key_suggestion)
-        try:
-            db.session.commit()
-        except IntegrityError:
-            # Somebody else concurrently run this
-            db.session.rollback() 
-        except:
-            db.session.rollback()
-            raise
 
     now = datetime.datetime.utcnow()
     existing_keys = [ key for key, in db.session.query(ActiveTranslationMessage.key).filter_by(bundle = db_translation_bundle).all() ]

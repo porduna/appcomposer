@@ -21,6 +21,9 @@ from appcomposer.languages import guess_default_language
 import flask_cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
 
+import redlock
+
+rlock = redlock.Redlock([{"host": "localhost", "port": 6379, "db": 0}, ])
 
 translator_api_blueprint = Blueprint('translator_api', __name__, static_folder = '../../translator3/dist/', static_url_path = '/web')
 
@@ -42,6 +45,34 @@ def api(func):
             print("Unknown error processing request: %s" % e)
             traceback.print_exc()
             return make_response(json.dumps({ 'result' : 'error', 'message' : e.args[0] }), 500)
+    return wrapper
+
+def locking_per_user(func):
+    """Lock per user certain write operations"""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        user = current_golab_user()
+        lock_key = 'locks:{}'.format(user.email)
+        db.session.remove()
+
+        counter = 10
+
+        while True: 
+            # Maximum: lock for 15 seconds
+            lock_key = rlock.lock(lock_key, 15 * 1000)
+            if lock_key:
+                try:
+                    return func(*args, **kwargs)
+                finally:
+                    try:
+                        rlock.unlock(lock_key)
+                    except:
+                        return make_response(json.dumps({ 'result': 'error', 'message': 'Unable to unlock!!!'}), 500)
+            counter = counter - 1
+            if counter < 0:
+                return make_response(json.dumps({ 'result': 'error', 'message': 'Unable to lock'}), 500)
+
     return wrapper
 
 @translator_api_blueprint.route("/user/authenticate")
@@ -257,6 +288,7 @@ def check_modifications(language, target):
 @requires_golab_api_login
 @cross_origin()
 @api
+@locking_per_user
 def bundle_update(language, target):
     app_url = request.values.get('app_url')
     try:
@@ -270,6 +302,7 @@ def bundle_update(language, target):
         return jsonify(**{"result": "error"})
 
     user = current_golab_user()
+
     translation_url, original_messages, metadata = extract_local_translations_url(app_url, force_local_cache = True)
     translated_messages = { key : value }
 

@@ -27,3 +27,4 @@ goslate==1.5.1
 redis==2.10.5
 coverage==4.0.2
 pydeepl==0.8
+redlock-py==1.0.8
