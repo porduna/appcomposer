@@ -281,7 +281,7 @@ def translation_upload():
         if not errors:
             language = form.language.data
             target = form.target.data
-            add_full_translation_to_app(current_golab_user(), app_url, translation_url, metadata, language, target, translated_messages, original_messages, from_developer = False)
+            add_full_translation_to_app(current_golab_user().email, app_url, translation_url, metadata, language, target, translated_messages, original_messages, from_developer = False)
             from appcomposer.translator.tasks import synchronize_apps_cache_wrapper
             synchronize_apps_cache_wrapper.delay("upload")
             flash("Contents successfully added")

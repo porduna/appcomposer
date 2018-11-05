@@ -1,12 +1,15 @@
 import os
 import sys
 import optparse
+import redlock
 
 registry = []
 
 from flask_redis import FlaskRedis
 
 redis_store = FlaskRedis()
+
+rlock = redlock.Redlock([{"host": "localhost", "port": 6379, "db": 0}, ])
 
 from .application import app
 from .db import db, upgrader

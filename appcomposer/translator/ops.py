@@ -4,13 +4,15 @@ import urlparse
 import hashlib
 import datetime
 import traceback
+
+from functools import wraps
 from collections import defaultdict
 
 from sqlalchemy import func, or_, and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload_all, joinedload
 
-from appcomposer import db
+from appcomposer import db, rlock
 from appcomposer.application import app
 from appcomposer.languages import obtain_languages, obtain_groups
 from appcomposer.translator.suggestions import translate_texts
@@ -196,7 +198,36 @@ def get_bundles_by_key_namespaces(pairs):
                 })
     return bundles
 
-def add_full_translation_to_app(user, app_url, translation_url, app_metadata, language, target, translated_messages, original_messages, from_developer):
+def locking(func):
+    """Lock certain complex write operations"""
+
+    @wraps(func)
+    def wrapper(*args, **kwargs):
+        lock_key = 'locks:{}'.format(func.__name__)
+        db.session.remove()
+
+        counter = 10
+
+        while True: 
+            # Maximum: lock for 15 seconds
+            lock_key = rlock.lock(lock_key, 15 * 1000)
+            if lock_key:
+                try:
+                    return func(*args, **kwargs)
+                finally:
+                    try:
+                        rlock.unlock(lock_key)
+                    except:
+                        raise Exception("Unable to lock")
+            counter = counter - 1
+            if counter < 0:
+                raise Exception("Unable to lock")
+
+    return wrapper
+
+
+def add_full_translation_to_app(user_email, app_url, translation_url, app_metadata, language, target, translated_messages, original_messages, from_developer):
+    user = db.session.query(GoLabOAuthUser).filter_by(email=user_email).first()
     db_translation_bundle = _get_or_create_bundle(app_url, translation_url, app_metadata, language, target, from_developer)
     # 
     # <NO SHIELD NEW BEHAVIOR>

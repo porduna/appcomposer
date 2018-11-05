@@ -7,6 +7,7 @@ from collections import OrderedDict
 from flask import Blueprint, make_response, request, url_for, jsonify, current_app
 from flask_cors import cross_origin
 
+from appcomposer import rlock
 from appcomposer.db import db
 from appcomposer.models import RepositoryApp
 from appcomposer.login import requires_golab_api_login, current_golab_user
@@ -20,10 +21,6 @@ from appcomposer.languages import guess_default_language
 
 import flask_cors.core as cors_core
 cors_core.debugLog = lambda *args, **kwargs : None
-
-import redlock
-
-rlock = redlock.Redlock([{"host": "localhost", "port": 6379, "db": 0}, ])
 
 translator_api_blueprint = Blueprint('translator_api', __name__, static_folder = '../../translator3/dist/', static_url_path = '/web')
 
@@ -48,6 +45,7 @@ def api(func):
     return wrapper
 
 def locking_per_user(func):
+    # TODO: not used
     """Lock per user certain write operations"""
 
     @wraps(func)
@@ -288,7 +286,7 @@ def check_modifications(language, target):
 @requires_golab_api_login
 @cross_origin()
 @api
-@locking_per_user
+# @locking_per_user
 def bundle_update(language, target):
     app_url = request.values.get('app_url')
     try:
@@ -306,7 +304,7 @@ def bundle_update(language, target):
     translation_url, original_messages, metadata = extract_local_translations_url(app_url, force_local_cache = True)
     translated_messages = { key : value }
 
-    add_full_translation_to_app(user, app_url, translation_url, metadata, language, target, translated_messages, original_messages, from_developer = False)
+    add_full_translation_to_app(user.email, app_url, translation_url, metadata, language, target, translated_messages, original_messages, from_developer = False)
     from appcomposer.translator.tasks import task_synchronize_single_app
     task_synchronize_single_app.delay("update", app_url)
 

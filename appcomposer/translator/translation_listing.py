@@ -77,7 +77,7 @@ def _add_or_update_app(app_url, metadata_information, repo_app_id, force_reload)
     original_messages = metadata_information['default_translations']
     default_metadata = metadata_information['default_metadata']
     for language, translated_messages in metadata_information['original_translations'].iteritems():
-        add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url, 
+        add_full_translation_to_app(user_email = default_user.email, app_url = app_url, translation_url = translation_url, 
                             app_metadata = default_metadata,
                             language = language, target = u'ALL', translated_messages = translated_messages, 
                             original_messages = original_messages, from_developer = True)
@@ -102,7 +102,7 @@ def _add_or_update_app(app_url, metadata_information, repo_app_id, force_reload)
                 continue
 
             processed_languages.append((cur_language, cur_target))
-            add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url,
+            add_full_translation_to_app(user_email = default_user.email, app_url = app_url, translation_url = translation_url,
                             app_metadata = default_metadata,
                             language = cur_language, target = cur_target, translated_messages = {},
                             original_messages = original_messages, from_developer = False)
@@ -123,7 +123,7 @@ def _add_or_update_app(app_url, metadata_information, repo_app_id, force_reload)
                 # Already processed
                 continue
 
-            add_full_translation_to_app(user = default_user, app_url = app_url, translation_url = translation_url, 
+            add_full_translation_to_app(user_email = default_user.email, app_url = app_url, translation_url = translation_url, 
                         app_metadata = default_metadata,
                         language = translation_bundle.language, target = translation_bundle.target, translated_messages = None,
                         original_messages = original_messages, from_developer = False)
