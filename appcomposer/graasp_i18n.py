@@ -16,7 +16,7 @@ def get_languages():
 class TimeoutError(Exception):
     pass
 
-def get_contents(lang):
+def get_contents(lang, trials=2):
     if lang == 'en':
         resource_id = '560410f1f0e1b09f6c8117ec'
         requests = get_cached_session()
@@ -31,7 +31,9 @@ def get_contents(lang):
             return json.JSONDecoder(object_pairs_hook=OrderedDict).decode(r.text)
         except ValueError as ve:
             if len(r.text) == 0:
-                raise ValueError("{}: {} returned empty result!".format(ve, request_url))
+                if trials == 0:
+                    raise ValueError("{}: {} returned empty result!".format(ve, request_url))
+                return get_contents(lang, trials-1)
                 
             if len(r.text) >= 20:
                 response = '{!r}...'.format(r.text[:20])
