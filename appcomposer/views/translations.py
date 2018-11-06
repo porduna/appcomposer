@@ -52,6 +52,10 @@ def get_translations_by_list(lang, url):
 
     return jsonify(messages)
 
-@translations_blueprint_v1.route('/test.html')
-def test_html():
-    return render_template('test-translations-v1.html')
+@translations_blueprint_v1.route('/tests/test1.html')
+def test1_html():
+    return render_template('test-translations-v1-1.html')
+
+@translations_blueprint_v1.route('/tests/test2.html')
+def test2_html():
+    return render_template('test-translations-v1-2.html')

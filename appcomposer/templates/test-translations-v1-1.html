@@ -1,0 +1,43 @@
+<html>
+<head>
+    <meta name="translations" lang="en" value="locales/translations-commons.json">
+    <meta name="translations" lang="en" value="locales/translations-myapp.json">
+    <meta name="translations" lang="en" value="http://go-lab.gw.utwente.nl/production/gravityDrop/build/languages/gravityDrop_en_ALL.xml">
+    <meta name="translations" lang="es" value="locales/translations-commons_es.json">
+    <meta name="translations" lang="es" value="locales/translations-myapp_es.json">
+</head>
+<body>
+
+    <p nextlab-lang="collaboration.start.tooltip"></p>
+
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+    <script src="{{ url_for('static', filename='js/translations-jquery-1.0.js') }}"></script>
+    <script>
+        var prefs = new nextlab.i18n({ 
+            debug: true,
+            endpoint: 'http://localhost:5000/translations/v1',
+            language: 'es'
+        });
+        prefs.ready(function() {
+            console.log(prefs.getMessage('action::choose_thumbnail'));
+        });
+
+    </script>
+
+    <div id='holder'>
+    </div>
+
+    <button>Create</button>
+    <script>
+        var btn = document.getElementsByTagName('button')[0];
+        btn.onclick = function () {
+            var holder = document.getElementById('holder');
+            var newParagraph = document.createElement('p');
+            newParagraph.setAttribute('style', 'font-weight: bold');
+            newParagraph.setAttribute('nextlab-lang', 'collaboration.start.tooltip');
+            holder.appendChild(newParagraph);
+        };
+    </script>
+
+</body>
+</html>

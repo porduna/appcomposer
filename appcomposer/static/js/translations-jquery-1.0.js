@@ -1,11 +1,3 @@
-if (typeof jQuery == 'undefined') {
-    console.log('jQuery not found before NextLab i18n');
-    var script = document.createElement('script');
-    script.type = "text/javascript";
-    script.src = "https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js";
-    document.getElementsByTagName('head')[0].appendChild(script);
-}
-
 if (window.nextlab === undefined) {
     window.nextlab = {};
 }
@@ -41,6 +33,8 @@ nextlab._relative2absolute = function(url, base_url) {
   return resolved_url;
 }
 
+nextlab.i18n_instance = null;
+
 nextlab.i18n = function(options) {
     // options:
     //  - endpoint (defaults to https://composer.golabz.eu/)
@@ -49,6 +43,11 @@ nextlab.i18n = function(options) {
     //  - debug (defaults to false)
 
     var self = this;
+    nextlab.i18n_instance = this;
+
+    if (options === null || options === undefined)
+        options = {};
+
     if (options.debug === true) {
         self._debug = true;
     } else {
@@ -58,6 +57,11 @@ nextlab.i18n = function(options) {
         self.endpoint = options.endpoint;
     } else {
         self.endpoint = 'https://composer.golabz.eu/translations/v1';
+    }
+    if (options.avoidMutation === true) {
+        self._avoidMutation = true; 
+    } else {
+        self._avoidMutation = false;
     }
 
     function getLanguage() {
@@ -115,6 +119,32 @@ nextlab.i18n = function(options) {
 
     this._ready = $.Deferred();
 
+    function startIteratingElements() {
+        function translateElement(pos, element) {
+            var $element = $(element);
+            var message = $element.attr('nextlab-lang');
+            if (message !== undefined && message !== null) {
+                var translation = nextlab.i18n_instance.getMessage(message);
+                $element.html(translation);
+            }
+        };
+
+        $("*").each(translateElement);
+
+        if (!self._avoidMutation && window.MutationObserver) {
+            function mutationCallback (mutationsList, observer) {
+                for(var mutation of mutationsList) {
+                    if (typeof mutation.addedNodes == "object") {
+                        $(mutation.addedNodes).each(translateElement)
+                    }
+                }
+            }
+
+            var observer = new MutationObserver(mutationCallback);
+            observer.observe(document.getElementsByTagName('body')[0], {attributes: false, childList: true, characterData: false, subtree:true});
+        }
+    }
+
     function checkPending() {
         var anyPendingHolder = {
             anyPending: false
@@ -130,8 +160,12 @@ nextlab.i18n = function(options) {
             return;
 
         // Resolve
-        console.log('ready!');
+        if (self._debug)
+            console.log('AppComposer ready');
+
         self._ready.resolve();
+
+        startIteratingElements();
     }
 
     $("meta[name='translations']").each(function(position, metaObject) {
@@ -227,4 +261,30 @@ nextlab.i18n = function(options) {
         return null;
     }
 }
+
+nextlab._checkAutoLoad = function () {
+    $(document).ready(function () {
+        if (nextlab.i18n_instance !== null)
+            return;
+
+        var autoload = $("meta[name='nextlab-i18n-autoload'")[0];
+        if (autoload !== undefined && $(autoload).attr('value') === 'true') {
+            var new_instance = new nextlab.i18n();
+        }
+    });
+}
+
+if (typeof jQuery == 'undefined') {
+    console.log('jQuery not found before NextLab i18n');
+    var script = document.createElement('script');
+    script.type = "text/javascript";
+    script.src = "https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js";
+    script.onload = nextlab._checkAutoLoad;
+    document.getElementsByTagName('head')[0].appendChild(script);
+} else {
+    $(document).ready(function() {
+        nextlab._checkAutoLoad();
+    });
+}
+
 
