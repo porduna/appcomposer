@@ -134,6 +134,9 @@ app.register_blueprint(translator_blueprint, url_prefix='/translator')
 from .views.api import translator_api_blueprint
 app.register_blueprint(translator_api_blueprint, url_prefix='/translator/api')
 
+from .views.translations import translations_blueprint_v1
+app.register_blueprint(translations_blueprint_v1, url_prefix='/translations/v1')
+
 from .views.stats import translator_stats_blueprint
 app.register_blueprint(translator_stats_blueprint, url_prefix='/translator/stats')
 
