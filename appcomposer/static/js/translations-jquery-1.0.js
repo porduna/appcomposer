@@ -211,14 +211,29 @@ nextlab.i18n = function(options) {
         };
         self._allMessages.push(currentRecord);
 
-        $.get(fullUrl).done(function(messages) {
-            if (messages !== undefined && messages.messages !== undefined) {
-                currentRecord.messages = messages.messages;
-                $(messages.messages).each(function (pos, message) {
+        $.get(fullUrl).done(function(messages, textStatus, jqXHR) {
+
+            if (jqXHR.responseXML) {
+                currentRecord.messages = {};
+
+                $(messages).find('msg').each(function (pos, message) {
+                    var key = $(message).attr('name');
+                    var value = $(message).html();
+                    currentRecord.messages[key] = value;
                     var currentStore = self._mergedMessages[currentRecord.lang];
-                    if (message.key !== undefined) 
-                        currentStore[message.key] = message.value;
+                    currentStore[key] = value;
                 });
+            }
+
+            if (jqXHR.responseJSON) {
+                if (messages !== undefined && messages.messages !== undefined) {
+                    currentRecord.messages = messages.messages;
+                    $(messages.messages).each(function (pos, message) {
+                        var currentStore = self._mergedMessages[currentRecord.lang];
+                        if (message.key !== undefined) 
+                            currentStore[message.key] = message.value;
+                    });
+                }
             }
         }).always(function () {
             currentRecord.pendingMessages = false;
