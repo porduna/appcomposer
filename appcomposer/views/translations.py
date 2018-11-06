@@ -2,7 +2,7 @@ import json
 from flask import Blueprint, jsonify, render_template
 
 from appcomposer.db import db
-from appcomposer.models import TranslationUrl, TranslatedApp
+from appcomposer.models import TranslationUrl, TranslatedApp, TranslationBundle, ActiveTranslationMessage
 from appcomposer.translator.mongodb_pusher import retrieve_mongodb_app, retrieve_mongodb_translation_url
     
 translations_blueprint_v1 = Blueprint('translations', __name__)
@@ -40,7 +40,7 @@ def _get_data(lang, url):
     for message in db.session.query(ActiveTranslationMessage).filter_by(bundle=bundle).all():
         data[message.key] = message.value
     
-    return data
+    return json.dumps(data)
 
     # This is using MongoDB, which is slower in production
     if '_' not in lang:
