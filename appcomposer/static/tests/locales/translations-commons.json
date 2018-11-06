@@ -1,0 +1,17 @@
+{
+    "@metadata": {
+        "mails": "pablo.orduna@deusto.es",
+        "automatic": false
+    },
+    "messages": [
+        {
+            "key": "key1",
+            "value": "Message 1"
+        },
+        {
+            "key": "key2",
+            "value": "Message 2",
+            "toolId": "myTool"
+        }
+    ]
+}

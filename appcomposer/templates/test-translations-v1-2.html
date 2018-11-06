@@ -1,11 +1,10 @@
 <html>
 <head>
-    <meta name="translations" lang="en" value="locales/translations-commons.json">
-    <meta name="translations" lang="en" value="locales/translations-myapp.json">
+    <meta name="translations" value="{{ url_for('static', filename='tests/locales/translations-commons.json') }}">
+    <meta name="translations" lang="en" value="{{ url_for('static', filename='tests/locales/translations-myapp.json') }}">
     <meta name="translations" lang="en" value="http://go-lab.gw.utwente.nl/production/gravityDrop/build/languages/gravityDrop_en_ALL.xml">
-    <meta name="translations" lang="es" value="locales/translations-commons_es.json">
-    <meta name="translations" lang="es" value="locales/translations-myapp_es.json">
-
+    <meta name="translations" lang="es" value="{{ url_for('static', filename='tests/locales/translations-commons_es.json') }}">
+    <meta name="translations" lang="es" value="{{ url_for('static', filename='tests/locales/translations-myapp_es.json') }}">
     <meta name='nextlab-i18n-autoload' value='true'>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
@@ -13,6 +12,9 @@
 </head>
 <body>
 
+    <p nextlab-lang="key1"></p>
+    <p nextlab-lang="key2"></p>
+    <p nextlab-lang="key3"></p>
     <p nextlab-lang="collaboration.start.tooltip"></p>
     <div nextlab-lang="help.helpDialog.content.gravityDrop"></div>
 
