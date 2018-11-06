@@ -1,9 +1,14 @@
 import json
-from flask import Blueprint, jsonify
+from flask import Blueprint, jsonify, render_template
 
 from appcomposer.translator.mongodb_pusher import retrieve_mongodb_app, retrieve_mongodb_translation_url
     
 translations_blueprint_v1 = Blueprint('translations', __name__)
+
+@translations_blueprint_v1.after_request
+def add_cors(response):
+    response.headers['Access-Control-Allow-Origin'] = '*'
+    return response
 
 def _get_data(lang, url):
     if '_' not in lang:
@@ -46,3 +51,7 @@ def get_translations_by_list(lang, url):
         } for key, value in json.loads(data).items() ]
 
     return jsonify(messages)
+
+@translations_blueprint_v1.route('/test.html')
+def test_html():
+    return render_template('test-translations-v1.html')
