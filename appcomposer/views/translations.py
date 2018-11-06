@@ -1,6 +1,8 @@
 import json
 from flask import Blueprint, jsonify, render_template
 
+from appcomposer.db import db
+from appcomposer.models import TranslationUrl, TranslatedApp
 from appcomposer.translator.mongodb_pusher import retrieve_mongodb_app, retrieve_mongodb_translation_url
     
 translations_blueprint_v1 = Blueprint('translations', __name__)
@@ -11,6 +13,36 @@ def add_cors(response):
     return response
 
 def _get_data(lang, url):
+    translation_url = db.session.query(TranslationUrl).filter_by(url=url).first()
+    if translation_url is None:
+        translated_app = db.session.query(TranslatedApp).filter_by(url=url).first()
+        if translated_app is None:
+            return None
+        
+        translation_url = translated_app.translation_url
+        if translation_url is None:
+            return None
+
+    if '_' in lang:
+        generic = lang.split('_')[0] + '_ALL'
+        specific = lang
+    else:
+        generic = specific = lang + '_ALL'
+
+    bundle = db.session.query(TranslationBundle).filter_by(translation_url=translation_url, target='ALL', language=specific).first()
+    if bundle is None and generic != specific:
+        bundle = db.session.query(TranslationBundle).filter_by(translation_url=translation_url, target='ALL', language=generic).first()
+
+    if bundle is None:
+        return None
+
+    data = {}
+    for message in db.session.query(ActiveTranslationMessage).filter_by(bundle=bundle).all():
+        data[message.key] = message.value
+    
+    return data
+
+    # This is using MongoDB, which is slower in production
     if '_' not in lang:
         lang = '{}_ALL'.format(lang)
     data = retrieve_mongodb_app(lang, target='ALL', url=url)
