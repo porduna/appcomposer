@@ -225,7 +225,7 @@ def locking(func):
 
     return wrapper
 
-
+@locking
 def add_full_translation_to_app(user_email, app_url, translation_url, app_metadata, language, target, translated_messages, original_messages, from_developer):
     user = db.session.query(GoLabOAuthUser).filter_by(email=user_email).first()
     db_translation_bundle = _get_or_create_bundle(app_url, translation_url, app_metadata, language, target, from_developer)
