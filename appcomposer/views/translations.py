@@ -28,7 +28,7 @@ def _get_list(url):
     languages = []
     for bundle in bundles:
         languages.append(bundle.language)
-    return jsonify(languages=languages)
+    return languages
 
 def _get_data(lang, url):
     translation_url = db.session.query(TranslationUrl).filter_by(url=url).first()
@@ -75,7 +75,8 @@ def _get_data(lang, url):
 
 @translations_blueprint_v1.route('/languages/<path:url>')
 def get_language_list(url):
-    return _get_list(url)
+    languages = _get_list(url)
+    return jsonify(languages=languages), 404
 
 @translations_blueprint_v1.route('/<lang>/<path:url>')
 def get_translations(lang, url):
