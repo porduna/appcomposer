@@ -12,6 +12,24 @@ def add_cors(response):
     response.headers['Access-Control-Allow-Origin'] = '*'
     return response
 
+def _get_list(url):
+    translation_url = db.session.query(TranslationUrl).filter_by(url=url).first()
+    if translation_url is None:
+        translated_app = db.session.query(TranslatedApp).filter_by(url=url).first()
+        if translated_app is None:
+            return None
+        
+        translation_url = translated_app.translation_url
+        if translation_url is None:
+            return None
+
+    bundles = db.session.query(TranslationBundle).filter_by(translation_url=translation_url, target='ALL').first()
+
+    languages = []
+    for bundle in bundles:
+        languages.append(bundle.language)
+    return jsonify(languages=languages)
+
 def _get_data(lang, url):
     translation_url = db.session.query(TranslationUrl).filter_by(url=url).first()
     if translation_url is None:
@@ -54,6 +72,10 @@ def _get_data(lang, url):
             return _get_data(new_lang, url)
 
     return data
+
+@translations_blueprint_v1.route('/languages/<path:url>')
+def get_language_list(url):
+    return _get_list(url)
 
 @translations_blueprint_v1.route('/<lang>/<path:url>')
 def get_translations(lang, url):
