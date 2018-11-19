@@ -286,7 +286,7 @@ golab.i18n = function(options) {
 
     this.getLanguages = function() {    
         var response = $.Deferred();
-        $.get(fullUrl).done(function(contents) {
+        $.get(self._fullUrl).done(function(contents) {
             response.resolve(contents.languages);
         });
         return response;
