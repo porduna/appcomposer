@@ -23,7 +23,7 @@ def _get_list(url):
         if translation_url is None:
             return None
 
-    bundles = db.session.query(TranslationBundle).filter_by(translation_url=translation_url, target='ALL').first()
+    bundles = db.session.query(TranslationBundle).filter_by(translation_url=translation_url, target='ALL').all()
 
     languages = []
     for bundle in bundles:
