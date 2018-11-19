@@ -1,10 +1,10 @@
-if (window.nextlab === undefined) {
-    window.nextlab = {};
+if (window.golab === undefined) {
+    window.golab = {};
 }
 
-nextlab = window.nextlab;
+golab = window.golab;
 
-nextlab.getParameterByName = function(name, url) {
+golab.getParameterByName = function(name, url) {
     if (!url) url = window.location.href;
     name = name.replace(/[\[\]]/g, '\\$&');
     var regex = new RegExp('[?&]' + name + '(=([^&#]*)|&|#|$)');
@@ -14,7 +14,7 @@ nextlab.getParameterByName = function(name, url) {
     return decodeURIComponent(results[2].replace(/\+/g, ' '));
 }
 
-nextlab._relative2absolute = function(url, base_url) {
+golab._relative2absolute = function(url, base_url) {
   // https://stackoverflow.com/questions/470832/getting-an-absolute-url-from-a-relative-one-ie6-issue
   var doc      = document
     , old_base = doc.getElementsByTagName('base')[0]
@@ -33,9 +33,9 @@ nextlab._relative2absolute = function(url, base_url) {
   return resolved_url;
 }
 
-nextlab.i18n_instance = null;
+golab.i18n_instance = null;
 
-nextlab.i18n = function(options) {
+golab.i18n = function(options) {
     // options:
     //  - endpoint (defaults to https://composer.golabz.eu/)
     //  - language
@@ -43,7 +43,7 @@ nextlab.i18n = function(options) {
     //  - debug (defaults to false)
 
     var self = this;
-    nextlab.i18n_instance = this;
+    golab.i18n_instance = this;
 
     if (options === null || options === undefined)
         options = {};
@@ -64,11 +64,22 @@ nextlab.i18n = function(options) {
         self._avoidMutation = false;
     }
 
+    if (options.standalone === true) {
+        self.standalone = true;
+    } else {
+        var standaloneParameter = golab.getParameterByName("standalone");
+        if (standaloneParameter === "true" || standaloneParameter === "1") {
+            self.standalone = true;
+        } else {
+            self.standalone = false;
+        }
+    }
+
     function getLanguage() {
         if (options.language !== undefined && options.language !== null)
             return options.language.replace('-', '_');
     
-        var langParam = nextlab.getParameterByName('lang');
+        var langParam = golab.getParameterByName('lang');
         if (langParam != null && langParam.length > 0)
             return langParam.replace('-','_');
         
@@ -122,9 +133,9 @@ nextlab.i18n = function(options) {
     function startIteratingElements() {
         function translateElement(pos, element) {
             var $element = $(element);
-            var message = $element.attr('nextlab-lang');
+            var message = $element.attr('golab-lang');
             if (message !== undefined && message !== null) {
-                var translation = nextlab.i18n_instance.getMessage(message);
+                var translation = golab.i18n_instance.getMessage(message);
                 $element.html(translation);
             }
         };
@@ -200,7 +211,7 @@ nextlab.i18n = function(options) {
             console.log('meta', metaObject, 'does not have value');
             return;
         }
-        var fullUrl = nextlab._relative2absolute(url);
+        var fullUrl = golab._relative2absolute(url);
         var currentRecord = {
             url: fullUrl,
             lang: currentLanguage,
@@ -277,28 +288,28 @@ nextlab.i18n = function(options) {
     }
 }
 
-nextlab._checkAutoLoad = function () {
+golab._checkAutoLoad = function () {
     $(document).ready(function () {
-        if (nextlab.i18n_instance !== null)
+        if (golab.i18n_instance !== null)
             return;
 
-        var autoload = $("meta[name='nextlab-i18n-autoload'")[0];
+        var autoload = $("meta[name='golab-i18n-autoload'")[0];
         if (autoload !== undefined && $(autoload).attr('value') === 'true') {
-            var new_instance = new nextlab.i18n();
+            var new_instance = new golab.i18n();
         }
     });
 }
 
 if (typeof jQuery == 'undefined') {
-    console.log('jQuery not found before NextLab i18n');
+    console.log('jQuery not found before GoLab i18n');
     var script = document.createElement('script');
     script.type = "text/javascript";
     script.src = "https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js";
-    script.onload = nextlab._checkAutoLoad;
+    script.onload = golab._checkAutoLoad;
     document.getElementsByTagName('head')[0].appendChild(script);
 } else {
     $(document).ready(function() {
-        nextlab._checkAutoLoad();
+        golab._checkAutoLoad();
     });
 }
 
