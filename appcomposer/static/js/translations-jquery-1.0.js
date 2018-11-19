@@ -89,6 +89,8 @@ golab.i18n = function(options) {
         return 'en';
     }
 
+    this._fullUrl = null;
+
     var defaultLanguage = 'en_ALL';
     this.language = getLanguage();
 
@@ -101,6 +103,8 @@ golab.i18n = function(options) {
         this.language = this.language + '_ALL';
     }
     this.languageGeneric = this.language.split('_')[0] + '_ALL';
+
+    this._supportedLanguages = [];
 
     // Only include the messages in those languages that are either English (default)
     // or the current language
@@ -212,6 +216,9 @@ golab.i18n = function(options) {
             return;
         }
         var fullUrl = golab._relative2absolute(url);
+        if (lang === 'en_ALL' && self._fullUrl == null) {
+            self._fullUrl = fullUrl;
+        }
         var currentRecord = {
             url: fullUrl,
             lang: currentLanguage,
@@ -275,6 +282,14 @@ golab.i18n = function(options) {
 
     this.ready = function(handler) {
         self._ready.done(handler);
+    }
+
+    this.getLanguages = function() {    
+        var response = $.Deferred();
+        $.get(fullUrl).done(function(contents) {
+            response.done(contents.languages);
+        }
+        return response;
     }
 
     this.getMessage = function(key) {
