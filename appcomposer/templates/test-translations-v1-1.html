@@ -1,6 +1,8 @@
 <html>
 <head>
+    
     <meta name="translations" value="{{ url_for('static', filename='tests/locales/translations-commons.json') }}">
+    <meta name="translations" value="http://localhost:5000/static/calculator_en_ALL.xml_">
     <meta name="translations" lang="en" value="{{ url_for('static', filename='tests/locales/translations-myapp.json') }}">
     <meta name="translations" lang="en" value="http://go-lab.gw.utwente.nl/production/gravityDrop/build/languages/gravityDrop_en_ALL.xml">
     <meta name="translations" lang="es" value="{{ url_for('static', filename='tests/locales/translations-commons_es.json') }}">
@@ -8,15 +10,15 @@
 </head>
 <body>
 
-    <p nextlab-lang="key1"></p>
-    <p nextlab-lang="key2"></p>
-    <p nextlab-lang="key3"></p>
-    <p nextlab-lang="collaboration.start.tooltip"></p>
+    <p golab-lang="key1"></p>
+    <p golab-lang="key2"></p>
+    <p golab-lang="key3"></p>
+    <p golab-lang="collaboration.start.tooltip"></p>
 
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
     <script src="{{ url_for('static', filename='js/translations-jquery-1.0.js') }}"></script>
     <script>
-        var prefs = new nextlab.i18n({ 
+        var prefs = new golab.i18n({ 
             debug: true,
             endpoint: 'http://localhost:5000/translations/v1',
             language: 'es'
@@ -37,7 +39,7 @@
             var holder = document.getElementById('holder');
             var newParagraph = document.createElement('p');
             newParagraph.setAttribute('style', 'font-weight: bold');
-            newParagraph.setAttribute('nextlab-lang', 'collaboration.start.tooltip');
+            newParagraph.setAttribute('golab-lang', 'collaboration.start.tooltip');
             holder.appendChild(newParagraph);
         };
     </script>

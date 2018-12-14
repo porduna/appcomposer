@@ -137,11 +137,18 @@ def _add_or_update_app(app_url, metadata_information, repo_app_id, force_reload)
     repo_app.last_processed_downloaded_hash = initial_downloaded_hash
     repo_app.last_processed_time = datetime.datetime.utcnow()
 
+    print(translation_url)
+    print(translation_percent)
+    print("BEFORE COMMIT")
     try:
         db.session.commit()
     except:
+        print("BEFORE ROLLBACK")
+        import traceback
+        traceback.print_exc()
         db.session.rollback()
         raise
+    print("SEEMS IT WORKED")
 
     # In the meanwhile, maybe there were changes. Just make 100% sure that the hash is right
     update_content_hash(app_url)

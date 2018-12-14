@@ -12,6 +12,10 @@
             "key": "key2",
             "value": "Message 2",
             "toolId": "myTool"
+        },
+        {
+            "key": "pablo",
+            "value": "PAUL"
         }
     ]
 }

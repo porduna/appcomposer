@@ -241,9 +241,7 @@ golab.i18n = function(options) {
                     var currentStore = self._mergedMessages[currentRecord.lang];
                     currentStore[key] = value;
                 });
-            }
-
-            if (jqXHR.responseJSON) {
+            } else if (jqXHR.responseJSON) {
                 if (messages !== undefined && messages.messages !== undefined) {
                     currentRecord.messages = messages.messages;
                     $(messages.messages).each(function (pos, message) {
@@ -252,6 +250,8 @@ golab.i18n = function(options) {
                             currentStore[message.key] = message.value;
                     });
                 }
+            } else {
+                console.log(fullUrl, "is not XML or JSON");
             }
         }).always(function () {
             currentRecord.pendingMessages = false;
@@ -284,7 +284,7 @@ golab.i18n = function(options) {
         self._ready.done(handler);
     }
 
-    this.getLanguages = function() {    
+    this.getLanguages = function() {
         var response = $.Deferred();
         $.get(self._fullUrl).done(function(contents) {
             response.resolve(contents.languages);
