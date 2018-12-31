@@ -51,7 +51,7 @@ def synchronize_single_app_no_cached(source, single_app_url):
 def _sync_translations(apps_to_check, force_reload):
     if not apps_to_check:
         return
-    
+
     for app_metadata in apps_to_check:
 
         # Make sure each request starts with a fresh database session
@@ -66,93 +66,94 @@ def _sync_translations(apps_to_check, force_reload):
 def _add_or_update_app(app_url, metadata_information, repo_app_id, force_reload):
     if DEBUG:
         logger.debug("Starting %s" % app_url)
+    print("Starting %s" % app_url)
 
-    repo_app = db.session.query(RepositoryApp).filter_by(id=repo_app_id).one()
-    initial_contents_hash = repo_app.contents_hash
-    initial_downloaded_hash = repo_app.downloaded_hash
-
-    default_user = get_golab_default_user()
-
-    translation_url = metadata_information.get('default_translation_url')
-    original_messages = metadata_information['default_translations']
-    default_metadata = metadata_information['default_metadata']
-    for language, translated_messages in metadata_information['original_translations'].iteritems():
-        add_full_translation_to_app(user_email = default_user.email, app_url = app_url, translation_url = translation_url, 
-                            app_metadata = default_metadata,
-                            language = language, target = u'ALL', translated_messages = translated_messages, 
-                            original_messages = original_messages, from_developer = True)
-
-    namespaces = set([ msg['namespace'] for msg in original_messages.values() if msg['namespace'] ])
-    processed_languages = []
-    if namespaces:
-        pairs = []
-        for key, msg in original_messages.iteritems():
-            if msg['namespace']:
-                pairs.append({
-                    'key' : key,
-                    'namespace' : msg['namespace'],
-                })
-    
-        for language_pack in get_bundles_by_key_namespaces(pairs):
-            cur_language = language_pack['language']
-            cur_target = language_pack['target']
-
-            if cur_target == 'ALL' and cur_language in metadata_information['original_translations']:
-                # Already processed
-                continue
-
-            processed_languages.append((cur_language, cur_target))
-            add_full_translation_to_app(user_email = default_user.email, app_url = app_url, translation_url = translation_url,
-                            app_metadata = default_metadata,
-                            language = cur_language, target = cur_target, translated_messages = {},
-                            original_messages = original_messages, from_developer = False)
-
-    db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
-    if db_translation_url:
-        for translation_bundle in db.session.query(TranslationBundle).filter_by(translation_url = db_translation_url).all():
-            if translation_bundle.target == u'ALL' and translation_bundle.language in metadata_information['original_translations']:
-                # Already processed
-                continue
-            found = False
-            for processed_language, processed_target in processed_languages:
-                if translation_bundle.target == processed_target and translation_bundle.language == processed_language:
-                    found = True
-                    break
-
-            if found:
-                # Already processed
-                continue
-
-            add_full_translation_to_app(user_email = default_user.email, app_url = app_url, translation_url = translation_url, 
-                        app_metadata = default_metadata,
-                        language = translation_bundle.language, target = translation_bundle.target, translated_messages = None,
-                        original_messages = original_messages, from_developer = False)
-               
-
-    translation_percent = retrieve_translations_percent(translation_url, original_messages)
-    if translation_percent != repo_app.translation_percent:
-        repo_app.translation_percent = json.dumps(translation_percent)
-    
-    repo_app.last_processed_contents_hash = initial_contents_hash
-    repo_app.last_processed_downloaded_hash = initial_downloaded_hash
-    repo_app.last_processed_time = datetime.datetime.utcnow()
-
-    print(translation_url)
-    print(translation_percent)
-    print("BEFORE COMMIT")
     try:
-        db.session.commit()
+        repo_app = db.session.query(RepositoryApp).filter_by(id=repo_app_id).one()
+        initial_contents_hash = repo_app.contents_hash
+        initial_downloaded_hash = repo_app.downloaded_hash
+
+        default_user = get_golab_default_user()
+
+        translation_url = metadata_information.get('default_translation_url')
+        original_messages = metadata_information['default_translations']
+        default_metadata = metadata_information['default_metadata']
+        for language, translated_messages in metadata_information['original_translations'].iteritems():
+            add_full_translation_to_app(user_email = default_user.email, app_url = app_url, translation_url = translation_url, 
+                                app_metadata = default_metadata,
+                                language = language, target = u'ALL', translated_messages = translated_messages, 
+                                original_messages = original_messages, from_developer = True)
+
+        namespaces = set([ msg['namespace'] for msg in original_messages.values() if msg['namespace'] ])
+        processed_languages = []
+        if namespaces:
+            pairs = []
+            for key, msg in original_messages.iteritems():
+                if msg['namespace']:
+                    pairs.append({
+                        'key' : key,
+                        'namespace' : msg['namespace'],
+                    })
+        
+            for language_pack in get_bundles_by_key_namespaces(pairs):
+                cur_language = language_pack['language']
+                cur_target = language_pack['target']
+
+                if cur_target == 'ALL' and cur_language in metadata_information['original_translations']:
+                    # Already processed
+                    continue
+
+                processed_languages.append((cur_language, cur_target))
+                add_full_translation_to_app(user_email = default_user.email, app_url = app_url, translation_url = translation_url,
+                                app_metadata = default_metadata,
+                                language = cur_language, target = cur_target, translated_messages = {},
+                                original_messages = original_messages, from_developer = False)
+
+        db_translation_url = db.session.query(TranslationUrl).filter_by(url = translation_url).first()
+        if db_translation_url:
+            for translation_bundle in db.session.query(TranslationBundle).filter_by(translation_url = db_translation_url).all():
+                if translation_bundle.target == u'ALL' and translation_bundle.language in metadata_information['original_translations']:
+                    # Already processed
+                    continue
+                found = False
+                for processed_language, processed_target in processed_languages:
+                    if translation_bundle.target == processed_target and translation_bundle.language == processed_language:
+                        found = True
+                        break
+
+                if found:
+                    # Already processed
+                    continue
+
+                add_full_translation_to_app(user_email = default_user.email, app_url = app_url, translation_url = translation_url, 
+                            app_metadata = default_metadata,
+                            language = translation_bundle.language, target = translation_bundle.target, translated_messages = None,
+                            original_messages = original_messages, from_developer = False)
+                   
+
+        repo_app = db.session.query(RepositoryApp).filter_by(id=repo_app_id).one()
+        translation_percent = retrieve_translations_percent(translation_url, original_messages)
+        if translation_percent != repo_app.translation_percent:
+            repo_app.translation_percent = json.dumps(translation_percent)
+        
+        repo_app.last_processed_contents_hash = initial_contents_hash
+        repo_app.last_processed_downloaded_hash = initial_downloaded_hash
+        repo_app.last_processed_time = datetime.datetime.utcnow()
+
+        try:
+            db.session.commit()
+        except:
+            import traceback
+            traceback.print_exc()
+            db.session.rollback()
+            raise
+
+        # In the meanwhile, maybe there were changes. Just make 100% sure that the hash is right
+        update_content_hash(app_url)
     except:
-        print("BEFORE ROLLBACK")
         import traceback
         traceback.print_exc()
-        db.session.rollback()
         raise
-    print("SEEMS IT WORKED")
-
-    # In the meanwhile, maybe there were changes. Just make 100% sure that the hash is right
-    update_content_hash(app_url)
-
 
 # def _sync_regular_apps(cached_requests, synced_apps, force_reload, single_app_url = None):
 #     app_urls = [ app_url for app_url, in db.session.query(TranslatedApp.url).all() ]
