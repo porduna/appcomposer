@@ -75,7 +75,14 @@ function acEditMessage() {
 
         function focusTextInput() {
             if ($(getCurrentInput()).is(':focus') == false) {
-                getCurrentInput().focus();
+                var $currentInput = getCurrentInput();
+                var currentInputVal = $currentInput.val();
+                var currentInput = $currentInput.get(0);
+                $currentInput.focus();
+
+                if (currentInput !== undefined && currentInput.setSelectionRange !== undefined) {
+                    currentInput.setSelectionRange(0, currentInputVal.length);
+                }
             }
         } // !focusTextInput
 
