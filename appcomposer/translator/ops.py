@@ -1007,6 +1007,7 @@ def _merge_bundle(src_bundle, dst_bundle):
                 db.session.rollback()
                 raise
         elif existing_translation.taken_from_default and not msg.taken_from_default:
+            db.session.delete(existing_translation)
             # Merge it
             t_history = TranslationMessageHistory(dst_bundle, msg.key, msg.value, msg.history.user, now, existing_translation.history.id, msg.taken_from_default,
                                                 same_tool = msg.same_tool, tool_id = msg.tool_id, fmt = msg.fmt, 
@@ -1015,13 +1016,14 @@ def _merge_bundle(src_bundle, dst_bundle):
 
             db.session.add(t_history)
             # Delete before adding
-            db.session.delete(existing_translation)
             active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer, msg.namespace, msg.tool_id, msg.same_tool, msg.fmt)
             db.session.add(active_t)
+           
             try:
                 db.session.commit()
             except:
                 db.session.rollback()
+                db.session.remove()
                 raise
 
 def _deep_copy_translations(old_translation_url, new_translation_url):
