@@ -208,16 +208,21 @@ def locking(func):
         db.session.remove()
 
         counter = 10
+        import sys, time
 
         while True: 
             # Maximum: lock for 15 seconds
-            lock_key = rlock.lock(lock_key, 15 * 1000)
-            if lock_key:
+            lock_obj = rlock.lock(lock_key, 15 * 1000)
+            if lock_obj and lock_obj.resource:
+                # print '[{}] {} {}'.format(time.asctime(), "Entering", lock_key, lock_obj)
+                sys.stdout.flush()
                 try:
                     return func(*args, **kwargs)
                 finally:
+                    # print '[{}] {} {}'.format(time.asctime(), "Exiting", lock_key, lock_obj)
+                    sys.stdout.flush()
                     try:
-                        rlock.unlock(lock_key)
+                        rlock.unlock(lock_obj)
                     except:
                         raise Exception("Unable to lock")
             counter = counter - 1
@@ -1180,8 +1185,8 @@ def get_user_status(language, target, app_url, user):
     now = time.time()
     collaborators = []
     for collaborator in pipeline.execute():
-        if collaborator is None:
-            # It might have disappeared
+        if not collaborator:
+            # It might have disappeared: empty dict or None
             continue
 
         if collaborator['email'] == user.email:
