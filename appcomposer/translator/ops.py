@@ -1,3 +1,4 @@
+import time
 import zlib
 import json
 import urlparse
@@ -12,11 +13,11 @@ from sqlalchemy import func, or_, and_
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.orm import joinedload_all, joinedload
 
-from appcomposer import db, rlock
+from appcomposer import db, rlock, redis_store
 from appcomposer.application import app
 from appcomposer.languages import obtain_languages, obtain_groups
 from appcomposer.translator.suggestions import translate_texts
-from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser, TranslationSyncLog, TranslationCurrentActiveUser, TranslationSubscription, TranslationNotificationRecipient, RepositoryApp
+from appcomposer.models import TranslatedApp, TranslationUrl, TranslationBundle, ActiveTranslationMessage, TranslationMessageHistory, TranslationKeySuggestion, TranslationValueSuggestion, GoLabOAuthUser, TranslationSyncLog, TranslationSubscription, TranslationNotificationRecipient, RepositoryApp
 
 DEBUG = False
 
@@ -1081,35 +1082,49 @@ def get_latest_synchronizations():
         } for sync in latest_syncs
     ]
 
-def update_user_status(language, target, app_url, user):
+def cached_get_bundle(language, target, app_url):
+    key = 'cache:bundle:{}:{}:{}'.format(language, target, app_url)
+
+    if redis_store.exists(key):
+        return True
+
+    # If they provide something that does not exist, check again. This does not happen often.
     translated_app = db.session.query(TranslatedApp).filter_by(url = app_url).first()
     if translated_app is None:
-        return
+        return False
     
     translation_url = translated_app.translation_url
     if translation_url is None:
-        return
+        return False
 
     bundle = db.session.query(TranslationBundle).filter_by(translation_url = translation_url, language = language, target = target).first()
     if bundle is None:
+        return False
+
+    # Keep for 24 hours the record
+    redis_store.setex(key, 24 * 3600, 'true')
+    return True
+
+def update_user_status(language, target, app_url, user):
+    if not cached_get_bundle(language, target, app_url):
         return
 
     if user is None:
         print "ERROR: user can't be NULL"
         return
 
-    active_user = db.session.query(TranslationCurrentActiveUser).filter_by(bundle = bundle, user = user).first()
-    if active_user is None:
-        active_user = TranslationCurrentActiveUser(user = user, bundle = bundle)
-        db.session.add(active_user)
-    else:
-        active_user.update_last_check()
-    
-    try:
-        db.session.commit()
-    except:
-        db.session.rollback()
-        raise
+    key_user = 'active_translators:{}:{}:{}:{}'.format(app_url, language, target, user.email)
+    key_translations = 'active_translations:{}:{}:{}'.format(app_url, language, target)
+    pipeline = redis_store.pipeline()
+    pipeline.hset(key_user, 'last', time.time())
+    pipeline.hset(key_user, 'email', user.email)
+    pipeline.hset(key_user, 'name', user.display_name)
+    pipeline.sadd(key_translations, user.email)
+    # Delete automatically these keys after 10 minutes
+    pipeline.expire(key_user, 600)
+    pipeline.expire(key_translations, 600)
+    pipeline.execute()
+    return
 
 def get_user_status(language, target, app_url, user):
     FORMAT = "%Y-%m-%dT%H:%M:%SZ"
@@ -1122,11 +1137,12 @@ def get_user_status(language, target, app_url, user):
         'time_now': now_str,
         'collaborators': []
     }
+
     translated_app = db.session.query(TranslatedApp).filter_by(url = app_url).first()
     if translated_app is None:
         ERROR['error_msg'] = "Translation App URL not found"
         return ERROR
-    
+   
     translation_url = translated_app.translation_url
     if translation_url is None:
         ERROR['error_msg'] = "Translation Translation URL not found"
@@ -1152,15 +1168,35 @@ def get_user_status(language, target, app_url, user):
         modification_date = modification_date_by_other
 
     # Find collaborators (if any)
-    latest_minutes = now - datetime.timedelta(minutes = 1)
-    db_collaborators = db.session.query(TranslationCurrentActiveUser).filter(TranslationCurrentActiveUser.bundle == bundle, TranslationCurrentActiveUser.last_check > latest_minutes).all()
+    key_translations = 'active_translations:{}:{}:{}'.format(app_url, language, target)
+
+
+    emails = redis_store.smembers(key_translations)
+    pipeline = redis_store.pipeline()
+    for email in emails:
+        key_user = 'active_translators:{}:{}:{}:{}'.format(app_url, language, target, email)
+        pipeline.hgetall(key_user)
+
+    now = time.time()
     collaborators = []
-    for collaborator in db_collaborators:
-        if collaborator.user != user and collaborator.user is not None:
-            collaborators.append({
-                'name' : collaborator.user.display_name,
-                'md5' : hashlib.md5(collaborator.user.email).hexdigest(),
-            })
+    for collaborator in pipeline.execute():
+        if collaborator is None:
+            # It might have disappeared
+            continue
+
+        if collaborator['email'] == user.email:
+            # Ignore myself
+            continue
+
+        last_check = float(collaborator['last'])
+        if now - last_check > 60:
+            # If there was no update in the last 60 seconds ignore
+            continue
+
+        collaborators.append({
+            'name': collaborator['name'],
+            'md5': hashlib.md5(collaborator['email']).hexdigest(),
+        })
     
     return {
         'modificationDate': modification_date.strftime(FORMAT) if modification_date is not None else None,

@@ -15,7 +15,6 @@ if cwd.endswith(path):
 sys.path.insert(0, cwd)
 
 from appcomposer import app as my_app, db
-from appcomposer.models import TranslationCurrentActiveUser
 from appcomposer.translator.translation_listing import synchronize_apps_cache, synchronize_apps_no_cache, synchronize_single_app_no_cached
 from appcomposer.translator.suggestions import load_all_google_suggestions, load_all_deepl_suggestions, load_all_microsoft_suggestions
 from appcomposer.translator.mongodb_pusher import sync_mongodb_all, sync_mongodb_last_hour
@@ -47,11 +46,6 @@ cel.conf.update(
 
 
     beat_schedule = {
-        'delete_old_realtime_active_users' : {
-            'task' : 'delete_old_realtime_active_users',
-            'schedule' : datetime.timedelta(hours = 1),
-            'args' : ()
-        },
         'notify_changes' : {
             'task' : 'notify_changes',
             'schedule' : datetime.timedelta(minutes = 5),
@@ -122,9 +116,6 @@ cel.conf.update(
             'queue': NON_CRITICAL_INDEPENDENT_TASKS,
         },
         'load_microsoft_suggestions': {
-            'queue': NON_CRITICAL_INDEPENDENT_TASKS,
-        },
-        'delete_old_realtime_active_users': {
             'queue': NON_CRITICAL_INDEPENDENT_TASKS,
         },
 
@@ -248,20 +239,6 @@ def task_load_microsoft_suggestions(self):
     with my_app.app_context():
         load_all_microsoft_suggestions()
 
-
-@cel.task(name='delete_old_realtime_active_users', bind=True)
-def task_delete_old_realtime_active_users(self):
-    with my_app.app_context():
-        two_hours_ago = datetime.datetime.utcnow() - datetime.timedelta(hours = 2)
-        old_active_users = db.session.query(TranslationCurrentActiveUser).filter(TranslationCurrentActiveUser.last_check < two_hours_ago).all()
-        for old_active_user in old_active_users:
-            db.session.delete(old_active_user)
-        if len(old_active_users):
-            try:
-                db.session.commit()
-            except:
-                db.session.rollback()
-                raise
 
 @cel.task(name='sync_repo_apps_cached', bind=True)
 def task_sync_repo_apps_cached(self):
