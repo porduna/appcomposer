@@ -1014,9 +1014,10 @@ def _merge_bundle(src_bundle, dst_bundle):
                                                 namespace = msg.namespace)
 
             db.session.add(t_history)
+            # Delete before adding
+            db.session.delete(existing_translation)
             active_t = ActiveTranslationMessage(dst_bundle, msg.key, msg.value, t_history, now, msg.taken_from_default, msg.position, msg.category, msg.from_developer, msg.namespace, msg.tool_id, msg.same_tool, msg.fmt)
             db.session.add(active_t)
-            db.session.delete(existing_translation)
             try:
                 db.session.commit()
             except:
