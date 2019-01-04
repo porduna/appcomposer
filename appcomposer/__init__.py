@@ -9,8 +9,8 @@ from flask_redis import FlaskRedis
 
 redis_store = FlaskRedis()
 
-# 25 times x 200 ms = 5 seconds trying to acquire, 200 millis each time
-rlock = redlock.Redlock([{"host": "localhost", "port": 6379, "db": 0}, ], retry_count=25)
+# 35 times x 200 ms = 7 seconds trying to acquire, 200 millis each time
+rlock = redlock.Redlock([{"host": "localhost", "port": 6379, "db": 0}, ], retry_count=35)
 
 from .application import app
 from .db import db, upgrader
