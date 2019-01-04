@@ -9,12 +9,17 @@
         <div style="padding: 5px">
             <h4><a ng-href="{{ dep.link }}">{{ dep.title }}</a></h4>
 
-            <a ng-href="#/edit/{{ lang }}/{{ target }}/{{ dep.app_url }}">
+            <a ng-href="#/edit/{{ lang }}/{{ target }}/{{ dep.app_url }}" ng-show="lang !== 'en_ALL'">
                 <div class="btn btn-success">
                     <i class="fa fa-edit"></i>
                         <span>{{ 'Edit translation' | translate }}</span>
                 </div>
             </a>
+
+            <div class="btn btn-success disabled" ng-show="lang === 'en_ALL'">
+                <i class="fa fa-edit"></i>
+                <span>{{ 'Select language first' | translate }}</span>
+            </div>
 
             <div style="padding-bottom: 20px"></div>
 

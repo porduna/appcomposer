@@ -38,13 +38,18 @@
         <div class="col-md-5 col-sm-12">
             <h3 ac-translate-me>Details:</h3>
 
-            <a ng-href="#/edit/{{ selected_target.lang }}/{{ selected_target.target }}/{{ appurl }}">
-                <div ng-disabled="selected_target.lang == undefined || !(appinfo.translations)" class="btn btn-success">
+            <a ng-href="#/edit/{{ selected_target.lang }}/{{ selected_target.target }}/{{ appurl }}" ng-show="selected_target.lang !== 'en_ALL'">
+                <div ng-disabled="selected_target.lang === undefined || !(appinfo.translations)" class="btn btn-success">
                     <i class="fa fa-edit"></i>
                         <span ng-show="appinfo.translations[selected_target.lang]">{{ 'Edit translation' | translate }}</span>
                         <span ng-show="!appinfo.translations[selected_target.lang]">{{ 'Translate' | translate }}</span>
                 </div>
             </a>
+
+            <div class='btn btn-success disabled' ng-show="selected_target.lang === 'en_ALL'">
+                <i class="fa fa-edit"></i>
+                <span>{{ 'Select language first' | translate }}</span>
+            </div>
 
             <!-- Loading message -->
             <div ng-show="!(appinfo.translations)">
