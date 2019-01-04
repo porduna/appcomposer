@@ -288,6 +288,10 @@ def check_modifications(language, target):
 @api
 # @locking_per_user
 def bundle_update(language, target):
+    if language == 'en_ALL':
+        # Don't allow to translate texts in English
+        return jsonify(result="error")
+
     app_url = request.values.get('app_url')
     try:
         request_data = request.get_json(force=True, silent=True) or {}
@@ -351,6 +355,9 @@ def api_app():
 @cross_origin()
 @api
 def api_translate(language, target):
+    if language == 'en_ALL':
+        return "error: select other language (not English)"
+
     app_url = request.args.get('app_url')
 
     errors = []
