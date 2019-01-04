@@ -383,7 +383,10 @@ def add_full_translation_to_app(user_email, app_url, translation_url, app_metada
                     TranslationBundle.language == db_translation_bundle.language,
                     TranslationBundle.target == db_translation_bundle.target,
                     ActiveTranslationMessage.bundle_id != db_translation_bundle.id,
-                    ActiveTranslationMessage.taken_from_default == False
+                    ActiveTranslationMessage.taken_from_default == False,
+                    # And make sure it's in the repository (ignore others)
+                    TranslationBundle.translation_url_id == TranslatedApp.translation_url_id,
+                    RepositoryApp.url == TranslatedApp.url
                 ).all():
 
                 existing_namespace_translations[key, namespace] = (value, current_from_developer, existing_user_id)
@@ -492,7 +495,18 @@ def add_full_translation_to_app(user_email, app_url, translation_url, app_metada
                     # out there in other bundles but with same language and target and the same namespace, where they are not from developer
                     # and I copy my translation to them.
                     # 
-                    for wrong_message in db.session.query(ActiveTranslationMessage).filter(ActiveTranslationMessage.key == key, ActiveTranslationMessage.namespace == namespace, ActiveTranslationMessage.value != value, ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == db_translation_bundle.language, TranslationBundle.target == db_translation_bundle.target, TranslationBundle.id != db_translation_bundle.id).options(joinedload_all('bundle')).all():
+                    for wrong_message in db.session.query(ActiveTranslationMessage).filter(
+                                                        ActiveTranslationMessage.key == key, 
+                                                        ActiveTranslationMessage.namespace == namespace, 
+                                                        ActiveTranslationMessage.value != value, 
+                                                        ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
+                                                        TranslationBundle.language == db_translation_bundle.language, 
+                                                        TranslationBundle.target == db_translation_bundle.target, 
+                                                        TranslationBundle.id != db_translation_bundle.id,
+                                                        # And make sure it's in the repository (ignore others)
+                                                        TranslationBundle.translation_url_id == TranslatedApp.translation_url_id,
+                                                        RepositoryApp.url == TranslatedApp.url
+                                            ).options(joinedload_all('bundle')).all():
                         # wrong_message is a message for same language, target, key and namespace with a different value.
                         # We must update it with the current credentials
                         wrong_history = wrong_message.history
@@ -548,7 +562,24 @@ def add_full_translation_to_app(user_email, app_url, translation_url, app_metada
         existing_namespaces = {}
         _user_ids = set()
         if original_messages and namespaces:
-            for key, namespace, value, current_from_developer, existing_user_id in db.session.query(ActiveTranslationMessage.key, ActiveTranslationMessage.namespace, ActiveTranslationMessage.value, ActiveTranslationMessage.from_developer, TranslationMessageHistory.user_id).filter(ActiveTranslationMessage.history_id == TranslationMessageHistory.id, ActiveTranslationMessage.key.in_(original_messages.keys()), ActiveTranslationMessage.namespace.in_(list(namespaces)), ActiveTranslationMessage.bundle_id == TranslationBundle.id, TranslationBundle.language == db_translation_bundle.language, TranslationBundle.target == db_translation_bundle.target, ActiveTranslationMessage.taken_from_default == False).all():
+            for key, namespace, value, current_from_developer, existing_user_id in db.session.query(
+                                    ActiveTranslationMessage.key, 
+                                    ActiveTranslationMessage.namespace, 
+                                    ActiveTranslationMessage.value, 
+                                    ActiveTranslationMessage.from_developer, 
+                                    TranslationMessageHistory.user_id
+                                ).filter(
+                                    ActiveTranslationMessage.history_id == TranslationMessageHistory.id, 
+                                    ActiveTranslationMessage.key.in_(original_messages.keys()), 
+                                    ActiveTranslationMessage.namespace.in_(list(namespaces)), 
+                                    ActiveTranslationMessage.bundle_id == TranslationBundle.id, 
+                                    TranslationBundle.language == db_translation_bundle.language, 
+                                    TranslationBundle.target == db_translation_bundle.target, 
+                                    ActiveTranslationMessage.taken_from_default == False,
+                                    # Only if it is in the repo
+                                    TranslationBundle.translation_url_id == TranslatedApp.translation_url_id,
+                                    RepositoryApp.url == TranslatedApp.url,
+                                ).all():
                 existing_namespaces[key, namespace] = (value, current_from_developer, existing_user_id)
                 _user_ids.add(existing_user_id)
 
