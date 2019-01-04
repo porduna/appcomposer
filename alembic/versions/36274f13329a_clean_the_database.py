@@ -64,6 +64,8 @@ def upgrade():
         'http://go-lab.gw.utwente.nl/production/reflect/tools/reflect/reflect.xml'
     ]
 
+    translation_url_ids = []
+
     for app_url in old_app_urls:
         dbg("Processing {}".format(app_url))
         find_translated_app_stmt = sql.select([translated_apps.c.id, translated_apps.c.translation_url_id], translated_apps.c.url == app_url)
@@ -83,8 +85,18 @@ def upgrade():
         find_other_translated_apps_stmt = sql.select([translated_apps.c.id, translated_apps.c.url], translated_apps.c.translation_url_id == translation_url_id)
         rows = list(op.get_bind().execute(find_other_translated_apps_stmt))
         if len(rows) > 1:
-            dbg("There is another app using this translation URL: {}: {}".format(translation_url_id, rows))
-            continue
+            found = []
+            for row in rows:
+                other_translated_app_url = row[translated_apps.c.url]
+                if other_translated_app_url in old_app_urls:
+                    # If all the URLs are in the list, no problem
+                    continue
+
+            if found:
+                dbg("There is another app using this translation URL: {}: {}".format(translation_url_id, found))
+                continue
+
+        translation_url_ids.append(translation_url_id)
 
         # Now we now that for this specific TranslationUrl, there is nobody else using it. First find the bundles
         find_translation_bundles_stmt = sql.select([translation_bundles.c.id, translation_bundles.c.language, translation_bundles.c.target], translation_bundles.c.translation_url_id == translation_url_id)
@@ -107,9 +119,12 @@ def upgrade():
         op.get_bind().execute(translated_apps.delete(translated_apps.c.id == translated_app_id))
         dbg(" - And with subscriptions")
         op.get_bind().execute(translation_subscriptions.delete(translation_subscriptions.c.translation_url_id == translation_url_id))
-        dbg(" - And finally the TranslationUrl")
-        op.get_bind().execute(translation_urls.delete(translation_urls.c.id == translation_url_id))
         dbg(" - Finished with the app")
+
+    for translation_url_id in translation_url_ids:
+        dbg("Deleting TranslationUrl")
+        op.get_bind().execute(translation_urls.delete(translation_urls.c.id == translation_url_id))
+
 
 
 def downgrade():
