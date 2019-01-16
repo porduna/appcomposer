@@ -71,10 +71,20 @@ def extract_metadata_information(app_url, preview_link, cached_requests = None, 
         default_locale = None
         for locale in locales:
             lang = locale.attrib.get('lang')
+            country = locale.attrib.get('country')
             messages_url = locale.attrib.get('messages')
             if lang and messages_url and lang.lower() != 'all':
-                if len(lang) == 2:
+                if country:
+                    lang = u'{}_{}'.format(lang, country)
+                elif len(lang) == 2:
                     lang = u'%s_ALL' % lang
+
+                if lang.lower() == 'zh_all':
+                    lang = 'zh_CN'
+                if '_' in lang and lang.split('_')[0].lower() == lang.split('_')[1].lower():
+                    # es_ES is es_ALL, fr_FR is fr_ALL
+                    lang = '{}_ALL'.format(lang.split('_'))
+
                 try:
                     absolute_url, messages, metadata, locale_contents = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests)
                 except TranslatorError as e:
