@@ -125,7 +125,22 @@ def languages_labs():
         # Add all the languages supported by the translators
         for lang, translation_level in json.loads(lab.translation_percent or '{}').items():
             if translation_level > level:
-                lab_languages.add(lang.split('_')[0])
+                lang_pack = lang.split('_')
+                language_name = lang_pack[0]
+                if len(lang_pack) > 1:
+                    language_country = lang_pack[1]
+                else:
+                    language_country = 'ALL'
+
+                if language_name.lower() == 'zh' and language_country.upper() == 'ALL':
+                    language_country = 'CN'
+
+                if language_country.upper() == 'ALL':
+                    lang_record = language_name
+                else:
+                    lang_record = '{}_{}'.format(language_name, language_country)
+
+                lab_languages.add(lang_record)
         by_repo[external_id] = list(lab_languages)
 
     # Some labs do not report what language they support. Assume English
