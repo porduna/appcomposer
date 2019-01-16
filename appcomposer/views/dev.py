@@ -114,7 +114,7 @@ def languages_labs():
             language_name = lang_pack[0]
             language_country = lang_pack[1]
 
-            if lang_pack.lower() == 'zh_all': # Exception
+            if lang.language.language.lower() == 'zh_all': # Exception
                 language_country = 'CN'
 
             if language_country.upper() == 'ALL':
