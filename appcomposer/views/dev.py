@@ -110,7 +110,17 @@ def languages_labs():
 
         # Add all the languages supported by the original provider
         for lang in lab.languages:
-            lab_languages.add(lang.language.language.split('_')[0])
+            lang_pack = lang.language.language.split('_')
+            language_name = lang_pack[0]
+            language_country = lang_pack[1]
+
+            if lang_pack.lower() == 'zh_all': # Exception
+                language_country = 'CN'
+
+            if language_country.upper() == 'ALL':
+                lab_languages.add(language_name)
+            else:
+                lab_languages.add('{}_{}'.format(language_name, language_country))
 
         # Add all the languages supported by the translators
         for lang, translation_level in json.loads(lab.translation_percent or '{}').items():
