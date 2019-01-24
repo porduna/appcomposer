@@ -50,7 +50,10 @@ OTHER_LANGUAGES = [
     'sw', # Swahili
     'vi', # Vietnamese
     'zh_TW', # Taiwanese
-    'ka',
+    'ka', # Georgian
+    'kk', # Kazakh
+    'ky', # Kyrgyz
+    'tg', # Tajik
 ]
 
 ALL_LANGUAGES = OFFICIAL_EUROPEAN_UNION_LANGUAGES + SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES
