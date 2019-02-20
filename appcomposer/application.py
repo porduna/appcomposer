@@ -16,13 +16,12 @@ app.config['SQLALCHEMY_POOL_RECYCLE'] = 3600
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config.from_object('config')
 
-domain_whitelist = app.config.get('SSL_DOMAIN_WHITELIST') or []
+SSL_DOMAIN_WHITELIST = app.config.get('SSL_DOMAIN_WHITELIST') or []
 # domains that for some reason python requests fail to understand (chain error)
-domain_whitelist.append('amrita.olabs.edu.in')
-domain_whitelist.append('amrita.olabs.co.in')
-domain_whitelist.append('cdac.olabs.edu.in')
-domain_whitelist.append('cosci.tw')
-app.config['SSL_DOMAIN_WHITELIST'] = domain_whitelist
+SSL_DOMAIN_WHITELIST.append('amrita.olabs.edu.in')
+SSL_DOMAIN_WHITELIST.append('amrita.olabs.co.in')
+SSL_DOMAIN_WHITELIST.append('cdac.olabs.edu.in')
+SSL_DOMAIN_WHITELIST.append('cosci.tw')
 
 
 # Add an extension to jinja2

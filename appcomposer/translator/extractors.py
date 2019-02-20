@@ -8,8 +8,6 @@ import xml.etree.ElementTree as ET
 
 from collections import namedtuple
 
-from flask import current_app
-
 import requests
 
 from bs4 import BeautifulSoup
@@ -17,6 +15,7 @@ from bs4 import BeautifulSoup
 from selenium import webdriver
 
 from appcomposer import redis_store, db
+from appcomposer.application import SSL_DOMAIN_WHITELIST
 from appcomposer.models import RepositoryApp
 from appcomposer.exceptions import TranslatorError
 from appcomposer.translator.utils import get_cached_session, fromstring, get_text_from_response
@@ -459,8 +458,7 @@ def extract_check_url_metadata(url, uses_proxy):
         content_size = len(content)
 
         parsed_url = urlparse.urlparse(url)
-        whitelist = current_app.config['SSL_DOMAIN_WHITELIST']
-        url_in_whitelist = parsed_url.netloc in whitelist
+        url_in_whitelist = parsed_url.netloc in SSL_DOMAIN_WHITELIST
     
         if url.startswith('https://') or uses_proxy or url_in_whitelist:
             ssl = True
