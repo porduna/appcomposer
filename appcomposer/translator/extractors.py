@@ -113,7 +113,7 @@ def extract_metadata_information(app_url, preview_link, cached_requests = None, 
     default_translation_url = None
     default_metadata = {}
 
-    if len(locales) == 0:
+    if len(app_information.locales) == 0:
         translatable = False
     else:
         translatable = True

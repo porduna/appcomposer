@@ -81,7 +81,7 @@ def sync_repo_apps(force=False):
         if (repo_app.repository, external_id) in apps_by_repo_id:
             stored_ids.append((repo_app.repository, unicode(external_id)))
             app = apps_by_repo_id[repo_app.repository, external_id]
-            _update_existing_app(repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app.get('app_thumb'), preview_link = app.get('preview_link'), description = app.get('description'), app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), repository = app['repository'], app_foramt=app.get('app_format', 'opensocial'))
+            _update_existing_app(repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app.get('app_thumb'), preview_link = app.get('preview_link'), description = app.get('description'), app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), repository = app['repository'], app_format=app.get('app_format', 'opensocial'))
 
         else:
             # Delete old apps (translations are kept, and the app is kept, but not listed in the repository apps)
