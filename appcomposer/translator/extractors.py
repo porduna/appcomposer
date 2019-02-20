@@ -6,7 +6,11 @@ import logging
 import urlparse
 import xml.etree.ElementTree as ET
 
+from collections import namedtuple
+
 import requests
+
+from bs4 import BeautifulSoup
 
 from selenium import webdriver
 
@@ -33,13 +37,52 @@ def extract_local_translations_url(app_url, force_local_cache = False):
 
     cached_requests = get_cached_session()
 
-    locales, _, _ = _extract_locales(app_url, cached_requests)
+    # (AND ALSO THE LOCALES PARSING PER HTML)
+    # (AND ALSO WE ARE STILL ASSUMING THAT THERE IS A SINGLE TRANSLATION FILE - THAT TAKES LONGER)
+    repository_app = db.session.query(RepositoryApp).filter_by(app_url=app_url).first()
+    if repository_app is not None:
+        guessing = False
+        app_format = repository_app.app_format
+    else:
+        guessing = True
+        app_url_path = urlparse.urlparse(app_url).path
+        if app_url_path.endswith('.xml'):
+            app_format = 'opensocial'
+        elif app_url_path.endswith('.html'):
+            app_format = 'html'
+        else:
+            r = cached_requests.get(app_url)
+            if 'xml' in (r.headers.get('Content-Type') or ''):
+                app_format = 'opensocial'
+            else:
+                app_format = 'html'
 
-    locales_without_lang = [ locale for locale in locales if 'lang' not in locale.attrib or locale.attrib['lang'].lower() == 'all' ]
+    if app_format == 'opensocial' or not app_format: # Default to opensocial
+        try:
+            app_information = _extract_information_opensocial(app_url, cached_requests)
+        except TranslatorError as err:
+            if not guessing:
+                raise
+
+            try:
+                app_information = _extract_information_html(app_url, cached_requests)
+            except TranslatorError as err2:
+                raise TranslatorError("Error trying both opensocial and html: {} / {}".format(err, err2))
+    else:
+        try:
+            app_information = _extract_information_html(app_url, cached_requests)
+        except TranslatorError as err:
+            try:
+                app_information = _extract_information_opensocial(app_url, cached_requests)
+            except TranslatorError as err2:
+                raise TranslatorError("Error trying both html and opensocial: {} / ".format(err, err2))
+
+
+    locales_without_lang = [ locale for locale in app_information.locales if not locale['lang'] or locale['lang'].lower() == 'all' ]
     if not locales_without_lang:
         raise TranslatorError("That application does not provide any default locale. The application has probably not been adopted to be translated.")
 
-    relative_translation_url = locales_without_lang[0].attrib.get('messages')
+    relative_translation_url = locales_without_lang[0]['messages']
     if not relative_translation_url:
         raise TranslatorError("Default Locale not provided message attribute")
 
@@ -53,11 +96,17 @@ def extract_local_translations_url(app_url, force_local_cache = False):
     redis_store.setex(name=redis_key, time=10 * 60, value=redis_value) # For 10 minutes
     return absolute_translation_url, messages, metadata
 
-def extract_metadata_information(app_url, preview_link, cached_requests = None, force_reload = False):
+def extract_metadata_information(app_url, preview_link, cached_requests = None, force_reload = False, app_format=None):
     if cached_requests is None:
         cached_requests = get_cached_session()
 
-    locales, check_urls, body = _extract_locales(app_url, cached_requests)
+    if not app_format or app_format == 'opensocial':
+        app_information = _extract_information_opensocial(app_url, cached_requests)
+    elif app_format == 'html':
+        app_information = _extract_information_html(app_url, cached_requests)
+    else:
+        raise TranslatorError('Invalid app format: {}'.format(app_format))
+
     original_translations = {}
     original_translation_urls = {}
     default_translations = {}
@@ -69,10 +118,10 @@ def extract_metadata_information(app_url, preview_link, cached_requests = None, 
     else:
         translatable = True
         default_locale = None
-        for locale in locales:
-            lang = locale.attrib.get('lang')
-            country = locale.attrib.get('country')
-            messages_url = locale.attrib.get('messages')
+        for locale in app_information.locales:
+            lang = locale['lang']
+            country = locale['country']
+            messages_url = locale['messages']
             if lang and messages_url and lang.lower() != 'all':
                 if country:
                     lang = u'{}_{}'.format(lang, country)
@@ -103,7 +152,7 @@ def extract_metadata_information(app_url, preview_link, cached_requests = None, 
                 default_locale = locale
 
         if default_locale is not None:
-            messages_url = default_locale.attrib.get('messages')
+            messages_url = default_locale['messages']
             absolute_url, messages, metadata, locale_contents = _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests)
             default_translations = messages
             default_translation_url = absolute_url
@@ -120,15 +169,15 @@ def extract_metadata_information(app_url, preview_link, cached_requests = None, 
                 original_translations[lang] = new_messages
                 original_translation_urls[lang] = absolute_url
 
+    check_urls = app_information.check_urls
     if preview_link:
         check_urls.append(preview_link)
-
-    adaptable = ' data-configuration ' in body and ' data-configuration-definition ' in body
 
     metadata = {
         'translatable' : translatable,
         'check_urls' : check_urls,
-        'adaptable' : adaptable,
+        'uses_proxy': app_information.uses_proxy,
+        'adaptable' : False, # Not supported anymore (all 0 in the database right now)
         'original_translations' : original_translations,
         'original_translation_urls' : original_translation_urls,
         'default_translations' : default_translations,
@@ -255,7 +304,10 @@ def _raise_for_status(url, response):
         raise requests.RequestException("URL: {0}: Expected response, returned None (probably in tests)".format(url))
     response.raise_for_status()
 
-def _extract_locales(app_url, cached_requests):
+class AppInformation(namedtuple("AppInformation", ['locales', 'check_urls', 'uses_proxy'])):
+    pass
+
+def _extract_information_opensocial(app_url, cached_requests):
     try:
         response = cached_requests.get(app_url, timeout = 30)
         _raise_for_status(app_url, response)
@@ -276,14 +328,73 @@ def _extract_locales(app_url, cached_requests):
         raise TranslatorError("ModulePrefs not found in App URL")
 
     check_urls = [ app_url ] # The app_url itself is always a URL to check
+    uses_proxy = False
     for appcomposer_tag in module_prefs[0].findall('appcomposer'):
         check_url = appcomposer_tag.attrib.get('check-url')
         if check_url:
             check_urls.append(check_url)
+
+        uses_proxy_str = appcomposer_tag.attrib.get('uses-proxy')
+        if uses_proxy_str:
+            uses_proxy = uses_proxy.lower() in ['1', 'true', 'yes']
+
     check_urls.sort()
 
-    locales = module_prefs[0].findall('Locale')
-    return locales, check_urls, xml_contents
+    xml_locales = module_prefs[0].findall('Locale')
+    locales = []
+    for xml_locale in xml_locales:
+        locale = {
+            'lang': xml_locale.attrib.get('lang'),
+            'country': xml_locale.attrib.get('country'),
+            'messages': xml_locale.attrib.get('messages'),
+        }
+        locales.append(locale)
+    
+    return AppInformation(locales=locales, check_urls=check_urls, uses_proxy=uses_proxy)
+
+def _extract_information_html(app_url, cached_requests):
+    try:
+        response = cached_requests.get(app_url, timeout = 30)
+        _raise_for_status(app_url, response)
+        html_contents = get_text_from_response(response)
+    except requests.RequestException as e:
+        logging.warning(u"Could not load this app URL (%s): %s" % (app_url, e), exc_info = True)
+        raise TranslatorError(u"Could not load this app URL: %s" % e)
+
+    soup = BeautifulSoup(html_contents, 'lxml')
+
+    check_urls = [ app_url ] # The app_url itself is always a URL to check
+
+    for check_url_tag in soup.find_all('meta', attrs=dict(name='check-url')):
+        check_url = check_url_tag.get('value')
+        if check_url:
+            check_urls.append(check_url)
+
+    check_urls.sort()
+
+    locales = []
+    for translations_meta in soup.find_all('meta', attrs=dict(name='translations')):
+        locale = {
+            'lang': translations_meta.get('lang'),
+            'country': translations_meta.get('country'),
+            'messages': translations_meta.get('messages')
+        }
+        locales.append(locale)
+
+    uses_proxy_metas = soup.find_all('meta', atts=dict(name='uses-proxy'))
+    if uses_proxy_metas:
+        # If there is more than one, check just the last one
+        uses_proxy = (uses_proxy_metas[-1].get('value') or '').lower() in ['1', 'true', 'yes']
+    else:
+        uses_proxy = False
+
+    if not locales and len(check_urls) == 1 and not uses_proxy_metas:
+        # If it's just a random HTML document... it is probably an error
+        logging.warning(u"Invalid HTML document (%s): missing tags" % app_url)
+        print(u"Invalid HTML document (%s): missing tags" % app_url)
+        raise TranslatorError("Invalid HTML document: missing tags")
+
+    return AppInformation(locales=locales, check_urls=check_urls, uses_proxy=uses_proxy)
 
 def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests):
     if messages_url.startswith(('http://', 'https://', '//')):
@@ -312,7 +423,7 @@ def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests)
 
     return absolute_translation_url, messages, metadata, translation_messages_xml
 
-def extract_check_url_metadata(url):
+def extract_check_url_metadata(url, uses_proxy):
     failed = False
     flash = None
     ssl = None
@@ -346,7 +457,7 @@ def extract_check_url_metadata(url):
 
         content_size = len(content)
 
-        if url.startswith('https://'):
+        if url.startswith('https://') or uses_proxy:
             ssl = True
         else:
             ssl_url = url.replace('http://', 'https://', 1)

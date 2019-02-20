@@ -81,7 +81,7 @@ def sync_repo_apps(force=False):
         if (repo_app.repository, external_id) in apps_by_repo_id:
             stored_ids.append((repo_app.repository, unicode(external_id)))
             app = apps_by_repo_id[repo_app.repository, external_id]
-            _update_existing_app(repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app.get('app_thumb'), preview_link = app.get('preview_link'), description = app.get('description'), app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), repository = app['repository'])
+            _update_existing_app(repo_app, app_url = app['app_url'], title = app['title'], app_thumb = app.get('app_thumb'), preview_link = app.get('preview_link'), description = app.get('description'), app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), repository = app['repository'], app_foramt=app.get('app_format', 'opensocial'))
 
         else:
             # Delete old apps (translations are kept, and the app is kept, but not listed in the repository apps)
@@ -109,7 +109,8 @@ def sync_repo_apps(force=False):
                 _add_new_app(repository = app['repository'],
                             app_url = app['app_url'], title = app['title'], external_id = app['id'],
                             app_thumb = app.get('app_thumb'), description = app.get('description'),
-                            app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), preview_link=app.get('preview_link'))
+                            app_image = app.get('app_image'), app_link = app.get('app_golabz_page'), preview_link=app.get('preview_link'),
+                            app_format = app.get('app_format', 'opensocial'))
 
     try:
         db.session.commit()
@@ -155,7 +156,7 @@ def download_repository_apps():
     stored_ids_in_redis = list(redis_store.hkeys(_REDIS_CACHE_KEY))
 
     for repo_app in db.session.query(RepositoryApp).all():
-        task = _MetadataTask(repo_app.id, repo_app.url, repo_app.preview_link, force_reload=False)
+        task = _MetadataTask(repo_app.id, repo_app.url, repo_app.preview_link, app_format=repo_app.app_format, force_reload=False)
         repo_apps_by_id[repo_app.id] = repo_app
         tasks.append(task)
         if str(repo_app.id) in stored_ids_in_redis:
@@ -196,7 +197,7 @@ def download_repository_single_app(app_url):
     if repo_app is None:
         raise Exception("App URL not in the repository: {}".format(app_url))
 
-    task = _MetadataTask(repo_app.id, repo_app.url, repo_app.preview_link, force_reload=False)
+    task = _MetadataTask(repo_app.id, repo_app.url, repo_app.preview_link, app_format=repo_app.app_format, force_reload=False)
 
     _RunInParallel('Go-Lab repo', [ task ], thread_number=1).run()
 
@@ -259,11 +260,11 @@ def update_check_urls_status():
 
 
     db_urls = db.session.query(RepositoryAppCheckUrl).filter(RepositoryAppCheckUrl.active == True).all()
-    urls = set([ db_url.url for db_url in db_urls ])
+    urls = set([ (db_url.url, db_url.repository_app.uses_proxy ) for db_url in db_urls ])
 
     tasks = []
-    for url in urls:
-        tasks.append(_CheckUrlMetadataTask(url))
+    for url, uses_proxy in urls:
+        tasks.append(_CheckUrlMetadataTask(url, uses_proxy))
 
     db.session.remove()
 
@@ -388,16 +389,17 @@ def retrieve_single_translatable_apps(app_url):
 #
 
 class _CheckUrlMetadataTask(threading.Thread):
-    def __init__(self, url):
+    def __init__(self, url, uses_proxy):
         threading.Thread.__init__(self)
         self.url = url
+        self.uses_proxy = uses_proxy
         self.finished = False
         self.failed = False
         self.metadata_information = None
 
     def run(self):
         try:
-            self.metadata_information = extract_check_url_metadata(self.url)
+            self.metadata_information = extract_check_url_metadata(self.url, self.uses_proxy)
         except Exception as err:
             logger.warning("Error extracting information from checker url %s" % self.url, exc_info = True)
             if DEBUG_VERBOSE:
@@ -408,10 +410,11 @@ class _CheckUrlMetadataTask(threading.Thread):
         self.finished = True
 
 class _MetadataTask(threading.Thread):
-    def __init__(self, repo_id, app_url, preview_link, force_reload):
+    def __init__(self, repo_id, app_url, preview_link, app_format, force_reload):
         threading.Thread.__init__(self)
         self.repo_id = repo_id
         self.app_url = app_url
+        self.app_format = app_format or 'opensocial' # Still the first time apps will be empty
         self.preview_link = preview_link
         self.force_reload = force_reload
         self.finished = False
@@ -422,7 +425,7 @@ class _MetadataTask(threading.Thread):
         self.failing = False
         cached_requests = trutils.get_cached_session(caching = not self.force_reload)
         try:
-            self.metadata_information = extract_metadata_information(self.app_url, self.preview_link, cached_requests, self.force_reload)
+            self.metadata_information = extract_metadata_information(self.app_url, self.preview_link, cached_requests, self.force_reload, app_format=self.app_format)
         except Exception:
             logger.warning("Error extracting information from %s" % self.app_url, exc_info = True)
             if DEBUG_VERBOSE:
@@ -546,6 +549,11 @@ def _update_repo_app(task, repo_app):
 
 
     if not task.failing:
+        if repo_app.uses_proxy != task.metadata_information.get('uses_proxy'):
+            repo_app.uses_proxy = task.metadata_information.get('uses_proxy')
+            repo_changes = True
+
+        # For changes in translations, etc.
         current_hash = task.metadata_information.pop('translation_hash')
         if repo_app.downloaded_hash != current_hash:
             previous_contents = redis_store.hget(_REDIS_CACHE_KEY, repo_app.id)
@@ -592,24 +600,27 @@ def _update_repo_app(task, repo_app):
     return repo_changes
 
 
-def _add_new_app(repository, app_url, title, external_id, app_thumb, description, app_image, app_link, preview_link):
+def _add_new_app(repository, app_url, title, external_id, app_thumb, description, app_image, app_link, preview_link, app_format):
     repo_app = RepositoryApp(name = title, url = app_url, external_id = external_id, repository = repository)
     repo_app.app_thumb = app_thumb
     repo_app.description = description
     repo_app.app_link = app_link
     repo_app.app_image = app_image
+    repo_app.app_format = app_format
     if preview_link and not preview_link.startswith(('http://','https://')):
         preview_link = 'http://' + preview_link
     repo_app.preview_link = preview_link
     db.session.add(repo_app)
 
-def _update_existing_app(repo_app, app_url, title, app_thumb, description, app_image, app_link, preview_link, repository):
+def _update_existing_app(repo_app, app_url, title, app_thumb, description, app_image, app_link, preview_link, repository, app_format):
     if preview_link and not preview_link.startswith(('http://','https://')):
         preview_link = 'http://' + preview_link
     if repo_app.name != title:
         repo_app.name = title
     if repo_app.url != app_url:
         repo_app.url = app_url
+    if repo_app.app_format != app_format:
+        repo_app.app_format = app_format
     if repo_app.app_thumb != app_thumb:
         repo_app.app_thumb = app_thumb
     if repo_app.description != description:
@@ -667,6 +678,7 @@ def _get_golab_urls(last_hash):
             current_lab = current_lab.copy()
             current_lab['id'] = '%s-%s' % (lab_id, pos)
             current_lab['app_url'] = internal_lab['app_url']
+            current_lab['app_format'] = internal_lab.get('app_format') or 'opensocial'
             if current_lab['app_url']:
                 if not current_lab['app_url'].startswith('http://') and not current_lab['app_url'].startswith('https://'):
                     current_lab['app_url'] = 'http://{0}'.format(current_lab['app_url'])
@@ -682,6 +694,8 @@ def _get_golab_urls(last_hash):
             app_url = app['app_url']
             if not app_url.startswith('http://') and not app_url.startswith('https://'):
                 app['app_url'] = 'http://{0}'.format(app_url)
+        if not 'app_format' in app:
+            app['app_format'] = 'opensocial'
 
     return apps, current_hash
 
@@ -692,6 +706,7 @@ def _get_other_apps():
         'description': "Graasp is the ILS platform",
         'app_url': "http://composer.golabz.eu/graasp_i18n/",
         'app_type': "OpenSocial gadget",
+        'app_format': 'opensocial',
         'app_image': "http://composer.golabz.eu/static/img/graasp-logo.png",
         'app_thumb': "http://composer.golabz.eu/static/img/graasp-logo-thumb.png",
         'app_golabz_page': "http://graasp.eu/",
@@ -704,6 +719,7 @@ def _get_other_apps():
         'description': "Many tools developed by UTwente share many commons. For your convenience, these terms are centralized in a single translation here.",
         'app_url': "http://composer.golabz.eu/twente_commons/",
         'app_type': "OpenSocial gadget",
+        'app_format': 'opensocial',
         'app_image': "http://composer.golabz.eu/static/img/twente.jpg",
         'app_thumb': "http://composer.golabz.eu/static/img/twente-thumb.jpg",
         'app_golabz_page': "http://go-lab.gw.utwente.nl/production/",
@@ -716,6 +732,7 @@ def _get_other_apps():
         'description': "SpeakUp",
         'app_url': "http://composer.golabz.eu/speakup_i18n/",
         'app_type': "OpenSocial gadget",
+        'app_format': 'opensocial',
         'app_image': "http://composer.golabz.eu/static/img/speakup.jpg",
         'app_thumb': "http://composer.golabz.eu/static/img/speakup-thumb.jpg",
         'app_golabz_page': "http://speakup.info/",
@@ -735,6 +752,7 @@ def _get_other_apps():
                 'description' : "Foo",
                 'app_url' : 'http://localhost/testing/app.xml',
                 'app_type': "OpenSocial gadget",
+                'app_format': 'opensocial',
                 'app_image': "http://composer.golabz.eu/static/img/twente.jpg",
                 'app_thumb': "http://composer.golabz.eu/static/img/twente-thumb.jpg",
                 'app_golabz_page': "http://go-lab.gw.utwente.nl/production/",
