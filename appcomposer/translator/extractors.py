@@ -40,9 +40,7 @@ def extract_local_translations_url(app_url, force_local_cache = False):
 
     cached_requests = get_cached_session()
 
-    # (AND ALSO THE LOCALES PARSING PER HTML)
-    # (AND ALSO WE ARE STILL ASSUMING THAT THERE IS A SINGLE TRANSLATION FILE - THAT TAKES LONGER)
-    repository_app = db.session.query(RepositoryApp).filter_by(app_url=app_url).first()
+    repository_app = db.session.query(RepositoryApp).filter_by(url=app_url).first()
     if repository_app is not None:
         guessing = False
         app_format = repository_app.app_format
