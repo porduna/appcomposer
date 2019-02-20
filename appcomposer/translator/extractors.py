@@ -457,7 +457,11 @@ def extract_check_url_metadata(url, uses_proxy):
 
         content_size = len(content)
 
-        if url.startswith('https://') or uses_proxy:
+        parsed_url = urlparse.urlparse(url)
+        whitelist = current_app.config['SSL_DOMAIN_WHITELIST']
+        url_in_whitelist = parsed_url.netloc in whitelist
+    
+        if url.startswith('https://') or uses_proxy or url_in_whitelist:
             ssl = True
         else:
             ssl_url = url.replace('http://', 'https://', 1)
