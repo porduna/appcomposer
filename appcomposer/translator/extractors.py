@@ -8,13 +8,16 @@ import xml.etree.ElementTree as ET
 
 from collections import namedtuple
 
+from flask import current_app
+
 import requests
 
 from bs4 import BeautifulSoup
 
 from selenium import webdriver
 
-from appcomposer import redis_store
+from appcomposer import redis_store, db
+from appcomposer.models import RepositoryApp
 from appcomposer.exceptions import TranslatorError
 from appcomposer.translator.utils import get_cached_session, fromstring, get_text_from_response
 
@@ -336,7 +339,7 @@ def _extract_information_opensocial(app_url, cached_requests):
 
         uses_proxy_str = appcomposer_tag.attrib.get('uses-proxy')
         if uses_proxy_str:
-            uses_proxy = uses_proxy.lower() in ['1', 'true', 'yes']
+            uses_proxy = uses_proxy_str.lower() in ['1', 'true', 'yes']
 
     check_urls.sort()
 
