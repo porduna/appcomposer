@@ -130,10 +130,24 @@ def sync_repo_apps(force=False):
 def report_allowed_hosts():
     allowed_hosts_secret = current_app.config.get('ALLOWED_HOSTS_SECRET')
     if allowed_hosts_secret:
-        hosts = list(set([ urlparse.urlparse(racu.url).netloc for racu in db.session.query(RepositoryAppCheckUrl).all() ]))
+        hosts = set([])
+        hosts_not_supporting_https = set([])
+
+        for domain, supports_ssl in [ (urlparse.urlparse(racu.url).netloc, racu.supports_ssl) for racu in db.session.query(RepositoryAppCheckUrl).all() ]:
+            hosts.add(domain)
+            if supports_ssl is not None:
+                if supports_ssl:
+                    if domain in hosts_not_supporting_https:
+                        # If any supports it...
+                        hosts_not_supporting_https.remove(host)
+                else:
+                    hosts_not_supporting_https.add(host)
+
         try:
             # Report to gateway.golabz.eu that allowed-hosts is this
-            requests.post('https://gateway.golabz.eu/proxy/allowed-hosts/', json=dict(hosts=hosts), headers={'gw4labs-auth': allowed_hosts_secret})
+            requests.post('https://gateway.golabz.eu/proxy/allowed-hosts/', json=dict(hosts=list(hosts)), headers={'gw4labs-auth': allowed_hosts_secret})
+            # Then report those not supporting https
+            requests.post('https://gateway.golabz.eu/embed/https-limitations/', json=dict(hosts=list(hosts_not_supporting_https)), headers={'gw4labs-auth': allowed_hosts_secret})
         except:
             traceback.print_exc()
 
