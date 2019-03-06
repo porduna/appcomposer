@@ -377,7 +377,7 @@ def _extract_information_html(app_url, cached_requests):
         locale = {
             'lang': translations_meta.get('lang'),
             'country': translations_meta.get('country'),
-            'messages': translations_meta.get('messages')
+            'messages': translations_meta.get('messages') or translations_meta.get('value')
         }
         locales.append(locale)
 
