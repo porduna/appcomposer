@@ -140,9 +140,9 @@ def report_allowed_hosts():
                 if supports_ssl:
                     if domain in hosts_not_supporting_https:
                         # If any supports it...
-                        hosts_not_supporting_https.remove(host)
+                        hosts_not_supporting_https.remove(domain)
                 else:
-                    hosts_not_supporting_https.add(host)
+                    hosts_not_supporting_https.add(domain)
 
         # Then report those not supporting https
         print("Reporting allowed hosts:")
