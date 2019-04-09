@@ -8,6 +8,7 @@ The files to be downloaded might be big, so might not be very good for storing i
 
 For this reason, we need a storage mechanism and we use redis for that.
 """
+import sys
 import zlib
 import time
 import json
@@ -143,11 +144,15 @@ def report_allowed_hosts():
                 else:
                     hosts_not_supporting_https.add(host)
 
+        # Then report those not supporting https
+        print("Reporting allowed hosts:")
+        print(" - List of hosts:", hosts)
+        print(" - List of hosts not supporting https:", hosts_not_supporting_https)
+        sys.stdout.flush()
+
         try:
             # Report to gateway.golabz.eu that allowed-hosts is this
             requests.post('https://gateway.golabz.eu/proxy/allowed-hosts/', json=dict(hosts=list(hosts)), headers={'gw4labs-auth': allowed_hosts_secret})
-            # Then report those not supporting https
-            print("Host not supporting https:", hosts_not_supporting_https)
             requests.post('https://gateway.golabz.eu/embed/https-limitations/', json=dict(hosts=list(hosts_not_supporting_https)), headers={'gw4labs-auth': allowed_hosts_secret})
         except:
             traceback.print_exc()
