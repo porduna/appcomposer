@@ -16,6 +16,7 @@ app.config['SQLALCHEMY_POOL_RECYCLE'] = 3600
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 app.config.from_object('config')
 
+# Also in the Smart Gateway!
 SSL_DOMAIN_WHITELIST = app.config.get('SSL_DOMAIN_WHITELIST') or []
 # domains that for some reason python requests fail to understand (chain error)
 SSL_DOMAIN_WHITELIST.append('amrita.olabs.edu.in')

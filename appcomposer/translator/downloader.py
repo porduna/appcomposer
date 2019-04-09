@@ -147,6 +147,7 @@ def report_allowed_hosts():
             # Report to gateway.golabz.eu that allowed-hosts is this
             requests.post('https://gateway.golabz.eu/proxy/allowed-hosts/', json=dict(hosts=list(hosts)), headers={'gw4labs-auth': allowed_hosts_secret})
             # Then report those not supporting https
+            print("Host not supporting https:", hosts_not_supporting_https)
             requests.post('https://gateway.golabz.eu/embed/https-limitations/', json=dict(hosts=list(hosts_not_supporting_https)), headers={'gw4labs-auth': allowed_hosts_secret})
         except:
             traceback.print_exc()
