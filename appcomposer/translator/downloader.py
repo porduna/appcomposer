@@ -727,8 +727,8 @@ def _get_other_apps():
         'app_url': "http://composer.golabz.eu/graasp_i18n/",
         'app_type': "OpenSocial gadget",
         'app_format': 'opensocial',
-        'app_image': "http://composer.golabz.eu/static/img/graasp-logo.png",
-        'app_thumb': "http://composer.golabz.eu/static/img/graasp-logo-thumb.png",
+        'app_image': "https://composer.golabz.eu/static/img/graasp-logo.png",
+        'app_thumb': "https://composer.golabz.eu/static/img/graasp-logo-thumb.png",
         'app_golabz_page': "http://graasp.eu/",
         'repository': "Go-Lab ecosystem",
     }
@@ -740,8 +740,8 @@ def _get_other_apps():
         'app_url': "http://composer.golabz.eu/twente_commons/",
         'app_type': "OpenSocial gadget",
         'app_format': 'opensocial',
-        'app_image': "http://composer.golabz.eu/static/img/twente.jpg",
-        'app_thumb': "http://composer.golabz.eu/static/img/twente-thumb.jpg",
+        'app_image': "https://composer.golabz.eu/static/img/twente.jpg",
+        'app_thumb': "https://composer.golabz.eu/static/img/twente-thumb.jpg",
         'app_golabz_page': "http://go-lab.gw.utwente.nl/production/",
         'repository': "Go-Lab ecosystem",
     }
@@ -753,9 +753,22 @@ def _get_other_apps():
         'app_url': "http://composer.golabz.eu/speakup_i18n/",
         'app_type': "OpenSocial gadget",
         'app_format': 'opensocial',
-        'app_image': "http://composer.golabz.eu/static/img/speakup.jpg",
-        'app_thumb': "http://composer.golabz.eu/static/img/speakup-thumb.jpg",
+        'app_image': "https://composer.golabz.eu/static/img/speakup.jpg",
+        'app_thumb': "https://composer.golabz.eu/static/img/speakup-thumb.jpg",
         'app_golabz_page': "http://speakup.info/",
+        'repository': "Go-Lab ecosystem",
+    }
+
+    EMBED_POPUP = {
+        'title': 'Embedder',
+        'id': '4',
+        'description': "Embeeder pupup",
+        'app_url': "https://gateway.golabz.eu/embed/popup.html",
+        'app_type': "HTML",
+        'app_format': 'html',
+        'app_image': "https://gateway.golabz.eu/static/logo-320.jpg",
+        'app_thumb': "https://gateway.golabz.eu/static/logo-160.jpg",
+        'app_golabz_page': "http://gateway.golabz.eu/",
         'repository': "Go-Lab ecosystem",
     }
 
