@@ -108,10 +108,10 @@ def stats_golabz():
         for lab_app in lab['lab_apps']:
             total_lab_apps += 1
             app_url = lab_app['app_url']
-            if app_url.startswith('http://gateway.golabz.eu/embed/'):
+            if app_url.startswith('http://gateway.golabz.eu/embed/', 'https://gateway.golabz.eu/embed/'):
                 ac_labs.append(lab)
                 break
-            elif app_url.startswith('http://gateway.golabz.eu/'):
+            elif app_url.startswith('http://gateway.golabz.eu/', 'https://gateway.golabz.eu/'):
                 sg_labs.append(lab)
                 break
             elif 'weblab.deusto.es/golab/labmanager' in app_url:
