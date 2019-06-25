@@ -51,6 +51,27 @@
 
 
 <div class="row">
+    <h3>Plug-in providers</h3>
+
+    <table class="table table-bordered">
+        <thead>
+            <tr>
+                <th>Provider</th>
+                <th>Number</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for provider_name, provider_count in per_provider|dictsort(false, 'value', reverse=True) %}
+            <tr>
+                <td>{{ provider_name }}</td>
+                <td>{{ provider_count }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>   
+</div>
+
+<div class="row">
     <h3>Full list</h3>
 
     <ul>
@@ -70,6 +91,7 @@
                 <td>Logo</td>
                 <td>Name</td>
                 <td>Links</td>
+                <td>Provider</td>
             </tr>
         </thead>
         <tbody>
@@ -93,6 +115,11 @@
                                 <li><a href="{{ lab_app['app_url'] }}">{{ lab_app['app_title'] }} ({{ lab_app['app_url'][:50] }}...)</a></li>
                             {% endfor %}
                         </ul>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if 'provider' in cur_lab %}
+                    {{ cur_lab['provider'] }}
                     {% endif %}
                 </td>
             </tr>

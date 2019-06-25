@@ -104,6 +104,10 @@ def stats_golabz():
     other_labs = []
     total_lab_apps = 0
 
+    per_provider = {
+        # provider_name: count
+    }
+
     for lab in labs:
         for lab_app in lab['lab_apps']:
             total_lab_apps += 1
@@ -113,6 +117,13 @@ def stats_golabz():
                 break
             elif app_url.startswith(('http://gateway.golabz.eu/', 'https://gateway.golabz.eu/')):
                 sg_labs.append(lab)
+                path = app_url.split('gateway.golabz.eu', 1)[1]
+                if path.startswith('/os/pub/') and path.count('/') == 5:
+                    provider = path.split('/')[3]
+                    if provider not in per_provider:
+                        per_provider[provider] = 0
+                    per_provider[provider] += 1
+                    lab['provider'] = provider
                 break
             elif 'weblab.deusto.es/golab/labmanager' in app_url:
                 sg_labs.append(lab)
@@ -120,7 +131,7 @@ def stats_golabz():
             else:
                 other_labs.append(lab)
 
-    return render_template("translator/stats_golabz.html", total_labs = total_labs, total_lab_apps=total_lab_apps, sg_labs = sg_labs, ac_labs = ac_labs, other_labs=other_labs, len_sg_labs = len(sg_labs), len_ac_labs = len(ac_labs), len_other_labs=len(other_labs))
+    return render_template("translator/stats_golabz.html", total_labs = total_labs, total_lab_apps=total_lab_apps, sg_labs = sg_labs, ac_labs = ac_labs, other_labs=other_labs, len_sg_labs = len(sg_labs), len_ac_labs = len(ac_labs), len_other_labs=len(other_labs), per_provider=per_provider)
 
 
 @translator_stats_blueprint.route('/missing')
