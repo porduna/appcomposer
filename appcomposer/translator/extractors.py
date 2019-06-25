@@ -431,8 +431,14 @@ def extract_check_url_metadata(url, uses_proxy):
     proxy_image_stored = False
     error_message = None
     headers={'User-Agent': 'Mozilla/5.0 (X11; Linux x86_64 GOLAB APP COMPOSER) AppleWebKit/537.36 (KHTML, like Gecko)'}
+    kwargs = {}
+    parsed_url = urlparse.urlparse(url)
+    url_in_ssl_whitelist = parsed_url.netloc in SSL_DOMAIN_WHITELIST
+    if url_in_ssl_whitelist:
+        kwargs['verify'] = False
+    
     try:
-        req = requests.get(url, allow_redirects=True, timeout=(15,15), headers=headers)
+        req = requests.get(url, allow_redirects=True, timeout=(15,15), headers=headers, **kwargs)
         req.raise_for_status()
     except Exception as err:
         failed = True
@@ -457,10 +463,7 @@ def extract_check_url_metadata(url, uses_proxy):
 
         content_size = len(content)
 
-        parsed_url = urlparse.urlparse(url)
-        url_in_whitelist = parsed_url.netloc in SSL_DOMAIN_WHITELIST
-    
-        if url.startswith('https://') or uses_proxy or url_in_whitelist:
+        if url.startswith('https://') or uses_proxy or url_in_ssl_whitelist:
             ssl = True
         else:
             ssl_url = url.replace('http://', 'https://', 1)
