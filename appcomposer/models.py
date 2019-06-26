@@ -104,6 +104,7 @@ class RepositoryApp(db.Model):
 
     adaptable = db.Column(db.Boolean, index = True)
     translatable = db.Column(db.Boolean, index = True)
+    offline = db.Column(db.Boolean, index = True)
 
     translation_percent = db.Column(db.UnicodeText) # JSON document containing which bundles have been translated how much
 
