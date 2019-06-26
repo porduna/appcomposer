@@ -196,8 +196,8 @@ def offline_labs():
     
     for offline_lab in offline_labs:
         offline_lab_id = offline_lab.external_id.split('-')[0]
-        if 'gateway.golabz.eu/os/pub/' in offline_lab['url'] and offline['url'].count('/') == 7:
-            provider = offline['url'].split('/')[5]
+        if 'gateway.golabz.eu/os/pub/' in offline_lab.url and offline_lab.url.count('/') == 7:
+            provider = offline_lab.url.split('/')[5]
             if provider not in explanation['providers']:
                 explanation['providers'][provider] = {}
             explanation['providers'][provider][offline_lab_id] = explanation['urls'][offline_lab_id]
