@@ -86,6 +86,22 @@ def supported_languages_human():
 #         by_repo[external_id] = list(lab_languages)
 #     return jsonify(by_repo)
 
+@translator_dev_blueprint.route('/offline.json')
+@public
+def offline_labs():
+    from appcomposer.translator.tasks import GOLAB_REPO
+    offline_labs = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO, offline=True).all()
+    offline_lab_ids = [ ol.external_id for ol in offline_labs ]
+    explanation = [
+        {
+            'id': ol.external_id,
+            'golabz_url': ol.app_link,
+            'url': ol.url,
+        } for ol in offline_labs
+    ]
+    return jsonify(ids=offline_lab_ids, explanation=explanation)
+
+
 @translator_dev_blueprint.route('/languages.json')
 @public
 def languages_labs():
