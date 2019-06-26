@@ -573,6 +573,10 @@ def _update_repo_app(task, repo_app):
             repo_app.uses_proxy = task.metadata_information.get('uses_proxy')
             repo_changes = True
 
+        if repo_app.offline != task.metadata_information.get('offline'):
+            repo_app.offline = task.metadata_information.get('offline')
+            repo_changes = True
+
         # For changes in translations, etc.
         current_hash = task.metadata_information.pop('translation_hash')
         if repo_app.downloaded_hash != current_hash:

@@ -177,6 +177,7 @@ def extract_metadata_information(app_url, preview_link, cached_requests = None, 
         'translatable' : translatable,
         'check_urls' : check_urls,
         'uses_proxy': app_information.uses_proxy,
+        'offline': app_information.offline,
         'adaptable' : False, # Not supported anymore (all 0 in the database right now)
         'original_translations' : original_translations,
         'original_translation_urls' : original_translation_urls,
@@ -304,7 +305,7 @@ def _raise_for_status(url, response):
         raise requests.RequestException("URL: {0}: Expected response, returned None (probably in tests)".format(url))
     response.raise_for_status()
 
-class AppInformation(namedtuple("AppInformation", ['locales', 'check_urls', 'uses_proxy'])):
+class AppInformation(namedtuple("AppInformation", ['locales', 'check_urls', 'uses_proxy', 'offline'])):
     pass
 
 def _extract_information_opensocial(app_url, cached_requests):
@@ -329,6 +330,7 @@ def _extract_information_opensocial(app_url, cached_requests):
 
     check_urls = [ app_url ] # The app_url itself is always a URL to check
     uses_proxy = False
+    offline = False
     for appcomposer_tag in module_prefs[0].findall('appcomposer'):
         check_url = appcomposer_tag.attrib.get('check-url')
         if check_url:
@@ -337,6 +339,10 @@ def _extract_information_opensocial(app_url, cached_requests):
         uses_proxy_str = appcomposer_tag.attrib.get('uses-proxy')
         if uses_proxy_str:
             uses_proxy = uses_proxy_str.lower() in ['1', 'true', 'yes']
+
+        offline_str = appcomposer_tag.attrib.get('download')
+        if offline_str:
+            offline = True
 
     check_urls.sort()
 
@@ -350,7 +356,7 @@ def _extract_information_opensocial(app_url, cached_requests):
         }
         locales.append(locale)
     
-    return AppInformation(locales=locales, check_urls=check_urls, uses_proxy=uses_proxy)
+    return AppInformation(locales=locales, check_urls=check_urls, uses_proxy=uses_proxy, offline=offline)
 
 def _extract_information_html(app_url, cached_requests):
     try:
@@ -388,13 +394,20 @@ def _extract_information_html(app_url, cached_requests):
     else:
         uses_proxy = False
 
+    offline = False
+    offline_metas = soup.find_all('meta', atts=dict(name='download'))
+    if offline_metas:
+        offline = True
+    else:
+        offline = False
+
     if not locales and len(check_urls) == 1 and not uses_proxy_metas:
         # If it's just a random HTML document... it is probably an error
         logging.warning(u"Invalid HTML document (%s): missing tags" % app_url)
         print(u"Invalid HTML document (%s): missing tags" % app_url)
         raise TranslatorError("Invalid HTML document: missing tags")
 
-    return AppInformation(locales=locales, check_urls=check_urls, uses_proxy=uses_proxy)
+    return AppInformation(locales=locales, check_urls=check_urls, uses_proxy=uses_proxy, offline=offline)
 
 def _retrieve_messages_from_relative_url(app_url, messages_url, cached_requests):
     if messages_url.startswith(('http://', 'https://', '//')):
