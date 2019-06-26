@@ -176,6 +176,33 @@ def stats_missing():
 
     return render_template("translator/stats_missing.html", missing_translations=missing_translations)
 
+@translator_stats_blueprint.route('/offline.json')
+@public
+def offline_labs():
+    from appcomposer.translator.tasks import GOLAB_REPO
+    offline_labs = db.session.query(RepositoryApp).filter_by(repository=GOLAB_REPO, offline=True).all()
+    offline_lab_ids = sorted(set([ ol.external_id.split('-')[0] for ol in offline_labs ]))
+    explanation = {}
+    explanation['urls'] = {
+        ol.external_id.split('-')[0]: {
+            'id': ol.external_id.split('-')[0],
+            'golabz_url': ol.app_link,
+            'url': ol.url,
+        } for ol in offline_labs
+    }
+
+    explanation['providers'] = {
+    }
+    
+    for offline_lab in offline_labs:
+        offline_lab_id = offline_lab.external_id.split('-')[0]
+        if 'gateway.golabz.eu/os/pub/' in offline_lab['url'] and offline['url'].count('/') == 7:
+            provider = offline['url'].split('/')[5]
+            if provider not in explanation['providers']:
+                explanation['providers'][provider] = {}
+            explanation['providers'][provider][offline_lab_id] = explanation['urls'][offline_lab_id]
+
+    return jsonify(ids=offline_lab_ids, explanation=explanation)
 
 @translator_stats_blueprint.route('/users')
 @requires_golab_login
