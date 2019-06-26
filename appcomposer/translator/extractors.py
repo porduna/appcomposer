@@ -387,7 +387,7 @@ def _extract_information_html(app_url, cached_requests):
         }
         locales.append(locale)
 
-    uses_proxy_metas = soup.find_all('meta', atts=dict(name='uses-proxy'))
+    uses_proxy_metas = soup.find_all('meta', attrs=dict(name='uses-proxy'))
     if uses_proxy_metas:
         # If there is more than one, check just the last one
         uses_proxy = (uses_proxy_metas[-1].get('value') or '').lower() in ['1', 'true', 'yes']
@@ -395,7 +395,7 @@ def _extract_information_html(app_url, cached_requests):
         uses_proxy = False
 
     offline = False
-    offline_metas = soup.find_all('meta', atts=dict(name='download'))
+    offline_metas = soup.find_all('meta', attrs=dict(name='download'))
     if offline_metas:
         offline = True
     else:
