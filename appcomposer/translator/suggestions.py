@@ -522,7 +522,7 @@ def load_all_microsoft_suggestions(lang=None):
 
 def load_google_paid():
     # priority_languages = [u'sh', u'se', u'mk', u'lb', u'my', u'bs', u'be', u'sr', u'id', u'ja', u'zh', u'hi', u'no', u'uk', u'tr', u'ar', u'de']
-    priority_languages = [u'sh', u'mk', u'lb', u'my', u'bs', u'be', u'sr', u'id', u'ja', u'zh', u'zh_TW' u'hi', u'no', u'uk', u'tr', u'ar', u'de'] + [ unicode(lang) for lang in SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES if lang not in ['en', 'se'] ]
+    priority_languages = [u'sh', u'mk', u'lb', u'my', u'bs', u'be', u'sr', u'id', u'ja', u'zh', u'zh_TW', u'hi', u'no', u'uk', u'tr', u'ar', u'de'] + [ unicode(lang) for lang in SEMIOFFICIAL_EUROPEAN_UNION_LANGUAGES + OFFICIAL_EUROPEAN_UNION_LANGUAGES + OTHER_LANGUAGES if lang not in ['en', 'se'] ]
 
     active_messages = set([ value for value, in db.session.query(ActiveTranslationMessage.value).filter(TranslationBundle.language == u'en_ALL', TranslationBundle.target == u'ALL', ActiveTranslationMessage.bundle_id == TranslationBundle.id).all() ])
     active_message_by_hash = { unicode(hashlib.md5(text.encode('utf8')).hexdigest()): text for text in active_messages }
