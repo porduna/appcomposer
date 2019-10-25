@@ -19,25 +19,39 @@ logger = get_task_logger(__name__)
 MONGODB_SYNC_PERIOD = flask_app.config.get("MONGODB_SYNC_PERIOD", 60*10)  # Every 10 min by default.
 
 if flask_app.config["ACTIVATE_TRANSLATOR_MONGODB_PUSHES"]:
-    mongo_client = MongoClient(flask_app.config["MONGODB_PUSHES_URI"])
-    mongo_db = mongo_client.appcomposerdb
-    mongo_bundles = mongo_db.bundles
-    mongo_translation_urls = mongo_db.translation_urls
+    mongodb_uris = []
+    if flask_app.config.get("MONGODB_PUSHES_URIS"):
+        mongodb_uris = list(flask_app.config["MONGODB_PUSHES_URIS"])
+    if flask_app.config.get("MONGODB_PUSHES_URI"):
+        if flask_app.config["MONGODB_PUSHES_URI"] not in mongodb_uris:
+            mongodb_uris.append(flask_app.config["MONGODB_PUSHES_URI"])
+
+    all_mongo_bundles = []
+    all_mongo_translation_urls = []
+
+    for mongodb_uri in mongodb_uris:
+        mongo_client = MongoClient(mongodb_uri)
+        mongo_db = mongo_client.appcomposerdb
+        current_mongo_bundles = mongo_db.bundles
+        current_mongo_translation_urls = mongo_db.translation_urls
+        
+        all_mongo_bundles.append(current_mongo_bundles)
+        all_mongo_translation_urls.append(current_mongo_translation_urls)
 else:
     print "Warning: MONGODB is not activated. Use ACTIVATE_TRANSLATOR_MONGODB_PUSHES"
 
 def retrieve_mongodb_contents():
-    bundles_results = [ result for result in mongo_bundles.find() ]
+    bundles_results = [ result for result in all_mongo_bundles[0].find() ]
     bundles_serialized = json.dumps(bundles_results, default=json_util.default)
 
-    translations_url_results = [ result for result in mongo_translation_urls.find() ]
+    translations_url_results = [ result for result in all_mongo_translation_urls[0].find() ]
     translations_url_serialized = json.dumps(translations_url_results, default=json_util.default)
 
     return { 'bundles' : json.loads(bundles_serialized), 'translation_urls' : json.loads(translations_url_serialized) }
 
 def retrieve_mongodb_apps():
     apps = {}
-    for app in mongo_bundles.find({}, {'spec':True, 'bundle':True}):
+    for app in all_mongo_bundles[0].find({}, {'spec':True, 'bundle':True}):
         url = app['spec']
         bundle = app['bundle']
         lang, target = bundle.rsplit('_', 1)
@@ -53,21 +67,21 @@ def retrieve_mongodb_apps():
 
 def retrieve_mongodb_app(lang, target, url):
     identifier = "{0}_{1}::{2}".format(lang, target, url)
-    result = mongo_bundles.find_one({ '_id': identifier })
+    result = all_mongo_bundles[0].find_one({ '_id': identifier })
     if result is not None:
         return result['data']
     return None
 
 def retrieve_mongodb_translation_url(lang, target, url):
     identifier = "{0}_{1}::{2}".format(lang, target, url)
-    result = mongo_translation_urls.find_one({ '_id': identifier })
+    result = all_mongo_translation_urls[0].find_one({ '_id': identifier })
     if result is not None:
         return result['data']
     return None
 
 def retrieve_mongodb_urls():
     apps = {}
-    for app in mongo_translation_urls.find({}, {'url':True, 'bundle':True}):
+    for app in all_mongo_translation_urls[0].find({}, {'url':True, 'bundle':True}):
         url = app['url']
         bundle = app['bundle']
         lang, target = bundle.rsplit('_', 1)
@@ -125,24 +139,26 @@ def push(self, translation_url, lang, target, recursive = False):
 
             bundle_id = lang_pack + '::' + translation_url
             bundle = { '_id' : bundle_id, 'url' : translation_url,  'bundle' : lang_pack, 'data' : data, 'time' : max_date }
-            try:
-                mongo_translation_urls.update({'_id' : bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
-                logger.info("[PUSH]: Updated translation URL bundle %s" % bundle_id)
-                print("[PUSH]: Updated translation URL bundle %s" % bundle_id)
-            except DuplicateKeyError:
-                print("[PUSH]: Ignoring push for translation URL bundle %s (newer date exists already)" % bundle_id)
+            for mongo_translation_urls in all_mongo_translation_urls:
+                try:
+                    mongo_translation_urls.update({'_id' : bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
+                    logger.info("[PUSH]: Updated translation URL bundle %s" % bundle_id)
+                    print("[PUSH]: Updated translation URL bundle %s" % bundle_id)
+                except DuplicateKeyError:
+                    print("[PUSH]: Ignoring push for translation URL bundle %s (newer date exists already)" % bundle_id)
             
             app_bundle_ids = []
             for application in translation_bundle.translation_url.apps:
                 app_bundle_id = lang_pack + '::' + application.url
                 app_bundle_ids.append(app_bundle_id)
                 bundle = { '_id' : app_bundle_id, 'spec' : application.url,  'bundle' : lang_pack, 'data' : data, 'time' : max_date }
-                try:
-                    mongo_bundles.update({'_id' : app_bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
-                    logger.info("[PUSH]: Updated application bundle %s" % app_bundle_id)
-                    print("[PUSH]: Updated application bundle %s" % app_bundle_id)
-                except DuplicateKeyError:
-                    print("[PUSH]: Ignoring push for application bundle %s (newer date exists already)" % app_bundle_id)
+                for mongo_bundles in all_mongo_bundles:
+                    try:
+                        mongo_bundles.update({'_id' : app_bundle_id, 'time' : { '$lt' : max_date }}, bundle, upsert = True)
+                        logger.info("[PUSH]: Updated application bundle %s" % app_bundle_id)
+                        print("[PUSH]: Updated application bundle %s" % app_bundle_id)
+                    except DuplicateKeyError:
+                        print("[PUSH]: Ignoring push for application bundle %s (newer date exists already)" % app_bundle_id)
             
             previous.append([bundle_id, app_bundle_ids])
             return previous
@@ -199,8 +215,11 @@ def sync(self, only_recent):
                 all_app_ids.extend(app_ids)
         
         if not only_recent:
-            mongo_bundles.remove({"_id": {"$nin": all_app_ids}, "time": {"$lt": start_time}})
-            mongo_translation_urls.remove({"_id": {"$nin": all_translation_url_ids}, "time": {"$lt": start_time}})
+            for mongo_bundles in all_mongo_bundles:
+                mongo_bundles.remove({"_id": {"$nin": all_app_ids}, "time": {"$lt": start_time}})
+            
+            for mongo_translation_urls in all_mongo_translation_urls:
+                mongo_translation_urls.remove({"_id": {"$nin": all_translation_url_ids}, "time": {"$lt": start_time}})
 
     logger.info("[SYNC]: Sync finished.")
 
